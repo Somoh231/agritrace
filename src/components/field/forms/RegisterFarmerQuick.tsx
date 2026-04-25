@@ -3,20 +3,30 @@
 import * as React from "react";
 
 import AlertBanner from "@/components/shared/AlertBanner";
+import CountySelect from "@/components/shared/CountySelect";
 import { useToast } from "@/components/shared/toast/ToastProvider";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { LIBERIA_COUNTIES } from "@/lib/utils/liberia";
+import { PILOT_COUNTIES } from "@/lib/utils/pilot-config";
+import { PILOT_MODE } from "@/lib/utils/pilot-config";
+import { processSyncQueue, queueFarmer, queuePlot } from "@/lib/offline/sync-queue";
 
 export default function RegisterFarmerQuick({ onDone }: { onDone: () => void }) {
   const toast = useToast();
   const [fullName, setFullName] = React.useState("");
   const [nationalId, setNationalId] = React.useState("");
   const [phone, setPhone] = React.useState("");
-  const [county, setCounty] = React.useState(LIBERIA_COUNTIES[0]);
+  const [county, setCounty] = React.useState<string>(PILOT_COUNTIES[0] ?? "Nimba");
   const [village, setVillage] = React.useState("");
   const [gps, setGps] = React.useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
+
+  // Rice pilot fields
+  const [plotSizeHa, setPlotSizeHa] = React.useState<string>("");
+  const [landTenure, setLandTenure] = React.useState<"owned" | "leased" | "communal" | "family">("family");
+  const [waterSource, setWaterSource] = React.useState<"rain_fed" | "irrigated" | "both">("rain_fed");
+  const [yearsFarmingPlot, setYearsFarmingPlot] = React.useState<string>("");
+  const [priorProgrammes, setPriorProgrammes] = React.useState<"yes" | "no">("no");
 
   const capture = () => {
     setErr(null);
@@ -56,15 +66,13 @@ export default function RegisterFarmerQuick({ onDone }: { onDone: () => void }) 
           className="h-12 w-full rounded-xl border border-gray-200 px-3 text-[14px]"
         />
         <div className="grid grid-cols-2 gap-2">
-          <select
+          <CountySelect
             value={county}
-            onChange={(e) => setCounty(e.target.value as any)}
+            onChange={setCounty}
+            allCounties={false}
+            allowAllOption={false}
             className="h-12 w-full rounded-xl border border-gray-200 bg-white px-2 text-[14px]"
-          >
-            {LIBERIA_COUNTIES.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
+          />
           <input
             value={village}
             onChange={(e) => setVillage(e.target.value)}
@@ -72,6 +80,56 @@ export default function RegisterFarmerQuick({ onDone }: { onDone: () => void }) 
             className="h-12 w-full rounded-xl border border-gray-200 px-3 text-[14px]"
           />
         </div>
+
+        {PILOT_MODE ? (
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                value={plotSizeHa}
+                onChange={(e) => setPlotSizeHa(e.target.value)}
+                inputMode="decimal"
+                placeholder="Plot size (ha)"
+                className="h-12 w-full rounded-xl border border-gray-200 px-3 text-[14px]"
+              />
+              <select
+                value={landTenure}
+                onChange={(e) => setLandTenure(e.target.value as any)}
+                className="h-12 w-full rounded-xl border border-gray-200 bg-white px-2 text-[14px]"
+              >
+                <option value="owned">Owned</option>
+                <option value="leased">Leased</option>
+                <option value="communal">Communal</option>
+                <option value="family">Family</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={waterSource}
+                onChange={(e) => setWaterSource(e.target.value as any)}
+                className="h-12 w-full rounded-xl border border-gray-200 bg-white px-2 text-[14px]"
+              >
+                <option value="rain_fed">Rain-fed</option>
+                <option value="irrigated">Irrigated</option>
+                <option value="both">Both</option>
+              </select>
+              <input
+                value={yearsFarmingPlot}
+                onChange={(e) => setYearsFarmingPlot(e.target.value)}
+                inputMode="numeric"
+                placeholder="Years farming plot"
+                className="h-12 w-full rounded-xl border border-gray-200 px-3 text-[14px]"
+              />
+            </div>
+            <select
+              value={priorProgrammes}
+              onChange={(e) => setPriorProgrammes(e.target.value as any)}
+              className="h-12 w-full rounded-xl border border-gray-200 bg-white px-2 text-[14px]"
+            >
+              <option value="no">Previous govt programmes: No</option>
+              <option value="yes">Previous govt programmes: Yes</option>
+            </select>
+          </div>
+        ) : null}
 
         <button
           type="button"
@@ -90,9 +148,11 @@ export default function RegisterFarmerQuick({ onDone }: { onDone: () => void }) 
             try {
               if (!fullName.trim()) throw new Error("Full name is required.");
               if (!nationalId.trim()) throw new Error("National ID is required.");
+              // Offline-first: queue record locally, sync in background.
               const supabase = getSupabaseBrowserClient();
-              const { data: me } = await supabase.auth.getUser();
-              const { error } = await supabase.from("farmers").insert({
+              const { data: me } = await supabase.auth.getUser().catch(() => ({ data: { user: null } } as any));
+
+              const farmerClientId = await queueFarmer({
                 full_name: fullName.trim(),
                 national_id: nationalId.trim(),
                 phone: phone.trim() || null,
@@ -102,8 +162,26 @@ export default function RegisterFarmerQuick({ onDone }: { onDone: () => void }) 
                 longitude: gps?.lng ?? null,
                 registered_by: me.user?.id ?? null,
               } as any);
-              if (error) throw error;
-              toast.success("Farmer registered", `${fullName.trim()} · ${county}`);
+
+              if (PILOT_MODE) {
+                const area = plotSizeHa.trim() ? Number(plotSizeHa) : null;
+                const years = yearsFarmingPlot.trim() ? Number(yearsFarmingPlot) : null;
+                await queuePlot({
+                  farmer_id: farmerClientId,
+                  commodity: "rice",
+                  area_hectares: area != null && Number.isFinite(area) ? area : null,
+                  land_tenure: landTenure,
+                  water_source: waterSource,
+                  years_farming_plot: years != null && Number.isFinite(years) ? Math.trunc(years) : null,
+                  participated_programmes: priorProgrammes === "yes",
+                  county,
+                  village: village.trim() || null,
+                  registered_by: me.user?.id ?? null,
+                } as any);
+              }
+
+              toast.success("Farmer saved", "Will sync automatically");
+              if (navigator.onLine) void processSyncQueue();
               onDone();
             } catch (e) {
               const msg = e instanceof Error ? e.message : "Failed to register farmer.";

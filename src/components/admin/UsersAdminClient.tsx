@@ -4,6 +4,7 @@ import * as React from "react";
 import { Loader2, RefreshCcw, Search } from "lucide-react";
 
 import AlertBanner from "@/components/shared/AlertBanner";
+import CountySelect from "@/components/shared/CountySelect";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { useToast } from "@/components/shared/toast/ToastProvider";
 import type { Organization, UserRole } from "@/lib/supabase/types";
@@ -424,11 +425,12 @@ function UserEditor({
           </Field>
 
           <Field label="County">
-            <input
+            <CountySelect
               value={county}
-              onChange={(e) => setCounty(e.target.value)}
-              className="h-9 w-full rounded-md border border-gray-200 px-3 text-[12px]"
-              placeholder="optional"
+              onChange={setCounty}
+              allCounties={false}
+              allowAllOption
+              className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]"
             />
           </Field>
 

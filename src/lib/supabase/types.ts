@@ -84,6 +84,7 @@ export interface Location {
 
 export interface Farmer {
   id: string;
+  client_id?: string | null;
   full_name: string;
   national_id: string | null;
   phone: string | null;
@@ -102,6 +103,7 @@ export interface Farmer {
 
 export interface Plot {
   id: string;
+  client_id?: string | null;
   farmer_id: string;
   commodity: CommodityType;
   area_hectares: number | null;
@@ -109,6 +111,9 @@ export interface Plot {
   center_latitude: number | null;
   center_longitude: number | null;
   land_tenure: string | null;
+  water_source?: "rain_fed" | "irrigated" | "both" | string | null;
+  years_farming_plot?: number | null;
+  participated_programmes?: boolean | null;
   planting_year: number | null;
   deforestation_check_status: "pending" | "clear" | "flagged";
   deforestation_check_date: string | null;
@@ -148,6 +153,7 @@ export type VarianceReviewStatus = "not_required" | "pending" | "approved" | "re
 
 export interface Movement {
   id: string;
+  client_id?: string | null;
   lot_id: string;
   from_location_id: string | null;
   to_location_id: string | null;
@@ -199,6 +205,7 @@ export interface LocationInventoryOpening {
 
 export interface RiceProductionRecord {
   id: string;
+  client_id?: string | null;
   farmer_id: string;
   plot_id: string | null;
   season: string;
@@ -212,6 +219,8 @@ export interface RiceProductionRecord {
   farm_gate_price_usd: number | null;
   county: string | null;
   district: string | null;
+  water_source?: "rain_fed" | "irrigated" | "both" | string | null;
+  years_farming_plot?: number | null;
   recorded_by: string | null;
   recorded_at: string;
   notes: string | null;

@@ -120,6 +120,8 @@ export async function POST(request: Request) {
             farm_gate_price_usd: r.farm_gate_price_usd ? asNum(r.farm_gate_price_usd, "farm_gate_price_usd") : null,
             county: String(r.county ?? r["county"] ?? "").trim() || null,
             district: String(r.district ?? r["district"] ?? "").trim() || null,
+            water_source: String(r.water_source ?? r["water_source"] ?? "").trim() || null,
+            years_farming_plot: r.years_farming_plot ? asNum(r.years_farming_plot, "years_farming_plot") : null,
             notes: String(r.notes ?? r["notes"] ?? "").trim() || null,
             recorded_by: guard.userId,
           });

@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import type { UserRole } from "@/lib/supabase/types";
+import { PILOT_MODE } from "@/lib/utils/pilot-config";
 
 type Module = "rice" | "cocoa";
 
@@ -139,7 +140,8 @@ export default function Sidebar({
   onNavigate: (href: string) => void;
   user: { name: string; role: UserRole; initials: string };
 }) {
-  const sections = sectionItems(activeModule, user.role);
+  const effectiveModule: Module = PILOT_MODE ? "rice" : activeModule;
+  const sections = sectionItems(effectiveModule, user.role);
   const showRiceToggle = user.role === "super_admin" || user.role.includes("officer");
   const showCocoaToggle = user.role === "super_admin" || !user.role.includes("officer");
 
@@ -158,32 +160,40 @@ export default function Sidebar({
       </div>
 
       <div className="px-4 pt-4">
-        <div className="bg-white border border-gray-200 rounded-xl p-1 grid grid-cols-2 gap-1">
-          <button
-            type="button"
-            onClick={() => onModuleSwitch("rice")}
-            disabled={!showRiceToggle}
-            className={`text-[12px] px-2 py-1.5 rounded-md transition ${
-              activeModule === "rice"
-                ? "bg-forest-50 text-forest-800 font-medium"
-                : "text-slate-500 hover:text-ink-900"
-            } ${showRiceToggle ? "" : "opacity-40 cursor-not-allowed"}`}
-          >
-            Rice
-          </button>
-          <button
-            type="button"
-            onClick={() => onModuleSwitch("cocoa")}
-            disabled={!showCocoaToggle}
-            className={`text-[12px] px-2 py-1.5 rounded-md transition ${
-              activeModule === "cocoa"
-                ? "bg-forest-50 text-forest-800 font-medium"
-                : "text-slate-500 hover:text-ink-900"
-            } ${showCocoaToggle ? "" : "opacity-40 cursor-not-allowed"}`}
-          >
-            Cocoa
-          </button>
-        </div>
+        {PILOT_MODE ? (
+          <div className="rounded-xl border border-gray-200 bg-white px-3 py-2.5">
+            <div className="font-mono text-[10px] text-green-600">
+              Rice Production Pilot · Nimba, Bong &amp; Lofa
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white border border-gray-200 rounded-xl p-1 grid grid-cols-2 gap-1">
+            <button
+              type="button"
+              onClick={() => onModuleSwitch("rice")}
+              disabled={!showRiceToggle}
+              className={`text-[12px] px-2 py-1.5 rounded-md transition ${
+                activeModule === "rice"
+                  ? "bg-forest-50 text-forest-800 font-medium"
+                  : "text-slate-500 hover:text-ink-900"
+              } ${showRiceToggle ? "" : "opacity-40 cursor-not-allowed"}`}
+            >
+              Rice
+            </button>
+            <button
+              type="button"
+              onClick={() => onModuleSwitch("cocoa")}
+              disabled={!showCocoaToggle}
+              className={`text-[12px] px-2 py-1.5 rounded-md transition ${
+                activeModule === "cocoa"
+                  ? "bg-forest-50 text-forest-800 font-medium"
+                  : "text-slate-500 hover:text-ink-900"
+              } ${showCocoaToggle ? "" : "opacity-40 cursor-not-allowed"}`}
+            >
+              Cocoa
+            </button>
+          </div>
+        )}
       </div>
 
       <nav className="px-4 pb-4 pt-4 flex-1 overflow-y-auto">

@@ -4,8 +4,11 @@ import * as React from "react";
 
 import DataTable from "@/components/shared/DataTable";
 import StatusPill from "@/components/shared/StatusPill";
+import CountySelect from "@/components/shared/CountySelect";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { LIBERIA_COUNTIES } from "@/lib/utils/liberia";
+import { PILOT_COUNTIES } from "@/lib/utils/pilot-config";
+import { PILOT_MODE } from "@/lib/utils/pilot-config";
+import { processSyncQueue, queueFarmer, queuePlot } from "@/lib/offline/sync-queue";
 
 type FarmerRow = {
   id: string;
@@ -128,14 +131,13 @@ export default function FarmerRegistryTable() {
           </div>
           <div>
             <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">County</div>
-            <select value={county} onChange={(e) => setCounty(e.target.value)} className="h-9 rounded-md border border-gray-200 bg-white px-2 text-[12px]">
-              <option value="">All</option>
-              {LIBERIA_COUNTIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+            <CountySelect
+              value={county}
+              onChange={setCounty}
+              allCounties={false}
+              allowAllOption
+              className="h-9 rounded-md border border-gray-200 bg-white px-2 text-[12px]"
+            />
           </div>
         </div>
 
@@ -156,7 +158,7 @@ function RegisterFarmerForm() {
   const [nationalId, setNationalId] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [gender, setGender] = React.useState("Prefer not to say");
-  const [county, setCounty] = React.useState(LIBERIA_COUNTIES[0]);
+  const [county, setCounty] = React.useState<string>(PILOT_COUNTIES[0] ?? "Nimba");
   const [district, setDistrict] = React.useState("");
   const [village, setVillage] = React.useState("");
   const [coops, setCoops] = React.useState<Array<{ id: string; name: string }>>([]);
@@ -166,9 +168,21 @@ function RegisterFarmerForm() {
   const [error, setError] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
 
+  // Rice pilot (plot + agronomy fields)
+  const [plotSizeHa, setPlotSizeHa] = React.useState<string>("");
+  const [landTenure, setLandTenure] = React.useState<"owned" | "leased" | "communal" | "family">("family");
+  const [waterSource, setWaterSource] = React.useState<"rain_fed" | "irrigated" | "both">("rain_fed");
+  const [yearsFarmingPlot, setYearsFarmingPlot] = React.useState<string>("");
+  const [priorProgrammes, setPriorProgrammes] = React.useState<"yes" | "no">("no");
+
   React.useEffect(() => {
     async function load() {
       const supabase = getSupabaseBrowserClient();
+      if (PILOT_MODE) {
+        setCoops([]);
+        setCoopId("");
+        return;
+      }
       const { data } = await supabase.from("organizations").select("id,name").eq("type", "cooperative").order("name");
       setCoops((data as any) ?? []);
       setCoopId((data as any)?.[0]?.id ?? "");
@@ -205,25 +219,88 @@ function RegisterFarmerForm() {
           <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-2">Location</div>
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
-              <select value={county} onChange={(e) => setCounty(e.target.value as any)} className="h-10 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]">
-                {LIBERIA_COUNTIES.map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
+              <CountySelect
+                value={county}
+                onChange={setCounty}
+                allCounties={false}
+                allowAllOption={false}
+                className="h-10 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]"
+              />
               <input value={district} onChange={(e) => setDistrict(e.target.value)} placeholder="District" className="h-10 w-full rounded-md border border-gray-200 px-3 text-[12px]" />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <input value={village} onChange={(e) => setVillage(e.target.value)} placeholder="Village" className="h-10 w-full rounded-md border border-gray-200 px-3 text-[12px]" />
-              <select value={coopId} onChange={(e) => setCoopId(e.target.value)} className="h-10 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]">
-                {coops.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              {PILOT_MODE ? (
+                <div className="h-10 w-full rounded-md border border-gray-200 bg-gray-50 px-3 text-[12px] text-gray-700 flex items-center">
+                  Rice
+                </div>
+              ) : (
+                <select value={coopId} onChange={(e) => setCoopId(e.target.value)} className="h-10 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]">
+                  {coops.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
         </div>
+
+        {PILOT_MODE ? (
+          <div>
+            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-2">
+              Rice pilot fields
+            </div>
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  value={plotSizeHa}
+                  onChange={(e) => setPlotSizeHa(e.target.value)}
+                  inputMode="decimal"
+                  placeholder="Plot size (ha)"
+                  className="h-10 w-full rounded-md border border-gray-200 px-3 text-[12px]"
+                />
+                <select
+                  value={landTenure}
+                  onChange={(e) => setLandTenure(e.target.value as any)}
+                  className="h-10 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]"
+                >
+                  <option value="owned">Owned</option>
+                  <option value="leased">Leased</option>
+                  <option value="communal">Communal</option>
+                  <option value="family">Family</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={waterSource}
+                  onChange={(e) => setWaterSource(e.target.value as any)}
+                  className="h-10 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]"
+                >
+                  <option value="rain_fed">Rain-fed</option>
+                  <option value="irrigated">Irrigated</option>
+                  <option value="both">Both</option>
+                </select>
+                <input
+                  value={yearsFarmingPlot}
+                  onChange={(e) => setYearsFarmingPlot(e.target.value)}
+                  inputMode="numeric"
+                  placeholder="Years farming this plot"
+                  className="h-10 w-full rounded-md border border-gray-200 px-3 text-[12px]"
+                />
+              </div>
+              <select
+                value={priorProgrammes}
+                onChange={(e) => setPriorProgrammes(e.target.value as any)}
+                className="h-10 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]"
+              >
+                <option value="no">Previous government programmes: No</option>
+                <option value="yes">Previous government programmes: Yes</option>
+              </select>
+            </div>
+          </div>
+        ) : null}
 
         <div>
           <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-2">GPS location</div>
@@ -276,34 +353,55 @@ function RegisterFarmerForm() {
             try {
               if (!fullName.trim()) throw new Error("Full name is required.");
               if (!nationalId.trim()) throw new Error("National ID is required.");
+              // Offline-first: queue record locally, sync in background.
               const supabase = getSupabaseBrowserClient();
-              const { data: me } = await supabase.auth.getUser();
-              const { error: insErr } = await supabase.from("farmers").insert({
+              const { data: me } = await supabase.auth.getUser().catch(() => ({ data: { user: null } } as any));
+
+              const farmerData = {
                 full_name: fullName.trim(),
                 national_id: nationalId.trim(),
                 phone: phone.trim() || null,
                 gender,
-                organization_id: coopId || null,
+                organization_id: PILOT_MODE ? null : coopId || null,
                 county,
                 district: district.trim() || null,
                 village: village.trim() || null,
                 latitude: gps?.lat ?? null,
                 longitude: gps?.lng ?? null,
                 registered_by: me.user?.id ?? null,
-              } as any);
-              if (insErr) throw insErr;
-              await supabase.from("audit_log").insert({
-                action: "CREATE",
-                table_name: "farmers",
-                new_values: { full_name: fullName.trim(), county },
-              } as any);
-              setOk("Farmer registered.");
+              } as any;
+
+              const farmerClientId = await queueFarmer(farmerData);
+
+              if (PILOT_MODE) {
+                const area = plotSizeHa.trim() ? Number(plotSizeHa) : null;
+                const years = yearsFarmingPlot.trim() ? Number(yearsFarmingPlot) : null;
+                await queuePlot({
+                  farmer_id: farmerClientId,
+                  commodity: "rice",
+                  area_hectares: area != null && Number.isFinite(area) ? area : null,
+                  land_tenure: landTenure,
+                  water_source: waterSource,
+                  years_farming_plot: years != null && Number.isFinite(years) ? Math.trunc(years) : null,
+                  participated_programmes: priorProgrammes === "yes",
+                  county,
+                  district: district.trim() || null,
+                  village: village.trim() || null,
+                  registered_by: me.user?.id ?? null,
+                } as any);
+              }
+
+              setOk("Farmer saved · will sync automatically.");
+              if (navigator.onLine) void processSyncQueue();
               setFullName("");
               setNationalId("");
               setPhone("");
               setDistrict("");
               setVillage("");
               setGps(null);
+              setPlotSizeHa("");
+              setYearsFarmingPlot("");
+              setPriorProgrammes("no");
             } catch (e) {
               setError(e instanceof Error ? e.message : "Registration failed.");
             }

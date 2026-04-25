@@ -7,6 +7,7 @@ import AlertBanner from "@/components/shared/AlertBanner";
 import DashboardWidgets from "@/components/dashboard/DashboardWidgets";
 import KPICard from "@/components/shared/KPICard";
 import ProgressBar from "@/components/shared/ProgressBar";
+import DataQualityPanel from "@/components/rice/DataQualityPanel";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { formatWeight } from "@/lib/utils/formatters";
 import { LIBERIA_COUNTIES } from "@/lib/utils/liberia";
@@ -187,6 +188,8 @@ export default function NationalDashboard() {
           accentColor={lossRate > 10 ? "amber" : "green"}
         />
       </div>
+
+      <DataQualityPanel />
 
       <AlertBanner
         severity="warning"

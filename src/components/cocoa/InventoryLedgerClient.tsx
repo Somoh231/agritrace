@@ -9,14 +9,16 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CommodityType } from "@/lib/supabase/types";
 import { buildLocationLedger, type MovementEdge, type OpeningRow } from "@/lib/inventory/ledger";
 import { formatWeight } from "@/lib/utils/formatters";
+import { PILOT_COMMODITIES } from "@/lib/utils/pilot-config";
+import CountySelect from "@/components/shared/CountySelect";
 
-const COMMODITIES: CommodityType[] = ["cocoa", "rice", "rubber", "palm_oil", "coffee"];
+const COMMODITIES: CommodityType[] = PILOT_COMMODITIES;
 
 export default function InventoryLedgerClient() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  const [commodity, setCommodity] = React.useState<CommodityType | "">("cocoa");
+  const [commodity, setCommodity] = React.useState<CommodityType | "">(PILOT_COMMODITIES[0] ?? "");
   const [county, setCounty] = React.useState("");
   const [orgId, setOrgId] = React.useState("");
   const [locationId, setLocationId] = React.useState("");
@@ -189,11 +191,12 @@ export default function InventoryLedgerClient() {
             </select>
           </FilterField>
           <FilterField label="County">
-            <input
+            <CountySelect
               value={county}
-              onChange={(e) => setCounty(e.target.value)}
-              placeholder="e.g. Nimba"
-              className="h-9 w-full rounded-md border border-gray-200 px-3 text-[12px]"
+              onChange={setCounty}
+              allCounties={false}
+              allowAllOption
+              className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]"
             />
           </FilterField>
           <FilterField label="Organization">

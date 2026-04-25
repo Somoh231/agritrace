@@ -89,6 +89,7 @@ create table if not exists locations (
 
 create table if not exists farmers (
   id uuid primary key default gen_random_uuid(),
+  client_id uuid unique,
   full_name text not null,
   national_id text,
   phone text,
@@ -105,8 +106,12 @@ create table if not exists farmers (
   created_at timestamptz not null default now()
 );
 
+alter table farmers add column if not exists client_id uuid unique;
+create unique index if not exists farmers_client_id_unique on farmers(client_id) where client_id is not null;
+
 create table if not exists plots (
   id uuid primary key default gen_random_uuid(),
+  client_id uuid unique,
   farmer_id uuid not null references farmers(id) on delete cascade,
   commodity commodity_type not null,
   area_hectares numeric(8, 4),
@@ -114,6 +119,9 @@ create table if not exists plots (
   center_latitude numeric(10, 8),
   center_longitude numeric(11, 8),
   land_tenure text,
+  water_source text,
+  years_farming_plot integer,
+  participated_programmes boolean,
   planting_year integer,
   deforestation_check_status deforestation_status not null default 'pending',
   deforestation_check_date date,
@@ -124,6 +132,12 @@ create table if not exists plots (
   created_at timestamptz not null default now(),
   registered_by uuid references profiles(id)
 );
+
+alter table plots add column if not exists client_id uuid unique;
+create unique index if not exists plots_client_id_unique on plots(client_id) where client_id is not null;
+alter table plots add column if not exists water_source text;
+alter table plots add column if not exists years_farming_plot integer;
+alter table plots add column if not exists participated_programmes boolean;
 
 create table if not exists lots (
   id uuid primary key default gen_random_uuid(),
@@ -146,6 +160,7 @@ create table if not exists lots (
 
 create table if not exists movements (
   id uuid primary key default gen_random_uuid(),
+  client_id uuid unique,
   lot_id uuid not null references lots(id) on delete cascade,
   from_location_id uuid references locations(id),
   to_location_id uuid references locations(id),
@@ -164,8 +179,12 @@ create table if not exists movements (
   created_at timestamptz not null default now()
 );
 
+alter table movements add column if not exists client_id uuid unique;
+create unique index if not exists movements_client_id_unique on movements(client_id) where client_id is not null;
+
 create table if not exists rice_production_records (
   id uuid primary key default gen_random_uuid(),
+  client_id uuid unique,
   farmer_id uuid not null references farmers(id) on delete cascade,
   plot_id uuid references plots(id),
   season text not null,
@@ -179,10 +198,17 @@ create table if not exists rice_production_records (
   farm_gate_price_usd numeric(8, 2),
   county text,
   district text,
+  water_source text,
+  years_farming_plot integer,
   recorded_by uuid references profiles(id),
   recorded_at timestamptz not null default now(),
   notes text
 );
+
+alter table rice_production_records add column if not exists client_id uuid unique;
+create unique index if not exists rice_records_client_id_unique on rice_production_records(client_id) where client_id is not null;
+alter table rice_production_records add column if not exists water_source text;
+alter table rice_production_records add column if not exists years_farming_plot integer;
 
 create table if not exists compliance_records (
   id uuid primary key default gen_random_uuid(),

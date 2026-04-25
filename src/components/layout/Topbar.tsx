@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 
 import NotificationsMenu from "@/components/layout/NotificationsMenu";
+import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 
 type Module = "rice" | "cocoa";
 
@@ -77,10 +78,7 @@ export default function Topbar({
             aria-label="Global search"
           />
         </form>
-        <div className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-green-500 animate-blink" aria-hidden="true" />
-          <span className="font-mono text-[10px] text-green-600">Live</span>
-        </div>
+        <SyncStatusIndicator />
         <NotificationsMenu />
         <button
           type="button"

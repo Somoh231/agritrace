@@ -13,6 +13,7 @@ import type { ComplianceStatus, LotStatus } from "@/lib/supabase/types";
 import { formatDate, formatWeight } from "@/lib/utils/formatters";
 import { generateLotCode } from "@/lib/utils/lot-codes";
 import { calculateVariancePct, getVarianceSeverity } from "@/lib/utils/reconciliation";
+import { PILOT_SEASON } from "@/lib/utils/pilot-config";
 
 type LotRow = {
   id: string;
@@ -356,7 +357,7 @@ function CreateLotForm({
   const [weightIn, setWeightIn] = React.useState<string>("1200");
   const [moisture, setMoisture] = React.useState<string>("8.5");
   const [grade, setGrade] = React.useState<string>("Grade 1");
-  const [season, setSeason] = React.useState<string>("2026-A");
+  const [season, setSeason] = React.useState<string>(PILOT_SEASON);
   const [notes, setNotes] = React.useState<string>("");
   const [isSaving, setIsSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);

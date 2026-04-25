@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
 import DemoRail from "@/components/demo/DemoRail";
+import PilotBanner from "@/components/shared/PilotBanner";
 import type { Profile } from "@/lib/supabase/types";
 
 type Module = "rice" | "cocoa";
@@ -159,8 +160,9 @@ export default function DashboardShell({
             },
           }}
         />
-        <main className="flex-1 overflow-y-auto p-5 md:p-6 bg-[rgb(var(--surface-muted))]">
-          {children}
+        <main className="flex-1 overflow-y-auto bg-[rgb(var(--surface-muted))]">
+          <PilotBanner />
+          <div className="p-5 md:p-6">{children}</div>
         </main>
       </div>
       <DemoRail />

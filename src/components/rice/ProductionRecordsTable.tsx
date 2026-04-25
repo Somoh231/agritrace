@@ -6,9 +6,9 @@ import DataTable from "@/components/shared/DataTable";
 import Drawer from "@/components/shared/Drawer";
 import StatusPill from "@/components/shared/StatusPill";
 import { Skeleton } from "@/components/shared/Skeleton";
+import CountySelect from "@/components/shared/CountySelect";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { formatLossRate } from "@/lib/utils/formatters";
-import { LIBERIA_COUNTIES } from "@/lib/utils/liberia";
 import { seasonLabel, safePct } from "@/lib/utils/rice";
 
 type Row = {
@@ -135,18 +135,13 @@ export default function ProductionRecordsTable() {
                 <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
                   County
                 </div>
-                <select
+                <CountySelect
                   value={county}
-                  onChange={(e) => setCounty(e.target.value)}
+                  onChange={setCounty}
+                  allCounties={false}
+                  allowAllOption
                   className="h-9 rounded-md border border-gray-200 bg-white px-2 text-[12px]"
-                >
-                  <option value="">All</option>
-                  {LIBERIA_COUNTIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               <div>
                 <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">

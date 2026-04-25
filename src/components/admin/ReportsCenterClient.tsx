@@ -6,6 +6,7 @@ import { Download, Loader2, Save } from "lucide-react";
 import AlertBanner from "@/components/shared/AlertBanner";
 import { useToast } from "@/components/shared/toast/ToastProvider";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { PILOT_COUNTIES, PILOT_COMMODITIES, PILOT_SEASON } from "@/lib/utils/pilot-config";
 
 type Template = {
   id: string;
@@ -25,10 +26,12 @@ export default function ReportsCenterClient() {
   const [templates] = React.useState(DEFAULT_TEMPLATES);
   const [templateId, setTemplateId] = React.useState(templates[0]?.id ?? "");
 
-  const [season, setSeason] = React.useState("2026-A");
+  const [season, setSeason] = React.useState<string>(PILOT_SEASON);
   const [county, setCounty] = React.useState("");
   const [orgId, setOrgId] = React.useState("");
-  const [commodity, setCommodity] = React.useState<"" | "rice" | "cocoa">("");
+  const [commodity, setCommodity] = React.useState<"" | "rice" | "cocoa">(
+    (PILOT_COMMODITIES[0] as any) ?? "",
+  );
 
   const [orgs, setOrgs] = React.useState<Array<{ id: string; name: string }>>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -167,12 +170,18 @@ export default function ReportsCenterClient() {
                 />
               </Field>
               <Field label="County">
-                <input
+                <select
                   value={county}
                   onChange={(e) => setCounty(e.target.value)}
-                  placeholder="optional"
-                  className="h-9 w-full rounded-md border border-gray-200 px-3 text-[12px]"
-                />
+                  className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]"
+                >
+                  <option value="">—</option>
+                  {PILOT_COUNTIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
               </Field>
               <Field label="Organization">
                 <select
@@ -195,8 +204,11 @@ export default function ReportsCenterClient() {
                   className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]"
                 >
                   <option value="">—</option>
-                  <option value="rice">rice</option>
-                  <option value="cocoa">cocoa</option>
+                  {PILOT_COMMODITIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
                 </select>
               </Field>
             </div>
