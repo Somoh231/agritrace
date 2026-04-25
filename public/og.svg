@@ -1,0 +1,52 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0f2e14"/>
+      <stop offset="1" stop-color="#2d7a3e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" rx="48" fill="url(#g)"/>
+  <rect x="72" y="72" width="1056" height="486" rx="36" fill="white" fill-opacity="0.08" stroke="white" stroke-opacity="0.18"/>
+
+  <g transform="translate(110 130)">
+    <rect width="64" height="64" rx="16" fill="#1a4422"/>
+    <path d="M48 16c-18 3-30 15-33 33 18-3 30-15 33-33Z" stroke="#c4edcb" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M20 48c5-8 15-18 28-23" stroke="#c4edcb" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <text x="200" y="185" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="56" fill="white" font-weight="700">
+    Agrivault
+  </text>
+  <text x="200" y="240" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="26" fill="white" fill-opacity="0.9">
+    Liberia ù Agricultural traceability for rice & cocoa
+  </text>
+
+  <g transform="translate(200 300)">
+    <rect width="280" height="150" rx="24" fill="white" fill-opacity="0.10"/>
+    <text x="24" y="48" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace" font-size="14" fill="white" fill-opacity="0.8">
+      NATIONAL VISIBILITY
+    </text>
+    <text x="24" y="92" font-family="ui-sans-serif, system-ui" font-size="26" fill="white" font-weight="700">
+      Rice dashboards
+    </text>
+  </g>
+  <g transform="translate(510 300)">
+    <rect width="320" height="150" rx="24" fill="white" fill-opacity="0.10"/>
+    <text x="24" y="48" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace" font-size="14" fill="white" fill-opacity="0.8">
+      CHAIN OF CUSTODY
+    </text>
+    <text x="24" y="92" font-family="ui-sans-serif, system-ui" font-size="26" fill="white" font-weight="700">
+      Cocoa traceability
+    </text>
+  </g>
+  <g transform="translate(860 300)">
+    <rect width="268" height="150" rx="24" fill="white" fill-opacity="0.10"/>
+    <text x="24" y="48" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace" font-size="14" fill="white" fill-opacity="0.8">
+      COMPLIANCE
+    </text>
+    <text x="24" y="92" font-family="ui-sans-serif, system-ui" font-size="26" fill="white" font-weight="700">
+      EUDR exports
+    </text>
+  </g>
+</svg>
+
