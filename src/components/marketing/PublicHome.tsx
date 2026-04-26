@@ -4,70 +4,37 @@ import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, FileCheck2, Globe2, MapPin, ShieldCheck, Truck, Users } from "lucide-react";
 
-function Logo() {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="h-9 w-9 rounded-xl bg-forest-700 grid place-items-center shadow-sm">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M20 4c-7 1-12 6-13 13 7-1 12-6 13-13Z"
-            stroke="#c4edcb"
-            strokeWidth="2"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M7 17c2-3 6-7 10-9"
-            stroke="#c4edcb"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-      <div className="min-w-0">
-        <div className="font-display text-[16px] text-gray-900 leading-tight">Agrivault</div>
-        <div className="font-mono text-[10px] text-gray-400">Liberia · Traceability</div>
-      </div>
-    </div>
-  );
-}
+import MarketingFooter from "@/components/marketing/MarketingFooter";
+import MarketingNav from "@/components/marketing/MarketingNav";
 
 export default function PublicHome() {
   return (
-    <div className="min-h-screen bg-[rgb(var(--surface))]">
-      <header className="sticky top-0 z-30 bg-white/70 backdrop-blur border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-          <Logo />
-          <div className="flex items-center gap-2">
-            <Link
-              href="/demo"
-              className="hidden sm:inline-flex h-10 px-4 rounded-xl border border-gray-200 bg-white text-[12px] text-gray-800 hover:bg-gray-50 items-center gap-2"
-            >
-              Executive demo <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/login"
-              className="h-10 px-4 rounded-xl bg-forest-800 text-white text-[12px] hover:bg-forest-900 inline-flex items-center shadow-sm"
-            >
-              Login
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-paper-50">
+      <MarketingNav />
 
       <main>
-        <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-16 sm:pt-20 pb-12">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 items-start">
+        <section className="relative overflow-hidden">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.12]"
+            aria-hidden="true"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 20% 20%, rgba(24, 90, 54, 0.18), transparent 42%), radial-gradient(circle at 80% 0%, rgba(245, 158, 11, 0.16), transparent 45%), radial-gradient(circle at 55% 70%, rgba(15, 23, 42, 0.10), transparent 55%)",
+            }}
+          />
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-14 sm:pt-18 pb-12 sm:pb-14">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_0.75fr] gap-10 lg:gap-12 items-start">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-forest-100 bg-forest-50 px-3 py-1 text-[11px] text-forest-900">
-                <span className="h-2 w-2 rounded-full bg-forest-600" aria-hidden="true" />
-                Institutional-grade traceability for Liberia
+              <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/70 px-3 py-1 text-[11px] text-slate-700 shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-forest-700" aria-hidden="true" />
+                National data infrastructure for traceability & compliance
               </div>
-              <h1 className="mt-5 font-display text-[42px] sm:text-[54px] leading-[1.02] text-ink-900">
-                Premium visibility and compliance—built for executive confidence.
+              <h1 className="mt-5 font-display text-[42px] sm:text-[56px] leading-[1.02] tracking-[-0.02em] text-ink-900">
+                Executive-grade visibility across production, movements, and compliance.
               </h1>
-              <p className="mt-5 text-[15px] sm:text-[16px] text-slate-600 leading-relaxed max-w-[56ch]">
-                Agrivault helps ministries, cooperatives, and exporters monitor production and chain of custody with
-                audit-ready workflows, discrepancy resolution, approvals, and export documentation.
+              <p className="mt-5 text-[15px] sm:text-[17px] text-slate-600 leading-relaxed max-w-[62ch]">
+                Agrivault helps ministries, cooperatives, and exporters run audit-ready workflows—farmer registration,
+                chain of custody, discrepancy resolution, approvals, and export documentation.
               </p>
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
                 <Link
@@ -84,30 +51,35 @@ export default function PublicHome() {
                 </Link>
               </div>
 
-              <div className="mt-9 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Stat label="Modules" value="Rice + Cocoa" />
-                <Stat label="Audit events" value="Major actions" />
-                <Stat label="Pilot focus" value="Usable in field" />
+              <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Metric label="Modules" value="Rice + Cocoa" hint="Pilot-scoped navigation" />
+                <Metric label="Offline-first" value="Queue + sync" hint="Designed for low-connectivity fieldwork" />
+                <Metric label="Audit-ready" value="Major actions" hint="Integrity workflows + exports" />
               </div>
             </div>
 
-            <div className="av-card p-5 sm:p-6">
-              <div className="font-mono text-[10px] uppercase tracking-widest text-slate-400">
-                Capability highlights
-              </div>
-              <div className="mt-4 space-y-2.5">
-                <Feature icon={Globe2} title="National visibility" detail="County production, demand gap, loss signals." />
-                <Feature icon={Users} title="Farmer registry" detail="Geotagged profiles with verification-ready fields." />
-                <Feature icon={Truck} title="Chain of custody" detail="Lot → movements → receiver confirmation." />
-                <Feature icon={ShieldCheck} title="Compliance outputs" detail="EUDR checklist + audit trail exports." />
-                <Feature icon={FileCheck2} title="Integrity workflows" detail="Inventory ledger, approvals, discrepancies." />
-                <Feature icon={MapPin} title="Maps" detail="County heatmap and operational views for pilots." />
+            <div className="av-card p-5 sm:p-6 bg-white/80">
+              <div className="flex items-center justify-between gap-3">
+                <div className="font-mono text-[10px] uppercase tracking-widest text-slate-400">
+                  Capability snapshot
+                </div>
+                <div className="hidden sm:block font-mono text-[10px] text-slate-400">Boardroom-ready, field-usable</div>
               </div>
 
-              <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-[12px] text-amber-900 leading-relaxed">
+              <div className="mt-4 space-y-2.5">
+                <Feature icon={Globe2} title="National visibility" detail="County KPIs, demand gap, early loss signals." />
+                <Feature icon={Users} title="Farmer registry" detail="Geotagged profiles with verification-ready fields." />
+                <Feature icon={Truck} title="Chain of custody" detail="Lots → movements → receiver confirmation." />
+                <Feature icon={ShieldCheck} title="Compliance outputs" detail="EUDR checklist + audit trail exports." />
+                <Feature icon={FileCheck2} title="Integrity workflows" detail="Inventory ledger, approvals, discrepancies." />
+                <Feature icon={MapPin} title="Maps" detail="Operational views for pilots and scale-up." />
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-amber-200/70 bg-amber-50/70 p-4 text-[12px] text-amber-900 leading-relaxed">
                 Calm confidence for stakeholders: clear hierarchy, defensible lineage, and audit-ready outputs.
               </div>
             </div>
+          </div>
           </div>
         </section>
 
@@ -115,7 +87,9 @@ export default function PublicHome() {
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14">
             <div className="flex items-end justify-between gap-4 flex-wrap">
               <div>
-                <h2 className="font-display text-[26px] text-ink-900">Designed for boardrooms and field teams</h2>
+                <h2 className="font-display text-[26px] text-ink-900 tracking-[-0.01em]">
+                  Designed for boardrooms and field teams
+                </h2>
                 <p className="mt-2 text-[13px] text-slate-600 max-w-[72ch]">
                   Polished dashboards and audit-ready workflows designed for decision-makers.
                 </p>
@@ -146,24 +120,26 @@ export default function PublicHome() {
           </div>
         </section>
 
-        <section className="border-t border-gray-100 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+        <section className="border-t border-gray-100 bg-white">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-14">
             <div className="flex items-end justify-between gap-4 flex-wrap">
               <div>
-                <h2 className="font-display text-[22px] text-gray-900">Executive demo scenarios</h2>
-                <p className="mt-1 text-[13px] text-gray-600">
+                <h2 className="font-display text-[24px] text-ink-900 tracking-[-0.01em]">
+                  Executive demo scenarios
+                </h2>
+                <p className="mt-2 text-[13px] text-slate-600">
                   A guided flow that tells the story: visibility → traceability → integrity → compliance.
                 </p>
               </div>
               <Link
                 href="/demo"
-                className="h-10 px-4 rounded-lg bg-forest-700 text-white text-[12px] hover:bg-forest-800 inline-flex items-center gap-2"
+                className="av-btn-primary h-10 px-4 text-[12px]"
               >
                 Start guided demo <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="mt-7 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               <DemoCard step="01" title="Rice production visibility" detail="National dashboard KPIs by county." />
               <DemoCard step="02" title="Cocoa lot tracking" detail="Lot register + movement ledger trace." />
               <DemoCard step="03" title="Discrepancy resolution" detail="Variance alerts → assign → resolve." />
@@ -172,11 +148,14 @@ export default function PublicHome() {
           </div>
         </section>
 
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <section className="border-t border-gray-100 bg-paper-50">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-14">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-soft flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div>
-              <h3 className="font-display text-[20px] text-gray-900">Ready for a pilot briefing?</h3>
-              <p className="mt-1 text-[13px] text-gray-600 leading-relaxed max-w-2xl">
+              <h3 className="font-display text-[22px] text-ink-900 tracking-[-0.01em]">
+                Ready for a pilot briefing?
+              </h3>
+              <p className="mt-2 text-[13px] text-slate-600 leading-relaxed max-w-2xl">
                 We can tailor the demo to ministry oversight, cooperative operations, or exporter compliance,
                 and provide a pilot readiness checklist for deployment.
               </p>
@@ -184,43 +163,33 @@ export default function PublicHome() {
             <div className="flex gap-2">
               <Link
                 href="/request-demo"
-                className="h-10 px-4 rounded-lg bg-forest-800 text-white text-[12px] hover:bg-forest-900 inline-flex items-center"
+                className="av-btn-primary h-10 px-4 text-[12px]"
               >
                 Request demo
               </Link>
               <Link
                 href="/login"
-                className="h-10 px-4 rounded-lg border border-gray-200 bg-white text-[12px] text-gray-800 hover:bg-gray-50 inline-flex items-center"
+                className="av-btn-secondary h-10 px-4 text-[12px]"
               >
                 Login
               </Link>
             </div>
           </div>
+          </div>
         </section>
       </main>
 
-      <footer className="border-t border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-[11px] text-gray-500 flex flex-wrap items-center justify-between gap-3">
-          <div className="font-mono">Agrivault · Liberia</div>
-          <div className="flex items-center gap-3">
-            <Link href="/request-demo" className="hover:underline underline-offset-2">
-              Request demo
-            </Link>
-            <Link href="/login" className="hover:underline underline-offset-2">
-              Login
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Metric({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">{label}</div>
-      <div className="mt-1 font-medium text-gray-900 text-[13px]">{value}</div>
+    <div className="rounded-2xl border border-gray-200 bg-white/70 p-4 shadow-sm">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-slate-400">{label}</div>
+      <div className="mt-1 font-medium text-ink-900 text-[13px]">{value}</div>
+      <div className="mt-1 text-[11px] text-slate-500 leading-relaxed">{hint}</div>
     </div>
   );
 }
@@ -249,7 +218,7 @@ function Feature({
 
 function DemoCard({ step, title, detail }: { step: string; title: string; detail: string }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-soft transition">
       <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">Step {step}</div>
       <div className="mt-2 font-display text-[16px] text-gray-900">{title}</div>
       <div className="mt-1 text-[12px] text-gray-600 leading-relaxed">{detail}</div>
