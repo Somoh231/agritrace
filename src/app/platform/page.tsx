@@ -5,6 +5,7 @@ import Link from "next/link";
 import PublicFooter from "@/components/agrivault/site/PublicFooter";
 import PublicNav from "@/components/agrivault/site/PublicNav";
 import { getPublicContent } from "@/lib/growth/content";
+import { createClient } from "@/lib/supabase/server";
 
 const CAPABILITIES = [
   "National farmer registry",
@@ -41,6 +42,19 @@ export default async function Page() {
   if (!hasBackendConnection()) {
     redirect("/platform-preview");
   }
+
+  // If the real app is configured and the user is authenticated, use /platform as the
+  // production entry point and send them straight into the dashboard.
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) redirect("/rice");
+  } catch {
+    // If Supabase isn't configured correctly, fall back to the public marketing experience.
+  }
+
   const content = await getPublicContent();
   return (
     <div className="min-h-screen flex flex-col">
@@ -62,8 +76,11 @@ export default async function Page() {
               {content.platform.heroBody}
             </p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 28 }}>
-              <Link href="/platform-preview" className="btn-primary">
+              <Link href="/rice" className="btn-primary">
                 {content.platform.ctaExplore} →
+              </Link>
+              <Link href="/platform-preview" className="btn-outline">
+                Preview platform
               </Link>
               <Link href="/request-demo" className="btn-outline">
                 {content.platform.ctaDemo}
