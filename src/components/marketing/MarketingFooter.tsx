@@ -9,7 +9,7 @@ export default function MarketingFooter() {
           <div>
             <div className="font-display text-[16px] text-ink-900">Agrivault</div>
             <div className="mt-1 font-mono text-[10px] text-slate-400">
-              Liberia · Pilot-ready national visibility and compliance
+              Liberia · National data infrastructure
             </div>
           </div>
           <div className="flex items-center gap-4 text-[12px] text-slate-600">
@@ -26,8 +26,13 @@ export default function MarketingFooter() {
         </div>
 
         <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[11px] text-slate-400">
-          <div className="font-mono">© {new Date().getFullYear()} Agrivault</div>
-          <div className="font-mono">Institutional · Audit-ready · Offline-first pilot</div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 font-mono">
+            <span>Agrivault · Liberia</span>
+            <span>SOC2 in progress</span>
+            <span>ISO 19115</span>
+            <span>Data residency: ECOWAS</span>
+          </div>
+          <div className="font-mono">© 2026</div>
         </div>
       </div>
     </footer>

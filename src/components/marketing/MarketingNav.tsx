@@ -33,32 +33,40 @@ export default function MarketingNav() {
   return (
     <header className="sticky top-0 z-30 bg-white/70 backdrop-blur border-b border-gray-100">
       <div className="h-[3px] w-full bg-[var(--color-red-600)]" />
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 h-[68px] flex items-center justify-between">
-        <Logo />
-        <div className="flex items-center gap-2">
-          <nav className="hidden md:flex items-center gap-6 text-[13px] font-medium text-slate-600">
-            <Link href="/" className="text-ink-900 hover:text-ink-900">
-              Home
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 h-[68px] flex items-center justify-between gap-4">
+        <div className="flex items-center gap-6">
+          <Logo />
+          <nav className="hidden lg:flex items-center gap-6 text-[13px] font-medium text-slate-600">
+            <Link href="/rice" className="text-ink-900 hover:text-ink-900">
+              Rice
             </Link>
-            <Link href="/demo" className="hover:text-ink-900">
-              Demo
+            <Link href="/rice" className="hover:text-ink-900">
+              Farm Documents
+            </Link>
+            <Link href="/cocoa/eudr" className="hover:text-ink-900">
+              Compliance
+            </Link>
+            <Link href="/admin/organizations" className="hover:text-ink-900">
+              Customers
             </Link>
             <Link href="/request-demo" className="hover:text-ink-900">
-              Contact
+              Pricing
             </Link>
             <Link href="/setup" className="hover:text-ink-900">
               Docs
             </Link>
           </nav>
+        </div>
 
+        <div className="flex items-center gap-2">
           <Link href="/login" className="av-btn-ghost h-9 px-3 text-[12px]">
             Sign in
           </Link>
           <Link href="/request-demo" className="hidden sm:inline-flex av-btn-navy h-9 px-3 text-[12px]">
             Contact sales
           </Link>
-          <Link href="/demo" className="av-btn-navy h-9 px-3 text-[12px]">
-            Executive demo <ArrowRight className="h-4 w-4" />
+          <Link href="/request-demo" className="av-btn-red h-9 px-3 text-[12px]">
+            Request demo <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>

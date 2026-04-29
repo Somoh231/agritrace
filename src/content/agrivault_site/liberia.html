@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liberia — AgriVault Data</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.hero-anim{animation:fadeUp .7s ease both}
+.hero-anim-2{animation:fadeUp .7s .12s ease both}
+.hero-anim-3{animation:fadeUp .7s .22s ease both}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round">
+        <path d="M12 2C8 2 5 6 5 10c0 4 3 7 7 9 4-2 7-5 7-9 0-4-3-8-7-8z"/>
+        <path d="M12 2v18M8 8c1.5 1 2.5 2.5 4 4 1.5-1.5 2.5-3 4-4"/>
+      </svg>
+    </div>
+    <div class="logo-name">
+      <strong>AgriVault Data</strong>
+      <span>Africa · Traceability</span>
+    </div>
+  </a>
+
+  <ul class="nav-center">
+    <li>
+      <button>Platform <svg class="chevron" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg></button>
+      <div class="drop">
+        <span class="drop-label">Core modules</span>
+        <a href="platform.html">
+          <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+          <div class="drop-text"><strong>Farmer Registry</strong><span>Permanent IDs, GPS plots, records</span></div>
+        </a>
+        <a href="platform.html#dashboard">
+          <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+          <div class="drop-text"><strong>Production Dashboard</strong><span>Live county data, NADP tracking</span></div>
+        </a>
+        <a href="platform.html#compliance">
+          <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+          <div class="drop-text"><strong>Audit Trail &amp; Compliance</strong><span>Chain of custody, EUDR docs</span></div>
+        </a>
+        <a href="platform.html#reports">
+          <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div class="drop-text"><strong>Ministry Reports</strong><span>Cabinet PDFs, donor exports</span></div>
+        </a>
+      </div>
+    </li>
+
+    <li>
+      <button>Countries <svg class="chevron" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg></button>
+      <div class="drop">
+        <span class="drop-label">Active</span>
+        <a href="liberia.html" class="active">
+          <span class="status-dot dot-live pulse"></span>
+          <div class="drop-text"><strong>Liberia</strong><span>Pilot live · Nimba, Bong &amp; Lofa</span></div>
+        </a>
+        <div class="drop-divider"></div>
+        <span class="drop-label">Pipeline</span>
+        <a href="africa.html"><span class="status-dot dot-plan"></span><div class="drop-text"><strong>Sierra Leone</strong><span>2027</span></div></a>
+        <a href="africa.html"><span class="status-dot dot-plan"></span><div class="drop-text"><strong>Guinea</strong><span>2028</span></div></a>
+        <a href="africa.html"><span class="status-dot dot-plan"></span><div class="drop-text"><strong>Nigeria</strong><span>2029</span></div></a>
+      </div>
+    </li>
+
+    <li>
+      <button>Company <svg class="chevron" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg></button>
+      <div class="drop drop-wide" style="left:0;transform:translateY(-4px)">
+        <div class="drop-col">
+          <span class="drop-label">Company</span>
+          <a href="about.html" class="drop-simple"><div class="drop-text"><strong>About</strong><span>Mission, founder, story</span></div></a>
+          <a href="liberia.html" class="active" class="drop-simple"><div class="drop-text"><strong>Liberia</strong><span>Flagship deployment</span></div></a>
+          <a href="africa.html" class="drop-simple"><div class="drop-text"><strong>Africa</strong><span>Expansion roadmap</span></div></a>
+          <a href="partners.html" class="drop-simple"><div class="drop-text"><strong>Partners</strong><span>Who we work with</span></div></a>
+          <a href="contact.html" class="drop-simple"><div class="drop-text"><strong>Contact</strong><span>Get in touch</span></div></a>
+          <a href="docs.html" class="drop-simple"><div class="drop-text"><strong>Docs</strong><span>Technical documentation</span></div></a>
+        </div>
+        <div class="drop-col">
+          <span class="drop-label">For Governments</span>
+          <a href="government.html" class="drop-simple"><div class="drop-text"><strong>Partnership model</strong><span>Asset-based PPP framework</span></div></a>
+          <a href="government.html#sovereignty" class="drop-simple"><div class="drop-text"><strong>Data sovereignty</strong><span>Ownership and governance</span></div></a>
+          <a href="government.html#grants" class="drop-simple"><div class="drop-text"><strong>Grant support</strong><span>FAO, IFAD, AfDB, USAID</span></div></a>
+          <a href="government.html#mou" class="drop-simple"><div class="drop-text"><strong>MOU framework</strong><span>How we formalise partnership</span></div></a>
+          <a href="pricing.html" class="drop-simple"><div class="drop-text"><strong>Pricing</strong><span>$0 during pilot phase</span></div></a>
+        </div>
+      </div>
+    </li>
+
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="docs.html">Docs</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <a href="contact.html" class="btn-ghost">Sign in</a>
+    <a href="government.html" class="btn-outline">Government partnership</a>
+    <a href="contact.html" class="btn-primary">Request demo →</a>
+  </div>
+</nav>
+
+<main class="page">
+
+<div style="padding:80px 0 60px;border-bottom:1px solid var(--border)">
+  <div class="container">
+    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(200,120,10,.1);border:1px solid rgba(200,120,10,.2);border-radius:100px;padding:5px 14px;font-family:var(--ff-m);font-size:11px;color:var(--amber);letter-spacing:.06em;margin-bottom:24px">
+      <span style="width:6px;height:6px;background:var(--amber);border-radius:50%;display:inline-block" class="pulse"></span>
+      Implementation commencing · Liberia 2026
+    </div>
+    <h1 class="section-h" style="max-width:680px">Liberia — the flagship deployment.</h1>
+    <p style="font-size:18px;font-weight:300;color:var(--mid);max-width:640px;line-height:1.7">Selected by the Ministry of Agriculture of the Republic of Liberia following a formal proposal and ministerial review. The documentation has been passed to the Ministry's technical team. Implementation is commencing.</p>
+  </div>
+</div>
+
+<div style="padding:80px 0">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start">
+      <div>
+        <h2 style="font-family:var(--ff-d);font-size:28px;font-weight:600;color:var(--forest);margin-bottom:20px;letter-spacing:-.01em">The problem AgriVault Data solves in Liberia</h2>
+        <p style="font-size:16px;font-weight:300;color:var(--mid);line-height:1.7;margin-bottom:18px">Liberia imports 80% of its rice at a cost of approximately $200 million per year. The National Agricultural Development Plan sets clear production targets. But the government has never had a verified, real-time picture of domestic rice production — county by county, season by season, farmer by farmer.</p>
+        <p style="font-size:16px;font-weight:300;color:var(--mid);line-height:1.7;margin-bottom:32px">AgriVault Data gives the Ministry of Agriculture that picture for the first time — built on the existing infrastructure of County Agriculture Officers and District Agriculture Officers who are already deployed in the field, and cleaned from years of historical data already held at district level.</p>
+        <h3 style="font-family:var(--ff-d);font-size:20px;font-weight:600;color:var(--forest);margin-bottom:16px">Pilot counties</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px">
+          <div style="background:var(--forest);color:white;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:500">Nimba County</div>
+          <div style="background:var(--forest);color:white;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:500">Bong County</div>
+          <div style="background:var(--forest);color:white;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:500">Lofa County</div>
+          <div style="background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px 18px;font-size:14px;font-weight:400">+ 12 counties · Year 2</div>
+        </div>
+        <div style="padding:24px;background:var(--cream);border:1px solid var(--border);border-radius:10px">
+          <div style="font-family:var(--ff-m);font-size:10px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:12px">Partnership structure</div>
+          <p style="font-size:14px;color:var(--mid);font-weight:300;line-height:1.65">This is an asset-based public-private partnership. AgriVault Data contributes its built technology platform and technical expertise. The Ministry contributes its existing field officers, accumulated data, and institutional authority. No budget line required from the government during the pilot phase.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:22px 24px;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:14px;color:var(--mid);font-weight:300">Target farmer registrations</div><div style="font-family:var(--ff-m);font-size:11px;color:var(--muted);margin-top:2px">80% coverage by month 4</div></div>
+          <div style="text-align:right"><div style="font-family:var(--ff-d);font-size:26px;font-weight:700;color:var(--forest);letter-spacing:-.02em">40K+</div><div style="font-family:var(--ff-m);font-size:10px;color:var(--muted)">Across 3 counties</div></div>
+        </div>
+        <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:22px 24px;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:14px;color:var(--mid);font-weight:300">Pilot structure</div><div style="font-family:var(--ff-m);font-size:11px;color:var(--muted);margin-top:2px">Trial then full pilot</div></div>
+          <div style="text-align:right"><div style="font-family:var(--ff-d);font-size:26px;font-weight:700;color:var(--forest);letter-spacing:-.02em">90<span style="font-size:14px;color:var(--muted);font-weight:400"> day</span></div><div style="font-family:var(--ff-m);font-size:10px;color:var(--muted)">Then 12-month pilot</div></div>
+        </div>
+        <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:22px 24px;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:14px;color:var(--mid);font-weight:300">Cost to Ministry during pilot</div><div style="font-family:var(--ff-m);font-size:11px;color:var(--muted);margin-top:2px">Asset-based PPP</div></div>
+          <div style="text-align:right"><div style="font-family:var(--ff-d);font-size:26px;font-weight:700;color:var(--forest);letter-spacing:-.02em">$0</div><div style="font-family:var(--ff-m);font-size:10px;color:var(--muted)">No budget line required</div></div>
+        </div>
+        <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:22px 24px;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:14px;color:var(--mid);font-weight:300">Ready to launch after MOU signing</div><div style="font-family:var(--ff-m);font-size:11px;color:var(--muted);margin-top:2px">Platform built and operational</div></div>
+          <div style="text-align:right"><div style="font-family:var(--ff-d);font-size:26px;font-weight:700;color:var(--forest);letter-spacing:-.02em">30</div><div style="font-family:var(--ff-m);font-size:10px;color:var(--muted)">Days to operational</div></div>
+        </div>
+        <div style="background:var(--forest);border-radius:10px;padding:22px 24px">
+          <div style="font-family:var(--ff-m);font-size:10px;letter-spacing:.1em;color:var(--moss);text-transform:uppercase;margin-bottom:12px">Phase timeline</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:rgba(255,255,255,.8)">Phase 1 — Rice pilot, 3 counties</span><span style="font-family:var(--ff-m);font-size:11px;color:var(--moss)">2026</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:rgba(255,255,255,.5)">Phase 2 — National rollout, 15 counties</span><span style="font-family:var(--ff-m);font-size:11px;color:rgba(255,255,255,.35)">2027</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:rgba(255,255,255,.5)">Phase 3 — Commodity expansion</span><span style="font-family:var(--ff-m);font-size:11px;color:rgba(255,255,255,.35)">2028</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="background:var(--cream);border-top:1px solid var(--border);padding:60px 0">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:40px;flex-wrap:wrap">
+    <div>
+      <h3 style="font-family:var(--ff-d);font-size:24px;font-weight:600;color:var(--forest);margin-bottom:8px">For governments interested in a similar partnership</h3>
+      <p style="font-size:15px;color:var(--mid);font-weight:300">AgriVault Data is accepting expressions of interest from Ministries of Agriculture across West Africa.</p>
+    </div>
+    <a href="government.html" class="btn-primary" style="white-space:nowrap">Explore partnership →</a>
+  </div>
+</div>
+
+</main>
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <strong>AgriVault Data</strong>
+        <p>Agricultural traceability infrastructure for Africa's economy. Farm registration, production tracking, and compliance documentation — from Liberia to the continent.</p>
+        <span style="font-family:var(--ff-m);font-size:11px;color:rgba(255,255,255,.28)">agrivaultdata.com</span>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul class="footer-links">
+          <li><a href="about.html">About</a></li>
+          <li><a href="liberia.html">Liberia</a></li>
+          <li><a href="africa.html">Africa</a></li>
+          <li><a href="partners.html">Partners</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="docs.html">Docs</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>For Governments</h4>
+        <ul class="footer-links">
+          <li><a href="government.html">Partnership model</a></li>
+          <li><a href="government.html#sovereignty">Data sovereignty</a></li>
+          <li><a href="government.html#grants">Grant support</a></li>
+          <li><a href="government.html#mou">MOU framework</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 AgriVault Data · All rights reserved</span>
+      <span><a href="mailto:msdonzo@agrivaultdata.com">msdonzo@agrivaultdata.com</a> · +1 571-427-5538 · Sacramento, CA · Monrovia, Liberia</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

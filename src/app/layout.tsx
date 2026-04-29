@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { DM_Mono, Fraunces, Inter } from "next/font/google";
+import "@/content/agrivault_site/_shared.css";
+import { DM_Mono, DM_Sans, Fraunces, Inter, Playfair_Display } from "next/font/google";
 
 import { Suspense } from "react";
 
@@ -22,6 +23,25 @@ const fontBody = Inter({
 
 const fontMono = DM_Mono({
   variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+});
+
+const agrivaultDisplay = Playfair_Display({
+  variable: "--font-av-display",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  style: ["normal", "italic"],
+});
+
+const agrivaultBody = DM_Sans({
+  variable: "--font-av-body",
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+});
+
+const agrivaultMono = DM_Mono({
+  variable: "--font-av-mono",
   subsets: ["latin"],
   weight: ["400", "500"],
 });
@@ -103,7 +123,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable} h-full antialiased`}
+      className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable} ${agrivaultDisplay.variable} ${agrivaultBody.variable} ${agrivaultMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-gray-900">
         <Suspense fallback={<ToastProvider>{children}</ToastProvider>}>

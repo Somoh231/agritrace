@@ -14,6 +14,7 @@ type Row = {
   event: string;
   path: string | null;
   module: string | null;
+  payload: Record<string, unknown> | null;
 };
 
 export default function AnalyticsAdminClient() {
@@ -29,7 +30,7 @@ export default function AnalyticsAdminClient() {
       const supabase = getSupabaseBrowserClient();
       const { data, error: qErr } = await supabase
         .from("analytics_events")
-        .select("id,created_at,user_id,event,path,module")
+        .select("id,created_at,user_id,event,path,module,payload")
         .order("created_at", { ascending: false })
         .limit(500);
       if (qErr) {
@@ -69,10 +70,22 @@ export default function AnalyticsAdminClient() {
       acc.events += 1;
       acc.byEvent[r.event] = (acc.byEvent[r.event] ?? 0) + 1;
       acc.byModule[r.module ?? "unknown"] = (acc.byModule[r.module ?? "unknown"] ?? 0) + 1;
+      if (r.path) acc.byPath[r.path] = (acc.byPath[r.path] ?? 0) + 1;
+      const variant = typeof r.payload?.variant === "string" ? r.payload.variant : null;
+      if (variant) acc.byVariant[variant] = (acc.byVariant[variant] ?? 0) + 1;
       return acc;
     },
-    { events: 0, byEvent: {} as Record<string, number>, byModule: {} as Record<string, number> },
+    {
+      events: 0,
+      byEvent: {} as Record<string, number>,
+      byModule: {} as Record<string, number>,
+      byPath: {} as Record<string, number>,
+      byVariant: {} as Record<string, number>,
+    },
   );
+  const topPages = Object.entries(totals.byPath)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
 
   return (
     <div className="space-y-4 max-w-6xl">
@@ -103,6 +116,52 @@ export default function AnalyticsAdminClient() {
             <Kpi label="Events (last 500)" value={String(totals.events)} />
             <Kpi label="Top module" value={topKey(totals.byModule) ?? "—"} />
             <Kpi label="Top event" value={topKey(totals.byEvent) ?? "—"} />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Kpi label="Page views" value={String(totals.byEvent.page_view ?? 0)} />
+            <Kpi label="CTA clicks" value={String(totals.byEvent.cta_click ?? 0)} />
+            <Kpi label="Demo submissions" value={String(totals.byEvent.demo_request_submitted ?? 0)} />
+          </div>
+
+          <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+            <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-400">
+              Most visited pages
+            </div>
+            <div className="p-3">
+              {topPages.length === 0 ? (
+                <div className="text-[12px] text-gray-500">No page views tracked yet.</div>
+              ) : (
+                <div className="space-y-1.5">
+                  {topPages.map(([path, count]) => (
+                    <div key={path} className="flex items-center justify-between rounded-md border border-gray-100 px-3 py-2 text-[12px]">
+                      <span className="truncate text-gray-700">{path}</span>
+                      <span className="font-mono text-gray-500">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+            <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-400">
+              Experiment variants (hero)
+            </div>
+            <div className="p-3">
+              {Object.keys(totals.byVariant).length === 0 ? (
+                <div className="text-[12px] text-gray-500">No variant events yet.</div>
+              ) : (
+                <div className="space-y-1.5">
+                  {Object.entries(totals.byVariant).map(([variant, count]) => (
+                    <div key={variant} className="flex items-center justify-between rounded-md border border-gray-100 px-3 py-2 text-[12px]">
+                      <span className="text-gray-700">{variant}</span>
+                      <span className="font-mono text-gray-500">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">

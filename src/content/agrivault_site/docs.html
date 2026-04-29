@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Docs — AgriVault Data</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.hero-anim{animation:fadeUp .7s ease both}
+.hero-anim-2{animation:fadeUp .7s .12s ease both}
+.hero-anim-3{animation:fadeUp .7s .22s ease both}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round">
+        <path d="M12 2C8 2 5 6 5 10c0 4 3 7 7 9 4-2 7-5 7-9 0-4-3-8-7-8z"/>
+        <path d="M12 2v18M8 8c1.5 1 2.5 2.5 4 4 1.5-1.5 2.5-3 4-4"/>
+      </svg>
+    </div>
+    <div class="logo-name">
+      <strong>AgriVault Data</strong>
+      <span>Africa · Traceability</span>
+    </div>
+  </a>
+
+  <ul class="nav-center">
+    <li>
+      <button>Platform <svg class="chevron" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg></button>
+      <div class="drop">
+        <span class="drop-label">Core modules</span>
+        <a href="platform.html">
+          <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+          <div class="drop-text"><strong>Farmer Registry</strong><span>Permanent IDs, GPS plots, records</span></div>
+        </a>
+        <a href="platform.html#dashboard">
+          <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+          <div class="drop-text"><strong>Production Dashboard</strong><span>Live county data, NADP tracking</span></div>
+        </a>
+        <a href="platform.html#compliance">
+          <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+          <div class="drop-text"><strong>Audit Trail &amp; Compliance</strong><span>Chain of custody, EUDR docs</span></div>
+        </a>
+        <a href="platform.html#reports">
+          <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div class="drop-text"><strong>Ministry Reports</strong><span>Cabinet PDFs, donor exports</span></div>
+        </a>
+      </div>
+    </li>
+
+    <li>
+      <button>Countries <svg class="chevron" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg></button>
+      <div class="drop">
+        <span class="drop-label">Active</span>
+        <a href="liberia.html">
+          <span class="status-dot dot-live pulse"></span>
+          <div class="drop-text"><strong>Liberia</strong><span>Pilot live · Nimba, Bong &amp; Lofa</span></div>
+        </a>
+        <div class="drop-divider"></div>
+        <span class="drop-label">Pipeline</span>
+        <a href="africa.html"><span class="status-dot dot-plan"></span><div class="drop-text"><strong>Sierra Leone</strong><span>2027</span></div></a>
+        <a href="africa.html"><span class="status-dot dot-plan"></span><div class="drop-text"><strong>Guinea</strong><span>2028</span></div></a>
+        <a href="africa.html"><span class="status-dot dot-plan"></span><div class="drop-text"><strong>Nigeria</strong><span>2029</span></div></a>
+      </div>
+    </li>
+
+    <li>
+      <button>Company <svg class="chevron" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg></button>
+      <div class="drop drop-wide" style="left:0;transform:translateY(-4px)">
+        <div class="drop-col">
+          <span class="drop-label">Company</span>
+          <a href="about.html" class="drop-simple"><div class="drop-text"><strong>About</strong><span>Mission, founder, story</span></div></a>
+          <a href="liberia.html" class="drop-simple"><div class="drop-text"><strong>Liberia</strong><span>Flagship deployment</span></div></a>
+          <a href="africa.html" class="drop-simple"><div class="drop-text"><strong>Africa</strong><span>Expansion roadmap</span></div></a>
+          <a href="partners.html" class="drop-simple"><div class="drop-text"><strong>Partners</strong><span>Who we work with</span></div></a>
+          <a href="contact.html" class="drop-simple"><div class="drop-text"><strong>Contact</strong><span>Get in touch</span></div></a>
+          <a href="docs.html" class="active" class="drop-simple"><div class="drop-text"><strong>Docs</strong><span>Technical documentation</span></div></a>
+        </div>
+        <div class="drop-col">
+          <span class="drop-label">For Governments</span>
+          <a href="government.html" class="drop-simple"><div class="drop-text"><strong>Partnership model</strong><span>Asset-based PPP framework</span></div></a>
+          <a href="government.html#sovereignty" class="drop-simple"><div class="drop-text"><strong>Data sovereignty</strong><span>Ownership and governance</span></div></a>
+          <a href="government.html#grants" class="drop-simple"><div class="drop-text"><strong>Grant support</strong><span>FAO, IFAD, AfDB, USAID</span></div></a>
+          <a href="government.html#mou" class="drop-simple"><div class="drop-text"><strong>MOU framework</strong><span>How we formalise partnership</span></div></a>
+          <a href="pricing.html" class="drop-simple"><div class="drop-text"><strong>Pricing</strong><span>$0 during pilot phase</span></div></a>
+        </div>
+      </div>
+    </li>
+
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="docs.html" class="active">Docs</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <a href="contact.html" class="btn-ghost">Sign in</a>
+    <a href="government.html" class="btn-outline">Government partnership</a>
+    <a href="contact.html" class="btn-primary">Request demo →</a>
+  </div>
+</nav>
+
+<main class="page">
+
+<div style="padding:80px 0 60px;border-bottom:1px solid var(--border)">
+  <div class="container">
+    <h1 class="section-h">Docs</h1>
+    <p style="font-size:18px;font-weight:300;color:var(--mid)">This page is coming soon. <a href="contact.html" style="color:var(--forest-brt)">Contact us</a> in the meantime.</p>
+  </div>
+</div>
+</main>
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <strong>AgriVault Data</strong>
+        <p>Agricultural traceability infrastructure for Africa's economy. Farm registration, production tracking, and compliance documentation — from Liberia to the continent.</p>
+        <span style="font-family:var(--ff-m);font-size:11px;color:rgba(255,255,255,.28)">agrivaultdata.com</span>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul class="footer-links">
+          <li><a href="about.html">About</a></li>
+          <li><a href="liberia.html">Liberia</a></li>
+          <li><a href="africa.html">Africa</a></li>
+          <li><a href="partners.html">Partners</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="docs.html">Docs</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>For Governments</h4>
+        <ul class="footer-links">
+          <li><a href="government.html">Partnership model</a></li>
+          <li><a href="government.html#sovereignty">Data sovereignty</a></li>
+          <li><a href="government.html#grants">Grant support</a></li>
+          <li><a href="government.html#mou">MOU framework</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 AgriVault Data · All rights reserved</span>
+      <span><a href="mailto:msdonzo@agrivaultdata.com">msdonzo@agrivaultdata.com</a> · +1 571-427-5538 · Sacramento, CA · Monrovia, Liberia</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

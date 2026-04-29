@@ -5,6 +5,18 @@ import { isValidHttpUrl } from "@/lib/supabase/env";
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({ request });
+  const pathname = request.nextUrl.pathname;
+
+  if (pathname === "/" && !request.cookies.get("av_exp_home_hero")) {
+    if (process.env.NEXT_PUBLIC_ENABLE_HOMEPAGE_EXPERIMENT !== "false") {
+      const variant = Math.random() < 0.5 ? "control" : "authority";
+      response.cookies.set("av_exp_home_hero", variant, {
+        path: "/",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 90,
+      });
+    }
+  }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -29,7 +41,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
   const isProtected =
     pathname.startsWith("/rice") ||
     pathname.startsWith("/cocoa") ||
