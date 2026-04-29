@@ -27,9 +27,9 @@ export default function ArticlePage({ params }: Props) {
   if (!article) notFound();
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <PublicNav />
-      <main className="page agrivault-html-main">
+      <main className="page agrivault-html-main flex-1">
         <article style={{ padding: "84px 0" }}>
           <div className="container" style={{ maxWidth: 900 }}>
             <div className="font-mono text-[11px] text-[var(--muted)]">
@@ -50,7 +50,7 @@ export default function ArticlePage({ params }: Props) {
         </article>
       </main>
       <PublicFooter />
-    </>
+    </div>
   );
 }
 

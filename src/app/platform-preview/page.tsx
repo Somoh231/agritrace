@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 
 export default async function PlatformPreviewPage() {
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <PublicNav />
-      <main className="page agrivault-html-main">
+      <main className="page agrivault-html-main flex-1">
         <section style={{ padding: "86px 0 28px", borderBottom: "1px solid var(--border)", background: "var(--warm)" }}>
           <div className="container">
             <span className="section-tag">Preview mode</span>
@@ -150,7 +150,7 @@ export default async function PlatformPreviewPage() {
         </section>
       </main>
       <PublicFooter />
-    </>
+    </div>
   );
 }
 

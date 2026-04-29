@@ -43,9 +43,9 @@ export default async function Page() {
   }
   const content = await getPublicContent();
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <PublicNav />
-      <main className="page agrivault-html-main">
+      <main className="page agrivault-html-main flex-1">
         <section
           style={{
             padding: "90px 0 70px",
@@ -166,6 +166,6 @@ export default async function Page() {
         </section>
       </main>
       <PublicFooter />
-    </>
+    </div>
   );
 }

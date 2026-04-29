@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <PublicNav />
-      <main className="page agrivault-html-main">
+      <main className="page agrivault-html-main flex-1">
         <section style={{ padding: "80px 0 60px", borderBottom: "1px solid var(--border)" }}>
           <div className="container">
             <span className="section-tag">Pricing</span>
@@ -121,7 +121,7 @@ export default function Page() {
         </section>
       </main>
       <PublicFooter />
-    </>
+    </div>
   );
 }
 

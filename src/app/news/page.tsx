@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 
 export default function NewsPage() {
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <PublicNav />
-      <main className="page agrivault-html-main">
+      <main className="page agrivault-html-main flex-1">
         <section style={{ padding: "80px 0 24px" }}>
           <div className="container">
             <span className="section-tag">Newsroom</span>
@@ -47,7 +47,7 @@ export default function NewsPage() {
         </section>
       </main>
       <PublicFooter />
-    </>
+    </div>
   );
 }
 
