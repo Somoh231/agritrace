@@ -126,7 +126,7 @@ export default function RootLayout({
       className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable} ${agrivaultDisplay.variable} ${agrivaultBody.variable} ${agrivaultMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-gray-900">
-        <Suspense fallback={<ToastProvider>{children}</ToastProvider>}>
+        <Suspense fallback={children}>
           <AnalyticsProvider>
             <ToastProvider>{children}</ToastProvider>
           </AnalyticsProvider>
