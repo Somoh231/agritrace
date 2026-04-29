@@ -5,7 +5,7 @@ import PublicFooter from "@/components/agrivault/site/PublicFooter";
 import PublicNav from "@/components/agrivault/site/PublicNav";
 import HomeHeroActions from "@/components/marketing/HomeHeroActions";
 import { getHeroVariant } from "@/lib/growth/experiments";
-import { getPublicContent } from "@/lib/growth/content";
+import { DEFAULT_PUBLIC_CONTENT, getPublicContent } from "@/lib/growth/content";
 
 export const metadata: Metadata = {
   title: "AgriVault Data — Agricultural Traceability Infrastructure for Africa — AgriVault Data",
@@ -15,7 +15,27 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const [content, variant] = await Promise.all([getPublicContent(), Promise.resolve(getHeroVariant())]);
-  const heroTitle = variant === "authority" ? content.homepage.heroTitleB : content.homepage.heroTitleA;
+
+  const homepage = content?.homepage ?? DEFAULT_PUBLIC_CONTENT.homepage;
+
+  const heroBadge =
+    typeof homepage.heroBadge === "string" ? homepage.heroBadge : DEFAULT_PUBLIC_CONTENT.homepage.heroBadge;
+
+  const heroTitleA =
+    typeof homepage.heroTitleA === "string" ? homepage.heroTitleA : DEFAULT_PUBLIC_CONTENT.homepage.heroTitleA;
+  const heroTitleB =
+    typeof homepage.heroTitleB === "string" ? homepage.heroTitleB : DEFAULT_PUBLIC_CONTENT.homepage.heroTitleB;
+  const heroBody = typeof homepage.heroBody === "string" ? homepage.heroBody : DEFAULT_PUBLIC_CONTENT.homepage.heroBody;
+  const ctaPrimary =
+    typeof homepage.ctaPrimary === "string" ? homepage.ctaPrimary : DEFAULT_PUBLIC_CONTENT.homepage.ctaPrimary;
+  const ctaSecondary =
+    typeof homepage.ctaSecondary === "string"
+      ? homepage.ctaSecondary
+      : DEFAULT_PUBLIC_CONTENT.homepage.ctaSecondary;
+  const contactLine =
+    typeof homepage.contactLine === "string" ? homepage.contactLine : DEFAULT_PUBLIC_CONTENT.homepage.contactLine;
+
+  const heroTitle = variant === "authority" ? heroTitleB : heroTitleA;
 
   return (
     <>
@@ -44,7 +64,7 @@ export default async function Page() {
                 className="pulse"
                 style={{ width: 6, height: 6, background: "var(--moss)", borderRadius: "50%", display: "inline-block" }}
               />
-              {content.homepage.heroBadge}
+              {heroBadge}
             </div>
             <h1
               className="hero-anim-2"
@@ -72,15 +92,15 @@ export default async function Page() {
               className="hero-anim-3"
               style={{ fontSize: 19, fontWeight: 300, color: "var(--mid)", maxWidth: 560, lineHeight: 1.65, marginBottom: 40 }}
             >
-              {content.homepage.heroBody}
+              {heroBody}
             </p>
             <HomeHeroActions
               variant={variant}
-              primaryLabel={content.homepage.ctaPrimary}
-              secondaryLabel={content.homepage.ctaSecondary}
+              primaryLabel={ctaPrimary}
+              secondaryLabel={ctaSecondary}
             />
             <p style={{ marginTop: 18, fontFamily: "var(--ff-m)", fontSize: 12, color: "var(--muted)", letterSpacing: ".02em" }}>
-              {content.homepage.contactLine}
+              {contactLine}
             </p>
           </div>
         </section>
