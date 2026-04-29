@@ -10,8 +10,9 @@ export default function AnalyticsProvider({ children }: { children: React.ReactN
   const search = useSearchParams();
 
   React.useEffect(() => {
-    const qs = search?.toString() ?? "";
-    const full = qs ? `${pathname}?${qs}` : pathname;
+    const safePath = typeof pathname === "string" && pathname ? pathname : "/";
+    const qs = search?.toString?.() ?? "";
+    const full = qs ? `${safePath}?${qs}` : safePath;
     track("page_view", { path: full });
   }, [pathname, search]);
 

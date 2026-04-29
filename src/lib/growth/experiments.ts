@@ -10,9 +10,14 @@ export function isHomepageHeroExperimentEnabled() {
 
 export function getHeroVariant(): HeroVariant {
   if (!isHomepageHeroExperimentEnabled()) return "control";
-  const value = cookies().get(HERO_COOKIE)?.value;
-  if (value === "authority") return "authority";
-  return "control";
+  try {
+    const value = cookies().get(HERO_COOKIE)?.value;
+    if (value === "authority") return "authority";
+    return "control";
+  } catch {
+    // Cookies access can fail outside request scope; keep homepage stable.
+    return "control";
+  }
 }
 
 export const HERO_EXPERIMENT = {

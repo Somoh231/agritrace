@@ -65,11 +65,27 @@ export async function getPublicContent(): Promise<PublicContent> {
   try {
     const { data, error } = await admin.from("public_content_blocks").select("key,value").eq("locale", "en");
     if (error || !data) return DEFAULT_PUBLIC_CONTENT;
-    const merged: PublicContent = structuredClone(DEFAULT_PUBLIC_CONTENT);
+
+    // structuredClone can throw in some edge runtimes; fall back to JSON clone.
+    let merged: PublicContent;
+    try {
+      merged = structuredClone(DEFAULT_PUBLIC_CONTENT);
+    } catch {
+      merged = JSON.parse(JSON.stringify(DEFAULT_PUBLIC_CONTENT)) as PublicContent;
+    }
+
     for (const row of data as any[]) {
-      if (CONTENT_KEYS.includes(row.key) && row.value && typeof row.value === "object") {
-        (merged as any)[row.key] = { ...(merged as any)[row.key], ...(row.value as Record<string, unknown>) };
-      }
+      if (!row) continue;
+      const key = typeof row.key === "string" ? row.key : null;
+      if (!key) continue;
+      if (!CONTENT_KEYS.includes(key as (typeof CONTENT_KEYS)[number])) continue;
+      if (!row.value || typeof row.value !== "object") continue;
+
+      const current = (merged as any)[key];
+      (merged as any)[key] = {
+        ...(typeof current === "object" && current ? current : {}),
+        ...(row.value as Record<string, unknown>),
+      };
     }
     return merged;
   } catch {
