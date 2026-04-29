@@ -171,7 +171,7 @@ export default function PublicNav() {
 
       <div className="nav-right">
         <LanguageSwitcher />
-        <Link href="/contact" className="btn-ghost" onClick={() => trackCta("sign_in")}>
+        <Link href="/login" className="btn-ghost" onClick={() => trackCta("sign_in")}>
           Sign in
         </Link>
         <Link href="/government" className="btn-outline" onClick={() => trackCta("government_partnership")}>
