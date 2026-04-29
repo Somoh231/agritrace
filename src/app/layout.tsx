@@ -3,8 +3,6 @@ import "./globals.css";
 import "@/content/agrivault_site/_shared.css";
 import { DM_Mono, DM_Sans, Fraunces, Inter, Playfair_Display } from "next/font/google";
 
-import { Suspense } from "react";
-
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import ToastProvider from "@/components/shared/toast/ToastProvider";
 
@@ -126,11 +124,9 @@ export default function RootLayout({
       className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable} ${agrivaultDisplay.variable} ${agrivaultBody.variable} ${agrivaultMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-gray-900">
-        <Suspense fallback={children}>
-          <AnalyticsProvider>
-            <ToastProvider>{children}</ToastProvider>
-          </AnalyticsProvider>
-        </Suspense>
+        <AnalyticsProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </AnalyticsProvider>
       </body>
     </html>
   );
