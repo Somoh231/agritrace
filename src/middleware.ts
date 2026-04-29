@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { isValidHttpUrl } from "@/lib/supabase/env";
+import { normalizeHttpUrl } from "@/lib/supabase/env";
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({ request });
@@ -18,11 +18,11 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = normalizeHttpUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
   // Allow clean startup before Supabase is configured.
-  if (!url || !anonKey || !isValidHttpUrl(url)) return response;
+  if (!url || !anonKey) return response;
 
   const supabase = createServerClient(url, anonKey, {
     cookies: {
