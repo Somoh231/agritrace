@@ -28,6 +28,22 @@ if (!fs.existsSync(nextDir)) {
 
 const nftFiles = walk(path.join(nextDir, "server")).filter((p) => p.endsWith(".nft.json"));
 
+function normalizeSlashes(p) {
+  return String(p).replaceAll("\\\\", "/");
+}
+
+function manifestKeyForAbsPath(absManifestPath) {
+  const appRoot = normalizeSlashes(path.join(nextDir, "server", "app")) + "/";
+  const absNorm = normalizeSlashes(absManifestPath);
+  if (!absNorm.startsWith(appRoot)) return null;
+
+  // Example:
+  // .next/server/app/page_client-reference-manifest.js -> "/page"
+  // .next/server/app/(auth)/login/page_client-reference-manifest.js -> "/(auth)/login/page"
+  const relDir = normalizeSlashes(path.dirname(absNorm).slice(appRoot.length)); // "" or "(auth)/login"
+  return relDir ? `/${relDir}/page` : "/page";
+}
+
 let created = 0;
 for (const nftPath of nftFiles) {
   let json;
@@ -46,9 +62,20 @@ for (const nftPath of nftFiles) {
     if (isFile(abs)) continue;
 
     fs.mkdirSync(path.dirname(abs), { recursive: true });
+    const key = manifestKeyForAbsPath(abs) ?? "/page";
     fs.writeFileSync(
       abs,
-      "globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});\n",
+      [
+        "globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});",
+        `globalThis.__RSC_MANIFEST[${JSON.stringify(key)}]={`,
+        'moduleLoading:{prefix:"/_next/",crossOrigin:null},',
+        "ssrModuleMapping:{},",
+        "edgeSSRModuleMapping:{},",
+        "clientModules:{},",
+        "entryCSSFiles:{}",
+        "};",
+        "",
+      ].join("\n"),
       "utf8",
     );
     created += 1;
