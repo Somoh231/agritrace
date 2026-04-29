@@ -504,6 +504,8 @@ function CapabilityCard({
   detail: string;
   icon: React.ComponentType<{ className?: string }>;
 }) {
+  // Defensive: if an icon export is unexpectedly undefined, render a no-op icon.
+  const SafeIcon = Icon ?? (() => null);
   const chip =
     tagTone === "amber"
       ? "bg-amber-50 border-amber-100 text-amber-800"
@@ -517,7 +519,7 @@ function CapabilityCard({
           {tag.toUpperCase()}
         </div>
         <div className="h-8 w-8 rounded-xl border border-gray-200 bg-paper-50 grid place-items-center text-slate-700">
-          <Icon className="h-4 w-4" />
+          <SafeIcon className="h-4 w-4" />
         </div>
       </div>
       <div className="mt-6 font-display text-[18px] text-ink-900">{title}</div>

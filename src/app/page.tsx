@@ -36,6 +36,8 @@ export default async function Page() {
     typeof homepage.contactLine === "string" ? homepage.contactLine : DEFAULT_PUBLIC_CONTENT.homepage.contactLine;
 
   const heroTitle = variant === "authority" ? heroTitleB : heroTitleA;
+  const heroTitleText = typeof heroTitle === "string" ? heroTitle : "";
+  const isEconomy = heroTitleText.includes("economy");
 
   return (
     <>
@@ -79,13 +81,13 @@ export default async function Page() {
                 marginBottom: 24,
               }}
             >
-              {heroTitle.includes("economy") ? (
+              {isEconomy ? (
                 <>
-                  {heroTitle.replace("economy", "")}
+                  {heroTitleText.replace("economy", "")}
                   <em style={{ color: "var(--forest-brt)" }}>economy.</em>
                 </>
               ) : (
-                heroTitle
+                heroTitleText
               )}
             </h1>
             <p
