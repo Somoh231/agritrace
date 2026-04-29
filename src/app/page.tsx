@@ -109,7 +109,8 @@ export default function Page() {
             </div>
 
             <h1 className="section-h" style={{ marginTop: 18, maxWidth: 920 }}>
-              Real-time data infrastructure for Liberia&apos;s <span style={{ fontStyle: "italic", color: "var(--amber)" }}>rice economy</span>.
+              Real-time data infrastructure for Africa&apos;s{" "}
+              <span style={{ fontStyle: "italic", color: "var(--amber)" }}>agricultural economy</span>.
             </h1>
             <p style={{ fontSize: 18, fontWeight: 300, color: "var(--mid)", maxWidth: 820, lineHeight: 1.7 }}>
               AgriVault is the operational backbone for national food sovereignty — geotagged farmer registry,
