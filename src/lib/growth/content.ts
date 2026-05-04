@@ -27,7 +27,7 @@ export type PublicContent = {
 
 export const DEFAULT_PUBLIC_CONTENT: PublicContent = {
   homepage: {
-    heroBadge: "Pilot live — Ministry of Agriculture, Republic of Liberia · 2025–26",
+    heroBadge: "Pilot program in development",
     heroTitleA: "Agricultural traceability infrastructure for Africa's economy.",
     heroTitleB: "Trusted agricultural data infrastructure for public and export markets.",
     heroBody:

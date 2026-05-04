@@ -103,8 +103,9 @@ export default function Page() {
                 ★
               </span>
               <span style={{ fontSize: 12, color: "var(--mid)" }}>
-                Selected by the Ministry of Agriculture · Republic of Liberia ·{" "}
-                <span style={{ fontFamily: "var(--ff-m)", fontSize: 11, color: "var(--amber)" }}>Pilot 2025–26</span>
+                <span style={{ fontFamily: "var(--ff-m)", fontSize: 11, color: "var(--amber)" }}>
+                  Pilot program in development
+                </span>
               </span>
             </div>
 
@@ -267,7 +268,7 @@ export default function Page() {
                 <div style={{ width: 44, height: 44, borderRadius: 999, background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.12)" }} />
                 <div>
                   <div style={{ fontSize: 13, color: "white" }}>Senior Advisor, Food Security</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,.62)" }}>Ministry of Agriculture · Republic of Liberia</div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,.62)" }}>Public-sector pilot program</div>
                 </div>
               </div>
             </div>

@@ -40,9 +40,8 @@ export default function Page() {
               Liberia — the flagship deployment.
             </h1>
             <p style={{ fontSize: 18, fontWeight: 300, color: "var(--mid)", maxWidth: 640, lineHeight: 1.7 }}>
-              Selected by the Ministry of Agriculture of the Republic of Liberia following a formal proposal and
-              ministerial review. The documentation has been passed to the Ministry&apos;s technical team. Implementation is
-              commencing.
+              Liberia is the first deployment geography for AgriVault Data. The pilot program is in active development with
+              partners and technical teams aligned on scope, data governance, and rollout milestones.
             </p>
           </div>
         </section>
