@@ -69,47 +69,13 @@ export default function Page() {
       <main className="page agrivault-html-main flex-1">
         <section
           style={{
-            padding: "90px 0 70px",
+            padding: "56px 0 48px",
             borderBottom: "1px solid var(--border)",
             background: "linear-gradient(180deg,var(--warm),var(--cream))",
           }}
         >
           <div className="container">
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "8px 14px",
-                borderRadius: 999,
-                border: "1px solid var(--border)",
-                background: "rgba(255,255,255,.72)",
-              }}
-            >
-              <span
-                style={{
-                  display: "inline-flex",
-                  width: 20,
-                  height: 20,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: 999,
-                  background: "var(--navy)",
-                  color: "white",
-                  fontFamily: "var(--ff-m)",
-                  fontSize: 10,
-                }}
-              >
-                ★
-              </span>
-              <span style={{ fontSize: 12, color: "var(--mid)" }}>
-                <span style={{ fontFamily: "var(--ff-m)", fontSize: 11, color: "var(--amber)" }}>
-                  Pilot program in development
-                </span>
-              </span>
-            </div>
-
-            <h1 className="section-h" style={{ marginTop: 18, maxWidth: 920 }}>
+            <h1 className="section-h" style={{ marginTop: 0, maxWidth: 920 }}>
               Real-time data infrastructure for Africa&apos;s{" "}
               <span style={{ fontStyle: "italic", color: "var(--amber)" }}>agricultural economy</span>.
             </h1>
@@ -136,7 +102,7 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "34px 0", borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,.55)" }}>
+        <section style={{ padding: "28px 0", borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,.55)" }}>
           <div className="container">
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
               {METRICS.map((m) => (
@@ -150,9 +116,16 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "80px 0", background: "var(--warm)" }}>
+        <section style={{ padding: "56px 0", background: "var(--warm)" }}>
           <div className="container">
-            <div style={{ display: "grid", gridTemplateColumns: "1.1fr .9fr", gap: 22, alignItems: "start" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+                gap: 22,
+                alignItems: "start",
+              }}
+            >
               <div>
                 <span className="section-tag">National priority</span>
                 <h2 style={{ fontFamily: "var(--ff-d)", fontSize: 44, lineHeight: 1.05, letterSpacing: "-.02em", color: "var(--ink)", marginTop: 12 }}>
@@ -194,7 +167,7 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "80px 0", background: "#fff", borderTop: "1px solid var(--border)" }}>
+        <section style={{ padding: "56px 0", background: "#fff", borderTop: "1px solid var(--border)" }}>
           <div className="container">
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
               <div style={{ maxWidth: 720 }}>
@@ -229,9 +202,16 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "80px 0", background: "var(--warm)", borderTop: "1px solid var(--border)" }}>
+        <section style={{ padding: "56px 0", background: "var(--warm)", borderTop: "1px solid var(--border)" }}>
           <div className="container">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, alignItems: "start" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+                gap: 18,
+                alignItems: "start",
+              }}
+            >
               <div style={{ maxWidth: 680 }}>
                 <span className="section-tag">Stakeholders</span>
                 <h2 style={{ fontFamily: "var(--ff-d)", fontSize: 40, lineHeight: 1.1, letterSpacing: "-.02em", color: "var(--ink)", marginTop: 12 }}>
@@ -254,7 +234,7 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "86px 0", background: "var(--navy)", color: "white" }}>
+        <section style={{ padding: "56px 0", background: "var(--navy)", color: "white" }}>
           <div className="container">
             <div style={{ maxWidth: 960 }}>
               <div style={{ fontFamily: "var(--ff-m)", fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(255,255,255,.6)" }}>
@@ -275,9 +255,9 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "80px 0", background: "var(--warm)", borderTop: "1px solid var(--border)" }}>
+        <section style={{ padding: "48px 0 56px", background: "var(--warm)" }}>
           <div className="container">
-            <div style={{ border: "1px solid var(--border)", borderRadius: 14, background: "#fff", padding: 34 }}>
+            <div style={{ border: "1px solid var(--border)", borderRadius: 14, background: "#fff", padding: "28px 24px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
                 <div style={{ maxWidth: 720 }}>
                   <span className="section-tag">Request demo</span>

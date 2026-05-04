@@ -27,7 +27,7 @@ export type PublicContent = {
 
 export const DEFAULT_PUBLIC_CONTENT: PublicContent = {
   homepage: {
-    heroBadge: "Pilot program in development",
+    heroBadge: "",
     heroTitleA: "Agricultural traceability infrastructure for Africa's economy.",
     heroTitleB: "Trusted agricultural data infrastructure for public and export markets.",
     heroBody:
