@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "@/content/agrivault_site/_shared.css";
-import { DM_Mono, DM_Sans, Fraunces, Inter, Playfair_Display } from "next/font/google";
+import { DM_Mono, Inter, Inter_Tight } from "next/font/google";
 
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import ToastProvider from "@/components/shared/toast/ToastProvider";
 
-const fontDisplay = Fraunces({
+const fontHeading = Inter_Tight({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const fontBody = Inter({
@@ -25,17 +24,16 @@ const fontMono = DM_Mono({
   weight: ["400", "500"],
 });
 
-const agrivaultDisplay = Playfair_Display({
+const agrivaultDisplay = Inter_Tight({
   variable: "--font-av-display",
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const agrivaultBody = DM_Sans({
+const agrivaultBody = Inter({
   variable: "--font-av-body",
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["300", "400", "500", "600"],
 });
 
 const agrivaultMono = DM_Mono({
@@ -121,7 +119,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable} ${agrivaultDisplay.variable} ${agrivaultBody.variable} ${agrivaultMono.variable} h-full antialiased`}
+      className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} ${agrivaultDisplay.variable} ${agrivaultBody.variable} ${agrivaultMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-gray-900">
         <AnalyticsProvider>
