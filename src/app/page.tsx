@@ -84,6 +84,28 @@ export default function Page() {
               county-level production telemetry, and the audit trail ministries, donors, and exporters can rely on.
             </p>
 
+            <div style={{ marginTop: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
+                {METRICS.map((m) => (
+                  <article
+                    key={m.label}
+                    style={{
+                      border: "1px solid var(--border)",
+                      borderRadius: 12,
+                      background: "rgba(255,255,255,.75)",
+                      padding: 16,
+                    }}
+                  >
+                    <div style={{ fontFamily: "var(--ff-d)", fontSize: 24, color: "var(--navy)" }}>{m.value}</div>
+                    <div style={{ marginTop: 6, fontSize: 12, color: "var(--mid)" }}>{m.label}</div>
+                    <div style={{ marginTop: 4, fontFamily: "var(--ff-m)", fontSize: 11, color: "var(--muted)" }}>
+                      {m.note}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 26 }}>
               <Link href="/request-demo" className="btn-primary">
                 Request a demo →
@@ -102,20 +124,6 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "28px 0", borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,.55)" }}>
-          <div className="container">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
-              {METRICS.map((m) => (
-                <article key={m.label} style={{ border: "1px solid var(--border)", borderRadius: 12, background: "#fff", padding: 16 }}>
-                  <div style={{ fontFamily: "var(--ff-d)", fontSize: 24, color: "var(--navy)" }}>{m.value}</div>
-                  <div style={{ marginTop: 6, fontSize: 12, color: "var(--mid)" }}>{m.label}</div>
-                  <div style={{ marginTop: 4, fontFamily: "var(--ff-m)", fontSize: 11, color: "var(--muted)" }}>{m.note}</div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
         <section style={{ padding: "56px 0", background: "var(--warm)" }}>
           <div className="container">
             <div
@@ -128,7 +136,7 @@ export default function Page() {
             >
               <div>
                 <span className="section-tag">National priority</span>
-                <h2 style={{ fontFamily: "var(--ff-d)", fontSize: 44, lineHeight: 1.05, letterSpacing: "-.02em", color: "var(--ink)", marginTop: 12 }}>
+                <h2 className="section-h" style={{ marginTop: 12, color: "var(--ink)" }}>
                   Liberia imports <span style={{ fontStyle: "italic", color: "var(--amber)" }}>59%</span> of its rice.
                   <br />
                   We make every kilogram count.
@@ -169,35 +177,31 @@ export default function Page() {
 
         <section style={{ padding: "56px 0", background: "#fff", borderTop: "1px solid var(--border)" }}>
           <div className="container">
-            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-              <div style={{ maxWidth: 720 }}>
-                <span className="section-tag">Platform</span>
-                <h2 style={{ fontFamily: "var(--ff-d)", fontSize: 40, lineHeight: 1.1, letterSpacing: "-.02em", color: "var(--forest)", marginTop: 12 }}>
-                  Government-grade modules built for field reality.
-                </h2>
-              </div>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <Link href="/platform" className="btn-primary">
-                  View platform →
-                </Link>
-                <Link href="/platform-preview" className="btn-outline">
-                  Preview
-                </Link>
-              </div>
-            </div>
-
-            <div style={{ marginTop: 18, fontSize: 16, fontWeight: 300, color: "var(--mid)", lineHeight: 1.7, maxWidth: 820 }}>
+            <span className="section-tag">Platform</span>
+            <h2 className="section-h" style={{ marginTop: 12, maxWidth: 820 }}>
+              Government-grade modules built for field reality.
+            </h2>
+            <p style={{ fontSize: 16, fontWeight: 300, color: "var(--mid)", lineHeight: 1.7, maxWidth: 820 }}>
               Registry, mapping, dashboards, reporting, and compliance surfaces — designed to produce numbers ministries can
               defend.
-            </div>
+            </p>
 
-            <div style={{ marginTop: 26, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 14 }}>
+            <div style={{ marginTop: 22, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 24 }}>
               {CAPABILITY_CARDS.map((c) => (
                 <article key={c.title} style={{ border: "1px solid var(--border)", borderRadius: 12, padding: 22, background: "rgba(45,122,62,.03)" }}>
                   <h3 style={{ fontFamily: "var(--ff-d)", fontSize: 22, color: "var(--forest)", marginBottom: 8 }}>{c.title}</h3>
                   <p style={{ fontSize: 14, color: "var(--mid)", fontWeight: 300, lineHeight: 1.7 }}>{c.body}</p>
                 </article>
               ))}
+            </div>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 22 }}>
+              <Link href="/platform" className="btn-primary">
+                View platform →
+              </Link>
+              <Link href="/platform-preview" className="btn-outline">
+                Preview
+              </Link>
             </div>
           </div>
         </section>
@@ -214,7 +218,7 @@ export default function Page() {
             >
               <div style={{ maxWidth: 680 }}>
                 <span className="section-tag">Stakeholders</span>
-                <h2 style={{ fontFamily: "var(--ff-d)", fontSize: 40, lineHeight: 1.1, letterSpacing: "-.02em", color: "var(--ink)", marginTop: 12 }}>
+                <h2 className="section-h" style={{ marginTop: 12, color: "var(--ink)" }}>
                   One source of truth across institutions.
                 </h2>
                 <p style={{ marginTop: 14, fontSize: 16, fontWeight: 300, color: "var(--mid)", lineHeight: 1.7 }}>
