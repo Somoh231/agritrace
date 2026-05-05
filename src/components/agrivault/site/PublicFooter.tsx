@@ -8,8 +8,7 @@ export default function PublicFooter() {
           <div className="footer-brand">
             <strong>AgriVault Data</strong>
             <p>
-              Agricultural traceability infrastructure for Africa&apos;s economy. Farm registration, production
-              tracking, and compliance documentation — from Liberia to the continent.
+              Institutional-grade agricultural data infrastructure for field operations, governance, and reporting.
             </p>
             <span style={{ fontFamily: "var(--ff-m)", fontSize: 11, color: "rgba(255,255,255,.28)" }}>
               agrivaultdata.com
@@ -33,13 +32,27 @@ export default function PublicFooter() {
               <li>
                 <Link href="/contact">Contact</Link>
               </li>
+            </ul>
+          </div>
+          <div className="footer-col">
+            <h4>Platform</h4>
+            <ul className="footer-links">
+              <li>
+                <Link href="/platform">Platform overview</Link>
+              </li>
+              <li>
+                <Link href="/rice">View platform</Link>
+              </li>
               <li>
                 <Link href="/docs">Docs</Link>
+              </li>
+              <li>
+                <Link href="/news">News</Link>
               </li>
             </ul>
           </div>
           <div className="footer-col">
-            <h4>For Governments</h4>
+            <h4>Governments</h4>
             <ul className="footer-links">
               <li>
                 <Link href="/government">Partnership model</Link>
