@@ -18,7 +18,7 @@ export default async function Page() {
     <div className="min-h-screen flex flex-col">
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
-        <section style={{ padding: "80px 0 60px", borderBottom: "1px solid var(--border)" }}>
+        <section style={{ padding: "64px 0 48px", borderBottom: "1px solid var(--border)" }}>
           <div className="container">
             <span className="section-tag">Contact</span>
             <h1 className="section-h">Brief us. We&apos;ll bring the numbers.</h1>
@@ -29,8 +29,8 @@ export default async function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "80px 0" }}>
-          <div className="container grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start">
+        <section style={{ padding: "56px 0" }}>
+          <div className="container grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
             <article>
               <h2 style={{ fontFamily: "var(--ff-d)", fontSize: 26, fontWeight: 600, color: "var(--forest)", marginBottom: 20 }}>
                 Direct contact

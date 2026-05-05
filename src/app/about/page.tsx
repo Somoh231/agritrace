@@ -15,7 +15,7 @@ export default function Page() {
     <div className="min-h-screen flex flex-col">
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
-        <section style={{ padding: "80px 0 60px", borderBottom: "1px solid var(--border)" }}>
+        <section style={{ padding: "64px 0 48px", borderBottom: "1px solid var(--border)" }}>
           <div className="container">
             <span className="section-tag">About AgriVault Data</span>
             <h1 className="section-h" style={{ maxWidth: 700 }}>
@@ -28,8 +28,8 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "80px 0" }}>
-          <div className="container grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start">
+        <section style={{ padding: "56px 0" }}>
+          <div className="container grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
             <article>
               <p style={bodyP}>
                 As a Program Officer at the Ministry of Health in Monrovia, he sat in eighteen inter-ministerial
@@ -67,8 +67,8 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ background: "var(--forest)", padding: "60px 0" }}>
-          <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 40, flexWrap: "wrap" }}>
+        <section style={{ background: "var(--forest)", padding: "56px 0" }}>
+          <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
             <div style={{ maxWidth: 620 }}>
               <p style={{ fontFamily: "var(--ff-d)", fontSize: 22, fontWeight: 500, fontStyle: "italic", color: "rgba(255,255,255,.92)", lineHeight: 1.45, marginBottom: 10 }}>
                 The intersection of Liberian institutional experience, data systems expertise, and operational

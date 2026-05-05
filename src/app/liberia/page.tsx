@@ -15,7 +15,7 @@ export default function Page() {
     <div className="min-h-screen flex flex-col">
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
-        <section style={{ padding: "80px 0 60px", borderBottom: "1px solid var(--border)" }}>
+        <section style={{ padding: "64px 0 48px", borderBottom: "1px solid var(--border)" }}>
           <div className="container">
             <div
               style={{
@@ -46,8 +46,8 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "80px 0" }}>
-          <div className="container grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start">
+        <section style={{ padding: "56px 0" }}>
+          <div className="container grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
             <article>
               <h2 style={{ fontFamily: "var(--ff-d)", fontSize: 28, fontWeight: 600, color: "var(--forest)", marginBottom: 20 }}>
                 The problem AgriVault Data solves in Liberia

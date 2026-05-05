@@ -15,7 +15,7 @@ export default function Page() {
     <div className="min-h-screen flex flex-col">
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
-        <section style={{ padding: "80px 0 60px", borderBottom: "1px solid var(--border)" }}>
+        <section style={{ padding: "64px 0 48px", borderBottom: "1px solid var(--border)" }}>
           <div className="container">
             <span className="section-tag">For Governments</span>
             <h1 className="section-h" style={{ maxWidth: 700 }}>
@@ -28,9 +28,9 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "80px 0" }}>
+        <section style={{ padding: "56px 0" }}>
           <div className="container">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 80 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 56 }}>
               <ContributionCard
                 title="The Ministry contributes"
                 items={[

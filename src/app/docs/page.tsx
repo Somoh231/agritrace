@@ -15,7 +15,7 @@ export default function Page() {
     <div className="min-h-screen flex flex-col">
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
-        <section style={{ padding: "80px 0 60px", borderBottom: "1px solid var(--border)" }}>
+        <section style={{ padding: "64px 0 48px", borderBottom: "1px solid var(--border)" }}>
           <div className="container">
             <span className="section-tag">Documentation</span>
             <h1 className="section-h">Technical documentation for public-sector deployment.</h1>
@@ -25,7 +25,7 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "70px 0" }}>
+        <section style={{ padding: "56px 0" }}>
           <div className="container grid grid-cols-1 lg:grid-cols-[1.3fr_.7fr] gap-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {docCards.map((card) => (

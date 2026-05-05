@@ -14,7 +14,7 @@ export default function Page() {
     <div className="min-h-screen flex flex-col">
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
-        <section style={{ padding: "80px 0 60px", borderBottom: "1px solid var(--border)" }}>
+        <section style={{ padding: "64px 0 48px", borderBottom: "1px solid var(--border)" }}>
           <div className="container">
             <span className="section-tag">Partners</span>
             <h1 className="section-h">Implementation partners who move agriculture forward.</h1>
@@ -25,9 +25,9 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "70px 0" }}>
+        <section style={{ padding: "56px 0" }}>
           <div className="container">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {groups.map((group) => (
                 <article key={group.title} style={{ border: "1px solid var(--border)", borderRadius: 12, background: "#fff", padding: 24 }}>
                   <h2 style={{ fontFamily: "var(--ff-d)", fontSize: 24, color: "var(--forest)", marginBottom: 8 }}>{group.title}</h2>
@@ -45,8 +45,8 @@ export default function Page() {
           </div>
         </section>
 
-        <section style={{ background: "var(--cream)", borderTop: "1px solid var(--border)", padding: "60px 0" }}>
-          <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
+        <section style={{ background: "var(--cream)", borderTop: "1px solid var(--border)", padding: "56px 0" }}>
+          <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
             <div>
               <h2 style={{ fontFamily: "var(--ff-d)", fontSize: 28, color: "var(--forest)", marginBottom: 8 }}>Partner with AgriVault Data</h2>
               <p style={{ fontSize: 15, color: "var(--mid)", fontWeight: 300 }}>

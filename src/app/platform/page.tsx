@@ -62,7 +62,7 @@ export default async function Page() {
       <main className="page agrivault-html-main flex-1">
         <section
           style={{
-            padding: "90px 0 70px",
+            padding: "64px 0 48px",
             borderBottom: "1px solid var(--border)",
             background: "linear-gradient(180deg,var(--warm),var(--cream))",
           }}
@@ -89,7 +89,7 @@ export default async function Page() {
           </div>
         </section>
 
-        <section style={{ padding: "70px 0", background: "var(--warm)" }}>
+        <section style={{ padding: "56px 0", background: "var(--warm)" }}>
           <div className="container">
             <h2 className="section-h" style={{ fontSize: "clamp(28px,3vw,40px)" }}>
               Four workflows. One operating system.
@@ -113,7 +113,7 @@ export default async function Page() {
           </div>
         </section>
 
-        <section id="capabilities" style={{ padding: "80px 0", borderTop: "1px solid var(--border)", background: "#fff" }}>
+        <section id="capabilities" style={{ padding: "56px 0", borderTop: "1px solid var(--border)", background: "#fff" }}>
           <div className="container">
             <span className="section-tag">Capabilities</span>
             <h2 className="section-h" style={{ maxWidth: 860 }}>
@@ -124,7 +124,7 @@ export default async function Page() {
               compliance-ready reporting.
             </p>
 
-            <div style={{ marginTop: 22, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+            <div style={{ marginTop: 22, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 24 }}>
               {CAPABILITIES.map((card) => (
                 <article key={card} style={{ border: "1px solid var(--border)", borderRadius: 12, padding: 18, background: "rgba(45,122,62,.03)" }}>
                   <div style={{ fontSize: 15, color: "var(--forest)", fontWeight: 500 }}>{card}</div>
@@ -149,7 +149,7 @@ export default async function Page() {
           </div>
         </section>
 
-        <section id="integrations" style={{ padding: "80px 0", borderTop: "1px solid var(--border)", background: "var(--warm)" }}>
+        <section id="integrations" style={{ padding: "56px 0", borderTop: "1px solid var(--border)", background: "var(--warm)" }}>
           <div className="container">
             <span className="section-tag">Integrations</span>
             <h2 className="section-h">API-ready architecture for connected government operations.</h2>
@@ -158,7 +158,7 @@ export default async function Page() {
               infrastructure.
             </p>
 
-            <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 14 }}>
+            <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 24 }}>
               <article style={{ border: "1px solid var(--border)", borderRadius: 12, background: "#fff", padding: 24 }}>
                 <h3 style={{ fontFamily: "var(--ff-d)", fontSize: 26, color: "var(--forest)" }}>Integration readiness</h3>
                 <p style={{ marginTop: 8, color: "var(--mid)", fontWeight: 300, lineHeight: 1.7 }}>

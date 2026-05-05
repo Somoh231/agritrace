@@ -15,7 +15,7 @@ export default async function PlatformPreviewPage() {
     <div className="min-h-screen flex flex-col">
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
-        <section style={{ padding: "86px 0 28px", borderBottom: "1px solid var(--border)", background: "var(--warm)" }}>
+        <section style={{ padding: "64px 0 28px", borderBottom: "1px solid var(--border)", background: "var(--warm)" }}>
           <div className="container">
             <span className="section-tag">Preview mode</span>
             <h1 className="section-h" style={{ maxWidth: 860 }}>
@@ -36,7 +36,7 @@ export default async function PlatformPreviewPage() {
           </div>
         </section>
 
-        <section style={{ padding: "34px 0 60px", background: "var(--warm)" }}>
+        <section style={{ padding: "28px 0 56px", background: "var(--warm)" }}>
           <div className="container" style={{ display: "grid", gap: 18 }}>
             <div
               style={{

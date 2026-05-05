@@ -15,14 +15,14 @@ export default function NewsPage() {
     <div className="min-h-screen flex flex-col">
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
-        <section style={{ padding: "80px 0 24px" }}>
+        <section style={{ padding: "64px 0 24px" }}>
           <div className="container">
             <span className="section-tag">Newsroom</span>
             <h1 className="section-h">Updates from the field, platform, and policy desk.</h1>
           </div>
         </section>
-        <section style={{ padding: "10px 0 80px" }}>
-          <div className="container grid grid-cols-1 md:grid-cols-2 gap-4">
+        <section style={{ padding: "10px 0 56px" }}>
+          <div className="container grid grid-cols-1 md:grid-cols-2 gap-6">
             {NEWS_ARTICLES.map((article) => (
               <Link
                 key={article.slug}
