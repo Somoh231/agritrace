@@ -124,6 +124,60 @@ export default function Page() {
           </div>
         </section>
 
+        <section style={{ padding: "56px 0", background: "#fff", borderTop: "1px solid var(--border)" }}>
+          <div className="container">
+            <span className="section-tag">How the system works</span>
+            <h2 className="section-h" style={{ marginTop: 12, maxWidth: 820 }}>
+              How the system works
+            </h2>
+            <p style={{ fontSize: 16, fontWeight: 300, color: "var(--mid)", lineHeight: 1.7, maxWidth: 820 }}>
+              A simple operational pipeline: field teams capture data offline, support teams ensure continuity, the central
+              database remains ministry-owned, and decision-makers get dashboards and reports.
+            </p>
+
+            <div style={{ marginTop: 22, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 24 }}>
+              {[
+                {
+                  title: "Field data collection",
+                  body: "Mobile-first forms work offline and sync when connectivity returns, so collection continues without disruption.",
+                },
+                {
+                  title: "Call center support layer",
+                  body: "A support desk helps agents resolve issues, validate entries, and keep workflows moving during collection windows.",
+                },
+                {
+                  title: "Central database (Ministry-owned)",
+                  body: "All records are stored in a single authoritative system under government governance, with auditable change history.",
+                },
+                {
+                  title: "Dashboard + reporting",
+                  body: "Operational dashboards and exportable reports translate field activity into defensible national numbers.",
+                },
+              ].map((step, idx) => (
+                <article
+                  key={step.title}
+                  style={{
+                    border: "1px solid var(--border)",
+                    borderRadius: 12,
+                    padding: 22,
+                    background: "rgba(45,122,62,.03)",
+                  }}
+                >
+                  <div style={{ fontFamily: "var(--ff-m)", fontSize: 11, color: "var(--muted)" }}>
+                    Step {idx + 1}
+                  </div>
+                  <h3 style={{ fontFamily: "var(--ff-d)", fontSize: 20, color: "var(--forest)", marginTop: 10, marginBottom: 8 }}>
+                    {step.title}
+                  </h3>
+                  <p style={{ fontSize: 14, color: "var(--mid)", fontWeight: 300, lineHeight: 1.7 }}>
+                    {step.body}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section style={{ padding: "56px 0", background: "var(--warm)" }}>
           <div className="container">
             <div
