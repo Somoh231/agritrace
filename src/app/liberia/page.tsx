@@ -120,8 +120,8 @@ export default function Page() {
                 AgriVault Data is accepting expressions of interest from Ministries of Agriculture across West Africa.
               </p>
             </div>
-            <Link href="/government" className="btn-primary" style={{ whiteSpace: "nowrap" }}>
-              Explore partnership →
+            <Link href="/request-demo" className="btn-primary" style={{ whiteSpace: "nowrap" }}>
+              Request demo →
             </Link>
           </div>
         </section>

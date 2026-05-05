@@ -27,10 +27,10 @@ export default async function PlatformPreviewPage() {
             </p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 24 }}>
               <Link href="/request-demo" className="btn-primary">
-                Request Demo →
+                Request demo →
               </Link>
               <Link href="/platform" className="btn-outline">
-                Platform page
+                View platform
               </Link>
             </div>
           </div>

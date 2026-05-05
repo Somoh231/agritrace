@@ -46,10 +46,10 @@ export default function Page() {
               </p>
               <div style={{ display: "grid", gap: 10 }}>
                 <Link href="/request-demo" className="btn-primary" style={{ justifyContent: "center" }}>
-                  Request docs package →
+                  Request demo →
                 </Link>
-                <Link href="/platform-preview" className="btn-outline" style={{ justifyContent: "center" }}>
-                  Explore platform preview
+                <Link href="/platform" className="btn-outline" style={{ justifyContent: "center" }}>
+                  View platform
                 </Link>
               </div>
             </aside>

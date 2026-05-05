@@ -53,8 +53,8 @@ export default function Page() {
                 If you work in food systems, traceability, or ag-finance, we can build a collaboration model tailored to your mandate.
               </p>
             </div>
-            <Link href="/contact" className="btn-primary">
-              Contact partnership team →
+            <Link href="/request-demo" className="btn-primary">
+              Request demo →
             </Link>
           </div>
         </section>

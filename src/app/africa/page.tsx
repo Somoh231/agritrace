@@ -52,8 +52,8 @@ export default function Page() {
                   Countries that build the standard first define the infrastructure for everyone that follows.
                 </p>
               </div>
-              <Link href="/contact" className="btn-primary" style={{ whiteSpace: "nowrap", padding: "12px 22px" }}>
-                Partner with us →
+              <Link href="/request-demo" className="btn-primary" style={{ whiteSpace: "nowrap", padding: "12px 22px" }}>
+                Request demo →
               </Link>
             </section>
           </div>

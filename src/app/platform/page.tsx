@@ -76,14 +76,11 @@ export default async function Page() {
               {content.platform.heroBody}
             </p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 28 }}>
-              <Link href="/rice" className="btn-primary">
-                {content.platform.ctaExplore} →
+              <Link href="/request-demo" className="btn-primary">
+                Request demo →
               </Link>
-              <Link href="/platform-preview" className="btn-outline">
-                Preview platform
-              </Link>
-              <Link href="/request-demo" className="btn-outline">
-                {content.platform.ctaDemo}
+              <Link href="/rice" className="btn-outline">
+                View platform
               </Link>
             </div>
           </div>
@@ -134,17 +131,12 @@ export default async function Page() {
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 26 }}>
               <Link href="/request-demo" className="btn-primary">
-                Request Demo →
+                Request demo →
               </Link>
-              <Link href="/platform-preview" className="btn-outline">
-                Preview platform
+              <Link href="/rice" className="btn-outline">
+                View platform
               </Link>
-              <Link href="/docs" className="btn-outline">
-                Docs
-              </Link>
-              <Link href="/government#sovereignty" className="btn-outline">
-                Data sovereignty
-              </Link>
+              <Link href="/docs" className="btn-outline">Docs</Link>
             </div>
           </div>
         </section>

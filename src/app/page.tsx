@@ -108,18 +108,18 @@ export default function Page() {
 
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 26 }}>
               <Link href="/request-demo" className="btn-primary">
-                Request a demo →
+                Request demo →
               </Link>
               <Link href="/platform" className="btn-outline">
-                Explore platform
-              </Link>
-              <Link href="/government" className="btn-outline">
-                Government partnership
+                View platform
               </Link>
             </div>
 
             <div style={{ marginTop: 14, fontSize: 12, color: "var(--muted)" }}>
-              Used by ministries, cooperatives, and exporters. Designed for pilot-to-national rollout.
+              Used by ministries, cooperatives, and exporters.{" "}
+              <Link href="/government" className="underline underline-offset-2">
+                Government partnership
+              </Link>
             </div>
           </div>
         </section>
@@ -214,14 +214,11 @@ export default function Page() {
                   ))}
                 </div>
                 <div style={{ marginTop: 18, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <Link href="/docs" className="btn-outline">
-                    Docs
+                  <Link href="/request-demo" className="btn-primary">
+                    Request demo →
                   </Link>
-                  <Link href="/news" className="btn-outline">
-                    News
-                  </Link>
-                  <Link href="/pricing" className="btn-outline">
-                    Pricing
+                  <Link href="/platform" className="btn-outline">
+                    View platform
                   </Link>
                 </div>
               </div>
@@ -250,11 +247,11 @@ export default function Page() {
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 22 }}>
-              <Link href="/platform" className="btn-primary">
-                View platform →
+              <Link href="/request-demo" className="btn-primary">
+                Request demo →
               </Link>
-              <Link href="/platform-preview" className="btn-outline">
-                Preview
+              <Link href="/platform" className="btn-outline">
+                View platform
               </Link>
             </div>
           </div>
@@ -331,8 +328,8 @@ export default function Page() {
                   <Link href="/request-demo" className="btn-primary">
                     Request demo →
                   </Link>
-                  <Link href="/platform-preview" className="btn-outline">
-                    Preview platform
+                  <Link href="/platform" className="btn-outline">
+                    View platform
                   </Link>
                 </div>
               </div>

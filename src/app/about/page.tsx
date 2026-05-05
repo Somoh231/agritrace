@@ -78,8 +78,8 @@ export default function Page() {
                 It is why this system can actually be built to work in African field conditions — not just designed to.
               </p>
             </div>
-            <Link href="/contact" className="btn-primary" style={{ background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.2)", whiteSpace: "nowrap", padding: "12px 22px" }}>
-              Request a conversation →
+            <Link href="/request-demo" className="btn-primary" style={{ background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.2)", whiteSpace: "nowrap", padding: "12px 22px" }}>
+              Request demo →
             </Link>
           </div>
         </section>
