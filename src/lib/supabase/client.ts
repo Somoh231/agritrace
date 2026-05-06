@@ -1,7 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-import { normalizeHttpUrl } from "@/lib/supabase/env";
-
 let browserClient:
   | ReturnType<typeof createBrowserClient>
   | undefined;
@@ -9,8 +7,8 @@ let browserClient:
 export function getSupabaseBrowserClient() {
   if (browserClient) return browserClient;
 
-  const url = normalizeHttpUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "";
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
 
   if (!url || !anonKey) {
     throw new Error(
@@ -18,7 +16,18 @@ export function getSupabaseBrowserClient() {
     );
   }
 
-  browserClient = createBrowserClient(url, anonKey);
+  if (typeof window !== "undefined") {
+    console.log("[Agrivault] Supabase browser client", {
+      NEXT_PUBLIC_SUPABASE_URL: url,
+      NEXT_PUBLIC_SUPABASE_ANON_KEY_present: true,
+      NEXT_PUBLIC_SUPABASE_ANON_KEY_length: anonKey.length,
+    });
+  }
+
+  browserClient = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!.trim(),
+  );
+
   return browserClient;
 }
-
