@@ -1,13 +1,18 @@
 export type UserRole =
   | "super_admin"
-  | "admin" // TEMP DEMO FALLBACK — remove after demo (synthetic role when profiles row missing)
-  | "government_officer"
+  | "admin" // TEMP DEMO FALLBACK — synthetic role when profiles row missing; mirrors DB enum
+  | "ministry_officer"
   | "county_officer"
-  | "exporter"
+  | "district_officer"
   | "cooperative_manager"
   | "field_agent"
+  | "warehouse_manager"
+  | "donor_partner"
+  | "exporter"
   | "call_center_agent"
-  | "auditor";
+  | "auditor"
+  /** @deprecated Prefer ministry_officer; retained for legacy rows and migrations */
+  | "government_officer";
 
 export type OrgType =
   | "cooperative"
@@ -48,10 +53,13 @@ export type ComplianceStatus =
 
 export interface Profile {
   id: string;
+  email?: string | null;
   full_name: string;
   role: UserRole;
   organization_id: string | null;
   county: string | null;
+  /** Officer jurisdiction when applicable */
+  district?: string | null;
   phone: string | null;
   is_active?: boolean;
   deactivated_at?: string | null;

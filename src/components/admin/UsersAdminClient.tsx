@@ -29,11 +29,16 @@ type AdminUser = {
 
 const ROLE_OPTIONS: UserRole[] = [
   "super_admin",
+  "admin",
+  "ministry_officer",
   "government_officer",
   "county_officer",
-  "exporter",
+  "district_officer",
   "cooperative_manager",
   "field_agent",
+  "warehouse_manager",
+  "donor_partner",
+  "exporter",
   "call_center_agent",
   "auditor",
 ];

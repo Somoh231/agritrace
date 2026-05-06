@@ -115,7 +115,10 @@ export default function DataQualityPanel() {
         throw pErr;
       }
       const ok =
-        role === "super_admin" || role === "government_officer" || role === "admin"; // TEMP DEMO FALLBACK
+        role === "super_admin" ||
+        role === "ministry_officer" ||
+        role === "government_officer" ||
+        role === "admin"; // TEMP DEMO FALLBACK
       setAllowed(ok);
       if (!ok) return;
 

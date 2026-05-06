@@ -45,8 +45,11 @@ function canSeeNationalOps(role: UserRole) {
   return (
     role === "super_admin" ||
     role === "admin" || // TEMP DEMO FALLBACK
+    role === "ministry_officer" ||
     role === "government_officer" ||
     role === "county_officer" ||
+    role === "district_officer" ||
+    role === "warehouse_manager" ||
     role === "field_agent" ||
     role === "call_center_agent"
   );
@@ -108,36 +111,43 @@ function navSectionsForRole(role: UserRole): NavSection[] {
     ],
   };
 
+  const fullAdministration: NavItem[] = [
+    { label: "User management", href: "/admin/users" },
+    { label: "Organizations", href: "/admin/organizations" },
+    { label: "Demo inquiries", href: "/admin/demo-inquiries" },
+    { label: "Analytics", href: "/admin/analytics" },
+    { label: "Governance", href: "/admin/governance" },
+    { label: "Capabilities", href: "/admin/capabilities" },
+    { label: "Integration center", href: "/admin/integrations" },
+    { label: "API documentation", href: "/admin/api-docs" },
+    { label: "Public content", href: "/admin/content" },
+    { label: "Launch readiness", href: "/admin/launch-readiness" },
+    { label: "Data import", href: "/admin/import" },
+    { label: "Reports center", href: "/admin/reports" },
+    { label: "Settings", href: "/admin/settings" },
+    { label: "Activity center", href: "/activity" },
+    { label: "System diagnostics", href: "/system-health" },
+    { label: "Health checks", href: "/health" },
+    { label: "First-time setup", href: "/setup" },
+  ];
+
   const system: NavSection =
     role === "super_admin" || role === "admin" // TEMP DEMO FALLBACK
-      ? {
-          label: "Administration",
-          items: [
-            { label: "User management", href: "/admin/users" },
-            { label: "Organizations", href: "/admin/organizations" },
-            { label: "Demo inquiries", href: "/admin/demo-inquiries" },
-            { label: "Analytics", href: "/admin/analytics" },
-            { label: "Governance", href: "/admin/governance" },
-            { label: "Capabilities", href: "/admin/capabilities" },
-            { label: "Integration center", href: "/admin/integrations" },
-            { label: "API documentation", href: "/admin/api-docs" },
-            { label: "Public content", href: "/admin/content" },
-            { label: "Launch readiness", href: "/admin/launch-readiness" },
-            { label: "Data import", href: "/admin/import" },
-            { label: "Reports center", href: "/admin/reports" },
-            { label: "Settings", href: "/admin/settings" },
-            { label: "Activity center", href: "/activity" },
-            { label: "Health checks", href: "/health" },
-            { label: "First-time setup", href: "/setup" },
-          ],
-        }
-      : { label: "", items: [] };
+      ? { label: "Administration", items: fullAdministration }
+      : role === "ministry_officer" || role === "government_officer"
+        ? {
+            label: "Administration",
+            items: [{ label: "System diagnostics", href: "/system-health" }],
+          }
+        : { label: "", items: [] };
 
   const canSeeRice =
     role === "super_admin" ||
     role === "admin" ||
+    role === "ministry_officer" ||
     role === "government_officer" ||
-    role === "county_officer";
+    role === "county_officer" ||
+    role === "district_officer";
   const canSeeCocoa =
     role === "super_admin" ||
     role === "admin" ||
@@ -188,11 +198,12 @@ export default function Sidebar({
   const showRiceToggle =
     user.role === "super_admin" ||
     user.role === "admin" ||
-    user.role.includes("officer");
+    user.role.includes("officer") ||
+    user.role === "warehouse_manager";
   const showCocoaToggle =
     user.role === "super_admin" ||
     user.role === "admin" ||
-    !user.role.includes("officer");
+    (!user.role.includes("officer") && user.role !== "warehouse_manager");
 
   return (
     <aside className="h-full w-[268px] shrink-0 border-r border-slate-200/90 bg-[#fafbfa] flex flex-col">

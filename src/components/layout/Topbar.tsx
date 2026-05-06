@@ -49,6 +49,7 @@ const BREADCRUMBS: Record<string, string> = {
   "/admin/reports": "System / Reports center",
   "/admin/settings": "System / Settings",
   "/activity": "System / Activity center",
+  "/system-health": "System / Diagnostics",
 };
 
 export default function Topbar({

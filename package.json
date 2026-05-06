@@ -12,7 +12,8 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx src/lib/supabase/seed.ts",
-    "seed:demo": "tsx src/lib/supabase/seed-demo.ts"
+    "seed:demo": "tsx src/lib/supabase/seed-demo.ts",
+    "seed:pilot": "tsx src/lib/supabase/seed-pilot-national.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

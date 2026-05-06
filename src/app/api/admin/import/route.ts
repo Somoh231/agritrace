@@ -20,6 +20,7 @@ async function requireSuperAdmin() {
     .single();
 
   const role = resolveUserRoleWithDemoFallback(profile as any, user); // TEMP DEMO FALLBACK
+  if (!role) return { ok: false as const, status: 403, message: "Profile required." };
   if (role !== "super_admin" && role !== "admin") {
     return { ok: false as const, status: 403, message: "Super admin access required." };
   }

@@ -18,10 +18,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("id", user.id)
     .single<Pick<Profile, "role">>();
 
-  // TEMP DEMO FALLBACK — missing profiles row still allows admin routes for demo role.
+  // TEMP DEMO FALLBACK — missing profiles row still allows admin routes for demo role when enabled.
   const role = resolveUserRoleWithDemoFallback(profile, user);
-  if (role !== "super_admin" && role !== "admin") {
-    redirect("/rice");
+  if (!role || (role !== "super_admin" && role !== "admin")) {
+    redirect("/national-operations");
   }
 
   return children;

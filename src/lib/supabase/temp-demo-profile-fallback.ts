@@ -3,7 +3,11 @@
  *
  * When `profiles` has no row for the signed-in user, the app uses this stand-in so the
  * dashboard and admin UI keep working without seeding data.
+ *
+ * See `TEMP_DEMO_FALLBACK.md` for isolation and removal steps.
+ * Toggle off once `handle_new_user` trigger populates profiles for all auth users.
  */
+export const TEMP_DEMO_FALLBACK_PROFILE_ENABLED = true;
 import type { Profile, UserRole } from "@/lib/supabase/types";
 
 /** Literal demo identity spec (auth user id still comes from Supabase Auth). */
@@ -18,6 +22,7 @@ export function buildDemoProfileForAuthUser(authUser: { id: string; email?: stri
   // TEMP DEMO FALLBACK
   return {
     id: authUser.id,
+    email: authUser.email ?? DEMO_PROFILE_FALLBACK.email,
     full_name: DEMO_PROFILE_FALLBACK.full_name,
     role: DEMO_PROFILE_FALLBACK.role as UserRole,
     organization_id: null,
@@ -32,8 +37,9 @@ export function buildDemoProfileForAuthUser(authUser: { id: string; email?: stri
 export function resolveUserRoleWithDemoFallback(
   profile: { role: UserRole } | null | undefined,
   authUser: { id: string; email?: string | null },
-): UserRole {
+): UserRole | null {
   if (profile?.role) return profile.role;
+  if (!TEMP_DEMO_FALLBACK_PROFILE_ENABLED) return null;
   // TEMP DEMO FALLBACK
   return buildDemoProfileForAuthUser(authUser).role;
 }

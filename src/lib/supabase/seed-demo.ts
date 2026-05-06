@@ -28,7 +28,7 @@ const DEMO_USERS = [
   {
     email: "demo-ministry@agritrace.demo",
     full_name: "MoA Officer (Demo)",
-    role: "government_officer",
+    role: "ministry_officer",
     orgName: "Ministry of Agriculture Liberia",
     county: "Montserrado",
   },

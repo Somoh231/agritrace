@@ -14,6 +14,7 @@ async function requireSuperAdmin() {
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   const role = resolveUserRoleWithDemoFallback(profile as any, user); // TEMP DEMO FALLBACK
+  if (!role) return { ok: false as const, status: 403, message: "Profile required." };
   if (role !== "super_admin" && role !== "admin") {
     return { ok: false as const, status: 403, message: "Super admin access required." };
   }

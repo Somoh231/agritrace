@@ -70,6 +70,8 @@ function primaryActionForPath(pathname: string) {
       return "Refresh score";
     case "/cocoa/pilot-readiness":
       return "Open health";
+    case "/system-health":
+      return "Refresh status";
     default:
       return "Action";
   }
