@@ -19,6 +19,7 @@ In Supabase Dashboard → **SQL**, paste and run **in filename order**:
 
 1. `migrations/20260207100000_national_pilot_schema.sql`
 2. `migrations/20260207101000_auth_trigger_and_rls.sql`
+3. `migrations/20260208100000_orgs_locations_unique_for_upserts.sql`
 
 ## Seed order
 

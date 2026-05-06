@@ -159,7 +159,7 @@ async function main() {
     is_active: true,
   }));
 
-  const { error: profErr } = await supabase.from("profiles").upsert(profileRows as any);
+  const { error: profErr } = await supabase.from("profiles").upsert(profileRows as any, { onConflict: "id" });
   if (profErr) throw profErr;
 
   // 3) Locations
@@ -232,7 +232,7 @@ async function main() {
 
   const { data: locations, error: locErr } = await supabase
     .from("locations")
-    .upsert(LOCATIONS as any, { onConflict: "name" })
+    .upsert(LOCATIONS as any, { onConflict: "organization_id,name" })
     .select("id,name,type,county,organization_id,latitude,longitude");
   if (locErr) throw locErr;
 
