@@ -95,7 +95,7 @@ function sectionItems(module: Module, role: UserRole): Array<{ label: string; it
   ];
 
   const system =
-    role === "super_admin"
+    role === "super_admin" || role === "admin" // TEMP DEMO FALLBACK (synthetic admin role)
       ? [
           {
             label: "System",
@@ -122,9 +122,13 @@ function sectionItems(module: Module, role: UserRole): Array<{ label: string; it
       : [];
 
   const canSeeRice =
-    role === "super_admin" || role === "government_officer" || role === "county_officer";
+    role === "super_admin" ||
+    role === "admin" || // TEMP DEMO FALLBACK
+    role === "government_officer" ||
+    role === "county_officer";
   const canSeeCocoa =
     role === "super_admin" ||
+    role === "admin" || // TEMP DEMO FALLBACK
     role === "exporter" ||
     role === "cooperative_manager" ||
     role === "field_agent" ||
@@ -150,8 +154,14 @@ export default function Sidebar({
 }) {
   const effectiveModule: Module = PILOT_MODE ? "rice" : activeModule;
   const sections = sectionItems(effectiveModule, user.role);
-  const showRiceToggle = user.role === "super_admin" || user.role.includes("officer");
-  const showCocoaToggle = user.role === "super_admin" || !user.role.includes("officer");
+  const showRiceToggle =
+    user.role === "super_admin" ||
+    user.role === "admin" || // TEMP DEMO FALLBACK
+    user.role.includes("officer");
+  const showCocoaToggle =
+    user.role === "super_admin" ||
+    user.role === "admin" || // TEMP DEMO FALLBACK
+    !user.role.includes("officer");
 
   return (
     <aside className="h-full w-[240px] shrink-0 border-r border-gray-100 bg-white flex flex-col">

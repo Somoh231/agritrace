@@ -6,6 +6,8 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import Drawer from "@/components/shared/Drawer";
 import ProgressBar from "@/components/shared/ProgressBar";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
+import type { UserRole } from "@/lib/supabase/types";
 
 type RegRow = {
   county: string;
@@ -105,9 +107,15 @@ export default function DataQualityPanel() {
         return;
       }
       const { data: prof, error: pErr } = await supabase.from("profiles").select("role").eq("id", uid).single();
-      if (pErr) throw pErr;
-      const role = (prof as any)?.role as string;
-      const ok = role === "super_admin" || role === "government_officer";
+      let role: UserRole | undefined = (prof as { role?: UserRole } | null)?.role;
+      if (!prof) {
+        // TEMP DEMO FALLBACK — allow panel shell when profiles row is missing
+        role = buildDemoProfileForAuthUser({ id: uid }).role;
+      } else if (pErr) {
+        throw pErr;
+      }
+      const ok =
+        role === "super_admin" || role === "government_officer" || role === "admin"; // TEMP DEMO FALLBACK
       setAllowed(ok);
       if (!ok) return;
 

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import DashboardShell from "@/components/layout/DashboardShell";
 import { createClient } from "@/lib/supabase/server";
+import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { Profile } from "@/lib/supabase/types";
 
 export default async function DashboardLayout({
@@ -45,32 +46,16 @@ export default async function DashboardLayout({
 
   if (!user) redirect("/login");
 
-  const { data: profile, error } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single<Profile>();
 
-  if (error || !profile) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-xl mx-auto bg-white border border-gray-200 rounded-xl p-5">
-          <div className="font-display text-lg text-gray-900">Profile not found</div>
-          <div className="mt-2 text-[12px] text-gray-600 leading-relaxed">
-            Your Supabase user exists, but there is no matching row in{" "}
-            <span className="font-mono">profiles</span>. Insert a row with{" "}
-            <span className="font-mono">id = auth.users.id</span> and a valid{" "}
-            <span className="font-mono">role</span> to continue.
-          </div>
-          <div className="mt-4 rounded-lg bg-gray-50 border border-gray-200 p-3 font-mono text-[11px] text-gray-700">
-            id: {user.id}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // TEMP DEMO FALLBACK — missing profiles row: use synthetic profile instead of blocking.
+  const effectiveProfile: Profile = profile ?? buildDemoProfileForAuthUser(user);
 
-  if (profile.is_active === false) {
+  if (effectiveProfile.is_active === false) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-xl mx-auto bg-white border border-gray-200 rounded-xl p-5">
@@ -97,6 +82,6 @@ export default async function DashboardLayout({
   // This keeps the UX clean during demos.
   // Note: pathname isn't available in layout; guard implemented by middleware + API and sidebar hiding.
 
-  return <DashboardShell profile={profile}>{children}</DashboardShell>;
+  return <DashboardShell profile={effectiveProfile}>{children}</DashboardShell>;
 }
 

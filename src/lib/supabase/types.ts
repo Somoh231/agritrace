@@ -1,5 +1,6 @@
 export type UserRole =
   | "super_admin"
+  | "admin" // TEMP DEMO FALLBACK — remove after demo (synthetic role when profiles row missing)
   | "government_officer"
   | "county_officer"
   | "exporter"

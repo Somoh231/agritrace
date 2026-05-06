@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
 
 type ImportType = "farmers" | "rice" | "lots_movements";
 
@@ -18,7 +19,8 @@ async function requireSuperAdmin() {
     .eq("id", user.id)
     .single();
 
-  if ((profile as any)?.role !== "super_admin") {
+  const role = resolveUserRoleWithDemoFallback(profile as any, user); // TEMP DEMO FALLBACK
+  if (role !== "super_admin" && role !== "admin") {
     return { ok: false as const, status: 403, message: "Super admin access required." };
   }
 

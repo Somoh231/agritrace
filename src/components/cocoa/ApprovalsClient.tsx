@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import AlertBanner from "@/components/shared/AlertBanner";
 import { insertClientAuditLog } from "@/lib/audit/clientAudit";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { LotExportApprovalStatus, Profile, UserRole, VarianceReviewStatus } from "@/lib/supabase/types";
 import { formatWeight } from "@/lib/utils/formatters";
 import { calculateVariancePct } from "@/lib/utils/reconciliation";
@@ -13,7 +14,12 @@ import { calculateVariancePct } from "@/lib/utils/reconciliation";
 const VARIANCE_SUPERVISOR_PCT = 3;
 
 function canSupervise(role: UserRole) {
-  return role === "super_admin" || role === "cooperative_manager" || role === "exporter";
+  return (
+    role === "super_admin" ||
+    role === "admin" || // TEMP DEMO FALLBACK
+    role === "cooperative_manager" ||
+    role === "exporter"
+  );
 }
 
 export default function ApprovalsClient() {
@@ -35,7 +41,14 @@ export default function ApprovalsClient() {
       if (!user) throw new Error("Not signed in.");
 
       const { data: me } = await supabase.from("profiles").select("id,role").eq("id", user.id).single();
-      setProfile(me as any);
+      // TEMP DEMO FALLBACK — missing profiles row
+      const resolved =
+        me ??
+        ({
+          id: user.id,
+          role: buildDemoProfileForAuthUser(user).role,
+        } as Pick<Profile, "id" | "role">);
+      setProfile(resolved as any);
 
       const { data: lotRows, error: lotErr } = await supabase
         .from("lots")
