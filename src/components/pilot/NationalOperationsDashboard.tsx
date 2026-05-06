@@ -23,7 +23,7 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { safePct, seasonLabel } from "@/lib/utils/rice";
 
-import { OpsCard, OpsMetric, OpsSectionTitle, OpsStatusBadge, PilotDatasetNotice } from "@/components/pilot/pilot-ui";
+import { OpsCard, OpsMetric, OpsSectionTitle, OpsStatusBadge } from "@/components/pilot/pilot-ui";
 import ProgressBar from "@/components/shared/ProgressBar";
 
 function targetActualPct(actualMt: number, targetMt: number) {
@@ -144,8 +144,8 @@ export default function NationalOperationsDashboard() {
               National Agricultural Operations &amp; Intelligence Platform
             </h1>
             <p className="mt-2 max-w-[920px] text-[13px] font-normal leading-relaxed text-emerald-50/95">
-              Rice pilot · {hero.countiesActivePilot} counties active ({hero.countiesReporting} counties reporting,
-              expandable nationwide) · Ministry-centered AIS coordination layer.
+              {hero.countiesActivePilot} pilot counties · {hero.countiesReporting} reporting · ministry AIS coordination ·
+              sovereign agricultural intelligence · expandable nationwide.
             </p>
           </div>
           <div className="flex shrink-0 flex-col items-start gap-2 rounded-lg border border-white/15 bg-white/10 px-3 py-2">
@@ -160,8 +160,6 @@ export default function NationalOperationsDashboard() {
         </div>
       </div>
 
-      {usingPilotDemo ? <PilotDatasetNotice /> : null}
-
       <OpsCard dense className="border-emerald-100 bg-emerald-50/30">
         <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-600">{governanceFraming.headline}</div>
         <ul className="mt-2 grid gap-1.5 text-[12px] text-slate-800 sm:grid-cols-2">
@@ -175,7 +173,7 @@ export default function NationalOperationsDashboard() {
       </OpsCard>
 
       {/* Hero metrics */}
-      <OpsSectionTitle kicker="Executive indicators" title="National rice pilot · operational posture" />
+      <OpsSectionTitle kicker="Executive indicators" title="Operational posture · production & inputs" />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
         <OpsMetric label="Registered farmers" value={Intl.NumberFormat("en-US").format(farmersDisplay)} tone="forest" />
         <OpsMetric

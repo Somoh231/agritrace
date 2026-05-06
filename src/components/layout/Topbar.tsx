@@ -1,82 +1,48 @@
 "use client";
 
 import * as React from "react";
+import { Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import NotificationsMenu from "@/components/layout/NotificationsMenu";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
-
-type Module = "rice" | "cocoa";
-
-const BREADCRUMBS: Record<string, string> = {
-  "/national-operations": "National / Agricultural operations",
-  "/farmers": "Operations / Farmer registry",
-  "/inventory": "Operations / Inventory & inputs",
-  "/county-operations": "Operations / County coordination",
-  "/field-agents": "Operations / Field agents & offline",
-  "/food-security": "Intelligence / Food security",
-  "/reports": "Reporting / Ministry center",
-  "/rice": "Rice / National dashboard",
-  "/rice/production": "Rice / Production records",
-  "/rice/loss": "Rice / Post-harvest loss",
-  "/rice/renewals": "Rice / Annual renewals",
-  "/rice/programmes": "Rice / Programme management",
-  "/rice/resource-allocation": "Rice / Resource allocation",
-  "/rice/reports": "Rice / Ministry reports",
-  "/cocoa": "Cocoa / Overview",
-  "/cocoa/lots": "Cocoa / Lot management",
-  "/cocoa/movements": "Cocoa / Movement ledger",
-  "/cocoa/farmers": "Cocoa / Farmer registry",
-  "/cocoa/eudr": "Cocoa / EUDR checklist",
-  "/cocoa/audit": "Cocoa / Audit trail",
-  "/cocoa/inventory": "Cocoa / Inventory ledger",
-  "/cocoa/discrepancies": "Cocoa / Discrepancies",
-  "/cocoa/approvals": "Cocoa / Approvals",
-  "/cocoa/field-performance": "Cocoa / Field performance",
-  "/cocoa/data-quality": "Cocoa / Data quality",
-  "/cocoa/pilot-readiness": "Cocoa / Pilot readiness",
-  "/admin/users": "System / User management",
-  "/admin/system": "System / Diagnostics",
-  "/admin/organizations": "System / Organizations",
-  "/admin/demo-inquiries": "System / Demo inquiries",
-  "/admin/analytics": "System / Analytics",
-  "/admin/governance": "System / Governance",
-  "/admin/capabilities": "System / Capabilities",
-  "/admin/integrations": "System / Integration center",
-  "/admin/api-docs": "System / API documentation",
-  "/admin/content": "System / Public content",
-  "/admin/launch-readiness": "System / Launch readiness",
-  "/admin/import": "System / Data import",
-  "/admin/reports": "System / Reports center",
-  "/admin/settings": "System / Settings",
-  "/activity": "System / Activity center",
-};
+import { ministryBreadcrumb } from "@/lib/navigation/ministry-nav";
 
 export default function Topbar({
-  module,
   pathname,
   primaryAction,
   onExportPdf,
+  onOpenMobileNav,
 }: {
-  module: Module;
   pathname: string;
   primaryAction: { label: string; onClick: () => void };
   onExportPdf: () => void;
+  onOpenMobileNav?: () => void;
 }) {
   const router = useRouter();
-  const crumb = BREADCRUMBS[pathname] ?? `${module === "rice" ? "Rice" : "Cocoa"} / Dashboard`;
-  const [left, right] = crumb.split(" / ");
+  const { kicker, title } = ministryBreadcrumb(pathname);
   const [q, setQ] = React.useState("");
 
   return (
-    <header className="h-[52px] px-5 md:px-6 border-b border-slate-200/90 bg-white flex items-center justify-between">
-      <div className="text-[12px]">
-        <span className="font-semibold text-[#0f172a]">{left}</span>
-        <span className="text-slate-300"> / </span>
-        <span className="text-slate-600">{right}</span>
+    <header className="min-h-[52px] px-4 md:px-6 py-2 border-b border-slate-700/90 bg-slate-950/95 backdrop-blur-sm flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-3 min-w-0">
+        {onOpenMobileNav ? (
+          <button
+            type="button"
+            onClick={onOpenMobileNav}
+            className="lg:hidden h-9 w-9 rounded-lg border border-slate-700 bg-slate-900 text-slate-200 inline-flex items-center justify-center"
+            aria-label="Open navigation"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        ) : null}
+        <div className="text-[12px] min-w-0">
+          <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-500/90 truncate">{kicker}</div>
+          <div className="font-semibold text-slate-100 truncate">{title}</div>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2.5">
+      <div className="flex flex-wrap items-center gap-2 justify-end">
         <form
           className="hidden md:block"
           onSubmit={(e) => {
@@ -89,8 +55,8 @@ export default function Topbar({
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search farmers, lots, reports…"
-            className="h-9 w-[280px] rounded-xl border border-gray-200 bg-white px-3 text-[12px] text-gray-800 outline-none focus:border-forest-300 focus:ring-2 focus:ring-forest-50"
+            placeholder="Search registry, warehouses, reports…"
+            className="h-9 w-[240px] lg:w-[280px] rounded-lg border border-slate-700 bg-slate-900 px-3 text-[12px] text-slate-100 placeholder:text-slate-600 outline-none focus:border-emerald-700"
             aria-label="Global search"
           />
         </form>
@@ -99,14 +65,14 @@ export default function Topbar({
         <button
           type="button"
           onClick={onExportPdf}
-          className="hidden sm:inline-flex h-9 px-3 rounded-xl border border-gray-200 bg-white text-[12px] text-gray-800 hover:bg-gray-50"
+          className="hidden sm:inline-flex h-9 px-3 rounded-lg border border-slate-700 bg-slate-900 text-[12px] text-slate-200 hover:bg-slate-800"
         >
           Export PDF
         </button>
         <button
           type="button"
           onClick={primaryAction.onClick}
-          className="h-9 px-3 rounded-xl bg-forest-800 text-white text-[12px] hover:bg-forest-900 shadow-sm"
+          className="h-9 px-3 rounded-lg bg-emerald-700 text-white text-[12px] font-medium hover:bg-emerald-600 shadow-sm"
         >
           {primaryAction.label}
         </button>
@@ -114,4 +80,3 @@ export default function Topbar({
     </header>
   );
 }
-

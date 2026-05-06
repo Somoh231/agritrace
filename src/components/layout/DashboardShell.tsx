@@ -3,13 +3,11 @@
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import Sidebar from "@/components/layout/Sidebar";
+import MinistrySidebar from "@/components/layout/MinistrySidebar";
 import Topbar from "@/components/layout/Topbar";
 import DemoRail from "@/components/demo/DemoRail";
 import PilotBanner from "@/components/shared/PilotBanner";
 import type { Profile } from "@/lib/supabase/types";
-
-type Module = "rice" | "cocoa";
 
 function initialsFromName(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -18,61 +16,22 @@ function initialsFromName(name: string) {
   return (first + last).toUpperCase();
 }
 
-
-
-function moduleFromPathname(pathname: string): Module {
-  if (pathname.startsWith("/cocoa")) return "cocoa";
-  return "rice";
-}
-
-function primaryActionForPath(pathname: string) {
-  switch (pathname) {
-    case "/national-operations":
-    case "/rice":
-      return "+ Log production";
-    case "/farmers":
-      return "Register farmer";
-    case "/inventory":
-      return "Record distribution";
-    case "/county-operations":
-      return "Open verification queue";
-    case "/field-agents":
-      return "Review offline queue";
-    case "/food-security":
-      return "Refresh intelligence";
-    case "/reports":
-      return "Generate export";
-    case "/rice/production":
-      return "+ New record";
-    case "/rice/loss":
-      return "+ Assign agent";
-    case "/rice/reports":
-      return "Generate report";
-    case "/cocoa/lots":
-      return "+ Create lot";
-    case "/cocoa/movements":
-      return "+ Log movement";
-    case "/cocoa/farmers":
-      return "+ Register farmer";
-    case "/cocoa/eudr":
-      return "Generate DDS";
-    case "/cocoa/audit":
-      return "Export log";
-    case "/cocoa/inventory":
-      return "Set opening balance";
-    case "/cocoa/discrepancies":
-      return "Refresh issues";
-    case "/cocoa/approvals":
-      return "Refresh queue";
-    case "/cocoa/field-performance":
-      return "Refresh metrics";
-    case "/cocoa/data-quality":
-      return "Refresh score";
-    case "/cocoa/pilot-readiness":
-      return "Open health";
-    default:
-      return "Action";
-  }
+function primaryActionForPath(pathname: string): { label: string; href?: string; event?: boolean } {
+  if (pathname.startsWith("/farmers")) return { label: "Register farmer", event: true };
+  if (pathname.startsWith("/cooperatives")) return { label: "Add cooperative", event: true };
+  if (pathname.startsWith("/operations/warehouses")) return { label: "Create warehouse", event: true };
+  if (pathname.startsWith("/inventory") && pathname.includes("donor")) return { label: "Donor shipment", event: true };
+  if (pathname.startsWith("/inventory/transfers")) return { label: "Transfer stock", event: true };
+  if (pathname.startsWith("/field/inspections")) return { label: "Record inspection", event: true };
+  if (pathname.startsWith("/field/pest-reports")) return { label: "Pest / disease report", event: true };
+  if (pathname.startsWith("/subsidies/verification")) return { label: "Verify beneficiary", event: true };
+  if (pathname.startsWith("/production/rice")) return { label: "Record production", href: "/rice/production" };
+  if (pathname.startsWith("/compliance/audit-log")) return { label: "Refresh log", event: true };
+  if (pathname.startsWith("/reports/pdf")) return { label: "Open PDF export", href: "/rice/reports" };
+  if (pathname.startsWith("/admin/import")) return { label: "Import data", href: "/admin/import" };
+  if (pathname.startsWith("/command-center") || pathname.startsWith("/national-operations"))
+    return { label: "Executive view", href: "/executive-briefing" };
+  return { label: "Workspace actions", event: true };
 }
 
 export default function DashboardShell({
@@ -83,17 +42,10 @@ export default function DashboardShell({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname() ?? "/rice";
+  const pathname = usePathname() ?? "/command-center";
   const search = useSearchParams();
   const presentation = search.get("present") === "1";
-
-  const [activeModule, setActiveModule] = React.useState<Module>(() =>
-    moduleFromPathname(pathname),
-  );
-
-  React.useEffect(() => {
-    setActiveModule(moduleFromPathname(pathname));
-  }, [pathname]);
+  const showDemoRail = process.env.NEXT_PUBLIC_SHOW_DEMO_RAIL === "true";
 
   const user = React.useMemo(
     () => ({
@@ -104,16 +56,12 @@ export default function DashboardShell({
     [profile.full_name, profile.role],
   );
 
-  const onModuleSwitch = (module: Module) => {
-    setActiveModule(module);
-    router.push(module === "rice" ? "/national-operations" : "/cocoa/lots");
-  };
-
-  const primaryLabel = primaryActionForPath(pathname);
+  const primary = primaryActionForPath(pathname);
+  const [mobileNav, setMobileNav] = React.useState(false);
 
   if (presentation) {
     return (
-      <div className="min-h-screen bg-[rgb(var(--surface-muted))]">
+      <div className="min-h-screen bg-[rgb(var(--ministry-workspace))]">
         <div className="fixed right-4 top-4 z-50 hidden md:flex items-center gap-2">
           <button
             type="button"
@@ -122,83 +70,66 @@ export default function DashboardShell({
               next.searchParams.delete("present");
               router.push(next.pathname + next.search);
             }}
-            className="h-9 px-3 rounded-md border border-gray-200 bg-white text-[12px] text-gray-700 hover:bg-gray-50 shadow-sm"
+            className="h-9 px-3 rounded-md border border-slate-600 bg-slate-900 text-[12px] text-slate-200 hover:bg-slate-800 shadow-sm"
           >
             Exit presentation
           </button>
         </div>
         <main className="min-h-screen p-4 md:p-8">{children}</main>
-        <DemoRail />
+        {showDemoRail ? <DemoRail /> : null}
       </div>
     );
   }
 
   return (
-    <div className="min-h-[calc(100vh)] grid grid-cols-[268px_1fr]">
-      <Sidebar
-        activeModule={activeModule}
-        pathname={pathname}
-        onModuleSwitch={onModuleSwitch}
-        onNavigate={(href) => router.push(href)}
-        user={user}
-      />
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[292px_1fr] bg-[rgb(var(--ministry-workspace))]">
+      <div className="hidden lg:block min-h-screen">
+        <MinistrySidebar pathname={pathname} onNavigate={(href) => router.push(href)} user={user} />
+      </div>
 
-      <div className="min-w-0 flex flex-col">
+      <div className="min-w-0 flex flex-col min-h-screen">
         <Topbar
-          module={activeModule}
           pathname={pathname}
-          onExportPdf={() => {
-            // Placeholder: actual PDF export hooks are added in Phase 2.
-            router.push(activeModule === "rice" ? "/rice/reports" : "/cocoa/eudr");
-          }}
+          onOpenMobileNav={() => setMobileNav(true)}
           primaryAction={{
-            label: primaryLabel,
+            label: primary.label,
             onClick: () => {
-              if (pathname === "/national-operations" || pathname === "/rice") {
-                router.push("/rice/production");
+              if (primary.href) {
+                router.push(primary.href);
                 return;
               }
-              if (pathname === "/farmers" || pathname === "/inventory" || pathname === "/county-operations") {
-                return;
-              }
-              if (pathname === "/field-agents") {
-                window.dispatchEvent(new CustomEvent("agritrace-primary-action"));
-                return;
-              }
-              if (pathname === "/food-security") {
-                router.refresh();
-                return;
-              }
-              if (pathname === "/reports") {
-                router.push("/rice/reports");
-                return;
-              }
-              if (pathname === "/cocoa/pilot-readiness") {
-                router.push("/health");
-                return;
-              }
-              const refreshIntegrity = new Set([
-                "/cocoa/inventory",
-                "/cocoa/discrepancies",
-                "/cocoa/approvals",
-                "/cocoa/field-performance",
-                "/cocoa/data-quality",
-              ]);
-              if (refreshIntegrity.has(pathname)) {
-                window.dispatchEvent(new CustomEvent("agritrace-primary-action"));
-                return;
-              }
-              router.push(pathname);
+              window.dispatchEvent(new CustomEvent("agritrace-primary-action"));
             },
           }}
+          onExportPdf={() => router.push("/reports/pdf")}
         />
-        <main className="flex-1 overflow-y-auto bg-[rgb(var(--surface-muted))]">
+        {mobileNav ? (
+          <div className="fixed inset-0 z-[70] lg:hidden">
+            <button
+              type="button"
+              aria-label="Close navigation"
+              className="absolute inset-0 bg-black/55"
+              onClick={() => setMobileNav(false)}
+            />
+            <div className="absolute left-0 top-0 bottom-0 w-[min(292px,92vw)] shadow-2xl border-r border-[rgb(var(--ministry-border))]/10">
+              <MinistrySidebar
+                pathname={pathname}
+                onNavigate={(href) => {
+                  setMobileNav(false);
+                  router.push(href);
+                }}
+                user={user}
+              />
+            </div>
+          </div>
+        ) : null}
+        <main className="flex-1 overflow-y-auto">
           <PilotBanner />
-          <div className="p-5 md:p-6">{children}</div>
+          <div className="px-4 py-5 md:px-7 md:py-7 max-w-[1600px] mx-auto w-full">{children}</div>
         </main>
       </div>
-      <DemoRail />
+
+      {showDemoRail ? <DemoRail /> : null}
     </div>
   );
 }
-

@@ -1,6 +1,5 @@
-import NationalOperationsDashboard from "@/components/pilot/NationalOperationsDashboard";
+import { redirect } from "next/navigation";
 
-export default function RiceDashboardPage() {
-  return <NationalOperationsDashboard />;
+export default function RiceLegacyRedirect() {
+  redirect("/command-center");
 }
-

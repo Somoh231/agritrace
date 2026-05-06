@@ -33,6 +33,18 @@
   --border: 226 231 238; /* mist-200 */
   --text: 11 18 32; /* ink-900 */
   --text-muted: 71 85 105; /* slate-600 */
+
+  /* Ministry command workspace */
+  --ministry-sidebar: 6 46 26;
+  --ministry-sidebar-fg: 236 253 245;
+  --ministry-border: 255 255 255;
+  --ministry-workspace: 17 24 32;
+  --ministry-panel: 30 41 59;
+  --ministry-panel-border: 51 65 85;
+}
+
+.ministry-shell-sidebar {
+  box-shadow: inset -1px 0 0 rgb(0 0 0 / 0.15);
 }
 
 html,

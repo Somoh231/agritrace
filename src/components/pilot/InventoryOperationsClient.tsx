@@ -8,44 +8,16 @@ import {
   inventoryTransfers,
   warehouses,
 } from "@/lib/demo/agriculture-pilot-data";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { safePct } from "@/lib/utils/rice";
 
-import { OpsCard, OpsMetric, OpsSectionTitle, OpsStatusBadge, PilotDatasetNotice } from "@/components/pilot/pilot-ui";
+import { OpsCard, OpsMetric, OpsStatusBadge } from "@/components/pilot/pilot-ui";
 import ProgressBar from "@/components/shared/ProgressBar";
 
 export default function InventoryOperationsClient() {
-  const [usingDemo, setUsingDemo] = React.useState(true);
-
-  React.useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const supabase = getSupabaseBrowserClient();
-        const { count, error } = await supabase
-          .from("warehouse_stock")
-          .select("id", { count: "exact", head: true });
-        if (!cancelled && !error && (count ?? 0) > 0) setUsingDemo(false);
-      } catch {
-        /* keep demo */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const lowStock = warehouses.filter((w) => w.stockRisk !== "healthy");
 
   return (
-    <div className="space-y-5">
-      <OpsSectionTitle
-        kicker="Inputs"
-        title="Inventory & agricultural inputs"
-        subtitle="Warehouse balances, county allocations, donor-tagged stock, and distribution fidelity · illustrative pilot figures unless live inventory feeds connect."
-      />
-      {usingDemo ? <PilotDatasetNotice /> : null}
-
+    <div className="space-y-5 p-4 md:p-5">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <OpsMetric label="Fertilizer distributed" value={`${inputDistributionProgress.fertilizerDistributedMt} t`} tone="forest" />
         <OpsMetric label="Fertilizer allocated" value={`${inputDistributionProgress.fertilizerAllocatedMt} t`} tone="navy" />

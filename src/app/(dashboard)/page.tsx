@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function DashboardIndex() {
-  redirect("/national-operations");
+export default function DashboardEntry() {
+  redirect("/command-center");
 }
-

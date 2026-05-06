@@ -1,5 +1,5 @@
-import NationalOperationsDashboard from "@/components/pilot/NationalOperationsDashboard";
+import { redirect } from "next/navigation";
 
-export default function NationalOperationsPage() {
-  return <NationalOperationsDashboard />;
+export default function LegacyNationalOperationsRedirect() {
+  redirect("/command-center");
 }

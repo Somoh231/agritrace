@@ -1,5 +1,5 @@
-import InventoryOperationsClient from "@/components/pilot/InventoryOperationsClient";
+import InventoryNationalWorkspace from "@/components/operations/InventoryNationalWorkspace";
 
 export default function NationalInventoryPage() {
-  return <InventoryOperationsClient />;
+  return <InventoryNationalWorkspace />;
 }

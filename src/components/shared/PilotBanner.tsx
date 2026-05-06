@@ -6,16 +6,13 @@ export default function PilotBanner() {
   if (!PILOT_MODE) return null;
 
   return (
-    <div className="w-full bg-[#ecfdf5] border-b border-emerald-100 px-[18px] py-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-      <div className="min-w-0 flex items-center gap-2 font-mono text-[10px] text-emerald-900">
-        <span className="h-2 w-2 rounded-full bg-emerald-600 shrink-0" aria-hidden="true" />
+    <div className="w-full border-b border-emerald-900/40 bg-emerald-950/35 px-4 py-1.5">
+      <div className="max-w-[1600px] mx-auto flex items-center gap-2 font-mono text-[10px] text-emerald-100/85">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" aria-hidden />
         <span className="truncate">
-          PILOT · Season {PILOT_SEASON} · {PILOT_COUNTIES.join(", ")} · Ministry-owned AIS layer · sovereign agricultural
-          database · rice-first · expandable nationally
+          Active pilot · Season {PILOT_SEASON} · Counties {PILOT_COUNTIES.join(", ")} · national expansion ready
         </span>
       </div>
-      <div className="shrink-0 font-mono text-[10px] text-emerald-800">Illustrative pilot data where live feeds are pending</div>
     </div>
   );
 }
-

@@ -3,6 +3,42 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { normalizeHttpUrl } from "@/lib/supabase/env";
 
+function matchesProtectedRoute(pathname: string, pattern: string) {
+  return pathname === pattern || pathname.startsWith(`${pattern}/`);
+}
+
+function isProtectedPath(pathname: string): boolean {
+  const roots = [
+    "/command-center",
+    "/executive-briefing",
+    "/alerts",
+    "/national-operations",
+    "/farmers",
+    "/cooperatives",
+    "/geo-registry",
+    "/verification-queue",
+    "/registration-approvals",
+    "/field-agents",
+    "/field",
+    "/inventory",
+    "/operations",
+    "/subsidies",
+    "/production",
+    "/compliance",
+    "/reports",
+    "/food-security",
+    "/county-operations",
+    "/rice",
+    "/cocoa",
+    "/map",
+    "/search",
+    "/activity",
+    "/admin",
+    "/dashboard",
+  ];
+  return roots.some((p) => matchesProtectedRoute(pathname, p));
+}
+
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({ request });
   const pathname = request.nextUrl.pathname;
@@ -21,7 +57,6 @@ export async function middleware(request: NextRequest) {
   const url = normalizeHttpUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
-  // Allow clean startup before Supabase is configured.
   if (!url || !anonKey) return response;
 
   const supabase = createServerClient(url, anonKey, {
@@ -42,28 +77,10 @@ export async function middleware(request: NextRequest) {
     const { data } = await supabase.auth.getUser();
     user = data.user;
   } catch {
-    // Edge/network outages must not hard-fail the whole site; treat as signed-out.
     user = null;
   }
 
-  const isProtected =
-    pathname.startsWith("/national-operations") ||
-    pathname.startsWith("/farmers") ||
-    pathname.startsWith("/inventory") ||
-    pathname.startsWith("/county-operations") ||
-    pathname.startsWith("/field-agents") ||
-    pathname.startsWith("/food-security") ||
-    pathname.startsWith("/reports") ||
-    pathname.startsWith("/rice") ||
-    pathname.startsWith("/cocoa") ||
-    pathname.startsWith("/field") ||
-    pathname.startsWith("/map") ||
-    pathname.startsWith("/search") ||
-    pathname.startsWith("/activity") ||
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/dashboard");
-
-  if (isProtected && !user) {
+  if (isProtectedPath(pathname) && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirectTo", pathname);
@@ -76,4 +93,3 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
-
