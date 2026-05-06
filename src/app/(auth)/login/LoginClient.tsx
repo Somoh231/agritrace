@@ -32,7 +32,7 @@ function LogoMark() {
 export default function LoginClient() {
   const router = useRouter();
   const search = useSearchParams();
-  const redirectTo = search.get("redirectTo") || "/rice";
+  const redirectTo = search.get("redirectTo") || "/national-operations";
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -131,7 +131,7 @@ export default function LoginClient() {
                     onSignIn({
                       email: "demo-ministry@agritrace.demo",
                       password: "DemoPass!2026",
-                      redirect: "/rice",
+                      redirect: "/national-operations",
                     })
                   }
                 />

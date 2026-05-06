@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
 export default function DashboardIndex() {
-  redirect("/rice");
+  redirect("/national-operations");
 }
 

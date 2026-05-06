@@ -47,6 +47,13 @@ export async function middleware(request: NextRequest) {
   }
 
   const isProtected =
+    pathname.startsWith("/national-operations") ||
+    pathname.startsWith("/farmers") ||
+    pathname.startsWith("/inventory") ||
+    pathname.startsWith("/county-operations") ||
+    pathname.startsWith("/field-agents") ||
+    pathname.startsWith("/food-security") ||
+    pathname.startsWith("/reports") ||
     pathname.startsWith("/rice") ||
     pathname.startsWith("/cocoa") ||
     pathname.startsWith("/field") ||

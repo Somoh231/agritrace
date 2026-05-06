@@ -27,8 +27,21 @@ function moduleFromPathname(pathname: string): Module {
 
 function primaryActionForPath(pathname: string) {
   switch (pathname) {
+    case "/national-operations":
     case "/rice":
       return "+ Log production";
+    case "/farmers":
+      return "Register farmer";
+    case "/inventory":
+      return "Record distribution";
+    case "/county-operations":
+      return "Open verification queue";
+    case "/field-agents":
+      return "Review offline queue";
+    case "/food-security":
+      return "Refresh intelligence";
+    case "/reports":
+      return "Generate export";
     case "/rice/production":
       return "+ New record";
     case "/rice/loss":
@@ -93,7 +106,7 @@ export default function DashboardShell({
 
   const onModuleSwitch = (module: Module) => {
     setActiveModule(module);
-    router.push(module === "rice" ? "/rice" : "/cocoa/lots");
+    router.push(module === "rice" ? "/national-operations" : "/cocoa/lots");
   };
 
   const primaryLabel = primaryActionForPath(pathname);
@@ -121,7 +134,7 @@ export default function DashboardShell({
   }
 
   return (
-    <div className="min-h-[calc(100vh)] grid grid-cols-[240px_1fr]">
+    <div className="min-h-[calc(100vh)] grid grid-cols-[268px_1fr]">
       <Sidebar
         activeModule={activeModule}
         pathname={pathname}
@@ -141,6 +154,25 @@ export default function DashboardShell({
           primaryAction={{
             label: primaryLabel,
             onClick: () => {
+              if (pathname === "/national-operations" || pathname === "/rice") {
+                router.push("/rice/production");
+                return;
+              }
+              if (pathname === "/farmers" || pathname === "/inventory" || pathname === "/county-operations") {
+                return;
+              }
+              if (pathname === "/field-agents") {
+                window.dispatchEvent(new CustomEvent("agritrace-primary-action"));
+                return;
+              }
+              if (pathname === "/food-security") {
+                router.refresh();
+                return;
+              }
+              if (pathname === "/reports") {
+                router.push("/rice/reports");
+                return;
+              }
               if (pathname === "/cocoa/pilot-readiness") {
                 router.push("/health");
                 return;

@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,13 @@ import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 type Module = "rice" | "cocoa";
 
 const BREADCRUMBS: Record<string, string> = {
+  "/national-operations": "National / Agricultural operations",
+  "/farmers": "Operations / Farmer registry",
+  "/inventory": "Operations / Inventory & inputs",
+  "/county-operations": "Operations / County coordination",
+  "/field-agents": "Operations / Field agents & offline",
+  "/food-security": "Intelligence / Food security",
+  "/reports": "Reporting / Ministry center",
   "/rice": "Rice / National dashboard",
   "/rice/production": "Rice / Production records",
   "/rice/loss": "Rice / Post-harvest loss",
@@ -61,10 +68,10 @@ export default function Topbar({
   const [q, setQ] = React.useState("");
 
   return (
-    <header className="h-[56px] px-5 md:px-6 border-b border-gray-100 bg-white/70 backdrop-blur flex items-center justify-between">
+    <header className="h-[52px] px-5 md:px-6 border-b border-slate-200/90 bg-white flex items-center justify-between">
       <div className="text-[12px]">
-        <span className="font-medium text-ink-900">{left}</span>
-        <span className="text-gray-300"> / </span>
+        <span className="font-semibold text-[#0f172a]">{left}</span>
+        <span className="text-slate-300"> / </span>
         <span className="text-slate-600">{right}</span>
       </div>
 

@@ -1,6 +1,5 @@
 import NationalOperationsDashboard from "@/components/pilot/NationalOperationsDashboard";
 
-export default function RiceDashboardPage() {
+export default function NationalOperationsPage() {
   return <NationalOperationsDashboard />;
 }
-

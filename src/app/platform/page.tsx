@@ -50,7 +50,7 @@ export default async function Page() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (user) redirect("/rice");
+    if (user) redirect("/national-operations");
   } catch {
     // If Supabase isn't configured correctly, fall back to the public marketing experience.
   }
