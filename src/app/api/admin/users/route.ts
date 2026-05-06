@@ -1,34 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { createClient } from "@/lib/supabase/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
+import { requireAdminConsole } from "@/lib/supabase/require-admin-console";
 import type { UserRole } from "@/lib/supabase/types";
 
-async function requireSuperAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false as const, status: 401, message: "Not authenticated." };
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  const role = resolveUserRoleWithDemoFallback(profile as any, user); // TEMP DEMO FALLBACK
-  if (!role) return { ok: false as const, status: 403, message: "Profile required." };
-  if (role !== "super_admin" && role !== "admin") {
-    return { ok: false as const, status: 403, message: "Super admin access required." };
-  }
-
-  return { ok: true as const, userId: user.id };
-}
-
 export async function GET(request: Request) {
-  const guard = await requireSuperAdmin();
+  const guard = await requireAdminConsole();
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.status });
 
   const url = new URL(request.url);
@@ -100,7 +77,7 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const guard = await requireSuperAdmin();
+  const guard = await requireAdminConsole();
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.status });
 
   try {

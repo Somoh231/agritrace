@@ -1,32 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { createClient } from "@/lib/supabase/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
+import { requireAdminConsole } from "@/lib/supabase/require-admin-console";
 
 type ImportType = "farmers" | "rice" | "lots_movements";
-
-async function requireSuperAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false as const, status: 401, message: "Not authenticated." };
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  const role = resolveUserRoleWithDemoFallback(profile as any, user); // TEMP DEMO FALLBACK
-  if (!role) return { ok: false as const, status: 403, message: "Profile required." };
-  if (role !== "super_admin" && role !== "admin") {
-    return { ok: false as const, status: 403, message: "Super admin access required." };
-  }
-
-  return { ok: true as const, userId: user.id };
-}
 
 function reqStr(v: unknown, field: string) {
   const s = String(v ?? "").trim();
@@ -48,7 +25,7 @@ function asDate(v: unknown, field: string) {
 }
 
 export async function POST(request: Request) {
-  const guard = await requireSuperAdmin();
+  const guard = await requireAdminConsole();
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.status });
 
   try {

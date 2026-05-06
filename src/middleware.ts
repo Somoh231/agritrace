@@ -61,7 +61,6 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/search") ||
     pathname.startsWith("/activity") ||
     pathname.startsWith("/admin") ||
-    pathname.startsWith("/system-health") ||
     pathname.startsWith("/dashboard");
 
   if (isProtected && !user) {

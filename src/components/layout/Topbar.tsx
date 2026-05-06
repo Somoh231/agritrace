@@ -36,6 +36,7 @@ const BREADCRUMBS: Record<string, string> = {
   "/cocoa/data-quality": "Cocoa / Data quality",
   "/cocoa/pilot-readiness": "Cocoa / Pilot readiness",
   "/admin/users": "System / User management",
+  "/admin/system": "System / Diagnostics",
   "/admin/organizations": "System / Organizations",
   "/admin/demo-inquiries": "System / Demo inquiries",
   "/admin/analytics": "System / Analytics",
@@ -49,7 +50,6 @@ const BREADCRUMBS: Record<string, string> = {
   "/admin/reports": "System / Reports center",
   "/admin/settings": "System / Settings",
   "/activity": "System / Activity center",
-  "/system-health": "System / Diagnostics",
 };
 
 export default function Topbar({

@@ -74,6 +74,10 @@ async function ensureDemoAuthUsers(supabase: any) {
         email: u.email,
         password: DEMO_PASSWORD,
         email_confirm: true,
+        user_metadata: {
+          full_name: u.full_name,
+          role: u.role,
+        },
       });
       if (error) throw error;
       created.push({ email: u.email, id: data.user.id });
@@ -146,11 +150,13 @@ async function main() {
 
   const profileRows = DEMO_USERS.map((u) => ({
     id: idByEmail.get(u.email)!,
+    email: u.email,
     full_name: u.full_name,
     role: u.role,
     organization_id: orgByName.get(u.orgName)!.id,
     county: u.county,
     phone: null,
+    is_active: true,
   }));
 
   const { error: profErr } = await supabase.from("profiles").upsert(profileRows as any);

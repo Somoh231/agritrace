@@ -1,7 +1,9 @@
+/** Matches `public.user_role` enum in Supabase migrations. */
 export type UserRole =
   | "super_admin"
-  | "admin" // TEMP DEMO FALLBACK — synthetic role when profiles row missing; mirrors DB enum
+  | "admin" // TEMP DEMO FALLBACK — synthetic when profiles row missing; also assignable for service accounts
   | "ministry_officer"
+  | "government_officer" // legacy alias — prefer ministry_officer for new profiles
   | "county_officer"
   | "district_officer"
   | "cooperative_manager"
@@ -10,9 +12,7 @@ export type UserRole =
   | "donor_partner"
   | "exporter"
   | "call_center_agent"
-  | "auditor"
-  /** @deprecated Prefer ministry_officer; retained for legacy rows and migrations */
-  | "government_officer";
+  | "auditor";
 
 export type OrgType =
   | "cooperative"
@@ -58,7 +58,6 @@ export interface Profile {
   role: UserRole;
   organization_id: string | null;
   county: string | null;
-  /** Officer jurisdiction when applicable */
   district?: string | null;
   phone: string | null;
   is_active?: boolean;

@@ -16,20 +16,6 @@ export function getSupabaseBrowserClient() {
     );
   }
 
-  if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    // eslint-disable-next-line no-console -- dev-only connectivity hint (never log keys)
-    console.log("[Agrivault] Supabase browser client ready", {
-      host: (() => {
-        try {
-          return new URL(url).hostname;
-        } catch {
-          return "(invalid URL)";
-        }
-      })(),
-      anon_key_length: anonKey.length,
-    });
-  }
-
   browserClient = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!.trim(),

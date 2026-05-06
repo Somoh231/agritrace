@@ -157,14 +157,14 @@ export default function ActivityCenter() {
                 <option value="super_admin">super_admin</option>
                 <option value="admin">admin</option>
                 <option value="ministry_officer">ministry_officer</option>
-                <option value="government_officer">government_officer (legacy)</option>
+                <option value="government_officer">government_officer</option>
                 <option value="county_officer">county_officer</option>
                 <option value="district_officer">district_officer</option>
-                <option value="warehouse_manager">warehouse_manager</option>
-                <option value="donor_partner">donor_partner</option>
                 <option value="exporter">exporter</option>
                 <option value="cooperative_manager">cooperative_manager</option>
                 <option value="field_agent">field_agent</option>
+                <option value="warehouse_manager">warehouse_manager</option>
+                <option value="donor_partner">donor_partner</option>
                 <option value="call_center_agent">call_center_agent</option>
                 <option value="auditor">auditor</option>
               </select>

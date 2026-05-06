@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
 import type { UserRole } from "@/lib/supabase/types";
 import { PILOT_MODE } from "@/lib/utils/pilot-config";
 
@@ -50,6 +51,7 @@ function canSeeNationalOps(role: UserRole) {
     role === "county_officer" ||
     role === "district_officer" ||
     role === "warehouse_manager" ||
+    role === "donor_partner" ||
     role === "field_agent" ||
     role === "call_center_agent"
   );
@@ -111,35 +113,30 @@ function navSectionsForRole(role: UserRole): NavSection[] {
     ],
   };
 
-  const fullAdministration: NavItem[] = [
-    { label: "User management", href: "/admin/users" },
-    { label: "Organizations", href: "/admin/organizations" },
-    { label: "Demo inquiries", href: "/admin/demo-inquiries" },
-    { label: "Analytics", href: "/admin/analytics" },
-    { label: "Governance", href: "/admin/governance" },
-    { label: "Capabilities", href: "/admin/capabilities" },
-    { label: "Integration center", href: "/admin/integrations" },
-    { label: "API documentation", href: "/admin/api-docs" },
-    { label: "Public content", href: "/admin/content" },
-    { label: "Launch readiness", href: "/admin/launch-readiness" },
-    { label: "Data import", href: "/admin/import" },
-    { label: "Reports center", href: "/admin/reports" },
-    { label: "Settings", href: "/admin/settings" },
-    { label: "Activity center", href: "/activity" },
-    { label: "System diagnostics", href: "/system-health" },
-    { label: "Health checks", href: "/health" },
-    { label: "First-time setup", href: "/setup" },
-  ];
-
-  const system: NavSection =
-    role === "super_admin" || role === "admin" // TEMP DEMO FALLBACK
-      ? { label: "Administration", items: fullAdministration }
-      : role === "ministry_officer" || role === "government_officer"
-        ? {
-            label: "Administration",
-            items: [{ label: "System diagnostics", href: "/system-health" }],
-          }
-        : { label: "", items: [] };
+  const system: NavSection = isAdminConsoleRole(role)
+    ? {
+        label: "Administration",
+        items: [
+          { label: "User management", href: "/admin/users" },
+          { label: "Organizations", href: "/admin/organizations" },
+          { label: "System diagnostics", href: "/admin/system" },
+          { label: "Demo inquiries", href: "/admin/demo-inquiries" },
+          { label: "Analytics", href: "/admin/analytics" },
+          { label: "Governance", href: "/admin/governance" },
+          { label: "Capabilities", href: "/admin/capabilities" },
+          { label: "Integration center", href: "/admin/integrations" },
+          { label: "API documentation", href: "/admin/api-docs" },
+          { label: "Public content", href: "/admin/content" },
+          { label: "Launch readiness", href: "/admin/launch-readiness" },
+          { label: "Data import", href: "/admin/import" },
+          { label: "Reports center", href: "/admin/reports" },
+          { label: "Settings", href: "/admin/settings" },
+          { label: "Activity center", href: "/activity" },
+          { label: "Health checks", href: "/health" },
+          { label: "First-time setup", href: "/setup" },
+        ],
+      }
+    : { label: "", items: [] };
 
   const canSeeRice =
     role === "super_admin" ||
@@ -147,7 +144,9 @@ function navSectionsForRole(role: UserRole): NavSection[] {
     role === "ministry_officer" ||
     role === "government_officer" ||
     role === "county_officer" ||
-    role === "district_officer";
+    role === "district_officer" ||
+    role === "warehouse_manager" ||
+    role === "field_agent";
   const canSeeCocoa =
     role === "super_admin" ||
     role === "admin" ||
@@ -198,12 +197,12 @@ export default function Sidebar({
   const showRiceToggle =
     user.role === "super_admin" ||
     user.role === "admin" ||
-    user.role.includes("officer") ||
-    user.role === "warehouse_manager";
+    user.role === "warehouse_manager" ||
+    user.role.includes("officer");
   const showCocoaToggle =
     user.role === "super_admin" ||
     user.role === "admin" ||
-    (!user.role.includes("officer") && user.role !== "warehouse_manager");
+    !user.role.includes("officer");
 
   return (
     <aside className="h-full w-[268px] shrink-0 border-r border-slate-200/90 bg-[#fafbfa] flex flex-col">

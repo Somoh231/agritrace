@@ -2,10 +2,7 @@ import { redirect } from "next/navigation";
 
 import DashboardShell from "@/components/layout/DashboardShell";
 import { createClient } from "@/lib/supabase/server";
-import {
-  buildDemoProfileForAuthUser,
-  TEMP_DEMO_FALLBACK_PROFILE_ENABLED,
-} from "@/lib/supabase/temp-demo-profile-fallback";
+import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { Profile } from "@/lib/supabase/types";
 
 export default async function DashboardLayout({
@@ -53,30 +50,10 @@ export default async function DashboardLayout({
     .from("profiles")
     .select("*")
     .eq("id", user.id)
-    .single<Profile>();
+    .maybeSingle<Profile>();
 
-  // TEMP DEMO FALLBACK — optional synthetic profile when DB row missing (disable after trigger verified).
-  let effectiveProfile: Profile | null = profile;
-  if (!effectiveProfile && TEMP_DEMO_FALLBACK_PROFILE_ENABLED) {
-    effectiveProfile = buildDemoProfileForAuthUser(user);
-  }
-  if (!effectiveProfile) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-xl mx-auto bg-white border border-gray-200 rounded-xl p-5">
-          <div className="font-display text-lg text-gray-900">Profile provisioning</div>
-          <div className="mt-2 text-[12px] text-gray-600 leading-relaxed">
-            Your account is authenticated but no <span className="font-mono">profiles</span> row was found.
-            Run migrations (including <span className="font-mono">handle_new_user</span> trigger) or ask an administrator
-            to create your profile.
-          </div>
-          <div className="mt-4 rounded-lg bg-gray-50 border border-gray-200 p-3 font-mono text-[11px] text-gray-700">
-            User id: {user.id}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // TEMP DEMO FALLBACK — missing profiles row: use synthetic profile instead of blocking.
+  const effectiveProfile: Profile = profile ?? buildDemoProfileForAuthUser(user);
 
   if (effectiveProfile.is_active === false) {
     return (
@@ -100,10 +77,7 @@ export default async function DashboardLayout({
     );
   }
 
-  // Hard guard: only super_admin can access /admin/*
-  // (API routes already enforce this too.)
-  // This keeps the UX clean during demos.
-  // Note: pathname isn't available in layout; guard implemented by middleware + API and sidebar hiding.
+  // `/admin/*` access is enforced by `admin/layout.tsx` (role guard), admin APIs, and sidebar visibility.
 
   return <DashboardShell profile={effectiveProfile}>{children}</DashboardShell>;
 }

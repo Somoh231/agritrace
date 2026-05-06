@@ -41,12 +41,11 @@ export default async function GovernancePage() {
         <Card title="Roles & permissions matrix" subtitle="Review and update role assignments and account state.">
           <div className="space-y-2 text-[12px] text-gray-700">
             {[
-              "super_admin / admin: platform governance (admin routes)",
-              "ministry_officer: nationwide ministry visibility",
-              "government_officer: legacy ministry-wide role (prefer ministry_officer)",
-              "county_officer / district_officer: sub-national scope via profile county/district",
+              "super_admin / admin: full console access (admin also used as TEMP DEMO FALLBACK)",
+              "ministry_officer (preferred) / government_officer (legacy): national ministry operations",
+              "county_officer / district_officer: sub-national coordination",
               "warehouse_manager: warehouse stock & transfers",
-              "donor_partner: donor shipments & reporting outputs (RLS-limited)",
+              "donor_partner: reporting-oriented access (RLS-scoped)",
               "field_agent / call_center_agent: data capture",
               "auditor: read-only audit and compliance oversight",
             ].map((item) => (

@@ -22,8 +22,10 @@ export default function InventoryOperationsClient() {
     (async () => {
       try {
         const supabase = getSupabaseBrowserClient();
-        const { data, error } = await supabase.from("warehouse_stock").select("id").limit(1);
-        if (!cancelled && !error && data?.length) setUsingDemo(false);
+        const { count, error } = await supabase
+          .from("warehouse_stock")
+          .select("id", { count: "exact", head: true });
+        if (!cancelled && !error && (count ?? 0) > 0) setUsingDemo(false);
       } catch {
         /* keep demo */
       }

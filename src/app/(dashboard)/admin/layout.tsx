@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
 import type { Profile } from "@/lib/supabase/types";
 import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
 
@@ -16,11 +17,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .from("profiles")
     .select("role")
     .eq("id", user.id)
-    .single<Pick<Profile, "role">>();
+    .maybeSingle<Pick<Profile, "role">>();
 
-  // TEMP DEMO FALLBACK — missing profiles row still allows admin routes for demo role when enabled.
+  // TEMP DEMO FALLBACK — missing profiles row still allows admin routes for demo role.
   const role = resolveUserRoleWithDemoFallback(profile, user);
-  if (!role || (role !== "super_admin" && role !== "admin")) {
+  if (!isAdminConsoleRole(role)) {
     redirect("/national-operations");
   }
 
