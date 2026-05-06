@@ -37,9 +37,14 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"] = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Edge/network outages must not hard-fail the whole site; treat as signed-out.
+    user = null;
+  }
 
   const isProtected =
     pathname.startsWith("/rice") ||

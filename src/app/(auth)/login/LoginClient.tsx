@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import AlertBanner from "@/components/shared/AlertBanner";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { describeAuthFetchFailure } from "@/lib/supabase/env";
 import { track } from "@/lib/analytics/client";
 
 function LogoMark() {
@@ -50,14 +51,15 @@ export default function LoginClient() {
         password: nextPassword,
       });
       if (signInError) {
-        setError(signInError.message);
+        setError(describeAuthFetchFailure(signInError.message));
         return;
       }
       track("login_success", { email_domain: nextEmail.split("@")[1] ?? "" });
       router.push(creds?.redirect ?? redirectTo);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Sign-in failed.");
+      const raw = e instanceof Error ? e.message : "Sign-in failed.";
+      setError(describeAuthFetchFailure(raw));
     } finally {
       setIsLoading(false);
     }
