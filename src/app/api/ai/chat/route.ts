@@ -6,9 +6,12 @@ import type { UserRole } from "@/lib/supabase/types";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
-const ANTHROPIC_MODEL_PREFERRED = "claude-3-7-sonnet-latest" as const;
-const ANTHROPIC_MODEL_FALLBACK = "claude-3-5-sonnet-20241022" as const;
-const ANTHROPIC_MODELS = [ANTHROPIC_MODEL_PREFERRED, ANTHROPIC_MODEL_FALLBACK] as const;
+/** Override via ANTHROPIC_MODEL; default is broadly available on Anthropic accounts. */
+const ANTHROPIC_MODEL = (process.env.ANTHROPIC_MODEL ?? "claude-3-haiku-20240307").trim();
+
+if (typeof console !== "undefined" && console.info) {
+  console.info("[ai/chat] Anthropic operational assistant model:", ANTHROPIC_MODEL);
+}
 
 type ReqBody = {
   messages: ChatMessage[];
@@ -165,12 +168,51 @@ function safeMessagesForClaude(messages: ChatMessage[]): ChatMessage[] {
   return trimmed;
 }
 
-function isModelNotFoundError(e: unknown): boolean {
-  const anyErr = e as any;
-  const status = Number(anyErr?.status ?? anyErr?.response?.status ?? 0);
-  const code = String(anyErr?.code ?? anyErr?.error?.code ?? "");
-  const message = String(anyErr?.message ?? anyErr?.error?.message ?? "");
-  return status === 404 || code === "not_found" || /model.*not found/i.test(message);
+function describeAnthropicStreamError(e: unknown): { logLine: string; streamNotice: string } {
+  const anyErr = e as Record<string, unknown> & { message?: string };
+  const status = Number(anyErr?.status ?? (anyErr?.response as { status?: number } | undefined)?.status ?? 0);
+  const nestedObj =
+    anyErr?.error && typeof anyErr.error === "object"
+      ? (anyErr.error as { message?: string; type?: string })
+      : null;
+  const nestedMessage = nestedObj?.message != null ? String(nestedObj.message) : "";
+  const apiType = nestedObj?.type != null ? String(nestedObj.type) : "";
+  const topMessage = anyErr?.message != null ? String(anyErr.message) : "";
+  const message = topMessage || nestedMessage || String(e ?? "unknown error");
+
+  if (status === 401 || status === 403) {
+    return {
+      logLine: `[ai/chat] Anthropic auth rejected (HTTP ${status}) for model=${ANTHROPIC_MODEL}: ${message}`,
+      streamNotice:
+        "\n\n[AI unavailable] API authentication was rejected. Verify ANTHROPIC_API_KEY and account access.\n",
+    };
+  }
+  if (
+    status === 404 ||
+    /not_found/i.test(apiType) ||
+    /model_not_found|model.*not found|does not exist|not have access/i.test(message)
+  ) {
+    return {
+      logLine: `[ai/chat] Model unavailable or denied for model=${ANTHROPIC_MODEL}: ${message}`,
+      streamNotice: `\n\n[AI unavailable] Model "${ANTHROPIC_MODEL}" is not enabled for this Anthropic account. Set ANTHROPIC_MODEL to an enabled model (default: claude-3-haiku-20240307).\n`,
+    };
+  }
+  if (status >= 400 && status < 500) {
+    return {
+      logLine: `[ai/chat] Anthropic client error (HTTP ${status}) model=${ANTHROPIC_MODEL}: ${message}`,
+      streamNotice: "\n\n[AI unavailable] The request could not be accepted. Check configuration or try again.\n",
+    };
+  }
+  if (status >= 500) {
+    return {
+      logLine: `[ai/chat] Anthropic server error (HTTP ${status}) model=${ANTHROPIC_MODEL}: ${message}`,
+      streamNotice: "\n\n[AI unavailable] The AI provider returned an error. Retry shortly.\n",
+    };
+  }
+  return {
+    logLine: `[ai/chat] Anthropic stream failed model=${ANTHROPIC_MODEL}: ${message}`,
+    streamNotice: "\n\n[AI unavailable] The assistant could not complete this response. Retry shortly.\n",
+  };
 }
 
 export async function POST(req: Request) {
@@ -209,44 +251,26 @@ export async function POST(req: Request) {
             { role: "user", content: userContext },
           ] satisfies Array<{ role: "user" | "assistant"; content: string }>;
 
-          let lastErr: unknown = null;
-          for (const model of ANTHROPIC_MODELS) {
-            try {
-              const s = client.messages.stream({
-                model,
-                max_tokens: 900,
-                system,
-                messages,
-              });
+          try {
+            const s = client.messages.stream({
+              model: ANTHROPIC_MODEL,
+              max_tokens: 900,
+              system,
+              messages,
+            });
 
-              for await (const event of s) {
-                if (event.type === "content_block_delta" && event.delta?.type === "text_delta") {
-                  controller.enqueue(encoder.encode(event.delta.text ?? ""));
-                }
+            for await (const event of s) {
+              if (event.type === "content_block_delta" && event.delta?.type === "text_delta") {
+                controller.enqueue(encoder.encode(event.delta.text ?? ""));
               }
-              lastErr = null;
-              break;
-            } catch (e) {
-              lastErr = e;
-              const retryable = isModelNotFoundError(e);
-              console.error("[ai/chat] Anthropic stream failed", {
-                model,
-                retryable,
-                message: e instanceof Error ? e.message : String(e),
-              });
-              if (!retryable) break;
             }
-          }
-
-          if (lastErr) {
-            controller.enqueue(
-              encoder.encode(
-                "\n\n[AI unavailable] Model access denied or misconfigured. Contact system administrator.\n",
-              ),
-            );
+          } catch (e) {
+            const { logLine, streamNotice } = describeAnthropicStreamError(e);
+            console.error(logLine);
+            controller.enqueue(encoder.encode(streamNotice));
           }
         } catch (e) {
-          console.error("[ai/chat] Unexpected stream error", e);
+          console.error("[ai/chat] Unexpected stream wrapper error:", e instanceof Error ? e.message : String(e));
           controller.enqueue(encoder.encode("\n\n[AI unavailable] Service error. Retry shortly.\n"));
         } finally {
           controller.close();
