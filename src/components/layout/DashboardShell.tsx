@@ -7,6 +7,7 @@ import MinistrySidebar from "@/components/layout/MinistrySidebar";
 import Topbar from "@/components/layout/Topbar";
 import DemoRail from "@/components/demo/DemoRail";
 import PilotBanner from "@/components/shared/PilotBanner";
+import AiAssistant from "@/components/ai-assistant/AiAssistant";
 import type { Profile, UserRole } from "@/lib/supabase/types";
 
 function initialsFromName(name: string) {
@@ -139,6 +140,7 @@ export default function DashboardShell({
       </div>
 
       {showDemoRail ? <DemoRail /> : null}
+      <AiAssistant profileId={profile.id} role={profile.role} pathname={pathname} />
     </div>
   );
 }

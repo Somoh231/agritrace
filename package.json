@@ -17,6 +17,7 @@
     "seed:ministry": "tsx src/lib/supabase/seed-ministry-canonical.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.0",
     "@react-pdf/renderer": "^4.5.1",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.104.1",
