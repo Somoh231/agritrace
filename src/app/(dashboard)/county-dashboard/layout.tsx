@@ -1,8 +1,10 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { resolveEffectiveWorkspaceRole } from "@/lib/auth/effective-workspace-role";
 import { mayAccessCountyDashboard, postLoginHomeForRole } from "@/lib/auth/post-login-home";
+import { WORKSPACE_DEMO_ROLE_COOKIE } from "@/lib/auth/workspace-demo-role";
 import { createClient } from "@/lib/supabase/server";
-import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { Profile } from "@/lib/supabase/types";
 
 export default async function CountyDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +20,8 @@ export default async function CountyDashboardLayout({ children }: { children: Re
     .eq("id", user.id)
     .maybeSingle<Pick<Profile, "role">>();
 
-  const role = resolveUserRoleWithDemoFallback(profile, user);
+  const cookieStore = await cookies();
+  const role = resolveEffectiveWorkspaceRole(profile, user, cookieStore.get(WORKSPACE_DEMO_ROLE_COOKIE)?.value);
   if (!mayAccessCountyDashboard(role)) {
     redirect(postLoginHomeForRole(role));
   }

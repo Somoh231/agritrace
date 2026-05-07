@@ -1,6 +1,8 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import DashboardShell from "@/components/layout/DashboardShell";
+import { applyWorkspaceDemoRoleToProfile, WORKSPACE_DEMO_ROLE_COOKIE } from "@/lib/auth/workspace-demo-role";
 import { createClient } from "@/lib/supabase/server";
 import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { Profile } from "@/lib/supabase/types";
@@ -79,6 +81,15 @@ export default async function DashboardLayout({
 
   // `/admin/*` access is enforced by `admin/layout.tsx` (role guard), admin APIs, and sidebar visibility.
 
-  return <DashboardShell profile={effectiveProfile}>{children}</DashboardShell>;
+  const cookieStore = await cookies();
+  const workspacePreviewCookie = cookieStore.get(WORKSPACE_DEMO_ROLE_COOKIE)?.value ?? null;
+  const authenticRole = effectiveProfile.role;
+  const workspaceProfile = applyWorkspaceDemoRoleToProfile(effectiveProfile, workspacePreviewCookie);
+
+  return (
+    <DashboardShell profile={workspaceProfile} authenticRole={authenticRole}>
+      {children}
+    </DashboardShell>
+  );
 }
 

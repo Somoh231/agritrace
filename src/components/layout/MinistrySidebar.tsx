@@ -36,10 +36,11 @@ export default function MinistrySidebar({
     ? {
         label: "Administration",
         items: [
-          { label: "User & role management", href: "/admin/users" },
+          { label: "Users & roles", href: "/admin/users" },
+          { label: "Permissions", href: "/admin/governance" },
           { label: "System diagnostics", href: "/admin/system" },
-          { label: "Organizations", href: "/admin/organizations" },
           { label: "Data integrations", href: "/admin/integrations" },
+          { label: "Organizations", href: "/admin/organizations" },
           { label: "Import & pipelines", href: "/admin/import" },
           { label: "Reports center", href: "/admin/reports" },
           { label: "Settings", href: "/admin/settings" },
@@ -49,16 +50,14 @@ export default function MinistrySidebar({
     : null;
 
   return (
-    <aside className="ministry-shell-sidebar h-full w-[292px] shrink-0 flex flex-col border-r border-[rgb(var(--ministry-border))] bg-[rgb(var(--ministry-sidebar))] text-[rgb(var(--ministry-sidebar-fg))]">
+    <aside className="ministry-shell-sidebar h-full min-h-screen w-[280px] shrink-0 flex flex-col text-[rgb(var(--ministry-sidebar-fg))]">
       <div className="px-4 py-4 border-b border-white/[0.06]">
         <div className="flex items-start gap-3">
           <MoMark />
           <div className="min-w-0 pt-0.5">
-            <div className="font-display text-[14px] font-semibold tracking-tight text-white leading-tight">
-              AgriVault AIS
-            </div>
-            <div className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.16em] text-emerald-200/70">
-              Liberia · Ministry operations
+            <div className="font-display text-[14px] font-semibold tracking-tight text-white leading-tight">AgriVault</div>
+            <div className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.16em] text-emerald-200/75">
+              AIS · Ministry of Agriculture · Liberia
             </div>
           </div>
         </div>

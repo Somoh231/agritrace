@@ -6,17 +6,21 @@ import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recha
 
 import LiberiaCountyMap from "@/components/ais/LiberiaCountyMap";
 import OperationalActivityRail from "@/components/ais/OperationalActivityRail";
+import OperationalQueuesPanel from "@/components/ais/OperationalQueuesPanel";
 import { useNationalAISLive } from "@/components/ais/useNationalAISLive";
 import { OpsStatusBadge } from "@/components/pilot/pilot-ui";
 import ProgressBar from "@/components/shared/ProgressBar";
 import {
+  dataQualityAlerts,
   farmerRegistrationPipeline,
   foodSecurityIndicators,
-  governanceFraming,
   inputDistributionProgress,
   nationalHeroMetrics,
-  warehouses,
+  postHarvestLossAlerts,
 } from "@/lib/demo/agriculture-pilot-data";
+import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
+import { ministryWarehouseToSignalRow } from "@/lib/data/ministry-data-service";
+import { PILOT_COUNTIES } from "@/lib/utils/pilot-config";
 import { safePct } from "@/lib/utils/rice";
 
 function targetActualPct(actualMt: number, targetMt: number) {
@@ -57,6 +61,15 @@ export default function MinistryCommandCenter() {
     return m;
   }, [countiesRanked]);
 
+  const daoComplianceAvg = React.useMemo(() => {
+    if (!countiesRanked.length) return 0;
+    const sum = countiesRanked.reduce((s, c) => s + countySyntheticCompliance(c), 0);
+    return Math.round(sum / countiesRanked.length);
+  }, [countiesRanked]);
+
+  const activeAlerts =
+    postHarvestLossAlerts.filter((a) => a.lossPct > 10).length + dataQualityAlerts.length;
+
   return (
     <div className="space-y-6 pb-10">
       {/* National hero */}
@@ -70,49 +83,59 @@ export default function MinistryCommandCenter() {
           }}
         />
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-[920px] space-y-3">
+          <div className="max-w-[980px] space-y-3">
             <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-emerald-200/80">
-              Ministry Agricultural Intelligence System
+              Ministry Agricultural Intelligence System · Liberia
             </div>
-            <h1 className="font-display text-[clamp(1.5rem,3vw,2.1rem)] font-semibold tracking-tight leading-tight">
-              National command center
+            <h1 className="font-display text-[clamp(1.55rem,3vw,2.25rem)] font-semibold tracking-tight leading-tight">
+              National Agricultural Intelligence System
             </h1>
             <p className="text-[13px] leading-relaxed text-emerald-50/90">
-              Sovereign oversight across rice production, import dependency, subsidy absorption, warehouse posture, food-security risk,
-              county reporting compliance, and DAO activity — consolidated for ministry executive decision cycles.
+              Ministry-owned operational layer for farmer registry, inputs logistics, production intelligence, food security posture,
+              county reporting, and DAO coordination — built as sovereign national infrastructure.
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
               <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 font-mono text-[10px] text-emerald-100/90">
                 Season {live.season}
               </span>
-              <span
-                className={`rounded-full border px-3 py-1 font-mono text-[10px] ${
-                  live.usingFallbackSignals ? "border-amber-400/35 bg-amber-500/10 text-amber-100" : "border-emerald-400/35 bg-emerald-500/10 text-emerald-50"
-                }`}
-              >
-                {live.usingFallbackSignals ? "Signals archive · awaiting live sync" : "Live operational tables"}
+              <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 font-mono text-[10px] text-emerald-100/90">
+                Pilot counties · {PILOT_COUNTIES.join(" · ")}
+              </span>
+              <span className="rounded-full border border-emerald-400/35 bg-emerald-500/10 px-3 py-1 font-mono text-[10px] text-emerald-50">
+                {live.usingFallbackSignals ? "Multi-source intelligence blend" : "Primary ministry operational tables"}
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 font-mono text-[10px] text-emerald-50/90">
+                Data freshness · rolling 24h reconcile
               </span>
             </div>
           </div>
           <div className="flex shrink-0 flex-col gap-2 rounded-xl border border-white/15 bg-black/25 px-4 py-3 backdrop-blur-md">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-emerald-100/75">Posture</div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-emerald-100/75">National posture</div>
             <div className="flex flex-wrap items-center gap-2">
-              <OpsStatusBadge status={live.usingFallbackSignals ? "warning" : "healthy"} />
-              <span className="text-[12px] text-emerald-50/95">{governanceFraming.headline}</span>
+              <OpsStatusBadge status={fi.nationalRiskScore > 58 ? "warning" : "healthy"} />
+              <span className="text-[12px] text-emerald-50/95">
+                Food risk index {fi.nationalRiskScore} · {activeAlerts} active coordination signals
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="relative mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
+        <div className="relative mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
           {[
             { label: "Registered farmers", value: Intl.NumberFormat().format(live.farmersCount) },
-            { label: "Domestic rice (est.)", value: `${prodMt.toFixed(0)} t`, hint: `Target ${targetMt.toFixed(0)} t` },
-            { label: "Target attainment", value: `${productionProgress.toFixed(1)}%` },
-            { label: "Subsidy utilization", value: `${hero.inputInventoryCoveragePct}%`, hint: "National inputs posture" },
-            { label: "Warehouse health", value: `${warehouses.filter((w) => w.stockRisk === "healthy").length}/${warehouses.length}`, hint: "Pilot nodes · expand nationwide" },
+            {
+              label: "Domestic rice (est.)",
+              value: `${prodMt.toFixed(0)} t`,
+              hint: `${productionProgress.toFixed(1)}% of ${targetMt.toFixed(0)} t national target`,
+            },
+            { label: "Import dependency", value: `${hero.importDependencyPct}%`, hint: "National supply lens" },
+            { label: "Warehouse coverage", value: `${hero.inputInventoryCoveragePct}%`, hint: "Inputs reach / allocation" },
+            { label: "DAO reporting compliance", value: `${daoComplianceAvg}%`, hint: "Synthetic cadence index" },
+            { label: "Subsidy utilization", value: `${hero.inputInventoryCoveragePct}%`, hint: "Programme absorption" },
             { label: "Food security risk", value: `${fi.nationalRiskScore}`, hint: "Composite ministry index" },
+            { label: "Active alerts", value: `${activeAlerts}`, hint: "Escalations & quality signals" },
             { label: "County reporting", value: `${hero.countiesReporting}/${hero.countiesActivePilot}`, hint: "Pilot cadence" },
-            { label: "DAO activity", value: `${hero.activeFieldOfficers}`, hint: "Reporting DAO equivalents" },
+            { label: "DAO roster pulse", value: `${hero.activeFieldOfficers}`, hint: "Active district officers" },
           ].map((m) => (
             <div
               key={m.label}
@@ -126,25 +149,13 @@ export default function MinistryCommandCenter() {
         </div>
       </section>
 
-      <div className="rounded-xl border border-slate-700/50 bg-white/[0.03] px-4 py-4 backdrop-blur-sm">
-        <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400">Institutional mandate</div>
-        <ul className="mt-2 grid gap-2 text-[12px] text-slate-200 sm:grid-cols-2 lg:grid-cols-3">
-          {governanceFraming.bullets.slice(0, 6).map((b) => (
-            <li key={b} className="flex gap-2">
-              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-emerald-400/90" aria-hidden />
-              {b}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px] items-start">
+        <div className="space-y-6 min-w-0">
+          <LiberiaCountyMap className="[&_svg]:min-h-[340px] lg:[&_svg]:min-h-[420px]" counties={countiesRanked} riskByCounty={riskByCounty} />
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_340px]">
-        <div className="space-y-5 min-w-0">
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            <LiberiaCountyMap counties={countiesRanked} riskByCounty={riskByCounty} />
-
             <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-slate-950/90 to-emerald-950/30 p-5 text-white backdrop-blur-md">
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-200/65">Registry pipeline</div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-200/65">Farmer registration pipeline</div>
               <div className="mt-2 grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
                   <div className="text-[10px] text-emerald-100/60">Verified</div>
@@ -163,8 +174,39 @@ export default function MinistryCommandCenter() {
                   <div className="font-display text-xl font-semibold">{Intl.NumberFormat().format(p.flagged)}</div>
                 </div>
               </div>
-              <Link href="/farmers" className="mt-4 inline-flex text-[12px] font-medium text-emerald-200 underline-offset-4 hover:underline">
-                Open national farmer registry →
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link href="/farmers" className="inline-flex text-[12px] font-medium text-emerald-200 underline-offset-4 hover:underline">
+                  Farmer registry →
+                </Link>
+                <Link href="/national-heat-map" className="inline-flex text-[12px] font-medium text-emerald-200/90 underline-offset-4 hover:underline">
+                  National heat map workspace →
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-700/60 bg-white/[0.03] p-5 backdrop-blur-sm text-slate-100">
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400">Production intelligence</div>
+              <div className="mt-2 font-display text-[17px] font-semibold text-white">County attainment overview</div>
+              <p className="mt-2 text-[12px] text-slate-400 leading-relaxed">
+                Production trajectory integrates pilot ministry metrics and seasonal rice records when synchronized.
+              </p>
+              <div className="mt-4 h-[180px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={countiesRanked.slice(0, 8).map((c) => ({
+                      county: c.county.slice(0, 6),
+                      t: Math.round(c.productionMt),
+                    }))}
+                  >
+                    <XAxis dataKey="county" tick={{ fontSize: 10, fill: "#94a3b8" }} />
+                    <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} width={36} />
+                    <Tooltip contentStyle={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 8 }} />
+                    <Bar dataKey="t" fill="#34d399" radius={[4, 4, 0, 0]} opacity={0.92} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <Link href="/production/county" className="mt-3 inline-flex text-[12px] font-medium text-emerald-400 hover:text-emerald-300">
+                County dashboards →
               </Link>
             </div>
           </div>
@@ -220,22 +262,6 @@ export default function MinistryCommandCenter() {
               })}
             </div>
 
-            <div className="mt-6 h-[220px]">
-              <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">Production by county (t)</div>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={countiesRanked.slice(0, 12).map((c) => ({
-                    county: c.county.slice(0, 5),
-                    t: Math.round(c.productionMt),
-                  }))}
-                >
-                  <XAxis dataKey="county" tick={{ fontSize: 10, fill: "#94a3b8" }} />
-                  <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} width={36} />
-                  <Tooltip contentStyle={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 8 }} />
-                  <Bar dataKey="t" fill="#34d399" radius={[4, 4, 0, 0]} opacity={0.92} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
           </section>
 
           <section className="rounded-2xl border border-slate-700/60 bg-white/[0.03] p-5 backdrop-blur-sm">
@@ -245,7 +271,7 @@ export default function MinistryCommandCenter() {
                 <h2 className="mt-1 font-display text-[17px] font-semibold text-white">National inventory posture</h2>
               </div>
               <Link href="/inventory" className="text-[12px] font-medium text-emerald-400 hover:text-emerald-300">
-                ERP-lite inventory →
+                National logistics workspace →
               </Link>
             </div>
             <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -290,17 +316,28 @@ export default function MinistryCommandCenter() {
                   </tr>
                 </thead>
                 <tbody className="text-slate-200">
-                  {warehouses.slice(0, 8).map((w) => (
-                    <tr key={w.id} className="border-b border-slate-800/80">
-                      <td className="py-2 pr-3 font-medium">{w.name}</td>
-                      <td className="py-2 pr-3">{w.county}</td>
-                      <td className="py-2 pr-3 tabular-nums">{w.riceSeedTons}</td>
-                      <td className="py-2 pr-3 tabular-nums">{w.fertilizerTons}</td>
-                      <td className="py-2">
-                        <OpsStatusBadge status={w.stockRisk} />
-                      </td>
-                    </tr>
-                  ))}
+                  {MINISTRY_WAREHOUSES.slice(0, 10).map((mw) => {
+                    const w = ministryWarehouseToSignalRow(mw);
+                    return (
+                      <tr key={mw.ministryCode} className="border-b border-slate-800/80">
+                        <td className="py-2 pr-3 font-medium">
+                          <Link
+                            href={`/inventory/warehouse/${encodeURIComponent(mw.ministryCode)}`}
+                            className="hover:text-emerald-300"
+                          >
+                            <span className="font-mono text-[10px] text-emerald-200/80">{mw.ministryCode}</span>
+                            <span className="block text-[12px] text-white">{mw.name}</span>
+                          </Link>
+                        </td>
+                        <td className="py-2 pr-3">{w.county}</td>
+                        <td className="py-2 pr-3 tabular-nums">{w.riceSeedTons}</td>
+                        <td className="py-2 pr-3 tabular-nums">{w.fertilizerTons}</td>
+                        <td className="py-2">
+                          <OpsStatusBadge status={w.stockRisk} />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -346,26 +383,66 @@ export default function MinistryCommandCenter() {
             </div>
           </section>
 
+          <section className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-4 text-slate-100">
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Briefing readiness</div>
+              <div className="mt-2 font-display text-[15px] font-semibold text-white">Cabinet & donor packs</div>
+              <p className="mt-2 text-[11px] text-slate-400 leading-relaxed">
+                Consolidated PDF exports with subsidy traceability and warehouse disposition tables.
+              </p>
+              <Link href="/reports/pdf" className="mt-3 inline-flex text-[12px] font-medium text-emerald-400 hover:text-emerald-300">
+                Open exports →
+              </Link>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-4 text-slate-100">
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Next operational moves</div>
+              <div className="mt-2 font-display text-[15px] font-semibold text-white">Queues & approvals</div>
+              <ul className="mt-2 space-y-1.5 text-[11px] text-slate-400">
+                <li>Clear DAO overdue submissions in verification queue</li>
+                <li>Approve county replenishment where utilization exceeds threshold</li>
+              </ul>
+              <Link href="/verification-queue" className="mt-3 inline-flex text-[12px] font-medium text-emerald-400 hover:text-emerald-300">
+                Verification queue →
+              </Link>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-4 text-slate-100">
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Compliance snapshot</div>
+              <div className="mt-2 font-display text-[15px] font-semibold text-white">Audit posture</div>
+              <p className="mt-2 text-[11px] text-slate-400 leading-relaxed">
+                Immutable audit log streams with procurement checkpoints and anomaly routing.
+              </p>
+              <Link href="/compliance/audit-log" className="mt-3 inline-flex text-[12px] font-medium text-emerald-400 hover:text-emerald-300">
+                Audit log →
+              </Link>
+            </div>
+          </section>
+
           <section className="flex flex-wrap gap-3">
             <Link
               href="/executive-briefing"
               className="inline-flex h-11 items-center rounded-xl border border-emerald-500/35 bg-emerald-950/40 px-5 text-[13px] font-medium text-emerald-50 hover:bg-emerald-900/50"
             >
-              Executive briefing mode
+              National overview
             </Link>
             <Link
               href="/reports/pdf"
               className="inline-flex h-11 items-center rounded-xl border border-white/15 bg-white/[0.06] px-5 text-[13px] font-medium text-white hover:bg-white/10"
             >
-              Audit-ready exports
+              Ministry exports
             </Link>
-            <Link href="/subsidies/verification" className="inline-flex h-11 items-center rounded-xl border border-white/10 px-5 text-[13px] text-emerald-100/90 hover:bg-white/[0.05]">
-              Subsidy verification queue
+            <Link
+              href="/subsidies/verification"
+              className="inline-flex h-11 items-center rounded-xl border border-white/10 px-5 text-[13px] text-emerald-100/90 hover:bg-white/[0.05]"
+            >
+              Subsidy verification
             </Link>
           </section>
         </div>
 
-        <OperationalActivityRail className="min-w-0 xl:sticky xl:top-24 xl:self-start" />
+        <div className="space-y-5 min-w-0 xl:sticky xl:top-24 self-start">
+          <OperationalActivityRail />
+          <OperationalQueuesPanel />
+        </div>
       </div>
     </div>
   );

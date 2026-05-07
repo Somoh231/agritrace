@@ -31,6 +31,7 @@ export function postLoginHomeForRole(role: UserRole): string {
 
 /** Roles permitted to open the national command center route. */
 export function mayAccessNationalCommandCenter(role: UserRole): boolean {
+  if (role === "donor_partner" || role === "auditor") return false;
   if (
     role === "ministry_officer" ||
     role === "government_officer" ||
@@ -39,12 +40,7 @@ export function mayAccessNationalCommandCenter(role: UserRole): boolean {
   ) {
     return true;
   }
-  if (
-    role === "auditor" ||
-    role === "exporter" ||
-    role === "cooperative_manager" ||
-    role === "call_center_agent"
-  ) {
+  if (role === "exporter" || role === "cooperative_manager" || role === "call_center_agent") {
     return true;
   }
   return false;

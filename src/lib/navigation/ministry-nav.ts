@@ -3,9 +3,7 @@ import type { UserRole } from "@/lib/supabase/types";
 export type MinistryNavItem = {
   label: string;
   href: string;
-  /** Hide this link for these roles */
   rolesDeny?: UserRole[];
-  /** When set, only these roles see the link */
   rolesAllow?: UserRole[];
 };
 
@@ -33,108 +31,116 @@ function sectionVisible(role: UserRole, section: MinistryNavSection): boolean {
   return true;
 }
 
-const DAO_ROLES: UserRole[] = ["district_officer", "field_agent"];
-const DAO_DENY: UserRole[] = [...DAO_ROLES];
+/** District-facing DAO workspace roles */
+export const DAO_WORKSPACE_ROLES: UserRole[] = ["district_officer", "field_agent"];
+
+const DAO_DENY: UserRole[] = [...DAO_WORKSPACE_ROLES];
+
+/** Read-mostly external stakeholders */
+const DONOR_AUDITOR_DENY: UserRole[] = ["donor_partner", "auditor"];
 
 export const MINISTRY_NAV: MinistryNavSection[] = [
   {
-    id: "county-command",
-    label: "County command",
-    rolesAllow: ["county_officer"],
-    items: [{ label: "County dashboard", href: "/county-dashboard" }],
-  },
-  {
-    id: "district-command",
-    label: "District operations",
-    rolesAllow: [...DAO_ROLES],
-    items: [{ label: "District dashboard", href: "/district-dashboard" }],
-  },
-  {
-    id: "overview",
-    label: "Overview",
+    id: "national-command",
+    label: "National command",
+    rolesDeny: [...DONOR_AUDITOR_DENY],
     items: [
       {
-        label: "National command center",
+        label: "Command center",
         href: "/command-center",
-        rolesDeny: [
-          "county_officer",
-          "district_officer",
-          "field_agent",
-          "warehouse_manager",
-          "donor_partner",
-        ],
+        rolesDeny: ["county_officer", ...DAO_DENY, "warehouse_manager", ...DONOR_AUDITOR_DENY],
       },
       {
-        label: "Executive briefing",
+        label: "National overview",
         href: "/executive-briefing",
-        rolesDeny: [...DAO_DENY, "warehouse_manager", "donor_partner", "call_center_agent"],
+        rolesDeny: [...DAO_DENY, "warehouse_manager", ...DONOR_AUDITOR_DENY, "call_center_agent"],
       },
-      { label: "Food security intelligence", href: "/food-security", rolesDeny: ["donor_partner"] },
-      { label: "Live alerts", href: "/alerts", rolesDeny: ["donor_partner"] },
+      { label: "Food security", href: "/food-security", rolesDeny: [...DONOR_AUDITOR_DENY] },
+      {
+        label: "National heat map",
+        href: "/national-heat-map",
+        rolesDeny: [...DONOR_AUDITOR_DENY],
+      },
+      { label: "Alerts & incidents", href: "/alerts", rolesDeny: [...DONOR_AUDITOR_DENY] },
     ],
   },
   {
-    id: "farmer-registry",
-    label: "Farmer registry",
+    id: "operations",
+    label: "Operations",
+    rolesDeny: [...DONOR_AUDITOR_DENY],
     items: [
-      { label: "Farmers", href: "/farmers" },
-      { label: "Cooperatives", href: "/cooperatives", rolesDeny: [...DAO_DENY] },
-      { label: "Geo-mapping", href: "/geo-registry" },
-      { label: "Verification queue", href: "/verification-queue", rolesDeny: ["donor_partner"] },
+      {
+        label: "County operations",
+        href: "/county-operations",
+        rolesDeny: [...DAO_DENY],
+      },
+      {
+        label: "District operations",
+        href: "/district-dashboard",
+        rolesAllow: [...DAO_WORKSPACE_ROLES, "county_officer", "ministry_officer", "government_officer", "super_admin", "admin"],
+      },
+      {
+        label: "County dashboard",
+        href: "/county-dashboard",
+        rolesAllow: ["county_officer", "ministry_officer", "government_officer", "super_admin", "admin"],
+      },
+      {
+        label: "DAO monitoring",
+        href: "/field-agents",
+        rolesDeny: [...DAO_DENY],
+      },
+      { label: "Field activity", href: "/field/mobile" },
+      { label: "Inspection queue", href: "/field/inspections" },
+    ],
+  },
+  {
+    id: "farmer-system",
+    label: "Farmer system",
+    items: [
+      { label: "Farmer registry", href: "/farmers", rolesDeny: ["donor_partner"] },
+      { label: "Cooperatives", href: "/cooperatives", rolesDeny: [...DAO_DENY, "donor_partner"] },
+      { label: "Farm profiles", href: "/farm-profiles", rolesDeny: ["donor_partner"] },
+      { label: "Geo mapping", href: "/geo-registry" },
+      { label: "Verification queue", href: "/verification-queue", rolesDeny: [...DONOR_AUDITOR_DENY] },
       {
         label: "Registration approvals",
         href: "/registration-approvals",
-        rolesDeny: ["donor_partner", "auditor", ...DAO_DENY],
+        rolesDeny: [...DONOR_AUDITOR_DENY, ...DAO_DENY],
       },
-    ],
-  },
-  {
-    id: "field",
-    label: "District field operations",
-    rolesDeny: ["donor_partner"],
-    items: [
-      { label: "DAO roster & assignments", href: "/field-agents" },
-      { label: "Offline sync queue", href: "/field/sync-queue" },
-      { label: "Inspection visits", href: "/field/inspections" },
-      { label: "Extension officer reports", href: "/field/extension-reports" },
-      { label: "Disease / pest reports", href: "/field/pest-reports" },
-      { label: "Mobile field workspace", href: "/field/mobile" },
     ],
   },
   {
     id: "inventory",
     label: "Inputs & inventory",
+    rolesDeny: ["donor_partner"],
     items: [
-      { label: "National inventory", href: "/inventory", rolesDeny: ["donor_partner"] },
+      { label: "National inventory", href: "/inventory", rolesDeny: ["auditor"] },
+      { label: "Warehouses", href: "/operations/warehouses", rolesDeny: [...DAO_DENY, "auditor"] },
+      { label: "Fertilizer", href: "/inventory/fertilizer", rolesDeny: ["auditor"] },
+      { label: "Seed distribution", href: "/inventory/seed-distribution", rolesDeny: ["auditor"] },
+      { label: "Equipment", href: "/inventory/equipment", rolesDeny: ["auditor"] },
+      { label: "Donor shipments", href: "/inventory/donor-shipments", rolesDeny: [...DAO_DENY] },
       {
-        label: "Warehouse operations",
-        href: "/operations/warehouses",
-        rolesDeny: ["donor_partner", "auditor", ...DAO_DENY],
-      },
-      { label: "Fertilizer tracking", href: "/inventory/fertilizer", rolesDeny: ["donor_partner"] },
-      { label: "Seed distribution", href: "/inventory/seed-distribution", rolesDeny: ["donor_partner"] },
-      {
-        label: "Inventory transfers",
+        label: "Stock movement",
         href: "/inventory/transfers",
-        rolesDeny: ["donor_partner", "auditor", ...DAO_DENY],
+        rolesDeny: [...DAO_DENY, "auditor"],
       },
-      { label: "Expiry monitoring", href: "/inventory/expiry", rolesDeny: ["donor_partner"] },
-      { label: "Donor shipments", href: "/inventory/donor-shipments" },
     ],
   },
   {
     id: "subsidies",
     label: "Subsidies & programmes",
+    rolesDeny: [...DONOR_AUDITOR_DENY],
     items: [
       {
         label: "Subsidy allocation",
         href: "/subsidies/allocation",
-        rolesDeny: ["donor_partner", "auditor", ...DAO_DENY],
+        rolesDeny: [...DAO_DENY, "auditor"],
       },
       {
         label: "Voucher management",
         href: "/subsidies/vouchers",
-        rolesDeny: ["donor_partner", "auditor", ...DAO_DENY],
+        rolesDeny: [...DAO_DENY, "auditor"],
       },
       { label: "Beneficiary verification", href: "/subsidies/verification" },
       { label: "Distribution tracking", href: "/subsidies/distribution" },
@@ -148,6 +154,7 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
   {
     id: "production",
     label: "Production intelligence",
+    rolesDeny: [...DONOR_AUDITOR_DENY],
     items: [
       { label: "Rice production", href: "/production/rice" },
       { label: "County dashboards", href: "/production/county", rolesDeny: DAO_DENY },
@@ -156,32 +163,31 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
         href: "/production/forecasting",
         rolesDeny: [...DAO_DENY, "call_center_agent"],
       },
-      { label: "Seasonal performance", href: "/production/seasonal" },
       { label: "Loss hotspots", href: "/production/loss-hotspots" },
+      { label: "Market prices", href: "/production/market-prices" },
     ],
   },
   {
     id: "compliance",
-    label: "Compliance & audit",
+    label: "Compliance & reporting",
     items: [
+      { label: "Ministry reports", href: "/reports/ministry" },
+      { label: "Donor reports", href: "/reports/donor" },
       { label: "Audit logs", href: "/compliance/audit-log" },
-      { label: "Distribution anomalies", href: "/compliance/anomalies", rolesDeny: DAO_DENY },
+      {
+        label: "Compliance center",
+        href: "/compliance/reports",
+      },
+      {
+        label: "Distribution anomalies",
+        href: "/compliance/anomalies",
+        rolesDeny: DAO_DENY,
+      },
       {
         label: "Procurement oversight",
         href: "/compliance/procurement",
         rolesDeny: [...DAO_DENY, "call_center_agent", "donor_partner"],
       },
-      { label: "Compliance reports", href: "/compliance/reports" },
-    ],
-  },
-  {
-    id: "reporting",
-    label: "Reporting",
-    items: [
-      { label: "Ministry reports", href: "/reports/ministry" },
-      { label: "Export reports", href: "/reports/export" },
-      { label: "Donor reporting", href: "/reports/donor" },
-      { label: "PDF exports", href: "/reports/pdf" },
     ],
   },
   {
@@ -207,12 +213,18 @@ export function ministryNavForRole(role: UserRole): MinistryNavSection[] {
 /** Longest href match wins */
 export function ministryBreadcrumb(pathname: string): { kicker: string; title: string } {
   if (pathname === "/reports") return { kicker: "Reporting", title: "Ministry reports center" };
-  if (pathname.startsWith("/admin/users")) return { kicker: "Administration", title: "User & role management" };
+  if (pathname.startsWith("/national-heat-map")) return { kicker: "National command", title: "National heat map" };
+  if (pathname.startsWith("/farm-profiles")) return { kicker: "Farmer system", title: "Farm profiles" };
+  if (pathname.startsWith("/inventory/equipment")) return { kicker: "Inputs & inventory", title: "Equipment" };
+  if (pathname.startsWith("/production/market-prices")) return { kicker: "Production intelligence", title: "Market prices" };
+  if (pathname.startsWith("/inventory/warehouse/")) return { kicker: "Inputs & inventory", title: "Warehouse detail" };
+  if (pathname.startsWith("/admin/users")) return { kicker: "Administration", title: "Users & roles" };
   if (pathname.startsWith("/admin/system")) return { kicker: "Administration", title: "System diagnostics" };
-  if (pathname.startsWith("/county-dashboard")) return { kicker: "County command", title: "County dashboard" };
-  if (pathname.startsWith("/district-dashboard")) return { kicker: "District operations", title: "District dashboard" };
+  if (pathname.startsWith("/admin/governance")) return { kicker: "Administration", title: "Permissions" };
+  if (pathname.startsWith("/county-dashboard")) return { kicker: "Operations", title: "County dashboard" };
+  if (pathname.startsWith("/district-dashboard")) return { kicker: "Operations", title: "District operations" };
 
-  let best = { href: "", section: "MoA", label: "Workspace" };
+  let best = { href: "", section: "AIS", label: "Workspace" };
   for (const sec of MINISTRY_NAV) {
     for (const item of sec.items) {
       if (pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/"))) {

@@ -7,7 +7,7 @@ import MinistrySidebar from "@/components/layout/MinistrySidebar";
 import Topbar from "@/components/layout/Topbar";
 import DemoRail from "@/components/demo/DemoRail";
 import PilotBanner from "@/components/shared/PilotBanner";
-import type { Profile } from "@/lib/supabase/types";
+import type { Profile, UserRole } from "@/lib/supabase/types";
 
 function initialsFromName(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -39,9 +39,12 @@ function primaryActionForPath(pathname: string): { label: string; href?: string;
 
 export default function DashboardShell({
   profile,
+  authenticRole,
   children,
 }: {
   profile: Profile;
+  /** Database-backed role before workspace preview cookie */
+  authenticRole: UserRole;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -85,14 +88,17 @@ export default function DashboardShell({
   }
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[292px_1fr] bg-[rgb(var(--ministry-workspace))]">
-      <div className="hidden lg:block min-h-screen">
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] bg-[rgb(var(--ministry-workspace))]">
+      <div className="hidden md:block min-h-screen border-r border-white/[0.06]">
         <MinistrySidebar pathname={pathname} onNavigate={(href) => router.push(href)} user={user} />
       </div>
 
       <div className="min-w-0 flex flex-col min-h-screen">
         <Topbar
           pathname={pathname}
+          profile={profile}
+          authenticRole={authenticRole}
+          effectiveRole={profile.role}
           onOpenMobileNav={() => setMobileNav(true)}
           primaryAction={{
             label: primary.label,
@@ -114,7 +120,7 @@ export default function DashboardShell({
               className="absolute inset-0 bg-black/55"
               onClick={() => setMobileNav(false)}
             />
-            <div className="absolute left-0 top-0 bottom-0 w-[min(292px,92vw)] shadow-2xl border-r border-[rgb(var(--ministry-border))]/10">
+            <div className="absolute left-0 top-0 bottom-0 w-[min(280px,92vw)] shadow-2xl border-r border-[rgb(var(--ministry-border))]/10 bg-[rgb(var(--ministry-sidebar))]">
               <MinistrySidebar
                 pathname={pathname}
                 onNavigate={(href) => {
@@ -128,7 +134,7 @@ export default function DashboardShell({
         ) : null}
         <main className="flex-1 overflow-y-auto">
           <PilotBanner />
-          <div className="px-4 py-5 md:px-7 md:py-7 max-w-[1600px] mx-auto w-full">{children}</div>
+          <div className="w-full max-w-none px-5 py-6 md:px-8 md:py-8 xl:px-10">{children}</div>
         </main>
       </div>
 
