@@ -65,6 +65,26 @@ const DONOR_AUDITOR_DENY: UserRole[] = ["donor_partner", "auditor"];
 
 export const MINISTRY_NAV: MinistryNavSection[] = [
   {
+    id: "reporting-core",
+    label: "Reporting",
+    items: [
+      { label: "Reporting hub", href: "/reporting" },
+      { label: "Field activity reports", href: "/field/mobile" },
+      { label: "Farmer registration reports", href: "/farmers" },
+      { label: "DAO inspection reports", href: "/field/inspections" },
+      { label: "Subsidy distribution reports", href: "/subsidies/distribution" },
+      { label: "Warehouse reports", href: "/operations/warehouses" },
+      { label: "Transfer verification reports", href: "/transfers" },
+      { label: "Food security reports", href: "/food-security" },
+      { label: "Pest / disease reports", href: "/field/pest-reports" },
+      { label: "Extension officer reports", href: "/field/extension-reports" },
+      { label: "Compliance reports", href: "/compliance/reports" },
+      { label: "Audit reports", href: "/compliance/audit-log" },
+      { label: "Pending verifications", href: "/verification-queue" },
+      { label: "Escalations", href: "/alerts" },
+    ],
+  },
+  {
     id: "external-oversight",
     label: "External oversight",
     rolesAllow: ["donor_partner", "auditor", "super_admin", "admin", "ministry_officer", "government_officer"],
@@ -286,6 +306,7 @@ export function ministryNavForRole(role: UserRole | null | undefined): MinistryN
 
 /** Longest href match wins */
 export function ministryBreadcrumb(pathname: string): { kicker: string; title: string } {
+  if (pathname === "/reporting") return { kicker: "Reporting", title: "Reporting hub" };
   if (pathname === "/reports") return { kicker: "Reporting", title: "Ministry reports center" };
   if (pathname.startsWith("/national-heat-map")) return { kicker: "National command", title: "National heat map" };
   if (pathname.startsWith("/farm-profiles")) return { kicker: "Farmer system", title: "Farm profiles" };
