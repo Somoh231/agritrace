@@ -134,56 +134,59 @@ export default function DashboardShell({
   }
 
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] bg-[rgb(var(--ministry-workspace))]">
-      <div className="hidden md:block min-h-screen border-r border-white/[0.06]">
-        <MinistrySidebar pathname={pathname} onNavigate={(href) => router.push(href)} user={user} />
-      </div>
+    <div className="min-h-screen bg-[rgb(var(--ministry-workspace))] overflow-x-hidden">
+      <div className="min-h-screen grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="hidden md:block min-h-screen border-r border-white/[0.06]">
+          <MinistrySidebar pathname={pathname} onNavigate={(href) => router.push(href)} user={user} />
+        </div>
 
-      <div className="min-w-0 flex flex-col min-h-screen">
-        <Topbar
-          pathname={pathname}
-          profile={profile}
-          authenticRole={authenticRole}
-          effectiveRole={profile.role}
-          onOpenMobileNav={() => setMobileNav(true)}
-          primaryAction={{
-            label: primary.label,
-            onClick: () => {
-              if (primary.href) {
-                router.push(primary.href);
-                return;
-              }
-              window.dispatchEvent(new CustomEvent("agritrace-primary-action"));
-            },
-          }}
-          onExportPdf={() => window.open(exportHref, "_blank", "noopener,noreferrer")}
-        />
-        {mobileNav ? (
-          <div className="fixed inset-0 z-[70] lg:hidden">
-            <button
-              type="button"
-              aria-label="Close navigation"
-              className="absolute inset-0 bg-black/55"
-              onClick={() => setMobileNav(false)}
-            />
-            <div className="absolute left-0 top-0 bottom-0 w-[min(280px,92vw)] shadow-2xl border-r border-[rgb(var(--ministry-border))]/10 bg-[rgb(var(--ministry-sidebar))]">
-              <MinistrySidebar
-                pathname={pathname}
-                onNavigate={(href) => {
-                  setMobileNav(false);
-                  router.push(href);
-                }}
-                user={user}
+        <div className="min-w-0 flex flex-col min-h-screen">
+          <Topbar
+            pathname={pathname}
+            profile={profile}
+            authenticRole={authenticRole}
+            effectiveRole={profile.role}
+            onOpenMobileNav={() => setMobileNav(true)}
+            primaryAction={{
+              label: primary.label,
+              onClick: () => {
+                if (primary.href) {
+                  router.push(primary.href);
+                  return;
+                }
+                window.dispatchEvent(new CustomEvent("agritrace-primary-action"));
+              },
+            }}
+            onExportPdf={() => window.open(exportHref, "_blank", "noopener,noreferrer")}
+          />
+          {mobileNav ? (
+            <div className="fixed inset-0 z-[70] lg:hidden">
+              <button
+                type="button"
+                aria-label="Close navigation"
+                className="absolute inset-0 bg-black/55"
+                onClick={() => setMobileNav(false)}
               />
+              <div className="absolute left-0 top-0 bottom-0 w-[min(280px,92vw)] shadow-2xl border-r border-[rgb(var(--ministry-border))]/10 bg-[rgb(var(--ministry-sidebar))]">
+                <MinistrySidebar
+                  pathname={pathname}
+                  onNavigate={(href) => {
+                    setMobileNav(false);
+                    router.push(href);
+                  }}
+                  user={user}
+                />
+              </div>
             </div>
-          </div>
-        ) : null}
-        <main className="flex-1 overflow-y-auto">
-          <PilotBanner />
-          <div className="w-full max-w-none px-5 py-6 md:px-8 md:py-8 xl:px-10">{children}</div>
-        </main>
+          ) : null}
+          <main className="flex-1 overflow-y-auto min-w-0">
+            <PilotBanner />
+            <div className="w-full max-w-none min-w-0 px-5 py-6 md:px-8 md:py-8 xl:px-10">{children}</div>
+          </main>
+        </div>
       </div>
 
+      {/* Fixed overlays must NOT be grid children */}
       {showDemoRail ? <DemoRail /> : null}
       <AiAssistant profileId={profile.id} role={profile.role} pathname={pathname} />
     </div>
