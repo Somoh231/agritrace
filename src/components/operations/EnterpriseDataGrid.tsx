@@ -32,6 +32,9 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   emptyLabel = "No records match the current filters.",
   onRowClick,
   rowClassName,
+  dense = false,
+  stickyHeader = true,
+  scrollMaxHeightClass = "max-h-[min(70vh,720px)]",
 }: {
   title?: string;
   rows: T[];
@@ -42,6 +45,12 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   emptyLabel?: string;
   onRowClick?: (row: T) => void;
   rowClassName?: (row: T) => string | undefined;
+  /** Dense rows for ministry operational datasets */
+  dense?: boolean;
+  /** Sticky table header inside vertical scroll region */
+  stickyHeader?: boolean;
+  /** Tailwind max-height class for table body scroll; set "" to disable vertical clip */
+  scrollMaxHeightClass?: string;
 }) {
   const [q, setQ] = React.useState("");
   const [sortKey, setSortKey] = React.useState<string | null>(null);
@@ -98,6 +107,11 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
     downloadCsv(filename, headers, csvRows);
   };
 
+  const cellPad = dense ? "px-3 py-1.5" : "px-4 py-2.5";
+  const headPad = dense ? "px-3 py-2" : "px-4 py-2.5";
+  const rowText = dense ? "text-[11px]" : "text-[12px]";
+  const headText = dense ? "text-[9px]" : "text-[10px]";
+
   return (
     <div className="rounded-xl border border-slate-700/80 bg-slate-900/50 overflow-hidden">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between px-4 py-3 border-b border-slate-700/80 bg-slate-950/60">
@@ -113,7 +127,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Filter…"
-            className="h-9 w-[200px] rounded-lg border border-slate-600 bg-slate-950 px-3 text-[12px] text-slate-100 placeholder:text-slate-600 outline-none focus:border-emerald-600"
+            className={`w-[200px] rounded-lg border border-slate-600 bg-slate-950 px-3 text-slate-100 placeholder:text-slate-600 outline-none focus:border-emerald-600 ${dense ? "h-8 text-[11px]" : "h-9 text-[12px]"}`}
             aria-label="Filter table"
           />
           {toolbar}
@@ -128,12 +142,16 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-[12px]">
-          <thead>
-            <tr className="border-b border-slate-700/80 bg-slate-950/80 text-slate-400 font-mono text-[10px] uppercase tracking-wide">
+      <div
+        className={`overflow-x-auto ${scrollMaxHeightClass ? `${scrollMaxHeightClass} overflow-y-auto overscroll-contain` : ""}`}
+      >
+        <table className={`min-w-full text-left ${rowText}`}>
+          <thead className={stickyHeader ? "sticky top-0 z-20" : undefined}>
+            <tr
+              className={`border-b border-slate-700/80 bg-slate-950/95 text-slate-400 font-mono uppercase tracking-wide backdrop-blur-sm shadow-[0_1px_0_rgba(148,163,184,0.08)] ${headText}`}
+            >
               {columns.map((c) => (
-                <th key={String(c.key)} className="px-4 py-2.5 whitespace-nowrap" style={{ width: c.width }}>
+                <th key={String(c.key)} className={`${headPad} whitespace-nowrap`} style={{ width: c.width }}>
                   <button
                     type="button"
                     onClick={() => onSort(String(c.key))}
@@ -149,10 +167,10 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
           <tbody className="divide-y divide-slate-800/90">
             {slice.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-10 text-center">
+                <td colSpan={columns.length} className={`${cellPad} py-10 text-center`}>
                   <div className="mx-auto max-w-[520px] rounded-xl border border-white/10 bg-black/20 px-4 py-4">
-                    <div className="font-display text-[14px] font-semibold text-white">No records in scope</div>
-                    <div className="mt-2 text-[12px] leading-relaxed text-slate-400">
+                    <div className={`font-display font-semibold text-white ${dense ? "text-[13px]" : "text-[14px]"}`}>No records in scope</div>
+                    <div className={`mt-2 leading-relaxed text-slate-400 ${dense ? "text-[11px]" : "text-[12px]"}`}>
                       {emptyLabel}
                     </div>
                     <div className="mt-3 text-[11px] text-slate-500">
@@ -169,7 +187,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
                   onClick={() => onRowClick?.(row)}
                 >
                   {columns.map((c) => (
-                    <td key={String(c.key)} className="px-4 py-2.5 align-top whitespace-nowrap max-w-[280px] truncate">
+                    <td key={String(c.key)} className={`${cellPad} align-top whitespace-nowrap max-w-[280px] truncate`}>
                       {c.render ? c.render(row) : String(row[c.key as keyof T] ?? "—")}
                     </td>
                   ))}

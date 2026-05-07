@@ -10,6 +10,7 @@ import OperationalActivityRail from "@/components/ais/OperationalActivityRail";
 import OperationalQueuesPanel from "@/components/ais/OperationalQueuesPanel";
 import { useNationalAISLive } from "@/components/ais/useNationalAISLive";
 import { OpsStatusBadge } from "@/components/pilot/pilot-ui";
+import NationalOperationalIntelStrip from "@/components/operations/NationalOperationalIntelStrip";
 import ProgressBar from "@/components/shared/ProgressBar";
 import {
   dataQualityAlerts,
@@ -149,6 +150,8 @@ export default function MinistryCommandCenter() {
           ))}
         </div>
       </section>
+
+      <NationalOperationalIntelStrip />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px] items-start">
         <div className="space-y-6 min-w-0">
