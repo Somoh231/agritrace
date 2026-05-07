@@ -61,6 +61,11 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
         href: "/national-heat-map",
         rolesDeny: [...DONOR_AUDITOR_DENY],
       },
+      {
+        label: "GIS intelligence",
+        href: "/gis-intelligence",
+        rolesDeny: [...DONOR_AUDITOR_DENY],
+      },
       { label: "Alerts & incidents", href: "/alerts", rolesDeny: [...DONOR_AUDITOR_DENY] },
     ],
   },

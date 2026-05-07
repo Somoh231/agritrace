@@ -83,16 +83,22 @@ export default function LiberiaCountyMap({ counties, riskByCounty, className }: 
               <LayerChip active={viz === "risk"} label="Food security" onClick={() => setViz("risk")} />
               <LayerChip active={viz === "balanced"} label="Balanced" onClick={() => setViz("balanced")} />
               <Link
-                href="/national-heat-map"
+                href="/gis-intelligence"
                 className="rounded-full border border-white/12 bg-black/25 px-2.5 py-1 font-mono text-[9px] uppercase tracking-wide text-emerald-100/75 hover:bg-white/[0.06]"
               >
-                National heat map
+                GIS intelligence
+              </Link>
+              <Link
+                href="/national-heat-map"
+                className="rounded-full border border-white/12 bg-black/25 px-2.5 py-1 font-mono text-[9px] uppercase tracking-wide text-emerald-100/55 hover:bg-white/[0.06]"
+              >
+                Heat panels
               </Link>
             </div>
           </div>
           {process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim() ? (
             <a
-              href="/national-heat-map"
+              href="/gis-intelligence"
               className="shrink-0 rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-medium text-emerald-100 hover:bg-emerald-500/20"
             >
               Full-screen GIS

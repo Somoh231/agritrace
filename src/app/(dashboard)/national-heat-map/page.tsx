@@ -42,12 +42,14 @@ export default function NationalHeatMapPage() {
             {tokenReady ? "Mapbox runtime active" : "Fallback rendering panels"}
           </span>
         </div>
-        <Link
-          href="/command-center"
-          className="mt-4 inline-flex text-[12px] font-medium text-emerald-300 hover:text-emerald-200"
-        >
-          ← Back to command center
-        </Link>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link href="/gis-intelligence" className="inline-flex text-[12px] font-medium text-amber-200 hover:text-amber-100">
+            Advanced GIS workspace →
+          </Link>
+          <Link href="/command-center" className="inline-flex text-[12px] font-medium text-emerald-300 hover:text-emerald-200">
+            ← Command center
+          </Link>
+        </div>
       </header>
 
       <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-3 [&_.rounded-xl]:border-slate-700 [&_.text-gray-900]:text-white [&_.text-gray-500]:text-slate-400 [&_.text-gray-600]:text-slate-400 [&_.bg-white]:bg-slate-900 [&_.border-gray-200]:border-slate-700">
