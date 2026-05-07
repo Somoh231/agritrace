@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "county": "Nimba", "production": 82, "food_risk": "Low", "dao_compliance": 94 },
+      "geometry": { "type": "Point", "coordinates": [-8.7064, 7.3621] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "county": "Bong", "production": 74, "food_risk": "Moderate", "dao_compliance": 89 },
+      "geometry": { "type": "Point", "coordinates": [-9.4723, 6.9951] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "county": "Lofa", "production": 68, "food_risk": "Elevated", "dao_compliance": 91 },
+      "geometry": { "type": "Point", "coordinates": [-9.7512, 8.4212] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "county": "Montserrado", "production": 71, "food_risk": "Moderate", "dao_compliance": 82 },
+      "geometry": { "type": "Point", "coordinates": [-10.798, 6.328] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "county": "Grand Bassa", "production": 63, "food_risk": "Moderate", "dao_compliance": 88 },
+      "geometry": { "type": "Point", "coordinates": [-10.0472, 5.8831] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "county": "Margibi", "production": 66, "food_risk": "Moderate", "dao_compliance": 90 },
+      "geometry": { "type": "Point", "coordinates": [-10.3522, 6.5299] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "county": "Bomi", "production": 58, "food_risk": "Moderate", "dao_compliance": 76 },
+      "geometry": { "type": "Point", "coordinates": [-10.8191, 6.8712] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "county": "Sinoe", "production": 61, "food_risk": "Low", "dao_compliance": 85 },
+      "geometry": { "type": "Point", "coordinates": [-9.0388, 5.0112] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "county": "Maryland", "production": 59, "food_risk": "Low", "dao_compliance": 83 },
+      "geometry": { "type": "Point", "coordinates": [-7.7162, 4.3772] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "county": "River Cess", "production": 64, "food_risk": "Low", "dao_compliance": 87 },
+      "geometry": { "type": "Point", "coordinates": [-9.5811, 5.9022] }
+    }
+  ]
+}

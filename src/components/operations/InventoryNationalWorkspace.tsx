@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import InventoryWarehouseOverview from "@/components/ais/InventoryWarehouseOverview";
 import InventoryOperationsClient from "@/components/pilot/InventoryOperationsClient";
 import OperationDrawer from "@/components/operations/OperationDrawer";
 import RecordInventoryReceiptForm from "@/components/operations/forms/RecordInventoryReceiptForm";
@@ -31,6 +32,7 @@ export default function InventoryNationalWorkspace() {
           </button>
         }
       >
+        <InventoryWarehouseOverview />
         <div className="rounded-xl border border-slate-700/60 bg-white/[0.03] p-1">
           <InventoryOperationsClient />
         </div>

@@ -10,6 +10,8 @@ function matchesProtectedRoute(pathname: string, pattern: string) {
 function isProtectedPath(pathname: string): boolean {
   const roots = [
     "/command-center",
+    "/county-dashboard",
+    "/district-dashboard",
     "/executive-briefing",
     "/alerts",
     "/national-operations",

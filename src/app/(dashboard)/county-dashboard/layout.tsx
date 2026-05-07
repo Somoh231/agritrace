@@ -1,17 +1,16 @@
 import { redirect } from "next/navigation";
 
+import { mayAccessCountyDashboard, postLoginHomeForRole } from "@/lib/auth/post-login-home";
 import { createClient } from "@/lib/supabase/server";
-import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
-import type { Profile } from "@/lib/supabase/types";
 import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
+import type { Profile } from "@/lib/supabase/types";
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function CountyDashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login?redirectTo=/admin/users");
+  if (!user) redirect("/login");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -19,12 +18,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("id", user.id)
     .maybeSingle<Pick<Profile, "role">>();
 
-  // TEMP DEMO FALLBACK — missing profiles row still allows admin routes for demo role.
   const role = resolveUserRoleWithDemoFallback(profile, user);
-  if (!isAdminConsoleRole(role)) {
-    redirect("/command-center");
+  if (!mayAccessCountyDashboard(role)) {
+    redirect(postLoginHomeForRole(role));
   }
 
   return children;
 }
-

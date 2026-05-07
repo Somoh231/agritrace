@@ -13,7 +13,8 @@
     "lint": "eslint",
     "seed": "tsx src/lib/supabase/seed.ts",
     "seed:demo": "tsx src/lib/supabase/seed-demo.ts",
-    "seed:national": "tsx src/lib/supabase/seed-national-pilot.ts"
+    "seed:national": "tsx src/lib/supabase/seed-national-pilot.ts",
+    "seed:ministry": "tsx src/lib/supabase/seed-ministry-canonical.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 
+import { MINISTRY_COUNTY_METRICS } from "@/lib/data/ministry-canonical-data";
 import { LIBERIA_CENTER, LIBERIA_ZOOM, mapboxToken } from "@/lib/mapbox/config";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { seasonLabel } from "@/lib/utils/rice";
@@ -14,6 +15,10 @@ const Source = dynamic(() => import("react-map-gl/mapbox").then((m) => m.Source)
 const Layer = dynamic(() => import("react-map-gl/mapbox").then((m) => m.Layer), { ssr: false });
 
 type FeatureProps = { name?: string; COUNTY?: string; county?: string; [k: string]: unknown };
+
+function countyKey(name: string) {
+  return name.trim().toLowerCase();
+}
 
 const fillLayer = {
   id: "counties-fill",
@@ -68,11 +73,28 @@ export default function CountyHeatmap() {
         .eq("season", season)
         .limit(5000);
 
+      const { data: pilotMetrics } = await supabase
+        .from("pilot_county_metrics")
+        .select("county,production_index")
+        .limit(100);
+
       const totals = new globalThis.Map<string, number>();
       for (const r of (data as any[]) ?? []) {
         const c = (r.county ?? "Unknown") as string;
         const kg = Number(r.actual_yield_kg ?? 0);
         totals.set(c, (totals.get(c) ?? 0) + kg);
+      }
+
+      const pilotByCounty = new globalThis.Map<string, number>();
+      for (const r of (pilotMetrics as any[]) ?? []) {
+        const c = String(r.county ?? "");
+        if (!c) continue;
+        pilotByCounty.set(countyKey(c), Number(r.production_index ?? 0));
+      }
+      if (pilotByCounty.size === 0) {
+        for (const m of MINISTRY_COUNTY_METRICS) {
+          pilotByCounty.set(countyKey(m.county), m.productionIndex);
+        }
       }
 
       const withProps = {
@@ -81,7 +103,11 @@ export default function CountyHeatmap() {
           const p = (f.properties ?? {}) as FeatureProps;
           const countyName = (p.county ?? p.COUNTY ?? p.name ?? "Unknown") as string;
           const kg = totals.get(countyName) ?? 0;
-          const mt = Math.round((kg / 1000) * 10) / 10;
+          let mt = Math.round((kg / 1000) * 10) / 10;
+          if (mt === 0) {
+            const idx = pilotByCounty.get(countyKey(countyName));
+            if (idx != null && idx > 0) mt = Math.round(idx * 8 * 10) / 10;
+          }
           return {
             ...f,
             properties: {

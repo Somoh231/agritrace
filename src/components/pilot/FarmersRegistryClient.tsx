@@ -9,6 +9,7 @@ import {
 } from "@/lib/demo/agriculture-pilot-data";
 import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
 import OperationDrawer from "@/components/operations/OperationDrawer";
+import FarmerProfileDrawer from "@/components/operations/FarmerProfileDrawer";
 import RegisterFarmerForm from "@/components/operations/forms/RegisterFarmerForm";
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import { OpsMetric, OpsStatusBadge } from "@/components/pilot/pilot-ui";
@@ -16,9 +17,24 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const demoCols: GridColumn<FarmerRegistryDemoRow>[] = [
   { key: "fullName", header: "Farmer" },
+  {
+    key: "registryPublicId",
+    header: "Registry ID",
+    render: (r) => <span className="font-mono text-[10px] text-slate-400">{r.registryPublicId ?? "—"}</span>,
+  },
   { key: "county", header: "County" },
   { key: "district", header: "District / village" },
   { key: "cooperative", header: "Cooperative" },
+  {
+    key: "daoOfficerCode",
+    header: "DAO",
+    render: (r) => <span className="font-mono text-[10px]">{r.daoOfficerCode ?? "—"}</span>,
+  },
+  {
+    key: "primaryWarehouseCode",
+    header: "Warehouse",
+    render: (r) => <span className="font-mono text-[10px]">{r.primaryWarehouseCode ?? "—"}</span>,
+  },
   {
     key: "gpsStatus",
     header: "GPS",
@@ -44,24 +60,33 @@ const demoCols: GridColumn<FarmerRegistryDemoRow>[] = [
 ];
 
 function mapLiveRow(r: Record<string, unknown>, i: number): FarmerRegistryDemoRow {
+  const coop = r.cooperative_name != null ? String(r.cooperative_name) : "—";
   return {
-    id: String(r.id ?? `row-${i}`).slice(0, 14),
+    id: String(r.id ?? `row-${i}`),
     fullName: String(r.full_name ?? "Farmer"),
+    registryPublicId: r.registry_public_id != null ? String(r.registry_public_id) : undefined,
+    daoOfficerCode: r.dao_officer_code != null ? String(r.dao_officer_code) : undefined,
+    primaryWarehouseCode: r.primary_warehouse_code != null ? String(r.primary_warehouse_code) : undefined,
     county: String(r.county ?? "—"),
     district: String(r.village ?? r.district ?? "—"),
-    cooperative: "—",
+    cooperative: coop,
     gpsStatus: r.latitude != null && r.longitude != null ? "verified" : "pending",
     acreage: Number(r.acreage_hectares ?? 0) || 0,
     mainCrop: String(r.main_crop ?? "rice"),
     productionHistorySeasons: 0,
     subsidyEligible: Boolean(r.subsidy_eligible),
     verification: String(r.verification_status ?? "pending") as FarmerRegistryDemoRow["verification"],
-    lastFieldVisit: String(r.created_at ?? "").slice(0, 10) || "—",
+    lastFieldVisit: String(r.registration_date ?? r.created_at ?? "").slice(0, 10) || "—",
   };
+}
+
+function isUuid(id: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 }
 
 export default function FarmersRegistryClient() {
   const [drawer, setDrawer] = React.useState(false);
+  const [profileId, setProfileId] = React.useState<string | null>(null);
   const [reload, setReload] = React.useState(0);
   const [rows, setRows] = React.useState<FarmerRegistryDemoRow[]>(farmerRegistrySample);
   const [usingDemo, setUsingDemo] = React.useState(true);
@@ -72,7 +97,7 @@ export default function FarmersRegistryClient() {
       const { data, error } = await supabase
         .from("farmers")
         .select(
-          "id,full_name,county,district,village,latitude,longitude,created_at,main_crop,acreage_hectares,subsidy_eligible,verification_status",
+          "id,registry_public_id,full_name,county,district,village,latitude,longitude,created_at,registration_date,main_crop,acreage_hectares,subsidy_eligible,verification_status,cooperative_name,dao_officer_code,primary_warehouse_code",
         )
         .limit(500);
       if (error || !data?.length) {
@@ -123,11 +148,14 @@ export default function FarmersRegistryClient() {
         </div>
 
         <EnterpriseDataGrid<FarmerRegistryDemoRow>
-          title={usingDemo ? "Illustrative registry sample · empty live table" : "Live registry"}
+          title={usingDemo ? "Operational archive · connect Supabase for national UUID rows" : "National farmer registry"}
           rows={rows}
           columns={demoCols}
           filename="farmers-registry.csv"
           pageSize={30}
+          onRowClick={(r) => {
+            if (isUuid(r.id)) setProfileId(r.id);
+          }}
         />
       </MinistryPageShell>
 
@@ -144,6 +172,16 @@ export default function FarmersRegistryClient() {
             setReload((x) => x + 1);
           }}
         />
+      </OperationDrawer>
+
+      <OperationDrawer
+        open={Boolean(profileId)}
+        onClose={() => setProfileId(null)}
+        title="Farmer operational profile"
+        subtitle="Registry master · visits · subsidies · production intelligence."
+        widthClassName="max-w-2xl"
+      >
+        <FarmerProfileDrawer farmerId={profileId} onClose={() => setProfileId(null)} />
       </OperationDrawer>
     </>
   );

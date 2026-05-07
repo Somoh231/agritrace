@@ -1,0 +1,5 @@
+event_code,occurred_at,severity,county,district,event_type,message,status
+EVT-0001,2026-05-05T09:12:00Z,HIGH,Nimba,Sanniquellie-Mah,Low Inventory,NPK fertilizer below threshold at WH-NIM-001.,Open
+EVT-0002,2026-05-05T10:02:00Z,MEDIUM,Bong,Gbarnga,DAO Reporting,DAO-BON-001 submitted weekly production report.,Resolved
+EVT-0003,2026-05-05T11:21:00Z,HIGH,Lofa,Voinjama,Pest Alert,Possible rice pest outbreak reported — DAO verification escalated.,Escalated
+EVT-0004,2026-05-05T12:08:00Z,LOW,Montserrado,Todee,Farmer Registration,12 new farmers verified in DAO-MON-002 jurisdiction.,Resolved

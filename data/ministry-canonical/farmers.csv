@@ -1,0 +1,20 @@
+registry_public_id,full_name,gender,phone,county,district,cooperative,crop_type,acreage_ha,gps_lat,gps_lng,verification,dao_code,subsidy_eligible,registration_date,primary_warehouse_code,subsidy_allocation_qty,last_distribution_date
+NIM-0001,Kumba Kollie,Female,+231777120341,Nimba,Sanniquellie-Mah,Nimba Rice Cooperative,Rice,4.5,7.3621,-8.7064,Verified,DAO-NIM-001,Yes,2026-04-18,WH-NIM-001,8.2,2026-01-14
+NIM-0002,Joseph Zleh,Male,+231888450121,Nimba,Yarmein,Nimba Farmers Union,Rice,7.1,7.5943,-8.9231,Verified,DAO-NIM-002,Yes,2026-04-21,WH-NIM-001,13.5,2026-01-16
+NIM-0003,Mary Tokpah,Female,+231776233987,Nimba,Ganta District,Ganta Agro Group,Cassava,2.8,7.2274,-8.9841,Pending,DAO-NIM-003,No,2026-04-10,WH-NIM-002,3.4,2026-01-20
+NIM-0004,Emmanuel Kpargoi,Male,+231770984223,Nimba,Tappita,Tappita Rice Cluster,Rice,5.9,6.9362,-8.8723,Verified,DAO-NIM-004,Yes,2026-04-28,WH-NIM-002,11.1,2026-02-02
+BON-0001,Fatmata Kamara,Female,+231777560982,Bong,Gbarnga,Bong Central Cooperative,Rice,6.4,6.9951,-9.4723,Verified,DAO-BON-001,Yes,2026-04-23,WH-BON-001,12.6,2026-01-11
+BON-0002,Abraham Fofana,Male,+231886771122,Bong,Salala,Salala Farmers Association,Maize,3.2,6.8344,-9.6321,Pending,DAO-BON-002,Yes,2026-04-07,WH-BON-001,4.9,2026-01-19
+BON-0003,Rebecca Gaye,Female,+231775234892,Bong,Zota,Zota Rice Network,Rice,8.7,6.7012,-9.7711,Verified,DAO-BON-003,Yes,2026-04-29,WH-BON-002,15.8,2026-02-04
+BON-0004,Morris Mulbah,Male,+231778330129,Bong,Panta,Panta Agro Producers,Cocoa,5.4,6.9033,-9.5219,Verified,DAO-BON-004,No,2026-04-11,WH-BON-002,6.3,2026-02-12
+LOF-0001,Hawa Massaquoi,Female,+231777912334,Lofa,Voinjama,Lofa Rice Cooperative,Rice,9.1,8.4212,-9.7512,Verified,DAO-LOF-001,Yes,2026-04-30,WH-LOF-001,17.5,2026-01-08
+LOF-0002,Mohammed Sheriff,Male,+231888345991,Lofa,Zorzor,Zorzor Agro Union,Rice,4.1,8.2819,-9.4211,Verified,DAO-LOF-002,Yes,2026-04-19,WH-LOF-001,7.2,2026-01-15
+LOF-0003,Aminata Koroma,Female,+231775661902,Lofa,Foya,Foya Women Farmers,Cassava,3.7,8.1123,-10.2231,Pending,DAO-LOF-003,No,2026-04-08,WH-LOF-002,4.1,2026-02-07
+MON-0001,Prince Cooper,Male,+231777345888,Montserrado,Careysburg,Montserrado Urban Growers,Vegetables,1.4,6.4532,-10.6722,Verified,DAO-MON-001,No,2026-04-24,WH-MON-001,1.1,2026-01-13
+MON-0002,Satta Doe,Female,+231888921233,Montserrado,Todee,Todee Farmers Group,Rice,2.6,6.6321,-10.8412,Verified,DAO-MON-002,Yes,2026-04-26,WH-MON-001,3.8,2026-02-01
+GBA-0001,Samuel Peters,Male,+231776512344,Grand Bassa,Buchanan,Bassa Agricultural Network,Rice,5.7,5.8831,-10.0472,Verified,DAO-GBA-001,Yes,2026-04-22,WH-GBA-001,9.4,2026-01-18
+MAR-0001,Victoria Johnson,Female,+231777623410,Margibi,Kakata,Kakata Farmers Cooperative,Rice,6.9,6.5299,-10.3522,Verified,DAO-MAR-001,Yes,2026-04-27,WH-MAR-001,12.2,2026-01-22
+BOM-0001,Thomas Diggs,Male,+231888129944,Bomi,Tubmanburg,Bomi Agro Collective,Cassava,4.9,6.8712,-10.8191,Pending,DAO-BOM-001,Yes,2026-04-09,WH-BOM-001,5.1,2026-02-05
+SIN-0001,Janet Wilson,Female,+231776982134,Sinoe,Greenville,Sinoe Farmers Union,Rice,7.8,5.0112,-9.0388,Verified,DAO-SIN-001,Yes,2026-04-20,WH-SIN-001,14.7,2026-01-25
+MDL-0001,Peter Wreh,Male,+231777000233,Maryland,Harper,Harper Agricultural Society,Cocoa,10.2,4.3772,-7.7162,Verified,DAO-MDL-001,No,2026-04-15,WH-MDL-001,18.1,2026-02-09
+RIV-0001,Finda Kamara,Female,+231888456781,River Cess,Cestos City,Rivercess Rice Network,Rice,5.1,5.9022,-9.5811,Verified,DAO-RIV-001,Yes,2026-04-16,WH-RIV-001,8.7,2026-01-30

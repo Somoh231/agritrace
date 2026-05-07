@@ -25,6 +25,7 @@ export function buildDemoProfileForAuthUser(authUser: { id: string; email?: stri
     role: DEMO_PROFILE_FALLBACK.role as UserRole,
     organization_id: null,
     county: null,
+    district: null,
     phone: null,
     is_active: true,
     created_at: new Date(0).toISOString(),

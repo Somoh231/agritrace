@@ -30,6 +30,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   toolbar,
   filename = "export.csv",
   emptyLabel = "No records match the current filters.",
+  onRowClick,
 }: {
   title?: string;
   rows: T[];
@@ -38,6 +39,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   toolbar?: React.ReactNode;
   filename?: string;
   emptyLabel?: string;
+  onRowClick?: (row: T) => void;
 }) {
   const [q, setQ] = React.useState("");
   const [sortKey, setSortKey] = React.useState<string | null>(null);
@@ -151,7 +153,11 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
               </tr>
             ) : (
               slice.map((row, i) => (
-                <tr key={i} className="hover:bg-slate-800/40 text-slate-200">
+                <tr
+                  key={String((row as Record<string, unknown>).id ?? i)}
+                  className={`hover:bg-slate-800/40 text-slate-200 ${onRowClick ? "cursor-pointer" : ""}`}
+                  onClick={() => onRowClick?.(row)}
+                >
                   {columns.map((c) => (
                     <td key={String(c.key)} className="px-4 py-2.5 align-top whitespace-nowrap max-w-[280px] truncate">
                       {c.render ? c.render(row) : String(row[c.key as keyof T] ?? "—")}

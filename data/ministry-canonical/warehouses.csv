@@ -1,0 +1,14 @@
+ministry_code,warehouse_name,county,capacity_mt,current_stock_mt,utilization_pct,manager,operational_status,donor_resupply_flag,latitude,longitude
+WH-NIM-001,Nimba Central Warehouse,Nimba,1200,944,79,Samuel Dolo,Operational,No,7.384,-8.728
+WH-NIM-002,Nimba South Inputs Facility,Nimba,600,412,69,Patience Tokpah,Operational,No,6.98,-8.91
+WH-BON-001,Bong Agricultural Depot,Bong,900,641,71,Martha Kamara,Operational,No,7.004,-9.469
+WH-BON-002,Bong South Cooperative Store,Bong,720,498,69,James Sumo,Operational,No,6.72,-9.58
+WH-LOF-001,Lofa Regional Warehouse,Lofa,700,233,33,Fatmata Kromah,Operational,Yes,8.422,-9.748
+WH-LOF-002,Lofa Foya Distribution Point,Lofa,400,285,71,Amadu Sesay,Operational,No,8.18,-10.08
+WH-MON-001,Montserrado Input Hub,Montserrado,500,477,95,Peter Sonpon,Operational,No,6.328,-10.798
+WH-GBA-001,Grand Bassa Coastal Inputs Depot,Grand Bassa,850,612,72,Helena Dennis,Operational,No,5.881,-10.046
+WH-MAR-001,Margibi Kakata Consolidation Hub,Margibi,680,521,77,Marcus Zaza,Operational,No,6.531,-10.351
+WH-BOM-001,Bomi Tubmanburg Agricultural Store,Bomi,420,298,71,Alfred Wesseh,Operational,No,6.868,-10.823
+WH-SIN-001,Sinoe Greenville Inputs Warehouse,Sinoe,640,473,74,Esther Pyne,Operational,No,5.009,-9.035
+WH-MDL-001,Maryland Harper Strategic Reserve,Maryland,780,629,81,Francis Chea,Operational,No,4.375,-7.718
+WH-RIV-001,River Cess Cestos Inputs Depot,River Cess,520,361,69,Siah Kamara,Operational,No,5.898,-9.578

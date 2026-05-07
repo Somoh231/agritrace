@@ -129,6 +129,10 @@ export type FarmerRegistryDemoRow = {
   county: string;
   district: string;
   cooperative: string;
+  /** Ministry registry public id when synced from pilot seed */
+  registryPublicId?: string;
+  daoOfficerCode?: string;
+  primaryWarehouseCode?: string;
   gpsStatus: "verified" | "pending" | "none";
   acreage: number;
   mainCrop: string;

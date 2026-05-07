@@ -1,5 +1,5 @@
-import NationalOperationsDashboard from "@/components/pilot/NationalOperationsDashboard";
+import MinistryCommandCenter from "@/components/ais/MinistryCommandCenter";
 
 export default function CommandCenterPage() {
-  return <NationalOperationsDashboard />;
+  return <MinistryCommandCenter />;
 }

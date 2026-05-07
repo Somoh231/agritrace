@@ -4,8 +4,10 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import AlertBanner from "@/components/shared/AlertBanner";
+import { postLoginHomeForRole } from "@/lib/auth/post-login-home";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { describeAuthFetchFailure } from "@/lib/supabase/env";
+import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
 import { track } from "@/lib/analytics/client";
 
 function LogoMark() {
@@ -32,7 +34,7 @@ function LogoMark() {
 export default function LoginClient() {
   const router = useRouter();
   const search = useSearchParams();
-  const redirectTo = search.get("redirectTo") || "/national-operations";
+  const redirectToParam = search.get("redirectTo");
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -55,7 +57,17 @@ export default function LoginClient() {
         return;
       }
       track("login_success", { email_domain: nextEmail.split("@")[1] ?? "" });
-      router.push(creds?.redirect ?? redirectTo);
+      let destination = creds?.redirect ?? redirectToParam ?? undefined;
+      if (!destination) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+          destination = postLoginHomeForRole(resolveUserRoleWithDemoFallback(prof, user));
+        }
+      }
+      router.push(destination ?? "/command-center");
       router.refresh();
     } catch (e) {
       const raw = e instanceof Error ? e.message : "Sign-in failed.";
@@ -121,17 +133,17 @@ export default function LoginClient() {
 
             <div className="pt-2">
               <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400 mb-2">
-                Try Demo Roles
+                Demo access profiles
               </div>
               <div className="grid grid-cols-1 gap-2">
                 <DemoRoleButton
                   title="Ministry Officer"
-                  subtitle="Rice dashboard + reports"
+                  subtitle="National command center"
                   onClick={() =>
                     onSignIn({
                       email: "demo-ministry@agritrace.demo",
                       password: "DemoPass!2026",
-                      redirect: "/national-operations",
+                      redirect: "/command-center",
                     })
                   }
                 />
@@ -158,13 +170,13 @@ export default function LoginClient() {
                   }
                 />
                 <DemoRoleButton
-                  title="Field Agent"
-                  subtitle="Mobile field entry"
+                  title="District Agriculture Officer (DAO)"
+                  subtitle="District operations hub"
                   onClick={() =>
                     onSignIn({
                       email: "demo-field@agritrace.demo",
                       password: "DemoPass!2026",
-                      redirect: "/field",
+                      redirect: "/district-dashboard",
                     })
                   }
                 />

@@ -2,8 +2,9 @@
 
 import * as React from "react";
 
-import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
+import { formatRoleLabel } from "@/lib/display/role-labels";
 import { ministryNavForRole } from "@/lib/navigation/ministry-nav";
+import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
 import type { UserRole } from "@/lib/supabase/types";
 
 function MoMark() {
@@ -134,7 +135,7 @@ export default function MinistrySidebar({
           </div>
           <div className="min-w-0">
             <div className="text-[12px] font-medium text-white truncate">{user.name}</div>
-            <div className="font-mono text-[9px] text-emerald-200/60 truncate">{user.role.replaceAll("_", " ")}</div>
+            <div className="font-mono text-[9px] text-emerald-200/60 truncate">{formatRoleLabel(user.role)}</div>
           </div>
         </div>
       </div>
