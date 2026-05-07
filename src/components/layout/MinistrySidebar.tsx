@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import { formatRoleLabel } from "@/lib/display/role-labels";
-import { ministryNavForRole } from "@/lib/navigation/ministry-nav";
+import { ministryNavForRole, normalizeMinistryNavRole } from "@/lib/navigation/ministry-nav";
 import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
 import type { UserRole } from "@/lib/supabase/types";
 
@@ -30,9 +30,16 @@ export default function MinistrySidebar({
   onNavigate: (href: string) => void;
   user: { name: string; role: UserRole; initials: string };
 }) {
-  const sections = ministryNavForRole(user.role);
+  const navRole = normalizeMinistryNavRole(user.role);
+  let sections: ReturnType<typeof ministryNavForRole> = [];
+  try {
+    sections = ministryNavForRole(navRole);
+  } catch (e) {
+    console.error("[dashboard] sidebar generation failed", e);
+    sections = ministryNavForRole(normalizeMinistryNavRole(undefined));
+  }
 
-  const adminSection = isAdminConsoleRole(user.role)
+  const adminSection = isAdminConsoleRole(navRole)
     ? {
         label: "Administration",
         items: [
@@ -134,7 +141,7 @@ export default function MinistrySidebar({
           </div>
           <div className="min-w-0">
             <div className="text-[12px] font-medium text-white truncate">{user.name}</div>
-            <div className="font-mono text-[9px] text-emerald-200/60 truncate">{formatRoleLabel(user.role)}</div>
+            <div className="font-mono text-[9px] text-emerald-200/60 truncate">{formatRoleLabel(navRole)}</div>
           </div>
         </div>
       </div>

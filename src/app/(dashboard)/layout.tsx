@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PlatformProviders from "@/platform/providers";
 import { applyWorkspaceDemoRoleToProfile, WORKSPACE_DEMO_ROLE_COOKIE } from "@/lib/auth/workspace-demo-role";
+import { normalizeMinistryNavRole } from "@/lib/navigation/ministry-nav";
 import { createClient } from "@/lib/supabase/server";
 import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { Profile } from "@/lib/supabase/types";
@@ -84,8 +85,9 @@ export default async function DashboardLayout({
 
   const cookieStore = await cookies();
   const workspacePreviewCookie = cookieStore.get(WORKSPACE_DEMO_ROLE_COOKIE)?.value ?? null;
-  const authenticRole = effectiveProfile.role;
-  const workspaceProfile = applyWorkspaceDemoRoleToProfile(effectiveProfile, workspacePreviewCookie);
+  const profileCore = { ...effectiveProfile, role: normalizeMinistryNavRole(effectiveProfile.role) };
+  const authenticRole = profileCore.role;
+  const workspaceProfile = applyWorkspaceDemoRoleToProfile(profileCore, workspacePreviewCookie);
 
   return (
     <PlatformProviders>

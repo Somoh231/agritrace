@@ -4,6 +4,7 @@ import * as React from "react";
 import { Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { ClientErrorBoundary } from "@/components/layout/ClientErrorBoundary";
 import NotificationsMenu from "@/components/layout/NotificationsMenu";
 import UserWorkspaceMenu from "@/components/layout/UserWorkspaceMenu";
 import WorkspaceRoleSwitcher from "@/components/layout/WorkspaceRoleSwitcher";
@@ -43,13 +44,19 @@ export default function Topbar({
   onOpenMobileNav?: () => void;
 }) {
   const router = useRouter();
-  const { kicker, title } = ministryBreadcrumb(pathname);
+  const { kicker, title } = React.useMemo(() => {
+    try {
+      return ministryBreadcrumb(pathname);
+    } catch (e) {
+      console.error("[dashboard] topbar breadcrumb resolution failed", e);
+      return { kicker: "AIS", title: "Workspace" };
+    }
+  }, [pathname]);
   const [q, setQ] = React.useState("");
 
-  const scopeLabel =
-    profile.county || profile.district
-      ? [profile.county, profile.district].filter(Boolean).join(" · ")
-      : null;
+  const county = profile?.county ?? null;
+  const district = profile?.district ?? null;
+  const scopeLabel = county || district ? [county, district].filter(Boolean).join(" · ") : null;
 
   return (
     <header className="min-h-[56px] px-4 md:px-6 py-2 border-b border-slate-700/90 bg-slate-950/95 backdrop-blur-sm flex flex-wrap items-center justify-between gap-3">
@@ -92,18 +99,28 @@ export default function Topbar({
           />
         </form>
         <div className="hidden xl:flex items-center">
-          <WorkspaceRoleSwitcher effectiveRole={effectiveRole} authenticRole={authenticRole} />
+          <ClientErrorBoundary
+            name="workspace-preview"
+            fallback={
+              <div className="font-mono text-[9px] text-amber-200/80 max-w-[220px]">
+                Workspace preview unavailable — continue with signed-in scope.
+              </div>
+            }
+          >
+            <WorkspaceRoleSwitcher effectiveRole={effectiveRole} authenticRole={authenticRole} />
+          </ClientErrorBoundary>
         </div>
         <SyncStatusIndicator />
         <NotificationsMenu />
         <UserWorkspaceMenu
-          name={profile.full_name || "User"}
+          name={profile?.full_name?.trim() || "User"}
           role={effectiveRole}
-          initials={initialsFromName(profile.full_name || "User")}
+          initials={initialsFromName(profile?.full_name || "User")}
         />
         <button
           type="button"
           onClick={() => {
+            if (typeof window === "undefined") return;
             const next = new URL(window.location.href);
             const sp = nextUrlWithParam(next.searchParams, "present", "1");
             router.push(next.pathname + "?" + sp.toString());
@@ -115,6 +132,7 @@ export default function Topbar({
         <button
           type="button"
           onClick={() => {
+            if (typeof window === "undefined") return;
             const next = new URL(window.location.href);
             const sp = nextUrlWithParam(next.searchParams, "print", "1");
             router.push(next.pathname + "?" + sp.toString());
@@ -139,7 +157,16 @@ export default function Topbar({
         </button>
       </div>
       <div className="w-full xl:hidden border-t border-slate-800/80 pt-2 pb-1">
-        <WorkspaceRoleSwitcher effectiveRole={effectiveRole} authenticRole={authenticRole} />
+        <ClientErrorBoundary
+          name="workspace-preview-mobile"
+          fallback={
+            <div className="font-mono text-[9px] text-amber-200/80 px-1">
+              Workspace preview unavailable.
+            </div>
+          }
+        >
+          <WorkspaceRoleSwitcher effectiveRole={effectiveRole} authenticRole={authenticRole} />
+        </ClientErrorBoundary>
       </div>
     </header>
   );

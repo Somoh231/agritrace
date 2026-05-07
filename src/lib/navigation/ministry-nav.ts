@@ -1,5 +1,29 @@
 import type { UserRole } from "@/lib/supabase/types";
 
+/** Safe default when profile.role is missing or invalid (matches ministry-wide read posture). */
+export const MINISTRY_NAV_FALLBACK_ROLE: UserRole = "ministry_officer";
+
+const KNOWN_ROLES_SET = new Set<UserRole>([
+  "super_admin",
+  "admin",
+  "ministry_officer",
+  "government_officer",
+  "county_officer",
+  "district_officer",
+  "cooperative_manager",
+  "field_agent",
+  "warehouse_manager",
+  "donor_partner",
+  "exporter",
+  "call_center_agent",
+  "auditor",
+]);
+
+export function normalizeMinistryNavRole(role: UserRole | null | undefined): UserRole {
+  if (role != null && KNOWN_ROLES_SET.has(role)) return role;
+  return MINISTRY_NAV_FALLBACK_ROLE;
+}
+
 export type MinistryNavItem = {
   label: string;
   href: string;
@@ -250,11 +274,12 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
   },
 ];
 
-export function ministryNavForRole(role: UserRole): MinistryNavSection[] {
-  return MINISTRY_NAV.filter((s) => sectionVisible(role, s))
+export function ministryNavForRole(role: UserRole | null | undefined): MinistryNavSection[] {
+  const r = normalizeMinistryNavRole(role);
+  return MINISTRY_NAV.filter((s) => sectionVisible(r, s))
     .map((s) => ({
       ...s,
-      items: s.items.filter((i) => itemVisible(role, i)),
+      items: s.items.filter((i) => itemVisible(r, i)),
     }))
     .filter((s) => s.items.length > 0);
 }
