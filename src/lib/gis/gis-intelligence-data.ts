@@ -13,20 +13,70 @@ type GjLineString = { type: "LineString"; coordinates: [number, number][] };
 type GjFeature<G> = { type: "Feature"; id?: string; properties: Record<string, unknown>; geometry: G };
 type GjFeatureCollection<G> = { type: "FeatureCollection"; features: GjFeature<G>[] };
 
-export type CountySurfaceMode = "off" | "production_heatmap" | "food_security" | "dao_compliance" | "county_risk";
+/** Choropleth metric on county polygons (+ optional heat companion). */
+export type CountySurfaceMode = "off" | "rice_production" | "food_security" | "inventory_pressure" | "dao_compliance";
 
 export type GisOverlayToggles = {
-  farmerDensity: boolean;
+  /** Inventory movements + transfer corridors */
+  logisticsCorridors: boolean;
   warehouses: boolean;
+  daoOffices: boolean;
   subsidyDistribution: boolean;
+  /** Secondary heat surface (registry-weighted) — pairs with rice/production views */
+  farmerDensity: boolean;
   daoReportingPulse: boolean;
   pestOutbreaks: boolean;
-  inventoryMovementRoutes: boolean;
-  transferRoutes: boolean;
+};
+
+/** Hover rail for national map — values come from enriched county polygons / metrics. */
+export type CountyHoverDetail = {
+  county: string;
+  productionIndex: number;
+  riskScore: number;
+  warehouseUtilizationPct: number;
+  daoReportingPct: number;
+  x: number;
+  y: number;
 };
 
 export function countyKey(name: string) {
   return name.trim().toLowerCase();
+}
+
+/** Normalize GADM / vendor labels (e.g. GrandBassa → Grand Bassa) for joins to ministry metrics. */
+export function normalizeLiberiaCountyName(raw: string): string {
+  const compact = raw.replace(/\s+/g, "").toLowerCase();
+  const map: Record<string, string> = {
+    bomi: "Bomi",
+    bong: "Bong",
+    gbarpolu: "Gbarpolu",
+    gbapolu: "Gbarpolu",
+    grandbassa: "Grand Bassa",
+    grandcapemount: "Grand Cape Mount",
+    grandgedeh: "Grand Gedeh",
+    grandkru: "Grand Kru",
+    lofa: "Lofa",
+    margibi: "Margibi",
+    maryland: "Maryland",
+    montserrado: "Montserrado",
+    nimba: "Nimba",
+    rivercess: "River Cess",
+    rivergee: "River Gee",
+    sinoe: "Sinoe",
+  };
+  return map[compact] ?? raw.trim();
+}
+
+function extractGeoCountyRaw(props: Record<string, unknown>): string {
+  const v =
+    props.NAME_1 ??
+    props.shapeName ??
+    props.name ??
+    props.county ??
+    props.COUNTY ??
+    props.COUNTYNAME ??
+    "";
+  return String(v ?? "");
 }
 
 function foodRiskScore(label: string): number {
@@ -39,6 +89,22 @@ function foodRiskScore(label: string): number {
 function warehouseCoords(code: string): [number, number] | null {
   const w = MINISTRY_WAREHOUSES.find((x) => x.ministryCode === code);
   return w ? [w.longitude, w.latitude] : null;
+}
+
+function warehousePressureByCounty(): Map<string, { avgUtil: number; pressure: number }> {
+  const buckets = new Map<string, number[]>();
+  for (const w of MINISTRY_WAREHOUSES) {
+    const k = countyKey(w.county);
+    if (!buckets.has(k)) buckets.set(k, []);
+    buckets.get(k)!.push(w.utilizationPct);
+  }
+  const out = new Map<string, { avgUtil: number; pressure: number }>();
+  for (const [k, vals] of buckets) {
+    const avgUtil = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+    const pressure = Math.round(Math.max(...vals));
+    out.set(k, { avgUtil, pressure });
+  }
+  return out;
 }
 
 /** Point per pilot county — used when polygon GeoJSON is empty or as overlay anchors. */
@@ -63,16 +129,15 @@ export function buildCountyMetricPointsGeoJSON(): GjFeatureCollection<GjPoint> {
     });
   }
 
+  const whPressure = warehousePressureByCounty();
+
   const features: GjFeature<GjPoint>[] = MINISTRY_COUNTY_METRICS.map((m) => {
     const k = countyKey(m.county);
     const farmers = farmerByCounty.get(k) ?? 3;
     const subsidy = subsidyByCounty.get(k) ?? 0;
     const dao = daoByCounty.get(k)?.avg ?? m.daoCompliance;
     const foodRisk = foodRiskScore(m.foodRisk);
-    const countyRisk = Math.min(
-      100,
-      Math.round(foodRisk * 0.45 + (100 - dao) * 0.35 + (82 - m.productionIndex) * 0.35),
-    );
+    const wh = whPressure.get(k) ?? { avgUtil: 62, pressure: 68 };
     return {
       type: "Feature",
       id: k,
@@ -82,15 +147,42 @@ export function buildCountyMetricPointsGeoJSON(): GjFeatureCollection<GjPoint> {
         food_risk_label: m.foodRisk,
         food_risk_score: foodRisk,
         dao_compliance: Math.round(dao),
-        county_risk_score: countyRisk,
         farmer_count: farmers,
         subsidy_allocation_mt: Math.round(subsidy * 10) / 10,
+        warehouse_utilization_avg: wh.avgUtil,
+        inventory_pressure_score: wh.pressure,
       },
       geometry: { type: "Point", coordinates: [m.lng, m.lat] },
     };
   });
 
   return { type: "FeatureCollection", features };
+}
+
+/** DAO coordination markers — jittered from county intelligence centroid until field GPS exists. */
+export function buildDaoOfficePointsGeoJSON(): GjFeatureCollection<GjPoint> {
+  const metricByCounty = new Map(MINISTRY_COUNTY_METRICS.map((m) => [countyKey(m.county), m]));
+  return {
+    type: "FeatureCollection",
+    features: MINISTRY_DAO_OFFICERS.map((d, idx) => {
+      const m = metricByCounty.get(countyKey(d.county));
+      const baseLng = m?.lng ?? -9.5;
+      const baseLat = m?.lat ?? 6.5;
+      const ox = ((idx * 17) % 50) * 0.004 - 0.08;
+      const oy = ((idx * 23) % 43) * 0.004 - 0.06;
+      return {
+        type: "Feature",
+        properties: {
+          dao_code: d.daoCode,
+          county: d.county,
+          district: d.district,
+          dao_compliance: d.complianceScore,
+          status: d.status,
+        },
+        geometry: { type: "Point", coordinates: [baseLng + ox, baseLat + oy] },
+      };
+    }),
+  };
 }
 
 export function buildWarehousePointsGeoJSON(): GjFeatureCollection<GjPoint> {
@@ -205,19 +297,22 @@ export function enrichCountyPolygons(
     ...base,
     features: base.features.map((f) => {
       const props = f.properties ?? {};
-      const raw =
-        (props.county as string) ??
-        (props.COUNTY as string) ??
-        (props.name as string) ??
-        (props.COUNTYNAME as string) ??
-        "";
-      const m = metricMap.get(countyKey(raw));
+      const raw = extractGeoCountyRaw(props);
+      const countyDisplay = normalizeLiberiaCountyName(raw || "Unknown");
+      const m = metricMap.get(countyKey(countyDisplay));
       return {
         ...f,
         properties: {
           ...props,
-          countyName: raw || String(props.name ?? "Unknown"),
-          ...(m ?? {}),
+          countyName: countyDisplay,
+          county: countyDisplay,
+          ...(m ?? {
+            production_index: 55,
+            food_risk_score: 45,
+            dao_compliance: 72,
+            warehouse_utilization_avg: 60,
+            inventory_pressure_score: 65,
+          }),
         },
       };
     }),

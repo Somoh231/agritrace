@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, Download } from "lucide-react";
 
 export type GridColumn<T> = {
   key: keyof T | string;
@@ -35,6 +35,8 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   dense = false,
   stickyHeader = true,
   scrollMaxHeightClass = "max-h-[min(70vh,720px)]",
+  renderExpanded,
+  getRowKey,
 }: {
   title?: string;
   rows: T[];
@@ -51,11 +53,33 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   stickyHeader?: boolean;
   /** Tailwind max-height class for table body scroll; set "" to disable vertical clip */
   scrollMaxHeightClass?: string;
+  /** Optional expandable audit / detail band beneath the row */
+  renderExpanded?: (row: T) => React.ReactNode;
+  /** Stable row id for expand state (defaults to row.id or row index) */
+  getRowKey?: (row: T, index: number) => string;
 }) {
   const [q, setQ] = React.useState("");
   const [sortKey, setSortKey] = React.useState<string | null>(null);
   const [sortDir, setSortDir] = React.useState<"asc" | "desc">("asc");
   const [page, setPage] = React.useState(0);
+  const [expanded, setExpanded] = React.useState<Set<string>>(new Set());
+
+  const rowKeyFn = React.useCallback(
+    (row: T, i: number) => getRowKey?.(row, i) ?? String((row as Record<string, unknown>).id ?? `idx-${i}`),
+    [getRowKey],
+  );
+
+  const toggleExpand = React.useCallback((key: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const expandable = Boolean(renderExpanded);
+  const colSpan = columns.length + (expandable ? 1 : 0);
 
   const filtered = React.useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -150,6 +174,11 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
             <tr
               className={`border-b border-slate-700/80 bg-slate-950/95 text-slate-400 font-mono uppercase tracking-wide backdrop-blur-sm shadow-[0_1px_0_rgba(148,163,184,0.08)] ${headText}`}
             >
+              {expandable ? (
+                <th className={`${headPad} w-10 text-center text-slate-600`} aria-label="Expand detail">
+                  {/* chevron column */}
+                </th>
+              ) : null}
               {columns.map((c) => (
                 <th key={String(c.key)} className={`${headPad} whitespace-nowrap`} style={{ width: c.width }}>
                   <button
@@ -167,7 +196,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
           <tbody className="divide-y divide-slate-800/90">
             {slice.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className={`${cellPad} py-10 text-center`}>
+                <td colSpan={colSpan} className={`${cellPad} py-10 text-center`}>
                   <div className="mx-auto max-w-[520px] rounded-xl border border-white/10 bg-black/20 px-4 py-4">
                     <div className={`font-display font-semibold text-white ${dense ? "text-[13px]" : "text-[14px]"}`}>No records in scope</div>
                     <div className={`mt-2 leading-relaxed text-slate-400 ${dense ? "text-[11px]" : "text-[12px]"}`}>
@@ -180,19 +209,47 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
                 </td>
               </tr>
             ) : (
-              slice.map((row, i) => (
-                <tr
-                  key={String((row as Record<string, unknown>).id ?? i)}
-                  className={`hover:bg-slate-800/40 text-slate-200 ${onRowClick ? "cursor-pointer" : ""} ${rowClassName?.(row) ?? ""}`}
-                  onClick={() => onRowClick?.(row)}
-                >
-                  {columns.map((c) => (
-                    <td key={String(c.key)} className={`${cellPad} align-top whitespace-nowrap max-w-[280px] truncate`}>
-                      {c.render ? c.render(row) : String(row[c.key as keyof T] ?? "—")}
-                    </td>
-                  ))}
-                </tr>
-              ))
+              slice.map((row, i) => {
+                const rk = rowKeyFn(row, i);
+                const open = expanded.has(rk);
+                return (
+                  <React.Fragment key={rk}>
+                    <tr
+                      className={`hover:bg-slate-800/40 text-slate-200 ${onRowClick ? "cursor-pointer" : ""} ${rowClassName?.(row) ?? ""}`}
+                      onClick={() => onRowClick?.(row)}
+                    >
+                      {expandable ? (
+                        <td className={`${cellPad} align-middle text-center`} onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            aria-expanded={open}
+                            aria-label={open ? "Collapse row detail" : "Expand row detail"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleExpand(rk);
+                            }}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-700 bg-slate-900 text-slate-400 hover:border-emerald-700/60 hover:text-emerald-300"
+                          >
+                            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />
+                          </button>
+                        </td>
+                      ) : null}
+                      {columns.map((c) => (
+                        <td key={String(c.key)} className={`${cellPad} align-top whitespace-nowrap max-w-[280px] truncate`}>
+                          {c.render ? c.render(row) : String(row[c.key as keyof T] ?? "—")}
+                        </td>
+                      ))}
+                    </tr>
+                    {expandable && renderExpanded && open ? (
+                      <tr className="border-b border-slate-800/90 bg-black/35">
+                        <td colSpan={colSpan} className={`${dense ? "px-3 py-2" : "px-4 py-3"} text-[11px] text-slate-400`}>
+                          {renderExpanded(row)}
+                        </td>
+                      </tr>
+                    ) : null}
+                  </React.Fragment>
+                );
+              })
             )}
           </tbody>
         </table>

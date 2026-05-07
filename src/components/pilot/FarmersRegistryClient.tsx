@@ -153,6 +153,41 @@ export default function FarmersRegistryClient() {
           columns={demoCols}
           filename="farmers-registry.csv"
           pageSize={30}
+          dense
+          getRowKey={(r) => r.id}
+          renderExpanded={(r) => (
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <div className="font-mono text-[9px] uppercase tracking-wide text-slate-500">Custody chain</div>
+                <ul className="mt-1.5 space-y-1 font-mono text-[10px] text-slate-400">
+                  <li>
+                    <span className="text-slate-600">Registered · </span>
+                    {r.lastFieldVisit}
+                  </li>
+                  <li>
+                    <span className="text-slate-600">DAO · </span>
+                    {r.daoOfficerCode ?? "Unassigned"}
+                  </li>
+                  <li>
+                    <span className="text-slate-600">Warehouse · </span>
+                    {r.primaryWarehouseCode ?? "—"}
+                  </li>
+                  <li>
+                    <span className="text-slate-600">GPS · </span>
+                    <span className="uppercase">{r.gpsStatus}</span>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <div className="font-mono text-[9px] uppercase tracking-wide text-slate-500">Operational note</div>
+                <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">
+                  {r.verification === "verified"
+                    ? "Verification cleared — eligible movements align with subsidy and warehouse programmes."
+                    : "District QA queue — monitor dormant rows beyond 14 days and escalate to county reconciliation."}
+                </p>
+              </div>
+            </div>
+          )}
           onRowClick={(r) => {
             if (isUuid(r.id)) setProfileId(r.id);
           }}

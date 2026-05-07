@@ -57,6 +57,7 @@ export default function LiveQueryGrid({
   toolbar,
   eqFilters,
   reloadTrigger = 0,
+  dense = true,
 }: {
   table: string;
   select: string;
@@ -67,6 +68,8 @@ export default function LiveQueryGrid({
   toolbar?: React.ReactNode;
   eqFilters?: { column: string; value: string }[];
   reloadTrigger?: number;
+  /** Institutional dense rows for operational tables */
+  dense?: boolean;
 }) {
   const [rows, setRows] = React.useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -119,6 +122,7 @@ export default function LiveQueryGrid({
       rows={rows}
       columns={columns}
       filename={filename}
+      dense={dense}
       emptyLabel="No operational rows returned for the current scope."
       toolbar={
         <>

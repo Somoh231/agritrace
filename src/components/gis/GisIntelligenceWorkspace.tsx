@@ -3,10 +3,12 @@
 import * as React from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
-import type { CountySurfaceMode, GisOverlayToggles } from "@/lib/gis/gis-intelligence-data";
+import type { CountyHoverDetail, CountySurfaceMode, GisOverlayToggles } from "@/lib/gis/gis-intelligence-data";
 import {
   buildCountyMetricPointsGeoJSON,
+  buildDaoOfficePointsGeoJSON,
   buildInventoryMovementRoutesGeoJSON,
   buildPestEventsGeoJSON,
   buildSubsidyFlowLinesGeoJSON,
@@ -19,10 +21,12 @@ import {
   warehouseDistricts,
   warehouseInventory,
 } from "@/lib/gis/gis-intelligence-data";
+import { fetchLiberiaCountiesGeoJSON } from "@/lib/gis/liberia-county-geo";
 import { listTransferOrders } from "@/lib/logistics/transfer-repository";
 import type { TransferOrderView } from "@/lib/logistics/types";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import { optionalMapboxToken } from "@/lib/mapbox/config";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const GisIntelligenceMap = dynamic(() => import("@/components/gis/GisIntelligenceMap"), {
   ssr: false,
@@ -77,25 +81,30 @@ function Toggle({
 }
 
 export default function GisIntelligenceWorkspace() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const token = optionalMapboxToken();
-  const [surfaceMode, setSurfaceMode] = React.useState<CountySurfaceMode>("production_heatmap");
+  const [surfaceMode, setSurfaceMode] = React.useState<CountySurfaceMode>("rice_production");
   const [overlays, setOverlays] = React.useState<GisOverlayToggles>({
+    logisticsCorridors: true,
     farmerDensity: true,
     warehouses: true,
+    daoOffices: true,
     subsidyDistribution: true,
     daoReportingPulse: true,
     pestOutbreaks: true,
-    inventoryMovementRoutes: true,
-    transferRoutes: true,
   });
 
   const [countyGeo, setCountyGeo] = React.useState<Record<string, unknown> | null>(null);
   const [transfers, setTransfers] = React.useState<TransferOrderView[]>([]);
   const [countySel, setCountySel] = React.useState<string | null>(null);
   const [whSel, setWhSel] = React.useState<string | null>(null);
+  const [countyHover, setCountyHover] = React.useState<CountyHoverDetail | null>(null);
 
   const metricPoints = React.useMemo(() => buildCountyMetricPointsGeoJSON(), []);
-  const warehousePoints = React.useMemo(() => buildWarehousePointsGeoJSON(), []);
+  const canonicalWarehouseGeo = React.useMemo(() => buildWarehousePointsGeoJSON(), []);
+  const [warehouseGeo, setWarehouseGeo] = React.useState(canonicalWarehouseGeo);
+  const daoPoints = React.useMemo(() => buildDaoOfficePointsGeoJSON(), []);
   const pestPoints = React.useMemo(() => buildPestEventsGeoJSON(), []);
   const movementLines = React.useMemo(() => buildInventoryMovementRoutesGeoJSON(), []);
   const subsidyLines = React.useMemo(() => buildSubsidyFlowLinesGeoJSON(), []);
@@ -108,21 +117,14 @@ export default function GisIntelligenceWorkspace() {
   React.useEffect(() => {
     let cancelled = false;
     void (async () => {
-      try {
-        const res = await fetch("/data/liberia-counties.geojson");
-        const raw = (await res.json()) as { type?: string; features?: unknown[] };
-        if (cancelled || !raw?.features?.length) {
-          if (!cancelled) setCountyGeo(null);
-          return;
-        }
-        const enriched = enrichCountyPolygons(
-          { type: "FeatureCollection", features: raw.features as Array<{ properties?: Record<string, unknown> }> },
-          metricPoints,
-        );
-        setCountyGeo(enriched as unknown as Record<string, unknown>);
-      } catch {
-        if (!cancelled) setCountyGeo(null);
+      const raw = await fetchLiberiaCountiesGeoJSON();
+      if (cancelled) return;
+      if (!raw?.features?.length) {
+        setCountyGeo(null);
+        return;
       }
+      const enriched = enrichCountyPolygons({ type: "FeatureCollection", features: raw.features }, metricPoints);
+      setCountyGeo(enriched as unknown as Record<string, unknown>);
     })();
     return () => {
       cancelled = true;
@@ -130,18 +132,77 @@ export default function GisIntelligenceWorkspace() {
   }, [metricPoints]);
 
   React.useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const { data } = await supabase
+          .from("warehouses")
+          .select("ministry_code,name,county,latitude,longitude,utilization_pct,donor_resupply_flag")
+          .not("latitude", "is", null)
+          .not("longitude", "is", null);
+        if (cancelled || !data?.length) return;
+        const canonByCode = new Map(MINISTRY_WAREHOUSES.map((w) => [w.ministryCode, w]));
+        const features = (data as Array<Record<string, unknown>>)
+          .filter((r) => r.latitude != null && r.longitude != null)
+          .map((r) => {
+            const code = String(r.ministry_code ?? "");
+            const fallback = canonByCode.get(code);
+            return {
+              type: "Feature" as const,
+              properties: {
+                code: code || String(r.name ?? ""),
+                name: r.name,
+                county: r.county,
+                utilization: Number(r.utilization_pct ?? fallback?.utilizationPct ?? 0),
+                donor_resupply: Boolean(r.donor_resupply_flag ?? fallback?.donorResupplyFlag ?? false),
+              },
+              geometry: {
+                type: "Point" as const,
+                coordinates: [Number(r.longitude), Number(r.latitude)] as [number, number],
+              },
+            };
+          });
+        if (features.length) setWarehouseGeo({ type: "FeatureCollection", features });
+      } catch {
+        /* keep canonical fixtures */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    const c = searchParams.get("county");
+    setCountySel(c ? decodeURIComponent(c) : null);
+  }, [searchParams]);
+
+  const openCountyIntel = React.useCallback(
+    (name: string) => {
+      setCountySel(name);
+      setWhSel(null);
+      router.replace(`/gis-intelligence?county=${encodeURIComponent(name)}`, { scroll: false });
+    },
+    [router],
+  );
+
+  const closeCountyIntel = React.useCallback(() => {
+    setCountySel(null);
+    router.replace("/gis-intelligence", { scroll: false });
+  }, [router]);
+
+  React.useEffect(() => {
     const onCounty = (e: Event) => {
       const d = (e as CustomEvent<string>).detail;
-      if (d) {
-        setCountySel(d);
-        setWhSel(null);
-      }
+      if (d) openCountyIntel(d);
     };
     const onWh = (e: Event) => {
       const d = (e as CustomEvent<string>).detail;
       if (d) {
         setWhSel(d);
         setCountySel(null);
+        router.replace("/gis-intelligence", { scroll: false });
       }
     };
     window.addEventListener("gis-county-select", onCounty as EventListener);
@@ -150,7 +211,7 @@ export default function GisIntelligenceWorkspace() {
       window.removeEventListener("gis-county-select", onCounty as EventListener);
       window.removeEventListener("gis-warehouse-select", onWh as EventListener);
     };
-  }, []);
+  }, [openCountyIntel, router]);
 
   const countyMetric = countySel ? countyProductionMetric(countySel) : null;
   const warehousesInCounty = countySel ? countyWarehouses(countySel) : [];
@@ -164,10 +225,10 @@ export default function GisIntelligenceWorkspace() {
 
   const railSummary = React.useMemo(() => {
     const c = metricPoints.features.length;
-    const wh = warehousePoints.features.length;
+    const wh = warehouseGeo.features.length;
     const routes = movementLines.features.length + transferLines.features.length;
     return { counties: c, warehouses: wh, routes };
-  }, [metricPoints.features.length, warehousePoints.features.length, movementLines.features.length, transferLines.features.length]);
+  }, [metricPoints.features.length, warehouseGeo.features.length, movementLines.features.length, transferLines.features.length]);
 
   return (
     <div className="flex min-h-[calc(100dvh-10rem)] flex-col gap-3 md:min-h-[calc(100dvh-8rem)]">
@@ -199,10 +260,10 @@ export default function GisIntelligenceWorkspace() {
           <div className="mt-2 space-y-1.5">
             {(
               [
-                ["production_heatmap", "Production heatmap"],
+                ["rice_production", "Rice production"],
                 ["food_security", "Food security risk"],
+                ["inventory_pressure", "Inventory / warehouse pressure"],
                 ["dao_compliance", "DAO reporting compliance"],
-                ["county_risk", "County risk scoring"],
                 ["off", "Surface off (routes only)"],
               ] as const
             ).map(([key, label]) => (
@@ -222,21 +283,34 @@ export default function GisIntelligenceWorkspace() {
           <div className="mt-5 font-mono text-[9px] uppercase tracking-[0.2em] text-amber-500/85">Layer overlays</div>
           <div className="mt-2 space-y-1">
             <Toggle
-              checked={overlays.farmerDensity}
-              onChange={(v) => setOverlays((o) => ({ ...o, farmerDensity: v }))}
-              label="Farmer density"
-              hint="Weighted heat from registry clustering"
+              checked={overlays.logisticsCorridors}
+              onChange={(v) => setOverlays((o) => ({ ...o, logisticsCorridors: v }))}
+              label="Logistics"
+              hint="Inventory movements + transfer corridors"
             />
             <Toggle
               checked={overlays.warehouses}
               onChange={(v) => setOverlays((o) => ({ ...o, warehouses: v }))}
-              label="Warehouse locations"
+              label="Warehouses"
+              hint="Live coordinates from Supabase when configured"
+            />
+            <Toggle
+              checked={overlays.daoOffices}
+              onChange={(v) => setOverlays((o) => ({ ...o, daoOffices: v }))}
+              label="DAO offices"
+              hint="District coordination markers (centroid-jittered until field GPS)"
             />
             <Toggle
               checked={overlays.subsidyDistribution}
               onChange={(v) => setOverlays((o) => ({ ...o, subsidyDistribution: v }))}
               label="Subsidy distribution"
               hint="Animated flows from priority hubs"
+            />
+            <Toggle
+              checked={overlays.farmerDensity}
+              onChange={(v) => setOverlays((o) => ({ ...o, farmerDensity: v }))}
+              label="Registry density heat"
+              hint="Pairs with rice production surface"
             />
             <Toggle
               checked={overlays.daoReportingPulse}
@@ -248,21 +322,11 @@ export default function GisIntelligenceWorkspace() {
               onChange={(v) => setOverlays((o) => ({ ...o, pestOutbreaks: v }))}
               label="Pest outbreaks"
             />
-            <Toggle
-              checked={overlays.inventoryMovementRoutes}
-              onChange={(v) => setOverlays((o) => ({ ...o, inventoryMovementRoutes: v }))}
-              label="Inventory movement routes"
-              hint="Animated dashed corridors"
-            />
-            <Toggle
-              checked={overlays.transferRoutes}
-              onChange={(v) => setOverlays((o) => ({ ...o, transferRoutes: v }))}
-              label="Transfer workflow routes"
-            />
           </div>
 
           <p className="mt-4 text-[10px] leading-relaxed text-slate-600">
-            Animations run on corridor layers when subsidies, movements, transfers, or DAO pulse are enabled.
+            Production / food security / inventory / DAO choropleths use Surface intelligence above; overlays stack logistics, hubs, and
+            subsidy vectors.
           </p>
         </aside>
 
@@ -280,15 +344,36 @@ export default function GisIntelligenceWorkspace() {
               token={token}
               countyPolygons={countyGeo?.features ? countyGeo : null}
               metricPoints={metricPoints as unknown as Record<string, unknown>}
-              warehousePoints={warehousePoints as unknown as Record<string, unknown>}
+              warehousePoints={warehouseGeo as unknown as Record<string, unknown>}
+              daoPoints={daoPoints as unknown as Record<string, unknown>}
               pestPoints={pestPoints as unknown as Record<string, unknown>}
               movementLines={movementLines as unknown as Record<string, unknown>}
               subsidyLines={subsidyLines as unknown as Record<string, unknown>}
               transferLines={transferLines as unknown as Record<string, unknown>}
               surfaceMode={surfaceMode}
               overlays={overlays}
+              onCountyHover={setCountyHover}
             />
           )}
+
+          {countyHover && token ? (
+            <div
+              className="pointer-events-none absolute z-20 max-w-[240px] rounded-lg border border-white/15 bg-slate-950/95 px-3 py-2 text-[11px] text-slate-200 shadow-xl backdrop-blur-sm"
+              style={{ left: countyHover.x + 14, top: countyHover.y + 14 }}
+            >
+              <div className="font-display text-[13px] font-semibold text-white">{countyHover.county}</div>
+              <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-mono text-[10px] text-slate-400">
+                <dt>Production</dt>
+                <dd className="text-right text-emerald-300">{countyHover.productionIndex}</dd>
+                <dt>Risk score</dt>
+                <dd className="text-right text-amber-200/90">{countyHover.riskScore}</dd>
+                <dt>Warehouse util.</dt>
+                <dd className="text-right text-sky-300">{countyHover.warehouseUtilizationPct}%</dd>
+                <dt>DAO reporting</dt>
+                <dd className="text-right text-slate-100">{countyHover.daoReportingPct}%</dd>
+              </dl>
+            </div>
+          ) : null}
 
           {countySel ? (
             <div className="pointer-events-auto absolute bottom-3 left-3 right-3 z-10 max-h-[42vh] overflow-y-auto rounded-xl border border-white/10 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-md md:left-auto md:right-4 md:top-16 md:max-h-[calc(100%-5rem)] md:w-[min(100%,380px)] md:max-w-[92vw]">
@@ -297,10 +382,16 @@ export default function GisIntelligenceWorkspace() {
                   <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-400/80">County drawer</div>
                   <h3 className="font-display text-[16px] font-semibold text-white">{countySel}</h3>
                 </div>
-                <button type="button" onClick={() => setCountySel(null)} className="rounded-md px-2 py-1 text-[11px] text-slate-400 hover:bg-white/10">
+                <button type="button" onClick={closeCountyIntel} className="rounded-md px-2 py-1 text-[11px] text-slate-400 hover:bg-white/10">
                   Close
                 </button>
               </div>
+              <p className="mt-1 font-mono text-[10px] text-slate-600">
+                Shareable URL:{" "}
+                <Link className="text-emerald-400 hover:text-emerald-300" href={`/gis-intelligence?county=${encodeURIComponent(countySel)}`}>
+                  /gis-intelligence?county={encodeURIComponent(countySel)}
+                </Link>
+              </p>
               {countyMetric ? (
                 <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 font-mono text-[11px] text-slate-400">
                   <dt>Production index</dt>
@@ -454,6 +545,9 @@ export default function GisIntelligenceWorkspace() {
                 <span className="inline-block h-2 w-2 rounded-full bg-sky-400 align-middle" /> Warehouse anchor
               </li>
               <li>
+                <span className="inline-block h-2 w-2 rounded-full bg-amber-400 align-middle" /> DAO office
+              </li>
+              <li>
                 <span className="inline-block h-2 w-2 rounded-full bg-fuchsia-400 align-middle" /> Subsidy vector
               </li>
               <li>
@@ -467,9 +561,9 @@ export default function GisIntelligenceWorkspace() {
               </li>
             </ul>
           </div>
-          <div className="text-[10px] text-slate-600">
-            Polygon boundaries load from <span className="font-mono">public/data/liberia-counties.geojson</span> when populated; centroid
-            intelligence remains active regardless.
+          <div className="text-[10px] leading-snug text-slate-600">
+            County polygons: <span className="font-mono text-slate-500">public/data/liberia-counties.geojson</span> (ADM1, CRS84). Missing file
+            falls back to centroid intelligence until districts or farm parcels are added as sibling layers.
           </div>
         </aside>
       </div>

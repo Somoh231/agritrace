@@ -67,7 +67,7 @@ export function StaticGridPage({
 }) {
   return (
     <MinistryPageShell title={title} description={description} actions={actions}>
-      <EnterpriseDataGrid rows={rows} columns={columns} filename={filename} title="Dataset" />
+      <EnterpriseDataGrid rows={rows} columns={columns} filename={filename} title="Dataset" dense />
     </MinistryPageShell>
   );
 }

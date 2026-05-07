@@ -10,7 +10,9 @@ import OperationalActivityRail from "@/components/ais/OperationalActivityRail";
 import OperationalQueuesPanel from "@/components/ais/OperationalQueuesPanel";
 import { useNationalAISLive } from "@/components/ais/useNationalAISLive";
 import { OpsStatusBadge } from "@/components/pilot/pilot-ui";
+import NationalCountyOperationsBoard from "@/components/operations/NationalCountyOperationsBoard";
 import NationalOperationalIntelStrip from "@/components/operations/NationalOperationalIntelStrip";
+import OperationalWorkflowPipeline from "@/components/operations/OperationalWorkflowPipeline";
 import ProgressBar from "@/components/shared/ProgressBar";
 import {
   dataQualityAlerts,
@@ -22,17 +24,12 @@ import {
 } from "@/lib/demo/agriculture-pilot-data";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import { ministryWarehouseToSignalRow } from "@/lib/data/ministry-data-service";
+import { buildCountyOperationalSnapshots } from "@/lib/ops/county-operational-signals";
 import { PILOT_COUNTIES } from "@/lib/utils/pilot-config";
 import { safePct } from "@/lib/utils/rice";
 
 function targetActualPct(actualMt: number, targetMt: number) {
   return safePct(actualMt * 1000, Math.max(1, targetMt * 1000));
-}
-
-function ragFromStatus(s: "healthy" | "warning" | "critical") {
-  if (s === "healthy") return "text-emerald-300 border-emerald-500/35 bg-emerald-500/10";
-  if (s === "warning") return "text-amber-200 border-amber-500/35 bg-amber-500/10";
-  return "text-rose-200 border-rose-500/35 bg-rose-500/10";
 }
 
 function countySyntheticCompliance(c: { status: string; lossPct: number }) {
@@ -71,6 +68,8 @@ export default function MinistryCommandCenter() {
 
   const activeAlerts =
     postHarvestLossAlerts.filter((a) => a.lossPct > 10).length + dataQualityAlerts.length;
+
+  const countySnapshots = React.useMemo(() => buildCountyOperationalSnapshots(countiesRanked), [countiesRanked]);
 
   return (
     <div className="space-y-6 pb-10">
@@ -153,6 +152,8 @@ export default function MinistryCommandCenter() {
 
       <NationalOperationalIntelStrip />
 
+      <OperationalWorkflowPipeline />
+
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px] items-start">
         <div className="space-y-6 min-w-0">
           <LiberiaCountyMap className="[&_svg]:min-h-[340px] lg:[&_svg]:min-h-[420px]" counties={countiesRanked} riskByCounty={riskByCounty} />
@@ -215,58 +216,7 @@ export default function MinistryCommandCenter() {
             </div>
           </div>
 
-          <section className="rounded-2xl border border-slate-700/60 bg-white/[0.03] p-5 backdrop-blur-sm">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400">County performance</div>
-                <h2 className="mt-1 font-display text-[17px] font-semibold text-white">Production · compliance · DAO responsiveness</h2>
-              </div>
-              <Link href="/production/county" className="text-[12px] font-medium text-emerald-400 hover:text-emerald-300">
-                County intelligence →
-              </Link>
-            </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {countiesRanked.slice(0, 9).map((c) => {
-                const compliance = countySyntheticCompliance(c);
-                const daoPulse = c.status === "healthy" ? "high" : c.status === "warning" ? "medium" : "escalated";
-                const subsidy = c.status === "critical" ? "behind" : c.status === "warning" ? "monitor" : "on track";
-                const inv = c.lossPct > 12 ? "stress" : "stable";
-                const food = c.status === "critical" ? "elevated" : "controlled";
-                return (
-                  <div
-                    key={c.county}
-                    className={`rounded-xl border px-4 py-3 ${ragFromStatus(c.status)}`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-display text-[14px] font-semibold">{c.county}</span>
-                      <OpsStatusBadge status={c.status} />
-                    </div>
-                    <div className="mt-3 grid grid-cols-2 gap-x-2 gap-y-1 font-mono text-[10px] opacity-95">
-                      <span>Production</span>
-                      <span className="text-right tabular-nums">{c.productionMt.toFixed(1)} t</span>
-                      <span>Reporting</span>
-                      <span className="text-right">{compliance}%</span>
-                      <span>DAO pulse</span>
-                      <span className="text-right capitalize">{daoPulse}</span>
-                      <span>Subsidy</span>
-                      <span className="text-right capitalize">{subsidy}</span>
-                      <span>Inventory</span>
-                      <span className="text-right capitalize">{inv}</span>
-                      <span>Food risk</span>
-                      <span className="text-right capitalize">{food}</span>
-                    </div>
-                    <div className="mt-2">
-                      <ProgressBar
-                        valuePct={targetActualPct(c.productionMt, c.targetMt)}
-                        tone={c.status === "critical" ? "red" : c.status === "warning" ? "amber" : "green"}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-          </section>
+          <NationalCountyOperationsBoard snapshots={countySnapshots} limit={9} />
 
           <section className="rounded-2xl border border-slate-700/60 bg-white/[0.03] p-5 backdrop-blur-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">

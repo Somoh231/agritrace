@@ -6,7 +6,7 @@ import MapGL, { Layer, Source, type MapRef } from "react-map-gl/mapbox";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import type { CountySurfaceMode, GisOverlayToggles } from "@/lib/gis/gis-intelligence-data";
+import type { CountyHoverDetail, CountySurfaceMode, GisOverlayToggles } from "@/lib/gis/gis-intelligence-data";
 import { LIBERIA_CENTER, LIBERIA_ZOOM } from "@/lib/mapbox/config";
 
 type MapGeoPayload = Record<string, unknown>;
@@ -15,28 +15,34 @@ function visibility(on: boolean): "visible" | "none" {
   return on ? "visible" : "none";
 }
 
+const CHOROPLETH_MODES: CountySurfaceMode[] = ["rice_production", "food_security", "inventory_pressure", "dao_compliance"];
+
 export default function GisIntelligenceMap({
   token,
   countyPolygons,
   metricPoints,
   warehousePoints,
+  daoPoints,
   pestPoints,
   movementLines,
   subsidyLines,
   transferLines,
   surfaceMode,
   overlays,
+  onCountyHover,
 }: {
   token: string;
   countyPolygons: MapGeoPayload | null;
   metricPoints: MapGeoPayload;
   warehousePoints: MapGeoPayload;
+  daoPoints: MapGeoPayload;
   pestPoints: MapGeoPayload;
   movementLines: MapGeoPayload;
   subsidyLines: MapGeoPayload;
   transferLines: MapGeoPayload;
   surfaceMode: CountySurfaceMode;
   overlays: GisOverlayToggles;
+  onCountyHover?: (detail: CountyHoverDetail | null) => void;
 }) {
   const mapRef = React.useRef<MapRef>(null);
   const [mapLoaded, setMapLoaded] = React.useState(false);
@@ -45,129 +51,161 @@ export default function GisIntelligenceMap({
 
   const hasPolygons = Boolean((countyPolygons as { features?: unknown[] })?.features?.length);
 
-  const showRiskFill =
-    hasPolygons && (surfaceMode === "food_security" || surfaceMode === "dao_compliance" || surfaceMode === "county_risk");
+  const showCountyChoropleth = hasPolygons && CHOROPLETH_MODES.includes(surfaceMode);
 
-  const riskFillPaint =
-    surfaceMode === "food_security"
-      ? ({
+  const countyChoroplethPaint: Record<string, unknown> =
+    surfaceMode === "rice_production"
+      ? {
           "fill-color": [
             "interpolate",
             ["linear"],
-            ["coalesce", ["get", "food_risk_score"], 40],
-            25,
-            "#14532d",
-            55,
-            "#a16207",
+            ["coalesce", ["get", "production_index"], 0],
+            48,
+            "#0c4a6e",
+            62,
+            "#0369a1",
+            76,
+            "#15803d",
             88,
-            "#9f1239",
+            "#ca8a04",
+            96,
+            "#fef08a",
           ],
-          "fill-opacity": 0.72,
-        } as Record<string, unknown>)
-      : surfaceMode === "dao_compliance"
-        ? ({
+          "fill-opacity": 0.74,
+        }
+      : surfaceMode === "food_security"
+        ? {
             "fill-color": [
               "interpolate",
               ["linear"],
-              ["coalesce", ["get", "dao_compliance"], 70],
-              45,
-              "#7f1d1d",
-              72,
-              "#a16207",
-              93,
+              ["coalesce", ["get", "food_risk_score"], 40],
+              25,
               "#14532d",
+              55,
+              "#a16207",
+              88,
+              "#9f1239",
             ],
             "fill-opacity": 0.72,
-          } as Record<string, unknown>)
-        : surfaceMode === "county_risk"
-          ? ({
+          }
+        : surfaceMode === "inventory_pressure"
+          ? {
               "fill-color": [
                 "interpolate",
                 ["linear"],
-                ["coalesce", ["get", "county_risk_score"], 50],
-                25,
-                "#064e3b",
-                55,
-                "#92400e",
-                85,
-                "#831843",
+                ["coalesce", ["get", "inventory_pressure_score"], 50],
+                38,
+                "#14532d",
+                62,
+                "#a16207",
+                92,
+                "#9f1239",
               ],
-              "fill-opacity": 0.78,
-            } as Record<string, unknown>)
-          : ({
-              "fill-color": "#334155",
-              "fill-opacity": 0,
-            } as Record<string, unknown>);
+              "fill-opacity": 0.72,
+            }
+          : surfaceMode === "dao_compliance"
+            ? {
+                "fill-color": [
+                  "interpolate",
+                  ["linear"],
+                  ["coalesce", ["get", "dao_compliance"], 70],
+                  45,
+                  "#7f1d1d",
+                  72,
+                  "#a16207",
+                  93,
+                  "#14532d",
+                ],
+                "fill-opacity": 0.72,
+              }
+            : {
+                "fill-color": "#000000",
+                "fill-opacity": 0,
+              };
 
-  const metricCirclePaint =
-    surfaceMode === "food_security"
+  const centroidCirclePaint =
+    surfaceMode === "rice_production"
       ? ({
           "circle-color": [
             "interpolate",
             ["linear"],
-            ["coalesce", ["get", "food_risk_score"], 40],
-            25,
-            "#14532d",
-            55,
-            "#a16207",
-            88,
-            "#9f1239",
+            ["coalesce", ["get", "production_index"], 1],
+            48,
+            "#0ea5e9",
+            72,
+            "#22c55e",
+            92,
+            "#eab308",
           ],
-          "circle-opacity": hasPolygons ? 0 : 0.82,
-          "circle-radius": ["interpolate", ["linear"], ["get", "farmer_count"], 1, 10, 40, 44],
+          "circle-opacity": 0.82,
+          "circle-radius": ["interpolate", ["linear"], ["get", "production_index"], 40, 14, 96, 38],
           "circle-stroke-width": 2,
           "circle-stroke-color": "rgba(255,255,255,0.35)",
         } as Record<string, unknown>)
-      : surfaceMode === "dao_compliance"
+      : surfaceMode === "food_security"
         ? ({
             "circle-color": [
               "interpolate",
               ["linear"],
-              ["coalesce", ["get", "dao_compliance"], 70],
-              45,
-              "#7f1d1d",
-              72,
-              "#ca8a04",
-              93,
-              "#15803d",
+              ["coalesce", ["get", "food_risk_score"], 40],
+              25,
+              "#14532d",
+              55,
+              "#a16207",
+              88,
+              "#9f1239",
             ],
-            "circle-opacity": hasPolygons ? 0 : 0.82,
-            "circle-radius": ["interpolate", ["linear"], ["get", "dao_compliance"], 40, 14, 96, 38],
+            "circle-opacity": 0.82,
+            "circle-radius": ["interpolate", ["linear"], ["get", "farmer_count"], 1, 10, 40, 44],
             "circle-stroke-width": 2,
             "circle-stroke-color": "rgba(255,255,255,0.35)",
           } as Record<string, unknown>)
-        : surfaceMode === "county_risk"
+        : surfaceMode === "inventory_pressure"
           ? ({
               "circle-color": [
                 "interpolate",
                 ["linear"],
-                ["coalesce", ["get", "county_risk_score"], 50],
-                25,
-                "#064e3b",
-                55,
+                ["coalesce", ["get", "inventory_pressure_score"], 50],
+                38,
+                "#14532d",
+                62,
                 "#c2410c",
-                85,
-                "#831843",
+                92,
+                "#9f1239",
               ],
-              "circle-opacity": hasPolygons ? 0 : 0.82,
-              "circle-radius": ["interpolate", ["linear"], ["get", "county_risk_score"], 20, 16, 95, 42],
+              "circle-opacity": 0.82,
+              "circle-radius": ["interpolate", ["linear"], ["get", "inventory_pressure_score"], 35, 14, 95, 40],
               "circle-stroke-width": 2,
               "circle-stroke-color": "rgba(255,255,255,0.35)",
             } as Record<string, unknown>)
-          : ({
-              "circle-color": "#64748b",
-              "circle-opacity": 0.25,
-              "circle-radius": 18,
-              "circle-stroke-width": 1,
-              "circle-stroke-color": "rgba(255,255,255,0.2)",
-            } as Record<string, unknown>);
+          : surfaceMode === "dao_compliance"
+            ? ({
+                "circle-color": [
+                  "interpolate",
+                  ["linear"],
+                  ["coalesce", ["get", "dao_compliance"], 70],
+                  45,
+                  "#7f1d1d",
+                  72,
+                  "#ca8a04",
+                  93,
+                  "#15803d",
+                ],
+                "circle-opacity": 0.82,
+                "circle-radius": ["interpolate", ["linear"], ["get", "dao_compliance"], 40, 14, 96, 38],
+                "circle-stroke-width": 2,
+                "circle-stroke-color": "rgba(255,255,255,0.35)",
+              } as Record<string, unknown>)
+            : ({
+                "circle-color": "#64748b",
+                "circle-opacity": 0.22,
+                "circle-radius": 20,
+                "circle-stroke-width": 1,
+                "circle-stroke-color": "rgba(255,255,255,0.2)",
+              } as Record<string, unknown>);
 
   const corridorAnimate =
-    mapLoaded &&
-    (overlays.inventoryMovementRoutes ||
-      overlays.transferRoutes ||
-      overlays.subsidyDistribution ||
-      overlays.daoReportingPulse);
+    mapLoaded && (overlays.logisticsCorridors || overlays.subsidyDistribution || overlays.daoReportingPulse);
 
   React.useEffect(() => {
     if (!corridorAnimate) return;
@@ -207,7 +245,7 @@ export default function GisIntelligenceMap({
 
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
-  }, [corridorAnimate, overlays.daoReportingPulse, overlays.inventoryMovementRoutes, overlays.transferRoutes, overlays.subsidyDistribution]);
+  }, [corridorAnimate, overlays.daoReportingPulse, overlays.logisticsCorridors, overlays.subsidyDistribution]);
 
   const onClick = React.useCallback((e: MapLayerMouseEvent) => {
     const f = e.features?.[0];
@@ -224,13 +262,43 @@ export default function GisIntelligenceMap({
     }
   }, []);
 
+  const onMouseMove = React.useCallback(
+    (e: MapLayerMouseEvent) => {
+      if (!onCountyHover) return;
+      const f = e.features?.[0];
+      if (!f?.properties) {
+        onCountyHover(null);
+        return;
+      }
+      const lid = f.layer?.id;
+      if (lid !== "gis-counties-fill" && lid !== "gis-county-metric-circles") {
+        onCountyHover(null);
+        return;
+      }
+      const p = f.properties as Record<string, unknown>;
+      onCountyHover({
+        county: String(p.countyName ?? p.county ?? "—"),
+        productionIndex: Number(p.production_index ?? 0),
+        riskScore: Number(p.food_risk_score ?? 0),
+        warehouseUtilizationPct: Number(p.warehouse_utilization_avg ?? 0),
+        daoReportingPct: Number(p.dao_compliance ?? 0),
+        x: e.point.x,
+        y: e.point.y,
+      });
+    },
+    [onCountyHover],
+  );
+
   const interactiveIds = React.useMemo(() => {
     const ids: string[] = [];
-    if (hasPolygons && showRiskFill) ids.push("gis-counties-fill");
-    ids.push("gis-county-metric-circles");
+    if (hasPolygons) ids.push("gis-counties-fill");
+    if (!hasPolygons || surfaceMode === "off") ids.push("gis-county-metric-circles");
     if (overlays.warehouses) ids.push("gis-warehouse-circles");
+    if (overlays.daoOffices) ids.push("gis-dao-circles");
     return ids;
-  }, [hasPolygons, overlays.warehouses, showRiskFill]);
+  }, [hasPolygons, overlays.daoOffices, overlays.warehouses, surfaceMode]);
+
+  const ghostCentroids = hasPolygons && showCountyChoropleth;
 
   return (
     <MapGL
@@ -242,23 +310,21 @@ export default function GisIntelligenceMap({
       attributionControl={false}
       interactiveLayerIds={interactiveIds}
       onClick={onClick}
+      onMouseMove={onMouseMove}
+      onMouseLeave={() => onCountyHover?.(null)}
       onLoad={() => setMapLoaded(true)}
     >
       {countyPolygons && hasPolygons ? (
         <Source id="gis-counties-poly" type="geojson" data={countyPolygons as never}>
-          <Layer
-            id="gis-counties-fill"
-            type="fill"
-            layout={{ visibility: visibility(showRiskFill) }}
-            paint={riskFillPaint}
-          />
+          <Layer id="gis-counties-fill" type="fill" layout={{ visibility: "visible" }} paint={countyChoroplethPaint} />
           <Layer
             id="gis-counties-outline"
             type="line"
-            layout={{ visibility: visibility(showRiskFill || surfaceMode !== "off") }}
+            layout={{ visibility: "visible" }}
             paint={{
-              "line-color": "rgba(148,163,184,0.35)",
-              "line-width": 1,
+              "line-color": "rgba(148,163,184,0.4)",
+              "line-width": surfaceMode === "off" ? 0.9 : 1.1,
+              "line-opacity": surfaceMode === "off" ? 0.45 : 0.65,
             }}
           />
         </Source>
@@ -268,12 +334,12 @@ export default function GisIntelligenceMap({
         <Layer
           id="gis-prod-heatmap"
           type="heatmap"
-          layout={{ visibility: visibility(surfaceMode === "production_heatmap") }}
+          layout={{ visibility: visibility(surfaceMode === "rice_production") }}
           paint={{
             "heatmap-weight": ["/", ["+", ["coalesce", ["get", "production_index"], 1], 5], 110],
-            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 8, 1.2],
-            "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 5, 40, 9, 85],
-            "heatmap-opacity": 0.82,
+            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 0.45, 8, 1.05],
+            "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 5, 36, 9, 78],
+            "heatmap-opacity": showCountyChoropleth ? 0.38 : 0.82,
             "heatmap-color": [
               "interpolate",
               ["linear"],
@@ -294,7 +360,7 @@ export default function GisIntelligenceMap({
         <Layer
           id="gis-farmer-density-heat"
           type="heatmap"
-          layout={{ visibility: visibility(overlays.farmerDensity && surfaceMode !== "production_heatmap") }}
+          layout={{ visibility: visibility(overlays.farmerDensity && surfaceMode !== "rice_production") }}
           paint={{
             "heatmap-weight": ["coalesce", ["get", "farmer_count"], 1],
             "heatmap-intensity": 1,
@@ -314,12 +380,12 @@ export default function GisIntelligenceMap({
         <Layer
           id="gis-farmer-density-heat-under-production"
           type="heatmap"
-          layout={{ visibility: visibility(overlays.farmerDensity && surfaceMode === "production_heatmap") }}
+          layout={{ visibility: visibility(overlays.farmerDensity && surfaceMode === "rice_production") }}
           paint={{
             "heatmap-weight": ["*", ["coalesce", ["get", "farmer_count"], 1], 0.65],
             "heatmap-intensity": 0.55,
             "heatmap-radius": 38,
-            "heatmap-opacity": 0.35,
+            "heatmap-opacity": 0.32,
             "heatmap-color": [
               "interpolate",
               ["linear"],
@@ -336,21 +402,14 @@ export default function GisIntelligenceMap({
           type="circle"
           layout={{ visibility: "visible" }}
           paint={
-            surfaceMode === "production_heatmap" || surfaceMode === "off"
+            ghostCentroids
               ? ({
                   "circle-color": "#ffffff",
-                  "circle-opacity": surfaceMode === "off" ? 0.012 : 0.018,
-                  "circle-radius": surfaceMode === "off" ? 26 : 34,
+                  "circle-opacity": 0.012,
+                  "circle-radius": 28,
                   "circle-stroke-width": 0,
                 } as Record<string, unknown>)
-              : hasPolygons && showRiskFill
-                ? ({
-                    "circle-color": "#ffffff",
-                    "circle-opacity": 0.008,
-                    "circle-radius": 30,
-                    "circle-stroke-width": 0,
-                  } as Record<string, unknown>)
-                : metricCirclePaint
+              : centroidCirclePaint
           }
         />
         <Layer
@@ -384,7 +443,7 @@ export default function GisIntelligenceMap({
         <Layer
           id="gis-movement-lines"
           type="line"
-          layout={{ visibility: visibility(overlays.inventoryMovementRoutes) }}
+          layout={{ visibility: visibility(overlays.logisticsCorridors) }}
           paint={{
             "line-color": "#34d399",
             "line-width": 3,
@@ -397,7 +456,7 @@ export default function GisIntelligenceMap({
         <Layer
           id="gis-transfer-lines"
           type="line"
-          layout={{ visibility: visibility(overlays.transferRoutes) }}
+          layout={{ visibility: visibility(overlays.logisticsCorridors) }}
           paint={{
             "line-color": "#38bdf8",
             "line-width": 2.5,
@@ -417,6 +476,21 @@ export default function GisIntelligenceMap({
             "circle-opacity": 0.92,
             "circle-stroke-width": 2,
             "circle-stroke-color": "#0f172a",
+          }}
+        />
+      </Source>
+
+      <Source id="gis-dao-offices" type="geojson" data={daoPoints as never}>
+        <Layer
+          id="gis-dao-circles"
+          type="circle"
+          layout={{ visibility: visibility(overlays.daoOffices) }}
+          paint={{
+            "circle-radius": 7,
+            "circle-color": "#fbbf24",
+            "circle-opacity": 0.88,
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#1e293b",
           }}
         />
       </Source>

@@ -78,6 +78,11 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
     rolesDeny: [...DONOR_AUDITOR_DENY],
     items: [
       {
+        label: "National operations",
+        href: "/national-operations",
+        rolesDeny: ["county_officer", ...DAO_DENY, "warehouse_manager", ...DONOR_AUDITOR_DENY],
+      },
+      {
         label: "Command center",
         href: "/command-center",
         rolesDeny: ["county_officer", ...DAO_DENY, "warehouse_manager", ...DONOR_AUDITOR_DENY],
