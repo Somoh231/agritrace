@@ -50,7 +50,7 @@ export default function MinistrySidebar({
     : null;
 
   return (
-    <aside className="ministry-shell-sidebar h-full min-h-screen w-[280px] shrink-0 flex flex-col text-[rgb(var(--ministry-sidebar-fg))]">
+    <aside className="ministry-shell-sidebar h-full w-[280px] shrink-0 flex flex-col text-[rgb(var(--ministry-sidebar-fg))]">
       <div className="px-4 py-4 border-b border-white/[0.06]">
         <div className="flex items-start gap-3">
           <MoMark />
@@ -63,7 +63,7 @@ export default function MinistrySidebar({
         </div>
       </div>
 
-      <nav className="px-2 pb-4 pt-3 flex-1 overflow-y-auto">
+      <nav className="px-2 pb-4 pt-3 flex-1 overflow-y-auto min-h-0">
         <div className="space-y-6">
           {sections.map((section) => (
             <div key={section.id}>

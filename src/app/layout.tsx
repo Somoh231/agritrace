@@ -121,7 +121,7 @@ export default function RootLayout({
       lang="en"
       className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} ${agrivaultDisplay.variable} ${agrivaultBody.variable} ${agrivaultMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white text-gray-900">
+      <body className="h-full bg-[rgb(var(--surface))] text-[rgb(var(--text))]">
         <AnalyticsProvider>
           <ToastProvider>{children}</ToastProvider>
         </AnalyticsProvider>

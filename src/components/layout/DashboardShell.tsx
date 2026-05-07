@@ -134,13 +134,15 @@ export default function DashboardShell({
   }
 
   return (
-    <div className="min-h-screen bg-[rgb(var(--ministry-workspace))] overflow-x-hidden">
-      <div className="min-h-screen grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)]">
-        <div className="hidden md:block min-h-screen border-r border-white/[0.06]">
-          <MinistrySidebar pathname={pathname} onNavigate={(href) => router.push(href)} user={user} />
+    <div className="bg-[rgb(var(--ministry-workspace))] overflow-x-hidden h-[100dvh]">
+      <div className="grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] h-full overflow-hidden">
+        <div className="hidden md:block h-full border-r border-white/[0.06] overflow-hidden">
+          <div className="h-full overflow-y-auto overscroll-contain">
+            <MinistrySidebar pathname={pathname} onNavigate={(href) => router.push(href)} user={user} />
+          </div>
         </div>
 
-        <div className="min-w-0 flex flex-col min-h-screen">
+        <div className="min-w-0 flex flex-col h-full overflow-hidden">
           <Topbar
             pathname={pathname}
             profile={profile}
@@ -179,7 +181,7 @@ export default function DashboardShell({
               </div>
             </div>
           ) : null}
-          <main className="flex-1 overflow-y-auto min-w-0">
+          <main className="flex-1 min-w-0 overflow-y-auto overscroll-contain">
             <PilotBanner />
             <div className="w-full max-w-none min-w-0 px-5 py-6 md:px-8 md:py-8 xl:px-10">{children}</div>
           </main>
