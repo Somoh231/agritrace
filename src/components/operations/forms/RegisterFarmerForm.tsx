@@ -2,7 +2,8 @@
 
 import * as React from "react";
 
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { DaoWorkflowFormBindings } from "@/lib/dao/dao-workflow-types";
+import { persistRegisterFarmerPayload } from "@/lib/dao/dao-workflow-writers";
 
 const DRAFT_KEY = "agritrace-draft-register-farmer";
 
@@ -13,14 +14,16 @@ export default function RegisterFarmerForm({
   districtDefault,
   readOnly,
   onQueueForSync,
+  daoWorkflow,
 }: {
   onSuccess: () => void;
   onCancel: () => void;
   countyDefault?: string;
   districtDefault?: string;
   readOnly?: boolean;
-  /** Queue payload for offline / deferred ministry sync (DAO workflow). */
+  /** @deprecated Prefer `daoWorkflow.queuePending` (IndexedDB DAO queue). */
   onQueueForSync?: (snapshot: Record<string, unknown>) => void;
+  daoWorkflow?: DaoWorkflowFormBindings;
 }) {
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -63,14 +66,6 @@ export default function RegisterFarmerForm({
     }
   }, []);
 
-  const saveDraft = () => {
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(form));
-    } catch {
-      /* ignore */
-    }
-  };
-
   const buildNotes = () => {
     const parts: string[] = [];
     if (form.cooperative.trim()) parts.push(`Cooperative: ${form.cooperative.trim()}`);
@@ -85,13 +80,30 @@ export default function RegisterFarmerForm({
     queued_at: new Date().toISOString(),
   });
 
-  const syncLater = () => {
+  const saveDraft = async () => {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(form));
+    } catch {
+      /* ignore */
+    }
+    if (daoWorkflow?.enabled && daoWorkflow.saveDraft) {
+      await daoWorkflow.saveDraft(queueSnapshot());
+    }
+  };
+
+  const syncLater = async () => {
     setError(null);
     if (!form.full_name.trim() || !form.county.trim()) {
       setError("Full name and county are required before queueing.");
       return;
     }
-    onQueueForSync?.(queueSnapshot());
+    const snap = queueSnapshot();
+    if (daoWorkflow?.enabled) {
+      await daoWorkflow.queuePending(snap);
+      onSuccess();
+    } else {
+      onQueueForSync?.(snap);
+    }
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -105,39 +117,16 @@ export default function RegisterFarmerForm({
       return;
     }
     try {
-      const supabase = getSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const acreage = form.acreage_hectares.trim() ? Number(form.acreage_hectares) : null;
-      const lat = form.latitude.trim() ? Number(form.latitude) : null;
-      const lng = form.longitude.trim() ? Number(form.longitude) : null;
-      const { error: insErr } = await supabase.from("farmers").insert({
-        full_name: form.full_name.trim(),
-        county: form.county.trim(),
-        district: form.district.trim() || null,
-        village: form.village.trim() || null,
-        phone: form.phone.trim() || null,
-        national_id: form.national_id.trim() || null,
-        main_crop: form.main_crop.trim() || "rice",
-        acreage_hectares: acreage != null && Number.isFinite(acreage) ? acreage : null,
-        gender: form.gender.trim() || null,
-        latitude: lat != null && Number.isFinite(lat) ? lat : null,
-        longitude: lng != null && Number.isFinite(lng) ? lng : null,
-        notes: buildNotes(),
-        registered_by: user?.id ?? null,
-      } as Record<string, unknown>);
-      if (insErr) throw insErr;
-
-      await supabase.from("audit_log").insert({
-        user_id: user?.id ?? null,
-        action: "FARMER_REGISTERED",
-        table_name: "farmers",
-        new_values: { full_name: form.full_name, county: form.county },
-      } as Record<string, unknown>);
-
-      localStorage.removeItem(DRAFT_KEY);
-      onSuccess();
+      const snap = queueSnapshot();
+      const res = await persistRegisterFarmerPayload(snap);
+      if (!res.ok) {
+        setError(`${res.error} — saved to DAO offline queue.`);
+        if (daoWorkflow?.enabled) await daoWorkflow.onSubmitFailure(snap, res.error);
+      } else {
+        if (daoWorkflow?.enabled) await daoWorkflow.markSynced({ full_name: form.full_name.trim(), county: form.county.trim() });
+        localStorage.removeItem(DRAFT_KEY);
+        onSuccess();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -310,14 +299,14 @@ export default function RegisterFarmerForm({
         <button
           type="button"
           disabled={disabled}
-          onClick={saveDraft}
+          onClick={() => void saveDraft()}
           className="h-10 px-4 rounded-lg border border-slate-600 text-[12px] text-slate-200 hover:bg-slate-900 disabled:opacity-50"
         >
           Save draft
         </button>
-        {onQueueForSync && !disabled ? (
-          <button type="button" onClick={syncLater} className="h-10 px-4 rounded-lg border border-amber-700/60 text-[12px] text-amber-100 hover:bg-amber-950/40">
-            Sync later
+        {(daoWorkflow?.enabled || onQueueForSync) && !disabled ? (
+          <button type="button" onClick={() => void syncLater()} className="h-10 px-4 rounded-lg border border-amber-700/60 text-[12px] text-amber-100 hover:bg-amber-950/40">
+            Queue sync
           </button>
         ) : null}
         <button type="button" onClick={onCancel} className="h-10 px-4 rounded-lg text-[12px] text-slate-400 hover:text-white">

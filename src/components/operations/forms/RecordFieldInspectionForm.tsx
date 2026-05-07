@@ -2,7 +2,8 @@
 
 import * as React from "react";
 
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { DaoWorkflowFormBindings } from "@/lib/dao/dao-workflow-types";
+import { persistFarmInspectionPayload } from "@/lib/dao/dao-workflow-writers";
 
 function composeInspectionNotes(
   farmCondition: string,
@@ -30,11 +31,14 @@ export default function RecordFieldInspectionForm({
   onCancel,
   readOnly,
   onQueueForSync,
+  daoWorkflow,
 }: {
   onSuccess: () => void;
   onCancel: () => void;
   readOnly?: boolean;
+  /** @deprecated Prefer `daoWorkflow.queuePending`. */
   onQueueForSync?: (snapshot: Record<string, unknown>) => void;
+  daoWorkflow?: DaoWorkflowFormBindings;
 }) {
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -69,13 +73,24 @@ export default function RecordFieldInspectionForm({
     queued_at: new Date().toISOString(),
   });
 
-  const syncLater = () => {
+  const saveDraftLocal = async () => {
+    setError(null);
+    if (daoWorkflow?.enabled && daoWorkflow.saveDraft) await daoWorkflow.saveDraft(queueSnapshot());
+  };
+
+  const syncLater = async () => {
     setError(null);
     if (!farmerId.trim()) {
       setError("Farmer ID is required before queueing.");
       return;
     }
-    onQueueForSync?.(queueSnapshot());
+    const snap = queueSnapshot();
+    if (daoWorkflow?.enabled) {
+      await daoWorkflow.queuePending(snap);
+      onSuccess();
+    } else {
+      onQueueForSync?.(snap);
+    }
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -88,26 +103,15 @@ export default function RecordFieldInspectionForm({
     setSaving(true);
     setError(null);
     try {
-      const supabase = getSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const { error: insErr } = await supabase.from("farmer_visits").insert({
-        farmer_id: farmerId.trim(),
-        visited_by: user?.id ?? null,
-        notes: composedNotes(),
-        gps_latitude: lat.trim() ? Number(lat) : null,
-        gps_longitude: lng.trim() ? Number(lng) : null,
-        verification_status: verification || null,
-      } as Record<string, unknown>);
-      if (insErr) throw insErr;
-      await supabase.from("audit_log").insert({
-        user_id: user?.id ?? null,
-        action: "FIELD_INSPECTION",
-        table_name: "farmer_visits",
-        record_id: farmerId,
-      } as Record<string, unknown>);
-      onSuccess();
+      const snap = queueSnapshot();
+      const res = await persistFarmInspectionPayload(snap);
+      if (!res.ok) {
+        setError(`${res.error} — saved to DAO offline queue.`);
+        if (daoWorkflow?.enabled) await daoWorkflow.onSubmitFailure(snap, res.error);
+      } else {
+        if (daoWorkflow?.enabled) await daoWorkflow.markSynced({ farmer_id: farmerId.trim() });
+        onSuccess();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed");
     } finally {
@@ -243,9 +247,14 @@ export default function RecordFieldInspectionForm({
       </label>
 
       <div className="flex flex-wrap justify-end gap-2 pt-3 border-t border-slate-800">
-        {onQueueForSync && !disabled ? (
-          <button type="button" onClick={syncLater} className="h-10 px-4 rounded-lg border border-amber-700/60 text-[12px] text-amber-100 hover:bg-amber-950/40">
-            Sync later
+        {daoWorkflow?.enabled && daoWorkflow.saveDraft && !disabled ? (
+          <button type="button" onClick={() => void saveDraftLocal()} className="h-10 rounded-lg border border-slate-600 px-4 text-[12px] text-slate-200 hover:bg-slate-900">
+            Save draft
+          </button>
+        ) : null}
+        {(daoWorkflow?.enabled || onQueueForSync) && !disabled ? (
+          <button type="button" onClick={() => void syncLater()} className="h-10 rounded-lg border border-amber-700/60 px-4 text-[12px] text-amber-100 hover:bg-amber-950/40">
+            Queue sync
           </button>
         ) : null}
         <button type="button" onClick={onCancel} className="h-10 px-4 rounded-lg text-[12px] text-slate-400 hover:text-white">

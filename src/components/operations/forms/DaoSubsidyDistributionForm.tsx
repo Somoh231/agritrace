@@ -2,6 +2,8 @@
 
 import * as React from "react";
 
+import type { DaoWorkflowFormBindings } from "@/lib/dao/dao-workflow-types";
+import { persistSubsidyDeliveryPayload } from "@/lib/dao/dao-workflow-writers";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Opt = { id: string; label: string };
@@ -12,12 +14,14 @@ export default function DaoSubsidyDistributionForm({
   readOnly,
   onSuccess,
   onCancel,
+  daoWorkflow,
 }: {
   countyHint?: string | null;
   districtHint?: string | null;
   readOnly?: boolean;
   onSuccess: () => void;
   onCancel: () => void;
+  daoWorkflow?: DaoWorkflowFormBindings;
 }) {
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -53,52 +57,64 @@ export default function DaoSubsidyDistributionForm({
     };
   }, []);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (readOnly) return;
+  const queueSnapshot = (): Record<string, unknown> => {
+    const qSeed = Number(quantitySeeds);
+    return {
+      farmer_id: farmerId.trim(),
+      warehouse_id: warehouseId,
+      inventory_item_id: itemId,
+      quantity: Number.isFinite(qSeed) ? qSeed : quantitySeeds,
+      channel: `dao_subsidy:${districtHint ?? countyHint ?? "national"}`,
+      quantity_fertilizer: quantityFertilizer.trim() ? Number(quantityFertilizer) : null,
+      quantity_tools: quantityTools.trim() ? Number(quantityTools) : null,
+      evidence_ref: evidenceRef.trim() || null,
+      verification_note: verificationNote.trim() || null,
+      queued_at: new Date().toISOString(),
+    };
+  };
+
+  const validate = () => {
     if (!farmerId.trim() || !warehouseId || !itemId || !quantitySeeds.trim()) {
       setError("Farmer ID, warehouse, primary input SKU, and seed quantity are required.");
-      return;
+      return false;
     }
     const qSeed = Number(quantitySeeds);
     if (!Number.isFinite(qSeed) || qSeed <= 0) {
       setError("Seed quantity must be a positive number.");
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const saveDraftLocal = async () => {
+    setError(null);
+    if (daoWorkflow?.enabled && daoWorkflow.saveDraft) await daoWorkflow.saveDraft(queueSnapshot());
+  };
+
+  const syncLater = async () => {
+    setError(null);
+    if (!validate()) return;
+    if (!daoWorkflow?.enabled) return;
+    await daoWorkflow.queuePending(queueSnapshot());
+    onSuccess();
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (readOnly) return;
+    if (!validate()) return;
     setSaving(true);
     setError(null);
     try {
-      const supabase = getSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      const { error: dErr } = await supabase.from("distribution_logs").insert({
-        farmer_id: farmerId.trim(),
-        warehouse_id: warehouseId,
-        inventory_item_id: itemId,
-        quantity: qSeed,
-        channel: `dao_subsidy:${districtHint ?? countyHint ?? "national"}`,
-        created_by: user?.id ?? null,
-      } as Record<string, unknown>);
-      if (dErr) throw dErr;
-
-      await supabase.from("audit_log").insert({
-        user_id: user?.id ?? null,
-        action: "SUBSIDY_DISTRIBUTION_LOGGED",
-        table_name: "distribution_logs",
-        new_values: {
-          farmer_id: farmerId,
-          warehouse_id: warehouseId,
-          seeds: qSeed,
-          fertilizer: quantityFertilizer,
-          tools: quantityTools,
-          verification: verificationNote,
-          evidence: evidenceRef,
-        },
-      } as Record<string, unknown>);
-
-      onSuccess();
+      const snap = queueSnapshot();
+      const res = await persistSubsidyDeliveryPayload(snap);
+      if (!res.ok) {
+        setError(`${res.error} — saved to DAO offline queue.`);
+        if (daoWorkflow?.enabled) await daoWorkflow.onSubmitFailure(snap, res.error);
+      } else {
+        if (daoWorkflow?.enabled) await daoWorkflow.markSynced({ farmer_id: farmerId.trim(), warehouse_id: warehouseId });
+        onSuccess();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -233,7 +249,17 @@ export default function DaoSubsidyDistributionForm({
         />
       </label>
 
-      <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+      <div className="flex flex-wrap justify-end gap-2 pt-3 border-t border-slate-800">
+        {daoWorkflow?.enabled && daoWorkflow.saveDraft && !readOnly ? (
+          <button type="button" onClick={() => void saveDraftLocal()} className="h-10 rounded-lg border border-slate-600 px-4 text-[12px] text-slate-200 hover:bg-slate-900">
+            Save draft
+          </button>
+        ) : null}
+        {daoWorkflow?.enabled && !readOnly ? (
+          <button type="button" onClick={() => void syncLater()} className="h-10 rounded-lg border border-amber-700/60 px-4 text-[12px] text-amber-100 hover:bg-amber-950/40">
+            Queue sync
+          </button>
+        ) : null}
         <button type="button" onClick={onCancel} className="h-10 px-4 rounded-lg text-[12px] text-slate-400 hover:text-white">
           Close
         </button>
