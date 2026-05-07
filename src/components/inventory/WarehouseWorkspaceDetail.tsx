@@ -10,6 +10,7 @@ import {
   MINISTRY_INVENTORY_MOVEMENTS,
   MINISTRY_WAREHOUSES,
 } from "@/lib/data/ministry-canonical-data";
+import { buildWarehouseOperationalBrief } from "@/lib/ops/warehouse-operational-narrative";
 import { ministryWarehouseToSignalRow } from "@/lib/data/ministry-data-service";
 import { listTransferOrders } from "@/lib/logistics/transfer-repository";
 import type { TransferOrderView } from "@/lib/logistics/types";
@@ -363,6 +364,8 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
     [stockLines],
   );
 
+  const narrative = React.useMemo(() => buildWarehouseOperationalBrief(code), [code]);
+
   return (
     <div className="space-y-8 text-slate-100 pb-12">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -404,6 +407,51 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
           </div>
         ))}
       </div>
+
+      {narrative ? (
+        <section className="rounded-2xl border border-slate-700/90 bg-slate-950/55 px-5 py-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-500">Operational narrative strip</div>
+              <p className="mt-2 text-[13px] leading-relaxed text-slate-200">{narrative.headline}</p>
+              <div className="mt-3 grid gap-2 text-[11px] text-slate-500 md:grid-cols-2">
+                <p>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">Stock pressure · </span>
+                  {narrative.stockPressure}
+                </p>
+                <p>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">Donor shipments · </span>
+                  {narrative.donorOverview}
+                </p>
+                <p>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">County allocation · </span>
+                  {narrative.countyAllocation}
+                </p>
+                <p>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">Utilization · </span>
+                  {narrative.utilizationCommentary}
+                </p>
+                <p className="md:col-span-2">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">Low stock reasoning · </span>
+                  {narrative.lowStockReasoning}
+                </p>
+                <p className="md:col-span-2">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">Expiry risk · </span>
+                  {narrative.expiryRisk}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 border-t border-white/[0.06] pt-3">
+            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Recent movement timeline (canonical)</div>
+            <ul className="mt-2 space-y-1 font-mono text-[10px] text-slate-400">
+              {narrative.movementSummary.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ) : null}
 
       <section className="rounded-2xl border border-slate-700 bg-slate-950/40 px-5 py-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

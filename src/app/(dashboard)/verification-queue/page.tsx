@@ -1,26 +1,13 @@
-"use client";
+import { Suspense } from "react";
 
-import GenericTablePage from "@/components/operations/GenericTablePage";
-import type { GridColumn } from "@/components/operations/EnterpriseDataGrid";
-
-const COLS: GridColumn<Record<string, unknown>>[] = [
-  { key: "full_name", header: "Farmer" },
-  { key: "county", header: "County" },
-  { key: "verification_status", header: "Status" },
-  { key: "national_id", header: "National ID" },
-  { key: "created_at", header: "Registered" },
-];
+import VerificationQueueWorkspace from "@/components/operations/VerificationQueueWorkspace";
 
 export default function VerificationQueuePage() {
   return (
-    <GenericTablePage
-      title="Verification queue"
-      description="Farmers awaiting ministry verification decisions prior to subsidy enrollment."
-      table="farmers"
-      select="full_name,county,verification_status,national_id,created_at"
-      eqFilters={[{ column: "verification_status", value: "pending" }]}
-      columns={COLS}
-      filename="verification-queue.csv"
-    />
+    <Suspense
+      fallback={<div className="rounded-xl border border-slate-800 bg-slate-950/80 px-6 py-10 text-center text-[13px] text-slate-500">Loading verification queue…</div>}
+    >
+      <VerificationQueueWorkspace />
+    </Suspense>
   );
 }

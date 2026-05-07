@@ -19,6 +19,8 @@ export default function GenericTablePage({
   limit,
   eqFilters,
   reloadTrigger,
+  groupHeaderKey,
+  groupHeaderTitle,
 }: {
   title: string;
   description: string;
@@ -31,6 +33,8 @@ export default function GenericTablePage({
   limit?: number;
   eqFilters?: { column: string; value: string }[];
   reloadTrigger?: number;
+  groupHeaderKey?: keyof Record<string, unknown> | string;
+  groupHeaderTitle?: string;
 }) {
   return (
     <MinistryPageShell title={title} description={description} actions={actions}>
@@ -44,6 +48,8 @@ export default function GenericTablePage({
         toolbar={toolbar}
         eqFilters={eqFilters}
         reloadTrigger={reloadTrigger}
+        groupHeaderKey={groupHeaderKey}
+        groupHeaderTitle={groupHeaderTitle}
       />
     </MinistryPageShell>
   );

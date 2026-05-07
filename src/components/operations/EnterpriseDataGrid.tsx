@@ -37,6 +37,8 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   scrollMaxHeightClass = "max-h-[min(70vh,720px)]",
   renderExpanded,
   getRowKey,
+  groupHeaderKey,
+  groupHeaderTitle = "Group",
 }: {
   title?: string;
   rows: T[];
@@ -57,6 +59,10 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   renderExpanded?: (row: T) => React.ReactNode;
   /** Stable row id for expand state (defaults to row.id or row index) */
   getRowKey?: (row: T, index: number) => string;
+  /** When set, inserts grouped section rows sorted by this field */
+  groupHeaderKey?: keyof T | string;
+  /** Label prefix for grouped header rows */
+  groupHeaderTitle?: string;
 }) {
   const [q, setQ] = React.useState("");
   const [sortKey, setSortKey] = React.useState<string | null>(null);
@@ -93,7 +99,20 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
           }),
         )
       : rows;
-    if (sortKey) {
+    const gk = groupHeaderKey ? String(groupHeaderKey) : "";
+    if (gk) {
+      list = [...list].sort((a, b) => {
+        const cmpG = String(a[gk as keyof T] ?? "").localeCompare(String(b[gk as keyof T] ?? ""));
+        if (cmpG !== 0) return cmpG;
+        if (sortKey) {
+          const av = String(a[sortKey as keyof T] ?? "");
+          const bv = String(b[sortKey as keyof T] ?? "");
+          const cmp = av.localeCompare(bv, undefined, { numeric: true });
+          return sortDir === "asc" ? cmp : -cmp;
+        }
+        return 0;
+      });
+    } else if (sortKey) {
       list = [...list].sort((a, b) => {
         const av = String(a[sortKey as keyof T] ?? "");
         const bv = String(b[sortKey as keyof T] ?? "");
@@ -102,7 +121,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
       });
     }
     return list;
-  }, [rows, q, columns, sortKey, sortDir]);
+  }, [rows, q, columns, sortKey, sortDir, groupHeaderKey]);
 
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(page, pages - 1);
@@ -209,47 +228,64 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
                 </td>
               </tr>
             ) : (
-              slice.map((row, i) => {
-                const rk = rowKeyFn(row, i);
-                const open = expanded.has(rk);
-                return (
-                  <React.Fragment key={rk}>
-                    <tr
-                      className={`hover:bg-slate-800/40 text-slate-200 ${onRowClick ? "cursor-pointer" : ""} ${rowClassName?.(row) ?? ""}`}
-                      onClick={() => onRowClick?.(row)}
-                    >
-                      {expandable ? (
-                        <td className={`${cellPad} align-middle text-center`} onClick={(e) => e.stopPropagation()}>
-                          <button
-                            type="button"
-                            aria-expanded={open}
-                            aria-label={open ? "Collapse row detail" : "Expand row detail"}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleExpand(rk);
-                            }}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-700 bg-slate-900 text-slate-400 hover:border-emerald-700/60 hover:text-emerald-300"
-                          >
-                            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />
-                          </button>
+              (() => {
+                const frag: React.ReactNode[] = [];
+                let lastGroup = "";
+                const gk = groupHeaderKey ? String(groupHeaderKey) : "";
+                slice.forEach((row, i) => {
+                  const rk = rowKeyFn(row, i);
+                  const open = expanded.has(rk);
+                  const gVal = gk ? String(row[gk as keyof T] ?? "") : "";
+                  if (gk && gVal !== lastGroup) {
+                    lastGroup = gVal;
+                    frag.push(
+                      <tr key={`grp-${safePage}-${rk}-${gVal}`} className="bg-slate-950/95 border-t border-slate-700/90">
+                        <td colSpan={colSpan} className={`${dense ? "px-3 py-1.5" : "px-4 py-2"} font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500`}>
+                          {groupHeaderTitle} · {gVal || "—"}
                         </td>
-                      ) : null}
-                      {columns.map((c) => (
-                        <td key={String(c.key)} className={`${cellPad} align-top whitespace-nowrap max-w-[280px] truncate`}>
-                          {c.render ? c.render(row) : String(row[c.key as keyof T] ?? "—")}
-                        </td>
-                      ))}
-                    </tr>
-                    {expandable && renderExpanded && open ? (
-                      <tr className="border-b border-slate-800/90 bg-black/35">
-                        <td colSpan={colSpan} className={`${dense ? "px-3 py-2" : "px-4 py-3"} text-[11px] text-slate-400`}>
-                          {renderExpanded(row)}
-                        </td>
+                      </tr>,
+                    );
+                  }
+                  frag.push(
+                    <React.Fragment key={rk}>
+                      <tr
+                        className={`hover:bg-slate-800/40 text-slate-200 ${onRowClick ? "cursor-pointer" : ""} ${rowClassName?.(row) ?? ""}`}
+                        onClick={() => onRowClick?.(row)}
+                      >
+                        {expandable ? (
+                          <td className={`${cellPad} align-middle text-center`} onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              aria-expanded={open}
+                              aria-label={open ? "Collapse row detail" : "Expand row detail"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleExpand(rk);
+                              }}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-700 bg-slate-900 text-slate-400 hover:border-emerald-700/60 hover:text-emerald-300"
+                            >
+                              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />
+                            </button>
+                          </td>
+                        ) : null}
+                        {columns.map((c) => (
+                          <td key={String(c.key)} className={`${cellPad} align-top whitespace-nowrap max-w-[280px] truncate`}>
+                            {c.render ? c.render(row) : String(row[c.key as keyof T] ?? "—")}
+                          </td>
+                        ))}
                       </tr>
-                    ) : null}
-                  </React.Fragment>
-                );
-              })
+                      {expandable && renderExpanded && open ? (
+                        <tr className="border-b border-slate-800/90 bg-black/35">
+                          <td colSpan={colSpan} className={`${dense ? "px-3 py-2" : "px-4 py-3"} text-[11px] text-slate-400`}>
+                            {renderExpanded(row)}
+                          </td>
+                        </tr>
+                      ) : null}
+                    </React.Fragment>,
+                  );
+                });
+                return frag;
+              })()
             )}
           </tbody>
         </table>

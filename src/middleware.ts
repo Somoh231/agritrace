@@ -19,6 +19,7 @@ function isProtectedPath(pathname: string): boolean {
     "/cooperatives",
     "/geo-registry",
     "/verification-queue",
+    "/transfers",
     "/registration-approvals",
     "/field-agents",
     "/field",

@@ -167,6 +167,11 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
         href: "/inventory/transfers",
         rolesDeny: [...DAO_DENY, "auditor"],
       },
+      {
+        label: "National transfer trace",
+        href: "/transfers",
+        rolesDeny: [...DAO_DENY, "auditor"],
+      },
     ],
   },
   {

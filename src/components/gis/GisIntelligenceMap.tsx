@@ -256,6 +256,11 @@ export default function GisIntelligenceMap({
       window.dispatchEvent(new CustomEvent("gis-warehouse-select", { detail: String(props.code ?? "") }));
       return;
     }
+    if (lid === "gis-transfer-lines") {
+      const code = String(props.code ?? "");
+      if (code) window.dispatchEvent(new CustomEvent("gis-transfer-select", { detail: code }));
+      return;
+    }
     if (lid === "gis-counties-fill" || lid === "gis-county-metric-circles") {
       const county = String(props.countyName ?? props.county ?? "");
       if (county) window.dispatchEvent(new CustomEvent("gis-county-select", { detail: county }));
@@ -295,8 +300,9 @@ export default function GisIntelligenceMap({
     if (!hasPolygons || surfaceMode === "off") ids.push("gis-county-metric-circles");
     if (overlays.warehouses) ids.push("gis-warehouse-circles");
     if (overlays.daoOffices) ids.push("gis-dao-circles");
+    if (overlays.logisticsCorridors) ids.push("gis-transfer-lines");
     return ids;
-  }, [hasPolygons, overlays.daoOffices, overlays.warehouses, surfaceMode]);
+  }, [hasPolygons, overlays.daoOffices, overlays.logisticsCorridors, overlays.warehouses, surfaceMode]);
 
   const ghostCentroids = hasPolygons && showCountyChoropleth;
 

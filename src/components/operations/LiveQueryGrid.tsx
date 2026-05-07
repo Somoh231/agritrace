@@ -58,6 +58,8 @@ export default function LiveQueryGrid({
   eqFilters,
   reloadTrigger = 0,
   dense = true,
+  groupHeaderKey,
+  groupHeaderTitle,
 }: {
   table: string;
   select: string;
@@ -70,6 +72,8 @@ export default function LiveQueryGrid({
   reloadTrigger?: number;
   /** Institutional dense rows for operational tables */
   dense?: boolean;
+  groupHeaderKey?: keyof Record<string, unknown> | string;
+  groupHeaderTitle?: string;
 }) {
   const [rows, setRows] = React.useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -123,6 +127,8 @@ export default function LiveQueryGrid({
       columns={columns}
       filename={filename}
       dense={dense}
+      groupHeaderKey={groupHeaderKey}
+      groupHeaderTitle={groupHeaderTitle}
       emptyLabel="No operational rows returned for the current scope."
       toolbar={
         <>

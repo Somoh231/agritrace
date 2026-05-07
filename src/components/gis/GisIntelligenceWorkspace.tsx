@@ -24,7 +24,7 @@ import {
 import { fetchLiberiaCountiesGeoJSON } from "@/lib/gis/liberia-county-geo";
 import { listTransferOrders } from "@/lib/logistics/transfer-repository";
 import type { TransferOrderView } from "@/lib/logistics/types";
-import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
+import { MINISTRY_FARMERS, MINISTRY_OPERATIONAL_EVENTS, MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import { optionalMapboxToken } from "@/lib/mapbox/config";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -99,6 +99,7 @@ export default function GisIntelligenceWorkspace() {
   const [transfers, setTransfers] = React.useState<TransferOrderView[]>([]);
   const [countySel, setCountySel] = React.useState<string | null>(null);
   const [whSel, setWhSel] = React.useState<string | null>(null);
+  const [transferSel, setTransferSel] = React.useState<string | null>(null);
   const [countyHover, setCountyHover] = React.useState<CountyHoverDetail | null>(null);
 
   const metricPoints = React.useMemo(() => buildCountyMetricPointsGeoJSON(), []);
@@ -156,6 +157,12 @@ export default function GisIntelligenceWorkspace() {
                 county: r.county,
                 utilization: Number(r.utilization_pct ?? fallback?.utilizationPct ?? 0),
                 donor_resupply: Boolean(r.donor_resupply_flag ?? fallback?.donorResupplyFlag ?? false),
+                operational_status: String(fallback?.operationalStatus ?? r.operational_status ?? "—"),
+                verification_backlog: MINISTRY_FARMERS.filter(
+                  (f) => f.verification === "Pending" && f.primaryWarehouseCode === code,
+                ).length,
+                stock_pressure:
+                  Number(r.utilization_pct ?? fallback?.utilizationPct ?? 0) >= 85 ? "elevated" : "nominal",
               },
               geometry: {
                 type: "Point" as const,
@@ -182,6 +189,7 @@ export default function GisIntelligenceWorkspace() {
     (name: string) => {
       setCountySel(name);
       setWhSel(null);
+      setTransferSel(null);
       router.replace(`/gis-intelligence?county=${encodeURIComponent(name)}`, { scroll: false });
     },
     [router],
@@ -189,6 +197,7 @@ export default function GisIntelligenceWorkspace() {
 
   const closeCountyIntel = React.useCallback(() => {
     setCountySel(null);
+    setTransferSel(null);
     router.replace("/gis-intelligence", { scroll: false });
   }, [router]);
 
@@ -202,14 +211,26 @@ export default function GisIntelligenceWorkspace() {
       if (d) {
         setWhSel(d);
         setCountySel(null);
+        setTransferSel(null);
+        router.replace("/gis-intelligence", { scroll: false });
+      }
+    };
+    const onTrf = (e: Event) => {
+      const d = (e as CustomEvent<string>).detail;
+      if (d) {
+        setTransferSel(d);
+        setCountySel(null);
+        setWhSel(null);
         router.replace("/gis-intelligence", { scroll: false });
       }
     };
     window.addEventListener("gis-county-select", onCounty as EventListener);
     window.addEventListener("gis-warehouse-select", onWh as EventListener);
+    window.addEventListener("gis-transfer-select", onTrf as EventListener);
     return () => {
       window.removeEventListener("gis-county-select", onCounty as EventListener);
       window.removeEventListener("gis-warehouse-select", onWh as EventListener);
+      window.removeEventListener("gis-transfer-select", onTrf as EventListener);
     };
   }, [openCountyIntel, router]);
 
@@ -217,11 +238,22 @@ export default function GisIntelligenceWorkspace() {
   const warehousesInCounty = countySel ? countyWarehouses(countySel) : [];
   const daoRows = countySel ? countyDaoMetrics(countySel) : [];
   const alerts = countySel ? countyAlerts(countySel) : [];
+  const countyVerificationBacklog = countySel
+    ? MINISTRY_FARMERS.filter((f) => f.verification === "Pending" && f.county === countySel).length
+    : 0;
+  const countyRecentEvents = countySel
+    ? MINISTRY_OPERATIONAL_EVENTS.filter((e) => e.county === countySel).slice(0, 6)
+    : [];
 
   const whTransfers = whSel ? transfers.filter((t) => t.fromMinistryCode === whSel || t.toMinistryCode === whSel).slice(0, 12) : [];
   const whStock = whSel ? warehouseInventory(whSel).filter((l) => l.stockStatus.toLowerCase().includes("low")) : [];
   const whInv = whSel ? warehouseInventory(whSel) : [];
   const whDistricts = whSel ? warehouseDistricts(whSel) : [];
+  const whCanon = whSel ? MINISTRY_WAREHOUSES.find((w) => w.ministryCode === whSel) : null;
+  const whVerificationBacklog = whSel
+    ? MINISTRY_FARMERS.filter((f) => f.verification === "Pending" && f.primaryWarehouseCode === whSel).length
+    : 0;
+  const trfRow = transferSel ? transfers.find((t) => t.transferCode === transferSel) : undefined;
 
   const railSummary = React.useMemo(() => {
     const c = metricPoints.features.length;
@@ -248,7 +280,7 @@ export default function GisIntelligenceWorkspace() {
           >
             Legacy heat panels
           </Link>
-          <Link href="/inventory/transfers" className="rounded-lg bg-emerald-700/90 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-emerald-600">
+          <Link href="/transfers" className="rounded-lg bg-emerald-700/90 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-emerald-600">
             Transfer ledger
           </Link>
         </div>
@@ -415,6 +447,7 @@ export default function GisIntelligenceWorkspace() {
                           className="text-left font-mono text-emerald-300 hover:underline"
                           onClick={() => {
                             setCountySel(null);
+                            setTransferSel(null);
                             setWhSel(w.ministryCode);
                           }}
                         >
@@ -434,6 +467,31 @@ export default function GisIntelligenceWorkspace() {
                       {d.daoCode} · score {d.complianceScore}% · {d.status}
                     </li>
                   ))}
+                </ul>
+              </div>
+              <div className="mt-4 border-t border-white/10 pt-3">
+                <div className="text-[10px] font-medium uppercase tracking-wide text-slate-500">Verification intelligence</div>
+                <div className="mt-2 rounded-lg border border-slate-800 bg-black/35 px-3 py-2 text-[11px] text-slate-400">
+                  <span className="font-mono text-slate-500">Registry backlog · </span>
+                  <span className={countyVerificationBacklog ? "text-amber-200/90" : "text-slate-500"}>{countyVerificationBacklog}</span> pending
+                  farmer artefacts in county scope.
+                  <div className="mt-2">
+                    <Link href={`/verification-queue?county=${encodeURIComponent(countySel)}`} className="text-emerald-400 hover:text-emerald-300">
+                      Open verification queue →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 border-t border-white/10 pt-3">
+                <div className="text-[10px] font-medium uppercase tracking-wide text-slate-500">Operational events</div>
+                <ul className="mt-2 space-y-2">
+                  {countyRecentEvents.length ?
+                    countyRecentEvents.map((ev) => (
+                      <li key={ev.eventCode} className="rounded-lg border border-slate-800 bg-black/25 px-2 py-1.5 text-[11px] text-slate-400">
+                        <span className="text-slate-500">{ev.occurredAt.slice(0, 10)}</span> · {ev.eventType}: {ev.message}
+                      </li>
+                    ))
+                  : <li className="text-[11px] text-slate-600">No pilot ledger events tagged to this county label.</li>}
                 </ul>
               </div>
               <div className="mt-4 border-t border-white/10 pt-3">
@@ -458,13 +516,40 @@ export default function GisIntelligenceWorkspace() {
                   <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-sky-400/80">Warehouse drawer</div>
                   <h3 className="font-display text-[16px] font-semibold text-white">{whSel}</h3>
                 </div>
-                <button type="button" onClick={() => setWhSel(null)} className="rounded-md px-2 py-1 text-[11px] text-slate-400 hover:bg-white/10">
+                <button
+                  type="button"
+                  onClick={() => setWhSel(null)}
+                  className="rounded-md px-2 py-1 text-[11px] text-slate-400 hover:bg-white/10"
+                >
                   Close
                 </button>
               </div>
               <Link href={`/inventory/warehouse/${encodeURIComponent(whSel)}`} className="mt-2 inline-block text-[11px] text-emerald-400 hover:text-emerald-300">
                 Open warehouse detail →
               </Link>
+              <div className="mt-3 rounded-lg border border-slate-800 bg-black/35 px-3 py-2 text-[11px] text-slate-400">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Operational posture</div>
+                <div className="mt-1">
+                  Status:{" "}
+                  <span className="text-slate-200">{whCanon?.operationalStatus ?? "—"}</span> · Utilization:{" "}
+                  <span className="text-sky-300">{whCanon?.utilizationPct ?? "—"}%</span> · Stock pressure:{" "}
+                  <span className={(whCanon?.utilizationPct ?? 0) >= 85 ? "text-amber-200/90" : "text-slate-400"}>
+                    {(whCanon?.utilizationPct ?? 0) >= 85 ? "elevated" : "nominal"}
+                  </span>
+                </div>
+                <div className="mt-1">
+                  Verification backlog (registry → hub):{" "}
+                  <span className={whVerificationBacklog ? "text-amber-200/90" : "text-slate-500"}>{whVerificationBacklog}</span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Link href={`/verification-queue`} className="text-emerald-400 hover:text-emerald-300">
+                    National queue →
+                  </Link>
+                  <Link href={`/transfers`} className="text-emerald-400 hover:text-emerald-300">
+                    Transfer trace →
+                  </Link>
+                </div>
+              </div>
               <div className="mt-4 border-t border-white/10 pt-3">
                 <div className="text-[10px] font-medium uppercase tracking-wide text-slate-500">Inventory snapshot</div>
                 <ul className="mt-2 max-h-28 overflow-y-auto space-y-1 text-[11px] text-slate-400">
@@ -512,6 +597,53 @@ export default function GisIntelligenceWorkspace() {
                   : <span className="text-[11px] text-slate-600">No farmer custody mapping.</span>}
                 </div>
               </div>
+            </div>
+          ) : null}
+
+          {transferSel ? (
+            <div className="pointer-events-auto absolute bottom-3 left-3 right-3 z-10 max-h-[42vh] overflow-y-auto rounded-xl border border-white/10 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-md md:left-auto md:right-4 md:top-16 md:max-h-[calc(100%-5rem)] md:w-[min(100%,380px)] md:max-w-[92vw]">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-fuchsia-400/85">Transfer corridor</div>
+                  <h3 className="font-display text-[16px] font-semibold text-white">{transferSel}</h3>
+                </div>
+                <button type="button" onClick={() => setTransferSel(null)} className="rounded-md px-2 py-1 text-[11px] text-slate-400 hover:bg-white/10">
+                  Close
+                </button>
+              </div>
+              {trfRow ?
+                <>
+                  <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 font-mono text-[11px] text-slate-400">
+                    <dt>SKU</dt>
+                    <dd className="text-right text-slate-200">{trfRow.sku}</dd>
+                    <dt>Quantity</dt>
+                    <dd className="text-right text-slate-200">{trfRow.quantity}</dd>
+                    <dt>Workflow status</dt>
+                    <dd className="text-right text-slate-200">{trfRow.status.replace(/_/g, " ")}</dd>
+                    <dt>Origin</dt>
+                    <dd className="text-right text-emerald-300">{trfRow.fromMinistryCode}</dd>
+                    <dt>Destination</dt>
+                    <dd className="text-right text-emerald-300">{trfRow.toMinistryCode}</dd>
+                  </dl>
+                  <div className="mt-4 rounded-lg border border-slate-800 bg-black/35 px-3 py-2 text-[11px] text-slate-400">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Risk posture · </span>
+                    {(trfRow.status === "disputed" || trfRow.status === "requested") ?
+                      <span className="text-amber-200/90">Elevated oversight — verify custody checkpoints.</span>
+                    : <span className="text-slate-500">Nominal corridor monitoring.</span>}
+                  </div>
+                  <div className="mt-3 space-y-2 text-[11px]">
+                    <Link href={`/transfers?code=${encodeURIComponent(transferSel)}`} className="block text-emerald-400 hover:text-emerald-300">
+                      Open national transfer trace →
+                    </Link>
+                    <Link href="/verification-queue" className="block text-emerald-400 hover:text-emerald-300">
+                      Linked verification queues →
+                    </Link>
+                  </div>
+                </>
+              : <p className="mt-2 text-[11px] text-slate-500">
+                  Corridor geometry captured — detailed workflow row not loaded yet. Open the transfer ledger for full custody files.
+                </p>
+              }
             </div>
           ) : null}
         </div>

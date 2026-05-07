@@ -196,6 +196,11 @@ export function buildWarehousePointsGeoJSON(): GjFeatureCollection<GjPoint> {
         county: w.county,
         utilization: w.utilizationPct,
         donor_resupply: w.donorResupplyFlag,
+        operational_status: w.operationalStatus,
+        verification_backlog: MINISTRY_FARMERS.filter(
+          (f) => f.verification === "Pending" && f.primaryWarehouseCode === w.ministryCode,
+        ).length,
+        stock_pressure: w.utilizationPct >= 85 ? "elevated" : "nominal",
       },
       geometry: { type: "Point", coordinates: [w.longitude, w.latitude] },
     })),

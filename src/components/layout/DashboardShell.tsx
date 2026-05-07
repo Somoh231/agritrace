@@ -23,6 +23,7 @@ function primaryActionForPath(pathname: string): { label: string; href?: string;
   if (pathname.startsWith("/operations/warehouses")) return { label: "Create warehouse", event: true };
   if (pathname.startsWith("/inventory") && pathname.includes("donor")) return { label: "Donor shipment", event: true };
   if (pathname.startsWith("/inventory/transfers")) return { label: "Transfer stock", event: true };
+  if (pathname.startsWith("/transfers")) return { label: "National transfer trace", href: "/transfers" };
   if (pathname.startsWith("/field/inspections")) return { label: "Record inspection", event: true };
   if (pathname.startsWith("/field/pest-reports")) return { label: "Pest / disease report", event: true };
   if (pathname.startsWith("/subsidies/verification")) return { label: "Verify beneficiary", event: true };

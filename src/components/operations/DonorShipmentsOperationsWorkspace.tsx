@@ -37,6 +37,8 @@ export default function DonorShipmentsOperationsWorkspace() {
         columns={COLS}
         filename="donor-shipments.csv"
         reloadTrigger={tick}
+        groupHeaderKey="donor_name"
+        groupHeaderTitle="Donor programme"
         toolbar={
           <button
             type="button"

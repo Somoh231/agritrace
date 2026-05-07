@@ -40,7 +40,7 @@ export default function OperationalWorkflowPipeline() {
       detail: "Receipt & issue",
       queue: corridorDepth,
       hint: "Active corridor legs in ministry ledger",
-      href: "/inventory/transfers",
+      href: "/transfers",
     },
     {
       label: "National ops",

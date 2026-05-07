@@ -64,6 +64,16 @@ const demo: Array<{
     requestedAt: "2026-05-02T11:20:00Z",
     operatorLabel: "Awaiting receiver sign-off",
   },
+  {
+    transferCode: "TRF-LOF-GBA-0008",
+    fromWarehouseCode: "WH-LOF-001",
+    toWarehouseCode: "WH-GBA-001",
+    sku: "RICE-SEED-001",
+    quantity: 96,
+    status: "approved",
+    requestedAt: "2026-05-06T06:40:00Z",
+    operatorLabel: "County redistribution · Lofa → Grand Bassa",
+  },
 ];
 
 export function canonicalTransferOrders(): TransferOrderView[] {
