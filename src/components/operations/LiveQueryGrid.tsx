@@ -6,6 +6,47 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
 
+function GridSkeleton({ rows = 8 }: { rows?: number }) {
+  return (
+    <div className="rounded-xl border border-slate-700/80 bg-slate-900/40 overflow-hidden">
+      <div className="px-4 py-3 border-b border-slate-700/80 bg-slate-950/60">
+        <div className="h-4 w-40 rounded bg-white/[0.06] animate-pulse" />
+      </div>
+      <div className="p-4 space-y-2">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} className="h-9 rounded bg-white/[0.05] animate-pulse" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SoftWarning({
+  title,
+  detail,
+  onRetry,
+}: {
+  title: string;
+  detail: string;
+  onRetry?: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-amber-900/45 bg-amber-950/15 px-6 py-5 text-[13px] text-amber-100">
+      <div className="font-medium text-white">{title}</div>
+      <div className="mt-1 text-[12px] text-amber-100/80 leading-relaxed">{detail}</div>
+      {onRetry ? (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-3 h-9 rounded-lg border border-slate-700 bg-slate-900 px-3 text-[12px] text-slate-200 hover:bg-slate-800"
+        >
+          Retry
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 export default function LiveQueryGrid({
   table,
   select,
@@ -59,18 +100,16 @@ export default function LiveQueryGrid({
   }, [load, reloadTrigger]);
 
   if (loading) {
-    return (
-      <div className="rounded-xl border border-slate-700/80 bg-slate-900/40 px-6 py-16 text-center text-[13px] text-slate-500">
-        Loading operational dataset…
-      </div>
-    );
+    return <GridSkeleton />;
   }
 
   if (error) {
     return (
-      <div className="rounded-xl border border-rose-900/50 bg-rose-950/30 px-6 py-10 text-[13px] text-rose-200">
-        {error}
-      </div>
+      <SoftWarning
+        title="Operational dataset unavailable"
+        detail={`${error}. This may indicate role-based redaction (RLS) or an unseeded table. Use the Refresh control or confirm your workspace role has read access.`}
+        onRetry={() => void load()}
+      />
     );
   }
 
@@ -80,6 +119,7 @@ export default function LiveQueryGrid({
       rows={rows}
       columns={columns}
       filename={filename}
+      emptyLabel="No operational rows returned for the current scope."
       toolbar={
         <>
           {toolbar}

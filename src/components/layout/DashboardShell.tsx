@@ -52,6 +52,7 @@ export default function DashboardShell({
   const pathname = usePathname() ?? "/command-center";
   const search = useSearchParams();
   const presentation = search.get("present") === "1";
+  const printView = search.get("print") === "1";
   const showDemoRail = process.env.NEXT_PUBLIC_SHOW_DEMO_RAIL === "true";
 
   const user = React.useMemo(
@@ -65,6 +66,16 @@ export default function DashboardShell({
 
   const primary = primaryActionForPath(pathname);
   const [mobileNav, setMobileNav] = React.useState(false);
+
+  const exportHref = React.useMemo(() => {
+    const base = "/api/reports/briefing-snapshot";
+    if (pathname.startsWith("/command-center") || pathname.startsWith("/national-operations")) return `${base}?scope=command-center`;
+    if (pathname.startsWith("/county-dashboard"))
+      return `${base}?scope=county-dashboard&county=${encodeURIComponent(profile.county ?? "")}`;
+    if (pathname.startsWith("/food-security")) return `${base}?scope=food-security`;
+    if (pathname.startsWith("/reports")) return `${base}?scope=reports`;
+    return "/api/reports/executive-briefing";
+  }, [pathname, profile.county]);
 
   if (presentation) {
     return (
@@ -84,6 +95,40 @@ export default function DashboardShell({
         </div>
         <main className="min-h-screen p-4 md:p-8">{children}</main>
         {showDemoRail ? <DemoRail /> : null}
+      </div>
+    );
+  }
+
+  if (printView) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="fixed right-4 top-4 z-50 hidden print:hidden md:flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const next = new URL(window.location.href);
+              next.searchParams.delete("print");
+              router.push(next.pathname + next.search);
+            }}
+            className="h-9 px-3 rounded-md border border-slate-300 bg-white text-[12px] text-slate-800 hover:bg-slate-50 shadow-sm"
+          >
+            Exit print view
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="h-9 px-3 rounded-md border border-slate-300 bg-white text-[12px] text-slate-800 hover:bg-slate-50 shadow-sm"
+          >
+            Print
+          </button>
+          <a
+            href={exportHref}
+            className="h-9 px-3 rounded-md border border-slate-300 bg-white text-[12px] text-slate-800 hover:bg-slate-50 shadow-sm inline-flex items-center"
+          >
+            Export PDF
+          </a>
+        </div>
+        <main className="briefing-print-root min-h-screen p-4 md:p-10">{children}</main>
       </div>
     );
   }
@@ -111,7 +156,7 @@ export default function DashboardShell({
               window.dispatchEvent(new CustomEvent("agritrace-primary-action"));
             },
           }}
-          onExportPdf={() => router.push("/reports/pdf")}
+          onExportPdf={() => window.open(exportHref, "_blank", "noopener,noreferrer")}
         />
         {mobileNav ? (
           <div className="fixed inset-0 z-[70] lg:hidden">

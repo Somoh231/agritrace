@@ -11,6 +11,13 @@ import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import { ministryBreadcrumb } from "@/lib/navigation/ministry-nav";
 import type { Profile, UserRole } from "@/lib/supabase/types";
 
+function nextUrlWithParam(params: URLSearchParams, key: string, value: string | null) {
+  const next = new URLSearchParams(params.toString());
+  if (value == null) next.delete(key);
+  else next.set(key, value);
+  return next;
+}
+
 function initialsFromName(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   const first = parts[0]?.[0] ?? "U";
@@ -94,6 +101,28 @@ export default function Topbar({
           role={effectiveRole}
           initials={initialsFromName(profile.full_name || "User")}
         />
+        <button
+          type="button"
+          onClick={() => {
+            const next = new URL(window.location.href);
+            const sp = nextUrlWithParam(next.searchParams, "present", "1");
+            router.push(next.pathname + "?" + sp.toString());
+          }}
+          className="hidden lg:inline-flex h-9 px-3 rounded-lg border border-slate-700 bg-slate-900 text-[12px] text-slate-200 hover:bg-slate-800"
+        >
+          Briefing mode
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            const next = new URL(window.location.href);
+            const sp = nextUrlWithParam(next.searchParams, "print", "1");
+            router.push(next.pathname + "?" + sp.toString());
+          }}
+          className="hidden lg:inline-flex h-9 px-3 rounded-lg border border-slate-700 bg-slate-900 text-[12px] text-slate-200 hover:bg-slate-800"
+        >
+          Print view
+        </button>
         <button
           type="button"
           onClick={onExportPdf}

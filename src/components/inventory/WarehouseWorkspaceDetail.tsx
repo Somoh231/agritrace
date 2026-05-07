@@ -37,6 +37,69 @@ type MovRow = {
   at: string;
 };
 
+function clamp01(n: number) {
+  return Math.max(0, Math.min(1, n));
+}
+
+function fmtDate(iso: string | null | undefined) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso);
+  return d.toISOString().slice(0, 10);
+}
+
+function daysUntil(iso: string | null) {
+  if (!iso) return null;
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return null;
+  return Math.ceil((t - Date.now()) / 86400000);
+}
+
+function expiryTone(days: number | null): "ok" | "soon" | "critical" | "unknown" {
+  if (days == null) return "unknown";
+  if (days < 0) return "critical";
+  if (days <= 30) return "critical";
+  if (days <= 90) return "soon";
+  return "ok";
+}
+
+function qtyTone(qty: number): "ok" | "low" | "critical" {
+  if (qty <= 0) return "critical";
+  if (qty < 500) return "critical";
+  if (qty < 1200) return "low";
+  return "ok";
+}
+
+function StockBar({ value, max }: { value: number; max: number }) {
+  const pct = max > 0 ? clamp01(value / max) : 0;
+  const tone = pct < 0.15 ? "bg-rose-500/80" : pct < 0.35 ? "bg-amber-400/80" : "bg-emerald-400/80";
+  return (
+    <div className="h-2 w-[140px] rounded-full bg-white/[0.06] overflow-hidden">
+      <div className={`h-full ${tone}`} style={{ width: `${Math.round(pct * 100)}%` }} />
+    </div>
+  );
+}
+
+function Chip({
+  label,
+  tone,
+}: {
+  label: string;
+  tone: "neutral" | "emerald" | "amber" | "rose" | "slate";
+}) {
+  const cls =
+    tone === "emerald"
+      ? "border-emerald-400/35 bg-emerald-500/10 text-emerald-100"
+      : tone === "amber"
+        ? "border-amber-400/35 bg-amber-500/10 text-amber-100"
+        : tone === "rose"
+          ? "border-rose-500/35 bg-rose-500/10 text-rose-100"
+          : tone === "slate"
+            ? "border-slate-700 bg-slate-900/50 text-slate-200"
+            : "border-white/10 bg-white/[0.03] text-slate-200";
+  return <span className={`inline-flex items-center rounded-full border px-2.5 py-1 font-mono text-[10px] ${cls}`}>{label}</span>;
+}
+
 export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
   const canon = MINISTRY_WAREHOUSES.find((w) => w.ministryCode === code);
   const canonSignals = canon ? ministryWarehouseToSignalRow(canon) : null;
@@ -273,6 +336,33 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
   const incomingTransfers = transfers.filter((t) => t.toMinistryCode === code && t.status !== "completed");
   const outgoingTransfers = transfers.filter((t) => t.fromMinistryCode === code && t.status !== "completed");
 
+  const maxQty = React.useMemo(() => {
+    if (!stockLines.length) return 0;
+    const m = Math.max(...stockLines.map((s) => s.quantity));
+    return Number.isFinite(m) ? m : 0;
+  }, [stockLines]);
+
+  const stockByCategory = React.useMemo(() => {
+    const m = new Map<string, StockLine[]>();
+    for (const s of stockLines) {
+      const k = (s.category || "Uncategorized").trim() || "Uncategorized";
+      const arr = m.get(k) ?? [];
+      arr.push(s);
+      m.set(k, arr);
+    }
+    const groups = [...m.entries()].map(([category, lines]) => ({
+      category,
+      lines: [...lines].sort((a, b) => b.quantity - a.quantity),
+    }));
+    groups.sort((a, b) => a.category.localeCompare(b.category));
+    return groups;
+  }, [stockLines]);
+
+  const lowStockCount = React.useMemo(
+    () => stockLines.filter((s) => qtyTone(s.quantity) !== "ok").length,
+    [stockLines],
+  );
+
   return (
     <div className="space-y-8 text-slate-100 pb-12">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -302,7 +392,7 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
         {[
           { label: "County", value: county },
           { label: "Operational status", value: opStatus },
-          { label: "Utilization", value: `${utilization.toFixed(1)}%` },
+          { label: "Utilization", value: `${utilization.toFixed(1)}%`, hint: "Capacity pressure" },
           { label: "Stock / capacity", value: `${currentStock.toFixed(1)} / ${capacity.toFixed(1)} MT` },
           { label: "SKU lines", value: String(stockLines.length) },
           { label: "Custody manager", value: manager },
@@ -310,9 +400,53 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
           <div key={m.label} className="rounded-xl border border-slate-700 bg-slate-950/55 px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">{m.label}</div>
             <div className="mt-1 font-display text-[15px] font-semibold leading-snug text-white">{m.value}</div>
+            {"hint" in m ? <div className="mt-2 text-[11px] text-slate-500">{(m as any).hint}</div> : null}
           </div>
         ))}
       </div>
+
+      <section className="rounded-2xl border border-slate-700 bg-slate-950/40 px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Operational posture</div>
+            <div className="mt-1 font-display text-[15px] font-semibold text-white">Utilization · expiry · low stock</div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {lowStockCount ? <Chip tone="amber" label={`${lowStockCount} low stock lines`} /> : <Chip tone="emerald" label="Stock levels stable" />}
+            {expiryAlerts.length ? <Chip tone="rose" label={`${expiryAlerts.length} expiry risks ≤90d`} /> : <Chip tone="slate" label="No expiry risks in window" />}
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px] items-center">
+          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-[12px] text-slate-300">Capacity utilization</div>
+              <div className="font-mono text-[12px] text-slate-200 tabular-nums">{utilization.toFixed(1)}%</div>
+            </div>
+            <div className="mt-2 h-3 rounded-full bg-white/[0.06] overflow-hidden">
+              <div
+                className={`${utilization >= 92 ? "bg-rose-500/80" : utilization >= 80 ? "bg-amber-400/80" : "bg-emerald-400/80"} h-full`}
+                style={{ width: `${Math.round(clamp01(utilization / 100) * 100)}%` }}
+              />
+            </div>
+            <div className="mt-2 text-[11px] text-slate-500">
+              {capacity > 0 ? `${currentStock.toFixed(1)} MT in custody · ${capacity.toFixed(1)} MT capacity` : "Capacity not configured"}
+            </div>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <div className="text-[12px] text-slate-300">Disposition watch</div>
+            <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-slate-400">
+              <div className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Inbound TRF</div>
+                <div className="mt-1 font-display text-[15px] font-semibold text-white tabular-nums">{incomingTransfers.length}</div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Outbound TRF</div>
+                <div className="mt-1 font-display text-[15px] font-semibold text-white tabular-nums">{outgoingTransfers.length}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {assignedDistricts.length ? (
         <section className="rounded-2xl border border-slate-700 bg-slate-950/45 px-5 py-4">
@@ -396,32 +530,82 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
           </Link>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-[13px]">
+          <table className="w-full min-w-[980px] text-left text-[13px]">
             <thead className="font-mono text-[10px] uppercase tracking-wider text-slate-500 border-b border-slate-800">
               <tr>
                 <th className="px-5 py-2">SKU</th>
                 <th className="px-5 py-2">Item</th>
-                <th className="px-5 py-2">Qty</th>
-                <th className="px-5 py-2">Expiry</th>
-                <th className="px-5 py-2">Donor-tagged</th>
+                <th className="px-5 py-2">Category</th>
+                <th className="px-5 py-2">Stock level</th>
+                <th className="px-5 py-2">Expiry risk</th>
+                <th className="px-5 py-2">Donor</th>
                 <th className="px-5 py-2">Flags</th>
               </tr>
             </thead>
             <tbody className="text-slate-200">
               {stockLines.length ? (
-                stockLines.map((s) => (
-                  <tr key={s.sku + (s.batch ?? "")} className="border-b border-slate-800/90">
-                    <td className="px-5 py-2 font-mono text-[11px] text-emerald-200/90">{s.sku}</td>
-                    <td className="px-5 py-2">{s.name}</td>
-                    <td className="px-5 py-2 tabular-nums">{Intl.NumberFormat().format(s.quantity)}</td>
-                    <td className="px-5 py-2 text-slate-400">{s.expiry ?? "—"}</td>
-                    <td className="px-5 py-2">{s.donor ? "Yes" : "—"}</td>
-                    <td className="px-5 py-2 text-rose-300/90">{s.damaged ? "Damaged / loss" : "—"}</td>
-                  </tr>
-                ))
+                stockByCategory.flatMap((g) => {
+                  const header = (
+                    <tr key={`cat-${g.category}`} className="bg-black/20">
+                      <td colSpan={7} className="px-5 py-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">{g.category}</div>
+                          <div className="text-[11px] text-slate-500">{g.lines.length} lines</div>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+
+                  const rows = g.lines.map((s) => {
+                    const days = daysUntil(s.expiry);
+                    const eTone = expiryTone(days);
+                    const qTone = qtyTone(s.quantity);
+                    const rowCls =
+                      qTone === "critical"
+                        ? "bg-rose-500/5"
+                        : qTone === "low"
+                          ? "bg-amber-500/5"
+                          : "";
+                    return (
+                      <tr key={s.sku + (s.batch ?? "")} className={`border-b border-slate-800/90 ${rowCls}`}>
+                        <td className="px-5 py-2 font-mono text-[11px] text-emerald-200/90">{s.sku}</td>
+                        <td className="px-5 py-2 min-w-[260px]">{s.name}</td>
+                        <td className="px-5 py-2">
+                          <div className="flex items-center gap-3">
+                            <div className="tabular-nums font-mono text-[12px] text-slate-100 w-[88px] text-right">
+                              {Intl.NumberFormat().format(s.quantity)}
+                            </div>
+                            <StockBar value={s.quantity} max={Math.max(1, maxQty)} />
+                            {qTone === "critical" ? <Chip tone="rose" label="LOW" /> : qTone === "low" ? <Chip tone="amber" label="WATCH" /> : <Chip tone="emerald" label="OK" />}
+                          </div>
+                        </td>
+                        <td className="px-5 py-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-[11px] text-slate-400">{fmtDate(s.expiry)}</span>
+                            {eTone === "critical" ? (
+                              <Chip tone="rose" label={days != null ? `${days}d` : "RISK"} />
+                            ) : eTone === "soon" ? (
+                              <Chip tone="amber" label={days != null ? `${days}d` : "SOON"} />
+                            ) : eTone === "ok" ? (
+                              <Chip tone="slate" label="OK" />
+                            ) : (
+                              <Chip tone="neutral" label="—" />
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-5 py-2">{s.donor ? <Chip tone="amber" label="Donor" /> : <span className="text-slate-500">—</span>}</td>
+                        <td className="px-5 py-2">
+                          {s.damaged ? <Chip tone="rose" label="Loss/Theft" /> : <span className="text-slate-500">—</span>}
+                        </td>
+                      </tr>
+                    );
+                  });
+
+                  return [header, ...rows];
+                })
               ) : (
                 <tr>
-                  <td className="px-5 py-6 text-slate-500" colSpan={6}>
+                  <td className="px-5 py-6 text-slate-500" colSpan={7}>
                     No SKU custody rows.
                   </td>
                 </tr>

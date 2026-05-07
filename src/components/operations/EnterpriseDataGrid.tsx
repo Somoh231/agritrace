@@ -149,8 +149,16 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
           <tbody className="divide-y divide-slate-800/90">
             {slice.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-10 text-center text-slate-500">
-                  {emptyLabel}
+                <td colSpan={columns.length} className="px-4 py-10 text-center">
+                  <div className="mx-auto max-w-[520px] rounded-xl border border-white/10 bg-black/20 px-4 py-4">
+                    <div className="font-display text-[14px] font-semibold text-white">No records in scope</div>
+                    <div className="mt-2 text-[12px] leading-relaxed text-slate-400">
+                      {emptyLabel}
+                    </div>
+                    <div className="mt-3 text-[11px] text-slate-500">
+                      Guidance: confirm date range, county/district scope, and role permissions. Example: “No DAO submissions received for this district this week.”
+                    </div>
+                  </div>
                 </td>
               </tr>
             ) : (
