@@ -2,11 +2,12 @@
  * Browser-safe Supabase reads for ministry pilot tables with canonical CSV fixtures as fallback.
  */
 
-import type { DaoOversightRow } from "@/lib/ais/county-dao-demo";
+import type { DaoOversightRow, DaoRiskStatus, DaoSyncStatus } from "@/lib/ais/county-dao-demo";
 import type { CountyProductionRow, PilotStatus, WarehouseRow } from "@/lib/demo/agriculture-pilot-data";
 import {
   MINISTRY_COUNTY_METRICS,
   MINISTRY_DAO_OFFICERS,
+  MINISTRY_FARMERS,
   MINISTRY_OPERATIONAL_EVENTS,
   MINISTRY_WAREHOUSES,
   type MinistryCountyMetricRecord,
@@ -35,18 +36,70 @@ function riskFromDao(d: MinistryDaoOfficerRecord): number {
   return Math.min(100, Math.round(d.overdueReports * 14 + Math.max(0, 100 - comp)));
 }
 
-export function ministryDaoRecordToRow(d: MinistryDaoOfficerRecord): DaoOversightRow {
+export function enrichDaoOversightMetrics(
+  base: {
+    id: string;
+    daoName: string;
+    district: string;
+    reportsSubmitted: number;
+    overdueReports: number;
+    farmVisits: number;
+    verificationRate: number;
+    lastActivity: string;
+    riskScore: number;
+  },
+  daoCode: string,
+): DaoOversightRow {
+  const farmers = MINISTRY_FARMERS.filter((f) => f.daoCode === daoCode);
+  const assignedFarmers = farmers.length > 0 ? farmers.length : Math.max(8, Math.round(base.farmVisits / 7));
+  const gpsVerified = farmers.filter((f) => f.verification === "Verified").length;
+  const gpsVerificationRate =
+    farmers.length > 0 ? Math.round((100 * gpsVerified) / farmers.length) : Math.min(99, base.verificationRate + 2);
+  const subsidyVerifications = Math.round(base.reportsSubmitted * 0.55 + base.farmVisits * 0.09);
+
+  let syncStatus: DaoSyncStatus = "synced";
+  if (base.overdueReports >= 3) syncStatus = "at_risk";
+  else if (base.overdueReports >= 1) syncStatus = "pending";
+
+  let riskStatus: DaoRiskStatus = "low";
+  if (base.riskScore > 55) riskStatus = "high";
+  else if (base.riskScore > 35) riskStatus = "medium";
+
   return {
-    id: d.daoCode,
-    daoName: d.fullName,
-    district: d.district,
-    reportsSubmitted: d.reportsSubmitted,
-    overdueReports: d.overdueReports,
-    farmVisits: d.farmVisits,
-    verificationRate: d.complianceScore,
-    lastActivity: d.lastActivity,
-    riskScore: riskFromDao(d),
+    id: daoCode,
+    daoId: daoCode,
+    daoName: base.daoName,
+    district: base.district,
+    assignedFarmers,
+    reportsSubmitted: base.reportsSubmitted,
+    overdueReports: base.overdueReports,
+    farmVisits: base.farmVisits,
+    subsidyVerifications,
+    verificationRate: base.verificationRate,
+    gpsVerificationRate,
+    syncStatus,
+    lastActivity: base.lastActivity,
+    riskScore: base.riskScore,
+    riskStatus,
   };
+}
+
+export function ministryDaoRecordToRow(d: MinistryDaoOfficerRecord): DaoOversightRow {
+  const riskScore = riskFromDao(d);
+  return enrichDaoOversightMetrics(
+    {
+      id: d.daoCode,
+      daoName: d.fullName,
+      district: d.district,
+      reportsSubmitted: d.reportsSubmitted,
+      overdueReports: d.overdueReports,
+      farmVisits: d.farmVisits,
+      verificationRate: d.complianceScore,
+      lastActivity: d.lastActivity,
+      riskScore,
+    },
+    d.daoCode,
+  );
 }
 
 export function daoOversightFallback(countyFilter: string | null): DaoOversightRow[] {
@@ -57,20 +110,25 @@ export function daoOversightFallback(countyFilter: string | null): DaoOversightR
 }
 
 function mapPilotDaoDbRow(r: Record<string, unknown>): DaoOversightRow {
+  const daoCode = String(r.dao_code ?? r.id ?? "dao");
   const overdue = Number(r.overdue_reports ?? 0);
   const comp = Number(r.compliance_score ?? 70);
   const last = r.last_activity != null ? String(r.last_activity).slice(0, 10) : "—";
-  return {
-    id: String(r.dao_code ?? r.id ?? "dao"),
-    daoName: String(r.full_name ?? "DAO"),
-    district: String(r.district ?? "—"),
-    reportsSubmitted: Number(r.reports_submitted ?? 0),
-    overdueReports: overdue,
-    farmVisits: Number(r.farm_visits ?? 0),
-    verificationRate: comp,
-    lastActivity: last,
-    riskScore: Math.min(100, Math.round(overdue * 14 + Math.max(0, 100 - comp))),
-  };
+  const riskScore = Math.min(100, Math.round(overdue * 14 + Math.max(0, 100 - comp)));
+  return enrichDaoOversightMetrics(
+    {
+      id: daoCode,
+      daoName: String(r.full_name ?? "DAO"),
+      district: String(r.district ?? "—"),
+      reportsSubmitted: Number(r.reports_submitted ?? 0),
+      overdueReports: overdue,
+      farmVisits: Number(r.farm_visits ?? 0),
+      verificationRate: comp,
+      lastActivity: last,
+      riskScore,
+    },
+    daoCode,
+  );
 }
 
 export async function fetchDaoOversightRows(countyFilter: string | null): Promise<DaoOversightRow[]> {

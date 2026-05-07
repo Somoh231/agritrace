@@ -31,6 +31,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   filename = "export.csv",
   emptyLabel = "No records match the current filters.",
   onRowClick,
+  rowClassName,
 }: {
   title?: string;
   rows: T[];
@@ -40,6 +41,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   filename?: string;
   emptyLabel?: string;
   onRowClick?: (row: T) => void;
+  rowClassName?: (row: T) => string | undefined;
 }) {
   const [q, setQ] = React.useState("");
   const [sortKey, setSortKey] = React.useState<string | null>(null);
@@ -155,7 +157,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
               slice.map((row, i) => (
                 <tr
                   key={String((row as Record<string, unknown>).id ?? i)}
-                  className={`hover:bg-slate-800/40 text-slate-200 ${onRowClick ? "cursor-pointer" : ""}`}
+                  className={`hover:bg-slate-800/40 text-slate-200 ${onRowClick ? "cursor-pointer" : ""} ${rowClassName?.(row) ?? ""}`}
                   onClick={() => onRowClick?.(row)}
                 >
                   {columns.map((c) => (

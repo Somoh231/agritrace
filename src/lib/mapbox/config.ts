@@ -9,3 +9,9 @@ export function mapboxToken() {
   return token;
 }
 
+/** Token for optional Mapbox panels (CAO map, previews). Returns null when unset. */
+export function optionalMapboxToken(): string | null {
+  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim();
+  return token && token.length >= 20 ? token : null;
+}
+
