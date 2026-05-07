@@ -24,7 +24,12 @@ import {
 import { fetchLiberiaCountiesGeoJSON } from "@/lib/gis/liberia-county-geo";
 import { useTransferOrders } from "@/features/transfers/hooks/use-transfer-orders";
 import type { TransferOrderView } from "@/lib/logistics/types";
-import { MINISTRY_FARMERS, MINISTRY_OPERATIONAL_EVENTS, MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
+import { MINISTRY_OPERATIONAL_EVENTS, MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
+import { useVerificationQueue } from "@/features/verification/hooks/use-verification-queue";
+import {
+  countOpenVerificationRowsForCounty,
+  countOpenVerificationRowsForWarehouse,
+} from "@/features/verification/utils/queue-metrics";
 import { optionalMapboxToken } from "@/lib/mapbox/config";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -97,6 +102,7 @@ export default function GisIntelligenceWorkspace() {
 
   const [countyGeo, setCountyGeo] = React.useState<Record<string, unknown> | null>(null);
   const { data: transfers = [] } = useTransferOrders();
+  const { data: verificationRows = [] } = useVerificationQueue();
   const [countySel, setCountySel] = React.useState<string | null>(null);
   const [whSel, setWhSel] = React.useState<string | null>(null);
   const [transferSel, setTransferSel] = React.useState<string | null>(null);
@@ -154,9 +160,7 @@ export default function GisIntelligenceWorkspace() {
                 utilization: Number(r.utilization_pct ?? fallback?.utilizationPct ?? 0),
                 donor_resupply: Boolean(r.donor_resupply_flag ?? fallback?.donorResupplyFlag ?? false),
                 operational_status: String(fallback?.operationalStatus ?? r.operational_status ?? "—"),
-                verification_backlog: MINISTRY_FARMERS.filter(
-                  (f) => f.verification === "Pending" && f.primaryWarehouseCode === code,
-                ).length,
+                verification_backlog: countOpenVerificationRowsForWarehouse(verificationRows, code),
                 stock_pressure:
                   Number(r.utilization_pct ?? fallback?.utilizationPct ?? 0) >= 85 ? "elevated" : "nominal",
               },
@@ -174,7 +178,7 @@ export default function GisIntelligenceWorkspace() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [verificationRows]);
 
   React.useEffect(() => {
     const c = searchParams.get("county");
@@ -234,9 +238,7 @@ export default function GisIntelligenceWorkspace() {
   const warehousesInCounty = countySel ? countyWarehouses(countySel) : [];
   const daoRows = countySel ? countyDaoMetrics(countySel) : [];
   const alerts = countySel ? countyAlerts(countySel) : [];
-  const countyVerificationBacklog = countySel
-    ? MINISTRY_FARMERS.filter((f) => f.verification === "Pending" && f.county === countySel).length
-    : 0;
+  const countyVerificationBacklog = countySel ? countOpenVerificationRowsForCounty(verificationRows, countySel) : 0;
   const countyRecentEvents = countySel
     ? MINISTRY_OPERATIONAL_EVENTS.filter((e) => e.county === countySel).slice(0, 6)
     : [];
@@ -246,9 +248,7 @@ export default function GisIntelligenceWorkspace() {
   const whInv = whSel ? warehouseInventory(whSel) : [];
   const whDistricts = whSel ? warehouseDistricts(whSel) : [];
   const whCanon = whSel ? MINISTRY_WAREHOUSES.find((w) => w.ministryCode === whSel) : null;
-  const whVerificationBacklog = whSel
-    ? MINISTRY_FARMERS.filter((f) => f.verification === "Pending" && f.primaryWarehouseCode === whSel).length
-    : 0;
+  const whVerificationBacklog = whSel ? countOpenVerificationRowsForWarehouse(verificationRows, whSel) : 0;
   const trfRow = transferSel ? transfers.find((t) => t.transferCode === transferSel) : undefined;
 
   const railSummary = React.useMemo(() => {

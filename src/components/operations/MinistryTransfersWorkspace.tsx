@@ -7,11 +7,19 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
+import OperationalWorkflowButton from "@/components/operations/OperationalWorkflowButton";
 import { OperationalRiskChipRow } from "@/components/operations/OperationalRiskChip";
 import type { OperationalChipVariant } from "@/lib/ops/operational-chip-types";
 import { useTransferOrders } from "@/features/transfers/hooks/use-transfer-orders";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import type { TransferOrderView, TransferWorkflowStatus } from "@/lib/logistics/types";
+import { useOperationalActor } from "@/lib/ops/operational-actor-context";
+import {
+  canPerform,
+  explainPermission,
+  type OperationalPermissionContext,
+  type OperationalWorkflowAction,
+} from "@/lib/ops/permissions";
 import { logWorkflowAudit } from "@/lib/ops/workflow-audit-client";
 import { operationalQueryKeys } from "@/platform/query-keys";
 
@@ -35,6 +43,34 @@ export type TransferGridRow = Record<string, unknown> & { id: string; _detail: T
 
 function countyForCode(code: string): string {
   return MINISTRY_WAREHOUSES.find((w) => w.ministryCode === code)?.county ?? "—";
+}
+
+function transferOperationalContext(order: TransferOrderView): OperationalPermissionContext {
+  const corridorCounty = countyForCode(order.fromMinistryCode);
+  return {
+    rowCounty: corridorCounty,
+    transfer: {
+      fromMinistryCode: order.fromMinistryCode,
+      toMinistryCode: order.toMinistryCode,
+      status: order.status,
+      corridorCounty,
+    },
+  };
+}
+
+function transferActionToPermission(
+  action: "approve" | "reject" | "escalate" | "dispatch" | "mark_received" | "verify" | "investigate",
+): OperationalWorkflowAction {
+  const m = {
+    approve: "transfer.approve",
+    reject: "transfer.reject",
+    escalate: "transfer.escalate",
+    dispatch: "transfer.dispatch",
+    mark_received: "transfer.mark_received",
+    verify: "transfer.verify",
+    investigate: "transfer.investigate",
+  } as const;
+  return m[action];
 }
 
 function categoryForSku(sku: string): string {
@@ -141,6 +177,7 @@ export default function MinistryTransfersWorkspace() {
   const searchParams = useSearchParams();
   const codeFilter = searchParams.get("code")?.trim().toUpperCase() ?? "";
   const queryClient = useQueryClient();
+  const actor = useOperationalActor();
   const { data: orders = [], isPending, isError, error } = useTransferOrders();
 
   const rows = React.useMemo(() => orders.map(toGridRow), [orders]);
@@ -177,6 +214,10 @@ export default function MinistryTransfersWorkspace() {
     ) => {
       const order = orders.find((o) => o.id === id);
       if (!order) return;
+      const ctx = transferOperationalContext(order);
+      const perm = transferActionToPermission(action);
+      if (!canPerform(actor, perm, ctx)) return;
+
       let next: TransferWorkflowStatus | null = null;
       let note = "";
       switch (action) {
@@ -220,7 +261,7 @@ export default function MinistryTransfersWorkspace() {
         detail: { next_status: next, reviewer, internal_id: id },
       });
     },
-    [orders, patchOrder],
+    [actor, orders, patchOrder],
   );
 
   const columns: GridColumn<TransferGridRow>[] = [
@@ -284,6 +325,12 @@ export default function MinistryTransfersWorkspace() {
         </div>
       ) : null}
 
+      {actor.role === "donor_observer" ?
+        <div className="rounded-lg border border-slate-700 bg-slate-950/70 px-4 py-2 text-[11px] text-slate-400">
+          Donor observer posture — corridor ledger read-only; custody mutations require logistics or county ministry roles.
+        </div>
+      : null}
+
       <EnterpriseDataGrid<TransferGridRow>
         title="TRF ledger · grouped by workflow status"
         rows={filteredRows}
@@ -303,6 +350,7 @@ export default function MinistryTransfersWorkspace() {
           const d = row._detail;
           const t = d.raw;
           const reviewer = t.operatorLabel ?? "County reviewer";
+          const tctx = transferOperationalContext(t);
           return (
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
               <div className="space-y-3">
@@ -366,55 +414,62 @@ export default function MinistryTransfersWorkspace() {
                     Warehouse → County → Ministry custody chain. Actions emit audit_log entries when authenticated.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
-                      className="rounded-md border border-emerald-800/50 bg-emerald-950/40 px-2 py-1 text-[10px] text-emerald-100 hover:bg-emerald-950/60"
+                    <OperationalWorkflowButton
+                      allowed={canPerform(actor, "transfer.approve", tctx)}
+                      disabledReason={explainPermission(actor, "transfer.approve", tctx)}
                       onClick={() => void runWorkflow(t.id, "approve", reviewer)}
+                      className="rounded-md border border-emerald-800/50 bg-emerald-950/40 px-2 py-1 text-[10px] text-emerald-100 hover:bg-emerald-950/60"
                     >
                       Approve
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] text-slate-200 hover:bg-slate-800"
+                    </OperationalWorkflowButton>
+                    <OperationalWorkflowButton
+                      allowed={canPerform(actor, "transfer.dispatch", tctx)}
+                      disabledReason={explainPermission(actor, "transfer.dispatch", tctx)}
                       onClick={() => void runWorkflow(t.id, "dispatch", reviewer)}
+                      className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] text-slate-200 hover:bg-slate-800"
                     >
                       Dispatch
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-md border border-sky-900/40 bg-sky-950/25 px-2 py-1 text-[10px] text-sky-100 hover:bg-sky-950/40"
+                    </OperationalWorkflowButton>
+                    <OperationalWorkflowButton
+                      allowed={canPerform(actor, "transfer.mark_received", tctx)}
+                      disabledReason={explainPermission(actor, "transfer.mark_received", tctx)}
                       onClick={() => void runWorkflow(t.id, "mark_received", reviewer)}
+                      className="rounded-md border border-sky-900/40 bg-sky-950/25 px-2 py-1 text-[10px] text-sky-100 hover:bg-sky-950/40"
                     >
                       Mark received
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-md border border-emerald-900/35 bg-emerald-950/25 px-2 py-1 text-[10px] text-emerald-100 hover:bg-emerald-950/45"
+                    </OperationalWorkflowButton>
+                    <OperationalWorkflowButton
+                      allowed={canPerform(actor, "transfer.verify", tctx)}
+                      disabledReason={explainPermission(actor, "transfer.verify", tctx)}
                       onClick={() => void runWorkflow(t.id, "verify", reviewer)}
+                      className="rounded-md border border-emerald-900/35 bg-emerald-950/25 px-2 py-1 text-[10px] text-emerald-100 hover:bg-emerald-950/45"
                     >
                       Verify reconcile
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] text-slate-200 hover:bg-slate-800"
+                    </OperationalWorkflowButton>
+                    <OperationalWorkflowButton
+                      allowed={canPerform(actor, "transfer.reject", tctx)}
+                      disabledReason={explainPermission(actor, "transfer.reject", tctx)}
                       onClick={() => void runWorkflow(t.id, "reject", reviewer)}
+                      className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] text-slate-200 hover:bg-slate-800"
                     >
                       Reject
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-md border border-orange-900/45 bg-orange-950/25 px-2 py-1 text-[10px] text-orange-100 hover:bg-orange-950/40"
+                    </OperationalWorkflowButton>
+                    <OperationalWorkflowButton
+                      allowed={canPerform(actor, "transfer.escalate", tctx)}
+                      disabledReason={explainPermission(actor, "transfer.escalate", tctx)}
                       onClick={() => void runWorkflow(t.id, "escalate", reviewer)}
+                      className="rounded-md border border-orange-900/45 bg-orange-950/25 px-2 py-1 text-[10px] text-orange-100 hover:bg-orange-950/40"
                     >
                       Escalate
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-md border border-violet-900/40 bg-violet-950/25 px-2 py-1 text-[10px] text-violet-100 hover:bg-violet-950/40"
+                    </OperationalWorkflowButton>
+                    <OperationalWorkflowButton
+                      allowed={canPerform(actor, "transfer.investigate", tctx)}
+                      disabledReason={explainPermission(actor, "transfer.investigate", tctx)}
                       onClick={() => void runWorkflow(t.id, "investigate", reviewer)}
+                      className="rounded-md border border-violet-900/40 bg-violet-950/25 px-2 py-1 text-[10px] text-violet-100 hover:bg-violet-950/40"
                     >
                       Assign investigation
-                    </button>
+                    </OperationalWorkflowButton>
                   </div>
                 </div>
               </div>

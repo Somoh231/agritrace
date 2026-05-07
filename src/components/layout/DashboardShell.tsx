@@ -8,6 +8,8 @@ import Topbar from "@/components/layout/Topbar";
 import DemoRail from "@/components/demo/DemoRail";
 import PilotBanner from "@/components/shared/PilotBanner";
 import AiAssistant from "@/components/ai-assistant/AiAssistant";
+import { resolveOperationalActor } from "@/lib/ops/current-actor";
+import OperationalActorProvider from "@/lib/ops/operational-actor-context";
 import type { Profile, UserRole } from "@/lib/supabase/types";
 
 function initialsFromName(name: string) {
@@ -68,6 +70,8 @@ export default function DashboardShell({
   const primary = primaryActionForPath(pathname);
   const [mobileNav, setMobileNav] = React.useState(false);
 
+  const operationalActor = React.useMemo(() => resolveOperationalActor(profile), [profile]);
+
   const exportHref = React.useMemo(() => {
     const base = "/api/reports/briefing-snapshot";
     if (pathname.startsWith("/command-center") || pathname.startsWith("/national-operations")) return `${base}?scope=command-center`;
@@ -80,6 +84,7 @@ export default function DashboardShell({
 
   if (presentation) {
     return (
+      <OperationalActorProvider actor={operationalActor}>
       <div className="min-h-screen bg-[rgb(var(--ministry-workspace))]">
         <div className="fixed right-4 top-4 z-50 hidden md:flex items-center gap-2">
           <button
@@ -97,11 +102,13 @@ export default function DashboardShell({
         <main className="min-h-screen p-4 md:p-8">{children}</main>
         {showDemoRail ? <DemoRail /> : null}
       </div>
+      </OperationalActorProvider>
     );
   }
 
   if (printView) {
     return (
+      <OperationalActorProvider actor={operationalActor}>
       <div className="min-h-screen bg-white">
         <div className="fixed right-4 top-4 z-50 hidden print:hidden md:flex items-center gap-2">
           <button
@@ -131,10 +138,12 @@ export default function DashboardShell({
         </div>
         <main className="briefing-print-root min-h-screen p-4 md:p-10">{children}</main>
       </div>
+      </OperationalActorProvider>
     );
   }
 
   return (
+    <OperationalActorProvider actor={operationalActor}>
     <div className="bg-[rgb(var(--ministry-workspace))] overflow-x-hidden h-[100dvh]">
       <div className="grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] h-full overflow-hidden">
         <div className="hidden md:block h-full border-r border-white/[0.06] overflow-hidden">
@@ -193,5 +202,6 @@ export default function DashboardShell({
       {showDemoRail ? <DemoRail /> : null}
       <AiAssistant profileId={profile.id} role={profile.role} pathname={pathname} />
     </div>
+    </OperationalActorProvider>
   );
 }
