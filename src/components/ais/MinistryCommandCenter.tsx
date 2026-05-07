@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import LiberiaCountyMap from "@/components/ais/LiberiaCountyMap";
+import AiOperationalIntelligenceRail from "@/components/ai/AiOperationalIntelligenceRail";
 import OperationalActivityRail from "@/components/ais/OperationalActivityRail";
 import OperationalQueuesPanel from "@/components/ais/OperationalQueuesPanel";
 import { useNationalAISLive } from "@/components/ais/useNationalAISLive";
@@ -440,6 +441,7 @@ export default function MinistryCommandCenter() {
         </div>
 
         <div className="space-y-5 min-w-0 xl:sticky xl:top-24 self-start">
+          <AiOperationalIntelligenceRail />
           <OperationalActivityRail />
           <OperationalQueuesPanel />
         </div>
