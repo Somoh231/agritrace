@@ -130,4 +130,46 @@ body {
   .av-input {
     @apply h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-[13px] outline-none focus:border-forest-300 focus:ring-2 focus:ring-forest-50;
   }
+
+  /* Executive briefing — print & ministry-ready PDF companion */
+  .briefing-print-root {
+    position: relative;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .briefing-print-root,
+  .briefing-print-root * {
+    visibility: visible;
+  }
+  .briefing-print-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+    color: #0f172a !important;
+  }
+  .briefing-no-print {
+    display: none !important;
+  }
+  .briefing-print-root .rounded-xl,
+  .briefing-print-root .rounded-lg {
+    border-color: #cbd5e1 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+  .briefing-print-root .text-white,
+  .briefing-print-root .text-emerald-100 {
+    color: #0f172a !important;
+  }
+  .briefing-print-root .text-slate-400,
+  .briefing-print-root .text-slate-500 {
+    color: #475569 !important;
+  }
 }
