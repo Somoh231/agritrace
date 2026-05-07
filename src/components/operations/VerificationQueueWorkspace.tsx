@@ -22,7 +22,7 @@ import {
   type OperationalPermissionContext,
   type OperationalWorkflowAction,
 } from "@/lib/ops/permissions";
-import { logWorkflowAudit } from "@/lib/ops/workflow-audit-client";
+import { postVerificationWorkflow } from "@/lib/ops/workflow-api-client";
 import { operationalQueryKeys } from "@/platform/query-keys";
 
 function fmtStatus(s: VerificationQueueStatus): string {
@@ -63,6 +63,7 @@ export default function VerificationQueueWorkspace() {
   const countyFilter = searchParams.get("county")?.trim() ?? "";
   const queryClient = useQueryClient();
   const actor = useOperationalActor();
+  const [workflowErr, setWorkflowErr] = React.useState<string | null>(null);
 
   const { data: rows = [], isPending, isError, error } = useVerificationQueue();
 
@@ -111,6 +112,10 @@ export default function VerificationQueueWorkspace() {
       const perm = permByUi[action];
       if (!canPerform(actor, perm, vctx)) return;
 
+      const key = operationalQueryKeys.verification.queue();
+      const prev = queryClient.getQueryData<VerificationGridRow[]>(key);
+      setWorkflowErr(null);
+
       const iso = new Date().toISOString();
       const reviewer = reviewerLabel || "Reviewer";
       let nextStatus: VerificationQueueStatus | null = null;
@@ -147,14 +152,23 @@ export default function VerificationQueueWorkspace() {
         auditTimeline: [...d.auditTimeline, { at: iso, actor: reviewer, stage: "workflow", note: auditNote }],
       }));
 
-      await logWorkflowAudit({
-        action: `verification_${action}`,
-        tableHint: "verification_queue",
-        recordRef: id,
-        detail: { next_status: nextStatus, note: auditNote },
+      const result = await postVerificationWorkflow({
+        verificationId: id,
+        action,
+        note: note?.trim() || undefined,
       });
+
+      if (!result.ok) {
+        if (prev) queryClient.setQueryData(key, prev);
+        setWorkflowErr(`Workflow denied (${result.code}) — ${result.message}`);
+        return;
+      }
+
+      queryClient.setQueryData<VerificationGridRow[]>(key, (curr) =>
+        (curr ?? []).map((r) => (String(r.id) === String(result.row.id) ? result.row : r)),
+      );
     },
-    [actor, patchDetail, rows],
+    [actor, patchDetail, queryClient, rows],
   );
 
   const columns: GridColumn<VerificationGridRow>[] = [
@@ -226,6 +240,12 @@ export default function VerificationQueueWorkspace() {
       {actor.role === "donor_observer" ?
         <div className="rounded-lg border border-slate-700 bg-slate-950/70 px-4 py-2 text-[11px] text-slate-400">
           Donor observer posture — queue visibility read-only; workflow mutations require ministry or county custody roles.
+        </div>
+      : null}
+
+      {workflowErr ?
+        <div className="rounded-lg border border-rose-900/45 bg-rose-950/25 px-4 py-2 text-[11px] text-rose-100">
+          {workflowErr}
         </div>
       : null}
 

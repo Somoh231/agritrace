@@ -20,7 +20,7 @@ import {
   type OperationalPermissionContext,
   type OperationalWorkflowAction,
 } from "@/lib/ops/permissions";
-import { logWorkflowAudit } from "@/lib/ops/workflow-audit-client";
+import { postTransferWorkflow } from "@/lib/ops/workflow-api-client";
 import { operationalQueryKeys } from "@/platform/query-keys";
 
 type TransferAuditEvt = { at: string; actor: string; stage: string; note: string };
@@ -178,6 +178,7 @@ export default function MinistryTransfersWorkspace() {
   const codeFilter = searchParams.get("code")?.trim().toUpperCase() ?? "";
   const queryClient = useQueryClient();
   const actor = useOperationalActor();
+  const [workflowErr, setWorkflowErr] = React.useState<string | null>(null);
   const { data: orders = [], isPending, isError, error } = useTransferOrders();
 
   const rows = React.useMemo(() => orders.map(toGridRow), [orders]);
@@ -210,7 +211,6 @@ export default function MinistryTransfersWorkspace() {
     async (
       id: string,
       action: "approve" | "reject" | "escalate" | "dispatch" | "mark_received" | "verify" | "investigate",
-      reviewer: string,
     ) => {
       const order = orders.find((o) => o.id === id);
       if (!order) return;
@@ -253,15 +253,26 @@ export default function MinistryTransfersWorkspace() {
           break;
       }
       if (!next) return;
+
+      const key = operationalQueryKeys.transfers.list();
+      const prev = queryClient.getQueryData<TransferOrderView[]>(key);
+      setWorkflowErr(null);
+
       patchOrder(id, next, note);
-      await logWorkflowAudit({
-        action: `transfer_${action}`,
-        tableHint: "transfer_orders",
-        recordRef: order.transferCode,
-        detail: { next_status: next, reviewer, internal_id: id },
-      });
+
+      const result = await postTransferWorkflow({ transferId: id, action });
+
+      if (!result.ok) {
+        if (prev) queryClient.setQueryData(key, prev);
+        setWorkflowErr(`Workflow denied (${result.code}) — ${result.message}`);
+        return;
+      }
+
+      queryClient.setQueryData<TransferOrderView[]>(key, (curr) =>
+        (curr ?? []).map((o) => (o.id === result.order.id ? result.order : o)),
+      );
     },
-    [actor, orders, patchOrder],
+    [actor, orders, patchOrder, queryClient],
   );
 
   const columns: GridColumn<TransferGridRow>[] = [
@@ -331,6 +342,12 @@ export default function MinistryTransfersWorkspace() {
         </div>
       : null}
 
+      {workflowErr ?
+        <div className="rounded-lg border border-rose-900/45 bg-rose-950/25 px-4 py-2 text-[11px] text-rose-100">
+          {workflowErr}
+        </div>
+      : null}
+
       <EnterpriseDataGrid<TransferGridRow>
         title="TRF ledger · grouped by workflow status"
         rows={filteredRows}
@@ -349,7 +366,6 @@ export default function MinistryTransfersWorkspace() {
         renderExpanded={(row) => {
           const d = row._detail;
           const t = d.raw;
-          const reviewer = t.operatorLabel ?? "County reviewer";
           const tctx = transferOperationalContext(t);
           return (
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -417,7 +433,7 @@ export default function MinistryTransfersWorkspace() {
                     <OperationalWorkflowButton
                       allowed={canPerform(actor, "transfer.approve", tctx)}
                       disabledReason={explainPermission(actor, "transfer.approve", tctx)}
-                      onClick={() => void runWorkflow(t.id, "approve", reviewer)}
+                      onClick={() => void runWorkflow(t.id, "approve")}
                       className="rounded-md border border-emerald-800/50 bg-emerald-950/40 px-2 py-1 text-[10px] text-emerald-100 hover:bg-emerald-950/60"
                     >
                       Approve
@@ -425,7 +441,7 @@ export default function MinistryTransfersWorkspace() {
                     <OperationalWorkflowButton
                       allowed={canPerform(actor, "transfer.dispatch", tctx)}
                       disabledReason={explainPermission(actor, "transfer.dispatch", tctx)}
-                      onClick={() => void runWorkflow(t.id, "dispatch", reviewer)}
+                      onClick={() => void runWorkflow(t.id, "dispatch")}
                       className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] text-slate-200 hover:bg-slate-800"
                     >
                       Dispatch
@@ -433,7 +449,7 @@ export default function MinistryTransfersWorkspace() {
                     <OperationalWorkflowButton
                       allowed={canPerform(actor, "transfer.mark_received", tctx)}
                       disabledReason={explainPermission(actor, "transfer.mark_received", tctx)}
-                      onClick={() => void runWorkflow(t.id, "mark_received", reviewer)}
+                      onClick={() => void runWorkflow(t.id, "mark_received")}
                       className="rounded-md border border-sky-900/40 bg-sky-950/25 px-2 py-1 text-[10px] text-sky-100 hover:bg-sky-950/40"
                     >
                       Mark received
@@ -441,7 +457,7 @@ export default function MinistryTransfersWorkspace() {
                     <OperationalWorkflowButton
                       allowed={canPerform(actor, "transfer.verify", tctx)}
                       disabledReason={explainPermission(actor, "transfer.verify", tctx)}
-                      onClick={() => void runWorkflow(t.id, "verify", reviewer)}
+                      onClick={() => void runWorkflow(t.id, "verify")}
                       className="rounded-md border border-emerald-900/35 bg-emerald-950/25 px-2 py-1 text-[10px] text-emerald-100 hover:bg-emerald-950/45"
                     >
                       Verify reconcile
@@ -449,7 +465,7 @@ export default function MinistryTransfersWorkspace() {
                     <OperationalWorkflowButton
                       allowed={canPerform(actor, "transfer.reject", tctx)}
                       disabledReason={explainPermission(actor, "transfer.reject", tctx)}
-                      onClick={() => void runWorkflow(t.id, "reject", reviewer)}
+                      onClick={() => void runWorkflow(t.id, "reject")}
                       className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] text-slate-200 hover:bg-slate-800"
                     >
                       Reject
@@ -457,7 +473,7 @@ export default function MinistryTransfersWorkspace() {
                     <OperationalWorkflowButton
                       allowed={canPerform(actor, "transfer.escalate", tctx)}
                       disabledReason={explainPermission(actor, "transfer.escalate", tctx)}
-                      onClick={() => void runWorkflow(t.id, "escalate", reviewer)}
+                      onClick={() => void runWorkflow(t.id, "escalate")}
                       className="rounded-md border border-orange-900/45 bg-orange-950/25 px-2 py-1 text-[10px] text-orange-100 hover:bg-orange-950/40"
                     >
                       Escalate
@@ -465,7 +481,7 @@ export default function MinistryTransfersWorkspace() {
                     <OperationalWorkflowButton
                       allowed={canPerform(actor, "transfer.investigate", tctx)}
                       disabledReason={explainPermission(actor, "transfer.investigate", tctx)}
-                      onClick={() => void runWorkflow(t.id, "investigate", reviewer)}
+                      onClick={() => void runWorkflow(t.id, "investigate")}
                       className="rounded-md border border-violet-900/40 bg-violet-950/25 px-2 py-1 text-[10px] text-violet-100 hover:bg-violet-950/40"
                     >
                       Assign investigation
