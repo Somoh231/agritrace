@@ -6,6 +6,10 @@ import type { UserRole } from "@/lib/supabase/types";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
+const ANTHROPIC_MODEL_PREFERRED = "claude-3-7-sonnet-latest" as const;
+const ANTHROPIC_MODEL_FALLBACK = "claude-3-5-sonnet-20241022" as const;
+const ANTHROPIC_MODELS = [ANTHROPIC_MODEL_PREFERRED, ANTHROPIC_MODEL_FALLBACK] as const;
+
 type ReqBody = {
   messages: ChatMessage[];
   role: UserRole;
@@ -161,6 +165,14 @@ function safeMessagesForClaude(messages: ChatMessage[]): ChatMessage[] {
   return trimmed;
 }
 
+function isModelNotFoundError(e: unknown): boolean {
+  const anyErr = e as any;
+  const status = Number(anyErr?.status ?? anyErr?.response?.status ?? 0);
+  const code = String(anyErr?.code ?? anyErr?.error?.code ?? "");
+  const message = String(anyErr?.message ?? anyErr?.error?.message ?? "");
+  return status === 404 || code === "not_found" || /model.*not found/i.test(message);
+}
+
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as ReqBody;
@@ -192,27 +204,50 @@ export async function POST(req: Request) {
       async start(controller) {
         const encoder = new TextEncoder();
         try {
-          const s = client.messages.stream({
-            model: "claude-3-5-sonnet-latest",
-            max_tokens: 900,
-            system,
-            messages: [
-              ...safeMessagesForClaude(body.messages ?? []).filter((m) => m.role !== "assistant"),
-              { role: "user", content: userContext },
-            ],
-          });
+          const messages = [
+            ...safeMessagesForClaude(body.messages ?? []).filter((m) => m.role !== "assistant"),
+            { role: "user", content: userContext },
+          ] satisfies Array<{ role: "user" | "assistant"; content: string }>;
 
-          for await (const event of s) {
-            if (event.type === "content_block_delta" && event.delta?.type === "text_delta") {
-              controller.enqueue(encoder.encode(event.delta.text ?? ""));
+          let lastErr: unknown = null;
+          for (const model of ANTHROPIC_MODELS) {
+            try {
+              const s = client.messages.stream({
+                model,
+                max_tokens: 900,
+                system,
+                messages,
+              });
+
+              for await (const event of s) {
+                if (event.type === "content_block_delta" && event.delta?.type === "text_delta") {
+                  controller.enqueue(encoder.encode(event.delta.text ?? ""));
+                }
+              }
+              lastErr = null;
+              break;
+            } catch (e) {
+              lastErr = e;
+              const retryable = isModelNotFoundError(e);
+              console.error("[ai/chat] Anthropic stream failed", {
+                model,
+                retryable,
+                message: e instanceof Error ? e.message : String(e),
+              });
+              if (!retryable) break;
             }
           }
+
+          if (lastErr) {
+            controller.enqueue(
+              encoder.encode(
+                "\n\n[AI unavailable] Model access denied or misconfigured. Contact system administrator.\n",
+              ),
+            );
+          }
         } catch (e) {
-          controller.enqueue(
-            encoder.encode(
-              `\n\n[AI stream error] ${e instanceof Error ? e.message : "Unknown error"}\n`,
-            ),
-          );
+          console.error("[ai/chat] Unexpected stream error", e);
+          controller.enqueue(encoder.encode("\n\n[AI unavailable] Service error. Retry shortly.\n"));
         } finally {
           controller.close();
         }
