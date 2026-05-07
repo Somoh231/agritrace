@@ -3,6 +3,8 @@
 import * as React from "react";
 
 import InventoryWarehouseOverview from "@/components/ais/InventoryWarehouseOverview";
+import LogisticsCommandCenter from "@/components/logistics/LogisticsCommandCenter";
+import LogisticsMovementTimelineSection from "@/components/logistics/LogisticsMovementTimelineSection";
 import InventoryOperationsClient from "@/components/pilot/InventoryOperationsClient";
 import OperationDrawer from "@/components/operations/OperationDrawer";
 import RecordInventoryReceiptForm from "@/components/operations/forms/RecordInventoryReceiptForm";
@@ -20,8 +22,8 @@ export default function InventoryNationalWorkspace() {
   return (
     <>
       <MinistryPageShell
-        title="National inventory"
-        description="Inputs balances, allocations, transfers, and donor-tagged stock. Post receipts to update movements and warehouse balances."
+        title="Warehouse & logistics command"
+        description="National hub oversight, TRF transfer workflows, corridor maps, donor flows, and immutable inventory movements — Agrivault AIS logistics platform."
         actions={
           <button
             type="button"
@@ -32,7 +34,9 @@ export default function InventoryNationalWorkspace() {
           </button>
         }
       >
+        <LogisticsCommandCenter />
         <InventoryWarehouseOverview />
+        <LogisticsMovementTimelineSection limit={72} />
         <div className="rounded-xl border border-slate-700/60 bg-white/[0.03] p-1">
           <InventoryOperationsClient />
         </div>

@@ -2,10 +2,12 @@
 
 import * as React from "react";
 
-import GenericTablePage from "@/components/operations/GenericTablePage";
+import LogisticsTransfersWorkflow from "@/components/logistics/LogisticsTransfersWorkflow";
+import type { GridColumn } from "@/components/operations/EnterpriseDataGrid";
+import LiveQueryGrid from "@/components/operations/LiveQueryGrid";
+import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import OperationDrawer from "@/components/operations/OperationDrawer";
 import RecordStockTransferForm from "@/components/operations/forms/RecordStockTransferForm";
-import type { GridColumn } from "@/components/operations/EnterpriseDataGrid";
 
 const COLS: GridColumn<Record<string, unknown>>[] = [
   { key: "created_at", header: "When" },
@@ -28,25 +30,35 @@ export default function InventoryTransfersWorkspace() {
 
   return (
     <>
-      <GenericTablePage
-        title="Inventory transfers"
-        description="Inter-warehouse movements with immutable ledger rows and stock reconciliation."
-        table="inventory_movements"
-        select="created_at,movement_type,quantity,warehouse_from,warehouse_to,reference"
-        columns={COLS}
-        filename="inventory-movements.csv"
-        reloadTrigger={tick}
-        toolbar={
+      <MinistryPageShell
+        title="Transfer & shipment operations"
+        description="Operational TRF workflow (requested → completed), shipment custody milestones, and immutable inventory_movements ledger for reconciliation."
+        actions={
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="h-9 px-3 rounded-lg bg-emerald-700 text-[12px] font-medium text-white hover:bg-emerald-600"
+            className="h-10 rounded-lg bg-emerald-700 px-4 text-[13px] font-medium text-white hover:bg-emerald-600"
           >
-            Transfer stock
+            Quick ledger transfer
           </button>
         }
-      />
-      <OperationDrawer open={open} onClose={() => setOpen(false)} title="Stock transfer" widthClassName="max-w-xl">
+      >
+        <div className="space-y-10 pb-12">
+          <LogisticsTransfersWorkflow />
+          <div>
+            <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Movement ledger</div>
+            <LiveQueryGrid
+              table="inventory_movements"
+              select="created_at,movement_type,quantity,warehouse_from,warehouse_to,reference"
+              columns={COLS}
+              filename="inventory-movements.csv"
+              title="Immutable inventory_movements"
+              reloadTrigger={tick}
+            />
+          </div>
+        </div>
+      </MinistryPageShell>
+      <OperationDrawer open={open} onClose={() => setOpen(false)} title="Stock transfer (ledger)" widthClassName="max-w-xl">
         <RecordStockTransferForm
           onCancel={() => setOpen(false)}
           onSuccess={() => {
