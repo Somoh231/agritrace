@@ -41,6 +41,38 @@ const DONOR_AUDITOR_DENY: UserRole[] = ["donor_partner", "auditor"];
 
 export const MINISTRY_NAV: MinistryNavSection[] = [
   {
+    id: "external-oversight",
+    label: "External oversight",
+    rolesAllow: ["donor_partner", "auditor", "super_admin", "admin", "ministry_officer", "government_officer"],
+    items: [
+      {
+        label: "Donor dashboard",
+        href: "/donor-dashboard",
+        rolesAllow: ["donor_partner", "auditor", "super_admin", "admin", "ministry_officer", "government_officer"],
+      },
+      {
+        label: "Audit tools",
+        href: "/audit-tools",
+        rolesAllow: ["auditor", "super_admin", "admin", "ministry_officer", "government_officer"],
+      },
+      {
+        label: "Donor shipments (read-only)",
+        href: "/inventory/donor-shipments",
+        rolesAllow: ["auditor", "super_admin", "admin", "ministry_officer", "government_officer"],
+      },
+      {
+        label: "Donor reporting",
+        href: "/reports/donor",
+        rolesAllow: ["donor_partner", "auditor", "super_admin", "admin", "ministry_officer", "government_officer"],
+      },
+      {
+        label: "Compliance reports",
+        href: "/compliance/reports",
+        rolesAllow: ["donor_partner", "auditor", "super_admin", "admin", "ministry_officer", "government_officer"],
+      },
+    ],
+  },
+  {
     id: "national-command",
     label: "National command",
     rolesDeny: [...DONOR_AUDITOR_DENY],
@@ -179,6 +211,8 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
       { label: "Ministry reports", href: "/reports/ministry" },
       { label: "Donor reports", href: "/reports/donor" },
       { label: "Audit logs", href: "/compliance/audit-log" },
+      { label: "Donor dashboard", href: "/donor-dashboard", rolesAllow: ["auditor", "donor_partner", "super_admin", "admin", "ministry_officer", "government_officer"] },
+      { label: "Audit tools", href: "/audit-tools", rolesAllow: ["auditor", "super_admin", "admin", "ministry_officer", "government_officer"] },
       {
         label: "Compliance center",
         href: "/compliance/reports",

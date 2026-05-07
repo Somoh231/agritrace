@@ -16,8 +16,9 @@ export function postLoginHomeForRole(role: UserRole): string {
     case "warehouse_manager":
       return "/inventory";
     case "donor_partner":
+      return "/donor-dashboard";
     case "auditor":
-      return "/reports/ministry";
+      return "/audit-tools";
     case "exporter":
       return "/cocoa/lots";
     case "cooperative_manager":

@@ -35,6 +35,8 @@ function isProtectedPath(pathname: string): boolean {
     "/map",
     "/national-heat-map",
     "/gis-intelligence",
+    "/donor-dashboard",
+    "/audit-tools",
     "/farm-profiles",
     "/inventory/equipment",
     "/inventory/warehouse",
