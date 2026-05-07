@@ -3,15 +3,17 @@
 import * as React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import { OperationalRiskChipRow } from "@/components/operations/OperationalRiskChip";
 import type { OperationalChipVariant } from "@/lib/ops/operational-chip-types";
+import { useTransferOrders } from "@/features/transfers/hooks/use-transfer-orders";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
-import { listTransferOrders } from "@/lib/logistics/transfer-repository";
 import type { TransferOrderView, TransferWorkflowStatus } from "@/lib/logistics/types";
 import { logWorkflowAudit } from "@/lib/ops/workflow-audit-client";
+import { operationalQueryKeys } from "@/platform/query-keys";
 
 type TransferAuditEvt = { at: string; actor: string; stage: string; note: string };
 
@@ -138,15 +140,8 @@ function toGridRow(t: TransferOrderView): TransferGridRow {
 export default function MinistryTransfersWorkspace() {
   const searchParams = useSearchParams();
   const codeFilter = searchParams.get("code")?.trim().toUpperCase() ?? "";
-
-  const [orders, setOrders] = React.useState<TransferOrderView[]>([]);
-  const [loadErr, setLoadErr] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    void listTransferOrders()
-      .then((all) => setOrders(all))
-      .catch(() => setLoadErr("Could not load transfers."));
-  }, []);
+  const queryClient = useQueryClient();
+  const { data: orders = [], isPending, isError, error } = useTransferOrders();
 
   const rows = React.useMemo(() => orders.map(toGridRow), [orders]);
 
@@ -156,20 +151,23 @@ export default function MinistryTransfersWorkspace() {
     [rows, codeFilter],
   );
 
-  const patchOrder = React.useCallback((id: string, next: TransferWorkflowStatus, note: string) => {
-    setOrders((prev) =>
-      prev.map((o) => {
-        if (o.id !== id) return o;
-        const iso = new Date().toISOString();
-        const patch: Partial<TransferOrderView> = { status: next };
-        if (next === "approved") patch.approvedAt = iso;
-        if (next === "dispatched") patch.dispatchedAt = iso;
-        if (next === "delivered") patch.deliveredAt = iso;
-        if (next === "completed") patch.completedAt = iso;
-        return { ...o, ...patch, notes: note || o.notes };
-      }),
-    );
-  }, []);
+  const patchOrder = React.useCallback(
+    (id: string, next: TransferWorkflowStatus, note: string) => {
+      queryClient.setQueryData<TransferOrderView[]>(operationalQueryKeys.transfers.list(), (prev) =>
+        (prev ?? []).map((o) => {
+          if (o.id !== id) return o;
+          const iso = new Date().toISOString();
+          const patch: Partial<TransferOrderView> = { status: next };
+          if (next === "approved") patch.approvedAt = iso;
+          if (next === "dispatched") patch.dispatchedAt = iso;
+          if (next === "delivered") patch.deliveredAt = iso;
+          if (next === "completed") patch.completedAt = iso;
+          return { ...o, ...patch, notes: note || o.notes };
+        }),
+      );
+    },
+    [queryClient],
+  );
 
   const runWorkflow = React.useCallback(
     async (
@@ -267,7 +265,16 @@ export default function MinistryTransfersWorkspace() {
         </div>
       }
     >
-      {loadErr ? <div className="rounded-lg border border-rose-900/40 bg-rose-950/20 px-4 py-3 text-[12px] text-rose-100">{loadErr}</div> : null}
+      {isError ?
+        <div className="rounded-lg border border-rose-900/40 bg-rose-950/20 px-4 py-3 text-[12px] text-rose-100">
+          Could not load transfers — {error instanceof Error ? error.message : "unknown error"}.
+        </div>
+      : null}
+      {isPending ?
+        <div className="rounded-lg border border-slate-700 bg-slate-950/60 px-4 py-2 font-mono text-[11px] text-slate-500">
+          Loading corridor ledger…
+        </div>
+      : null}
       {codeFilter ? (
         <div className="rounded-lg border border-slate-700 bg-slate-950/60 px-4 py-2 font-mono text-[11px] text-slate-400">
           Filter: <span className="text-emerald-300">{codeFilter}</span> ·{" "}

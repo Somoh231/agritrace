@@ -22,7 +22,7 @@ import {
   warehouseInventory,
 } from "@/lib/gis/gis-intelligence-data";
 import { fetchLiberiaCountiesGeoJSON } from "@/lib/gis/liberia-county-geo";
-import { listTransferOrders } from "@/lib/logistics/transfer-repository";
+import { useTransferOrders } from "@/features/transfers/hooks/use-transfer-orders";
 import type { TransferOrderView } from "@/lib/logistics/types";
 import { MINISTRY_FARMERS, MINISTRY_OPERATIONAL_EVENTS, MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import { optionalMapboxToken } from "@/lib/mapbox/config";
@@ -96,7 +96,7 @@ export default function GisIntelligenceWorkspace() {
   });
 
   const [countyGeo, setCountyGeo] = React.useState<Record<string, unknown> | null>(null);
-  const [transfers, setTransfers] = React.useState<TransferOrderView[]>([]);
+  const { data: transfers = [] } = useTransferOrders();
   const [countySel, setCountySel] = React.useState<string | null>(null);
   const [whSel, setWhSel] = React.useState<string | null>(null);
   const [transferSel, setTransferSel] = React.useState<string | null>(null);
@@ -110,10 +110,6 @@ export default function GisIntelligenceWorkspace() {
   const movementLines = React.useMemo(() => buildInventoryMovementRoutesGeoJSON(), []);
   const subsidyLines = React.useMemo(() => buildSubsidyFlowLinesGeoJSON(), []);
   const transferLines = React.useMemo(() => buildTransferLines(transfers), [transfers]);
-
-  React.useEffect(() => {
-    void listTransferOrders().then(setTransfers);
-  }, []);
 
   React.useEffect(() => {
     let cancelled = false;

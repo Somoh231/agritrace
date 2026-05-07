@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import DashboardShell from "@/components/layout/DashboardShell";
+import PlatformProviders from "@/platform/providers";
 import { applyWorkspaceDemoRoleToProfile, WORKSPACE_DEMO_ROLE_COOKIE } from "@/lib/auth/workspace-demo-role";
 import { createClient } from "@/lib/supabase/server";
 import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
@@ -87,9 +88,11 @@ export default async function DashboardLayout({
   const workspaceProfile = applyWorkspaceDemoRoleToProfile(effectiveProfile, workspacePreviewCookie);
 
   return (
-    <DashboardShell profile={workspaceProfile} authenticRole={authenticRole}>
-      {children}
-    </DashboardShell>
+    <PlatformProviders>
+      <DashboardShell profile={workspaceProfile} authenticRole={authenticRole}>
+        {children}
+      </DashboardShell>
+    </PlatformProviders>
   );
 }
 
