@@ -72,7 +72,7 @@ export default function Page() {
                 {[
                   "Full platform — registry to export port",
                   "Historical data migration and cleaning",
-                  "DAO and CAO training and support",
+                  "DAO and CAC training and support",
                   "Dedicated call centre",
                   "Ministry dashboard and reporting",
                   "Grant application support",

@@ -76,7 +76,7 @@ const docCards = [
   {
     tag: "Operations",
     title: "Pilot Runbook",
-    body: "DAO/CAO onboarding, support protocols, QA controls, and escalation model for parallel paper-digital ops.",
+    body: "DAO/CAC onboarding, support protocols, QA controls, and escalation model for parallel paper-digital ops.",
   },
   {
     tag: "Reporting",

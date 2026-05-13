@@ -55,7 +55,7 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
     <section className="rounded-xl border border-slate-700/85 bg-slate-950/45 p-4 sm:p-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-display text-[15px] font-semibold text-white">CAO approval queues</h2>
+          <h2 className="font-display text-[15px] font-semibold text-white">CAC approval queues</h2>
           <p className="mt-1 text-[12px] text-slate-400">
             County-scoped supervisory actions — statuses mirror ministry routing (demo state updates locally until backend queues are wired).
           </p>
@@ -125,7 +125,7 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
                     onClick={() =>
                       patch(row.id, {
                         status: "under_review",
-                        detail: `${row.detail} · CAO requested corrections ${new Date().toISOString().slice(0, 10)}.`,
+                        detail: `${row.detail} · CAC requested corrections ${new Date().toISOString().slice(0, 10)}.`,
                       })
                     }
                     className="rounded-lg border border-slate-600 px-3 py-1.5 text-[11px] text-slate-200 hover:bg-slate-900"
@@ -149,11 +149,11 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
                         setItems((prev) => [
                           ...prev,
                           {
-                            id: `cao-repl-${Date.now()}`,
+                            id: `cac-repl-${Date.now()}`,
                             queue: "warehouse_replenishment",
                             title: "Triggered replenishment workflow",
                             district: row.district,
-                            submittedBy: "CAO routing",
+                            submittedBy: "CAC routing",
                             submittedAt: new Date().toISOString(),
                             status: "pending",
                             detail: `Derived from ${row.id} — ministry logistics notified (demo).`,

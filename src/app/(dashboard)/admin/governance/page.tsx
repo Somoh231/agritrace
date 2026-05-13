@@ -42,11 +42,13 @@ export default async function GovernancePage() {
           <div className="space-y-2 text-[12px] text-gray-700">
             {[
               "super_admin / admin: full console access (admin also used as TEMP DEMO FALLBACK)",
-              "ministry_officer (preferred) / government_officer (legacy): national ministry operations",
-              "county_officer / district_officer: sub-national coordination",
+              "ministry_admin / ministry_officer / government_officer: national ministry operations",
+              "county_agriculture_coordinator / county_officer (CAC): county verification and consolidation",
+              "dao_officer / district_officer (DAO): district oversight and CLAN submission review",
+              "clan_technician / field_agent (CLAN): field capture and offline reporting",
               "warehouse_manager: warehouse stock & transfers",
-              "donor_partner: reporting-oriented access (RLS-scoped)",
-              "field_agent / call_center_agent: data capture",
+              "donor_observer / donor_partner: reporting-oriented access (RLS-scoped)",
+              "call_center_agent: data capture support",
               "auditor: read-only audit and compliance oversight",
             ].map((item) => (
               <div key={item} className="rounded-md border border-gray-100 px-3 py-2 bg-gray-50">

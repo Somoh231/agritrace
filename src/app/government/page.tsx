@@ -48,7 +48,7 @@ export default function Page() {
                 items={[
                   "Fully built technology platform, production-ready",
                   "Data engineering methodology and migration expertise",
-                  "Training for all participating DAOs and CAOs",
+                  "Training for all participating DAOs and CACs",
                   "Dedicated call centre during data collection hours",
                   "Monthly data quality reports and quarterly production reports",
                 ]}

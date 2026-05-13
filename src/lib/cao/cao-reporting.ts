@@ -44,7 +44,7 @@ export function buildWeeklyCountyBriefing(params: {
     ``,
     `Notes`,
     `- Figures blend Supabase reads with ministry canonical fallbacks when tables are sparse.`,
-    `- Approval outcomes remain authoritative once routed through CAO queues.`,
+    `- Approval outcomes remain authoritative once routed through CAC queues.`,
   ];
   return lines.join("\n");
 }

@@ -264,7 +264,7 @@ export const fieldOfficers: OfficerDemo[] = [
 ];
 
 export const countyAgOfficers: OfficerDemo[] = PILOT_COUNTIES_FULL.slice(0, 15).map((county, i) => ({
-  id: `cao-${i}`,
+  id: `cac-${i}`,
   name: `County Ag Officer · ${county}`,
   county,
   activeSubmissions7d: 12 + (i % 8),

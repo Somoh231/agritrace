@@ -44,6 +44,7 @@ function isProtectedPath(pathname: string): boolean {
     "/production/market-prices",
     "/search",
     "/activity",
+    "/workspace",
     "/admin",
     "/dashboard",
   ];

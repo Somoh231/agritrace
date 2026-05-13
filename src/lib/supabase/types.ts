@@ -2,13 +2,18 @@
 export type UserRole =
   | "super_admin"
   | "admin" // TEMP DEMO FALLBACK — synthetic when profiles row missing; also assignable for service accounts
+  | "ministry_admin"
   | "ministry_officer"
-  | "government_officer" // legacy alias — prefer ministry_officer for new profiles
+  | "government_officer" // legacy alias — prefer ministry_officer or ministry_admin for new profiles
+  | "county_agriculture_coordinator"
   | "county_officer"
+  | "dao_officer"
   | "district_officer"
+  | "clan_technician"
   | "cooperative_manager"
   | "field_agent"
   | "warehouse_manager"
+  | "donor_observer"
   | "donor_partner"
   | "exporter"
   | "call_center_agent"

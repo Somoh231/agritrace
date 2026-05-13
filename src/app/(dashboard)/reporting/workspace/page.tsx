@@ -4,7 +4,7 @@ import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 
-type TabId = "dao" | "cao" | "drafts" | "submitted" | "review" | "verified" | "escalated" | "archived";
+type TabId = "dao" | "cac" | "drafts" | "submitted" | "review" | "verified" | "escalated" | "archived";
 
 type Tab = {
   id: TabId;
@@ -13,11 +13,11 @@ type Tab = {
 };
 
 const TABS: Tab[] = [
-  { id: "dao", label: "DAO reporting", hint: "Capture and submit field evidence" },
-  { id: "cao", label: "CAO reporting", hint: "Review, verify, and consolidate county posture" },
+  { id: "dao", label: "DAO reporting", hint: "CLAN field capture consolidated at district level" },
+  { id: "cac", label: "CAC reporting", hint: "County verification, approval, and consolidation" },
   { id: "drafts", label: "Drafts", hint: "Offline drafts and queued submissions" },
   { id: "submitted", label: "Submitted", hint: "Recently submitted reporting artefacts" },
-  { id: "review", label: "Under review", hint: "Items awaiting CAO verification decisions" },
+  { id: "review", label: "Under review", hint: "Items awaiting CAC verification decisions" },
   { id: "verified", label: "Verified", hint: "Approved, verified, and closed-out items" },
   { id: "escalated", label: "Escalated", hint: "Incidents and verification escalations" },
   { id: "archived", label: "Archived", hint: "Historical packages and exports" },
@@ -107,28 +107,28 @@ function sectionForTab(tab: TabId): { label: string; items: LinkCard[] }[] {
     ];
   }
 
-  if (tab === "cao") {
+  if (tab === "cac") {
     return [
       {
-        label: "CAO reports (county consolidation)",
+        label: "CAC reports (county consolidation)",
         items: [
           {
             title: "County summaries",
             body: "County-level consolidation of DAO submissions and posture.",
             href: "/county-dashboard",
-            meta: "CAO consolidate · cadence + posture",
+            meta: "CAC consolidate · cadence + posture",
           },
           {
-            title: "DAO verification reviews",
+            title: "DAO / CLAN verification reviews",
             body: "Unified verification queue for approvals, rejections, escalations, and investigations.",
             href: "/verification-queue",
-            meta: "CAO review · approve/reject/escalate",
+            meta: "CAC review · approve/reject/escalate",
           },
           {
             title: "County escalations",
             body: "Incidents, anomalies, and escalation routing to ministry desks.",
             href: "/alerts",
-            meta: "CAO→Ministry escalation desk",
+            meta: "CAC→Ministry escalation desk",
           },
           {
             title: "County operational risk",
@@ -140,19 +140,19 @@ function sectionForTab(tab: TabId): { label: string; items: LinkCard[] }[] {
             title: "Warehouse county summaries",
             body: "Warehouse and corridor posture for county oversight.",
             href: "/operations/warehouses",
-            meta: "CAO oversight · custody posture",
+            meta: "CAC oversight · custody posture",
           },
           {
             title: "County food security summaries",
             body: "County early warning signals derived from submitted reporting.",
             href: "/food-security",
-            meta: "CAO oversight · early warning",
+            meta: "CAC oversight · early warning",
           },
           {
             title: "Compliance reviews",
             body: "Compliance reports, audits, and anomaly tooling.",
             href: "/compliance",
-            meta: "CAO oversight · compliance",
+            meta: "CAC oversight · compliance",
           },
         ],
       },
@@ -309,14 +309,15 @@ export default async function ReportingWorkspacePage({
 }) {
   const sp = (await searchParams) ?? {};
   const tabRaw = typeof sp.tab === "string" ? sp.tab : Array.isArray(sp.tab) ? sp.tab[0] : undefined;
-  const tab = (TABS.some((t) => t.id === tabRaw) ? tabRaw : "dao") as TabId;
+  const normalizedTab = tabRaw === "cao" ? "cac" : tabRaw;
+  const tab = (TABS.some((t) => t.id === normalizedTab) ? normalizedTab : "dao") as TabId;
   const tabMeta = TABS.find((t) => t.id === tab) ?? TABS[0]!;
   const sections = sectionForTab(tab);
 
   return (
     <MinistryPageShell
-      title="DAO & CAO reports"
-      description="Unified reporting workspace. Reporting is the core workflow: DAO capture → CAO review/verification → Ministry consolidation → National operational intelligence."
+      title="DAO & CAC reports"
+      description="Unified reporting workspace. Operational chain: CLAN field capture → DAO district review and consolidation → CAC county verification and approval → Ministry national aggregation and intelligence."
       actions={
         <div className="flex items-center gap-2">
           <InstallAppButton />

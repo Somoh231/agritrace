@@ -34,8 +34,8 @@ function primaryActionForPath(pathname: string): { label: string; href?: string;
   if (pathname.startsWith("/compliance/audit-log")) return { label: "Refresh log", event: true };
   if (pathname.startsWith("/reports/pdf")) return { label: "Open PDF export", href: "/rice/reports" };
   if (pathname.startsWith("/admin/import")) return { label: "Import data", href: "/admin/import" };
-  if (pathname.startsWith("/district-dashboard")) return { label: "DAO capture", event: true };
-  if (pathname.startsWith("/county-dashboard")) return { label: "County briefing", href: "/executive-briefing" };
+  if (pathname.startsWith("/district-dashboard")) return { label: "CLAN / DAO capture", event: true };
+  if (pathname.startsWith("/county-dashboard")) return { label: "CAC county briefing", href: "/executive-briefing" };
   if (pathname.startsWith("/command-center") || pathname.startsWith("/national-operations"))
     return { label: "Executive view", href: "/executive-briefing" };
   return { label: "Workspace actions", event: true };

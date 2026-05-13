@@ -350,7 +350,7 @@ export default function VerificationQueueWorkspace() {
                 <div className="rounded-lg border border-slate-700/80 bg-slate-950/60 p-3">
                   <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Workflow actions</div>
                   <p className="mt-1 text-[10px] text-slate-600">
-                    DAO → CAO → Ministry patterns enforced via reviewer attribution and audit_log inserts (best-effort).
+                    DAO → CAC → Ministry patterns enforced via reviewer attribution and audit_log inserts (best-effort).
                   </p>
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     <OperationalWorkflowButton

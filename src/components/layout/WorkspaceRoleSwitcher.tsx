@@ -7,11 +7,19 @@ import { WORKSPACE_PREVIEW_ROLES } from "@/lib/auth/workspace-demo-role";
 import type { UserRole } from "@/lib/supabase/types";
 
 const LABELS: Partial<Record<UserRole, string>> = {
+  ministry_admin: "Ministry Admin",
   ministry_officer: "Ministry Officer",
-  county_officer: "CAO · County Agriculture Officer",
-  district_officer: "DAO · District Agriculture Officer",
+  government_officer: "Ministry Officer (legacy)",
+  county_agriculture_coordinator: "CAC · County Agriculture Coordinator",
+  county_officer: "CAC · County Agriculture Coordinator (legacy)",
+  dao_officer: "DAO · District Agriculture Officer",
+  district_officer: "DAO · District Officer (legacy)",
+  clan_technician: "CLAN · Clan Agriculture Crops Technician",
+  field_agent: "CLAN / field capture (legacy)",
   warehouse_manager: "Warehouse Manager",
-  auditor: "Donor / Auditor",
+  donor_observer: "Donor observer",
+  donor_partner: "Donor partner (legacy)",
+  auditor: "Auditor",
   admin: "System Administrator",
 };
 

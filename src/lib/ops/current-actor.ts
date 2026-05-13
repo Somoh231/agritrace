@@ -16,16 +16,21 @@ export function mapUserRoleToOperationalPersona(role: UserRole): OperationalPers
   switch (role) {
     case "super_admin":
     case "admin":
+    case "ministry_admin":
     case "ministry_officer":
     case "government_officer":
       return "national_admin";
+    case "county_agriculture_coordinator":
     case "county_officer":
       return "county_supervisor";
+    case "dao_officer":
     case "district_officer":
+    case "clan_technician":
     case "field_agent":
       return "dao_officer";
     case "warehouse_manager":
       return "warehouse_manager";
+    case "donor_observer":
     case "donor_partner":
       return "donor_observer";
     case "auditor":

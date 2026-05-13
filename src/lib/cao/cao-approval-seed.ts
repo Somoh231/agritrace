@@ -80,7 +80,7 @@ export function seedCaoApprovalItems(county: string | null): CaoApprovalItem[] {
       submittedBy: "WH superintendent",
       submittedAt: "2026-05-06T06:15:00Z",
       status: "pending",
-      detail: "Safety stock breached below CAO threshold for county allocations.",
+      detail: "Safety stock breached below CAC threshold for county allocations.",
     },
     {
       queue: "farmer_registration",
@@ -104,6 +104,6 @@ export function seedCaoApprovalItems(county: string | null): CaoApprovalItem[] {
 
   return samples.map((s, i) => ({
     ...s,
-    id: `cao-appr-${nk || "nat"}-${i}`,
+    id: `cac-appr-${nk || "nat"}-${i}`,
   }));
 }

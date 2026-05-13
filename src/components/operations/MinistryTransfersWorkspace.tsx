@@ -360,7 +360,7 @@ export default function MinistryTransfersWorkspace() {
         getRowKey={(row) => String(row.id)}
         toolbar={
           <span className="text-[11px] text-slate-500">
-            DAO → CAO → Ministry and Warehouse → County → Ministry routing patterns · {filteredRows.length} legs in scope
+            DAO → CAC → Ministry and Warehouse → County → Ministry routing patterns · {filteredRows.length} legs in scope
           </span>
         }
         renderExpanded={(row) => {

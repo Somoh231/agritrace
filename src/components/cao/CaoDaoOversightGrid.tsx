@@ -60,7 +60,7 @@ const cols: GridColumn<DaoOversightRow>[] = [
           className="rounded border border-slate-600 px-2 py-0.5 text-[10px] text-slate-200 hover:bg-slate-800"
           onClick={(e) => {
             e.stopPropagation();
-            window.dispatchEvent(new CustomEvent("agritrace-cao-dao-review", { detail: r.daoId }));
+            window.dispatchEvent(new CustomEvent("agritrace-cac-dao-review", { detail: r.daoId }));
           }}
         >
           Review
@@ -70,7 +70,7 @@ const cols: GridColumn<DaoOversightRow>[] = [
           className="rounded border border-slate-600 px-2 py-0.5 text-[10px] text-slate-200 hover:bg-slate-800"
           onClick={(e) => {
             e.stopPropagation();
-            window.dispatchEvent(new CustomEvent("agritrace-cao-correction", { detail: r.daoId }));
+            window.dispatchEvent(new CustomEvent("agritrace-cac-correction", { detail: r.daoId }));
           }}
         >
           Corrections
@@ -80,7 +80,7 @@ const cols: GridColumn<DaoOversightRow>[] = [
           className="rounded border border-rose-800/60 px-2 py-0.5 text-[10px] text-rose-200 hover:bg-rose-950/40"
           onClick={(e) => {
             e.stopPropagation();
-            window.dispatchEvent(new CustomEvent("agritrace-cao-escalate", { detail: r.daoId }));
+            window.dispatchEvent(new CustomEvent("agritrace-cac-escalate", { detail: r.daoId }));
           }}
         >
           Escalate
@@ -152,7 +152,7 @@ export default function CaoDaoOversightGrid({
       title="DAO oversight grid · county scope"
       rows={filtered}
       columns={cols}
-      filename="cao-dao-oversight.csv"
+      filename="cac-dao-oversight.csv"
       pageSize={12}
       toolbar={toolbar}
       rowClassName={(row) => {

@@ -15,6 +15,7 @@ import RegisterFarmerForm from "@/components/operations/forms/RegisterFarmerForm
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import { useDaoWorkflowQueue } from "@/hooks/useDaoWorkflowQueue";
 import type { DaoWorkflowFormBindings, DaoWorkflowKind } from "@/lib/dao/dao-workflow-types";
+import { daoReviewReadOnly } from "@/lib/auth/operational-roles";
 import type { UserRole } from "@/lib/supabase/types";
 
 function daoWorkflowBindings(
@@ -32,10 +33,6 @@ function daoWorkflowBindings(
   };
 }
 
-function daoReadOnly(role: UserRole): boolean {
-  return role === "county_officer" || role === "ministry_officer" || role === "government_officer";
-}
-
 export default function DistrictOfficerDashboard({
   county,
   district,
@@ -47,7 +44,7 @@ export default function DistrictOfficerDashboard({
   role: UserRole;
   fullName: string;
 }) {
-  const readOnly = daoReadOnly(role);
+  const readOnly = daoReviewReadOnly(role);
   const wf = useDaoWorkflowQueue();
   const [online, setOnline] = React.useState(() => (typeof navigator !== "undefined" ? navigator.onLine : true));
 

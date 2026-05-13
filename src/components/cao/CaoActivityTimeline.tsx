@@ -48,13 +48,13 @@ export default function CaoActivityTimeline({ county, daoRows }: { county: strin
         at: new Date(Date.now() - 3600 * 1000 * 5).toISOString(),
         tone: "emerald",
         title: top ? `${top.daoId} submitted ${regs || 12} registrations (rollup)` : `${label} DAO registrations batch landed`,
-        detail: "Queued for CAO approval · GIS consistency pending.",
+        detail: "Queued for CAC approval · GIS consistency pending.",
       },
       {
         id: "syn-wh",
         at: new Date(Date.now() - 3600 * 1000 * 8).toISOString(),
         tone: "amber",
-        title: `${label} warehouse stock dipped below CAO safety curve`,
+        title: `${label} warehouse stock dipped below CAC safety curve`,
         detail: "WH superintendent flagged NPK corridor · replenishment ticket eligible.",
       },
       {
@@ -82,7 +82,7 @@ export default function CaoActivityTimeline({ county, daoRows }: { county: strin
   return (
     <section className="rounded-xl border border-slate-700/85 bg-slate-950/45 p-4 sm:p-5">
       <h2 className="font-display text-[15px] font-semibold text-white">Activity timeline</h2>
-      <p className="mt-1 text-[12px] text-slate-400">County-filtered operational feed blended with CAO rehearsal cadence statements.</p>
+      <p className="mt-1 text-[12px] text-slate-400">County-filtered operational feed blended with CAC rehearsal cadence statements.</p>
       <ul className="mt-4 space-y-3">
         {merged.map((item) => (
           <li key={item.id} className={`rounded-lg border px-4 py-3 ${toneBorder(item.tone)}`}>

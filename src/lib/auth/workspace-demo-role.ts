@@ -5,10 +5,15 @@ export const WORKSPACE_DEMO_ROLE_COOKIE = "ais_workspace_demo_role";
 
 /** Roles exposed in the workspace preview switcher */
 export const WORKSPACE_PREVIEW_ROLES: UserRole[] = [
+  "ministry_admin",
   "ministry_officer",
+  "county_agriculture_coordinator",
+  "dao_officer",
+  "clan_technician",
   "county_officer",
   "district_officer",
   "warehouse_manager",
+  "donor_observer",
   "auditor",
   "admin",
 ];

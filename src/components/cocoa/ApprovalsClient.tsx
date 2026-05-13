@@ -17,6 +17,7 @@ function canSupervise(role: UserRole) {
   return (
     role === "super_admin" ||
     role === "admin" || // TEMP DEMO FALLBACK
+    role === "ministry_admin" ||
     role === "ministry_officer" ||
     role === "government_officer" ||
     role === "cooperative_manager" ||

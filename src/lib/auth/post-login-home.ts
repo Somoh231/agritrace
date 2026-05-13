@@ -5,16 +5,21 @@ export function postLoginHomeForRole(role: UserRole): string {
   switch (role) {
     case "super_admin":
     case "admin":
+    case "ministry_admin":
     case "ministry_officer":
     case "government_officer":
       return "/command-center";
+    case "county_agriculture_coordinator":
     case "county_officer":
       return "/county-dashboard";
+    case "dao_officer":
     case "district_officer":
+    case "clan_technician":
     case "field_agent":
       return "/district-dashboard";
     case "warehouse_manager":
       return "/inventory";
+    case "donor_observer":
     case "donor_partner":
       return "/donor-dashboard";
     case "auditor":
@@ -32,8 +37,9 @@ export function postLoginHomeForRole(role: UserRole): string {
 
 /** Roles permitted to open the national command center route. */
 export function mayAccessNationalCommandCenter(role: UserRole): boolean {
-  if (role === "donor_partner" || role === "auditor") return false;
+  if (role === "donor_partner" || role === "donor_observer" || role === "auditor") return false;
   if (
+    role === "ministry_admin" ||
     role === "ministry_officer" ||
     role === "government_officer" ||
     role === "super_admin" ||
@@ -49,7 +55,9 @@ export function mayAccessNationalCommandCenter(role: UserRole): boolean {
 
 export function mayAccessCountyDashboard(role: UserRole): boolean {
   return (
+    role === "county_agriculture_coordinator" ||
     role === "county_officer" ||
+    role === "ministry_admin" ||
     role === "ministry_officer" ||
     role === "government_officer" ||
     role === "super_admin" ||
@@ -59,9 +67,13 @@ export function mayAccessCountyDashboard(role: UserRole): boolean {
 
 export function mayAccessDistrictDashboard(role: UserRole): boolean {
   return (
+    role === "dao_officer" ||
     role === "district_officer" ||
+    role === "clan_technician" ||
     role === "field_agent" ||
+    role === "county_agriculture_coordinator" ||
     role === "county_officer" ||
+    role === "ministry_admin" ||
     role === "ministry_officer" ||
     role === "government_officer" ||
     role === "super_admin" ||

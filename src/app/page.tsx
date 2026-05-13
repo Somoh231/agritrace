@@ -21,7 +21,7 @@ const METRICS = [
 const PILLARS = [
   {
     title: "Reporting & verification",
-    body: "DAO capture through CAO review to ministry consolidation — one pipeline for defensible national numbers and audit-ready workflows.",
+    body: "CLAN field capture through DAO consolidation, CAC county verification, and ministry national intelligence — one pipeline for defensible numbers and audit-ready workflows.",
     href: "/platform",
   },
   {
@@ -97,7 +97,7 @@ export default function Page() {
                   </Link>
                 </div>
                 <p className="mt-6 text-[12px] text-slate-500">
-                  Offline-capable field capture · signed audit exports · role-based access aligned to DAO / CAO / national desks.
+                  Offline-capable field capture · signed audit exports · role-based access aligned to CLAN / DAO / CAC / ministry desks.
                 </p>
               </div>
               <MapVisual />
@@ -155,7 +155,7 @@ export default function Page() {
             <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
               {[
                 { step: "01", title: "Field capture", body: "Offline-first forms, timestamps, and evidence stubs for DAO-led collection." },
-                { step: "02", title: "County review", body: "CAO verification, escalations, and compliance posture within county scope." },
+                { step: "02", title: "County review", body: "CAC verification, escalations, and compliance posture within county scope." },
                 { step: "03", title: "Ministry consolidation", body: "National registries, transfers, warehouses, and subsidy signals in one ledger." },
                 { step: "04", title: "Operational intelligence", body: "Heat maps, queues, and cabinet-ready exports from the same source of truth." },
               ].map((s) => (

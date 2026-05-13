@@ -23,6 +23,7 @@ import {
 } from "@/lib/data/ministry-data-service";
 import type { WarehouseRow } from "@/lib/demo/agriculture-pilot-data";
 import { warehouses as demoWarehouses } from "@/lib/demo/agriculture-pilot-data";
+import { isCountyCoordinatorRole } from "@/lib/auth/operational-roles";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { UserRole } from "@/lib/supabase/types";
 
@@ -49,9 +50,9 @@ export default function CountyOfficerDashboard({
   const [syncFilter, setSyncFilter] = React.useState("all");
   const [actionBanner, setActionBanner] = React.useState<string | null>(null);
 
-  const assignmentGap = role === "county_officer" && !county?.trim();
+  const assignmentGap = isCountyCoordinatorRole(role) && !county?.trim();
 
-  const approvalsInteractive = role === "county_officer" || role === "super_admin" || role === "admin";
+  const approvalsInteractive = isCountyCoordinatorRole(role) || role === "super_admin" || role === "admin";
 
   React.useEffect(() => {
     void (async () => {
@@ -78,18 +79,18 @@ export default function CountyOfficerDashboard({
   }, [county]);
 
   React.useEffect(() => {
-    const review = () => setActionBanner("CAO review signal logged — route to approval queue or DAO messaging.");
+    const review = () => setActionBanner("CAC review signal logged — route to approval queue or DAO messaging.");
     const correction = (e: Event) =>
       setActionBanner(`Correction request drafted for ${String((e as CustomEvent).detail ?? "DAO")} — notification stub.`);
     const escalate = (e: Event) =>
       setActionBanner(`Escalation ticket stub raised for ${String((e as CustomEvent).detail ?? "DAO")} · ministry CC.`);
-    window.addEventListener("agritrace-cao-dao-review", review);
-    window.addEventListener("agritrace-cao-correction", correction);
-    window.addEventListener("agritrace-cao-escalate", escalate);
+    window.addEventListener("agritrace-cac-dao-review", review);
+    window.addEventListener("agritrace-cac-correction", correction);
+    window.addEventListener("agritrace-cac-escalate", escalate);
     return () => {
-      window.removeEventListener("agritrace-cao-dao-review", review);
-      window.removeEventListener("agritrace-cao-correction", correction);
-      window.removeEventListener("agritrace-cao-escalate", escalate);
+      window.removeEventListener("agritrace-cac-dao-review", review);
+      window.removeEventListener("agritrace-cac-correction", correction);
+      window.removeEventListener("agritrace-cac-escalate", escalate);
     };
   }, []);
 
@@ -143,11 +144,11 @@ export default function CountyOfficerDashboard({
 
   return (
     <MinistryPageShell
-      title={assignmentGap ? "County workspace" : `${county ?? "County"} · CAO command center`}
+      title={assignmentGap ? "County workspace" : `${county ?? "County"} · CAC command center`}
       description={
         assignmentGap
           ? "Your profile has no county assignment. Contact the ministry administrator to bind jurisdiction."
-          : `County Agriculture Officer oversight for ${fullName}. All DAO activity, warehouses, subsidies, and approvals below are scoped to ${county ?? "your county"} — national ministry roles still inherit read-through without expanding scope.`
+          : `County Agriculture Coordinator (CAC) oversight for ${fullName}. CLAN and DAO activity, warehouses, subsidies, and approvals below are scoped to ${county ?? "your county"} — national ministry roles still inherit read-through without expanding scope.`
       }
       actions={
         <div className="flex flex-wrap gap-2">

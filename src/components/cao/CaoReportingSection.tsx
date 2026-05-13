@@ -48,7 +48,7 @@ export default function CaoReportingSection({
 
   return (
     <section className="rounded-xl border border-slate-700/85 bg-slate-950/45 p-4 sm:p-5">
-      <h2 className="font-display text-[15px] font-semibold text-white">CAO reporting</h2>
+      <h2 className="font-display text-[15px] font-semibold text-white">CAC reporting</h2>
       <p className="mt-1 text-[12px] text-slate-400">
         One-click exports compose live KPIs with canonical ministry fallbacks — suitable for county situational meetings and ministry routing packs.
       </p>
@@ -56,7 +56,7 @@ export default function CaoReportingSection({
         <button
           type="button"
           onClick={() => {
-            downloadTextFile(`cao-weekly-brief-${countyLabel.replace(/\s+/g, "-").toLowerCase()}.txt`, brief());
+            downloadTextFile(`cac-weekly-brief-${countyLabel.replace(/\s+/g, "-").toLowerCase()}.txt`, brief());
             setToast("Weekly briefing downloaded.");
           }}
           className="rounded-lg bg-emerald-800 px-4 py-2 text-[12px] font-medium text-white hover:bg-emerald-700"
@@ -66,7 +66,7 @@ export default function CaoReportingSection({
         <button
           type="button"
           onClick={() => {
-            downloadTextFile(`cao-dao-compliance-${countyLabel.replace(/\s+/g, "-").toLowerCase()}.csv`, buildDaoComplianceExport({ countyLabel, daoRows }));
+            downloadTextFile(`cac-dao-compliance-${countyLabel.replace(/\s+/g, "-").toLowerCase()}.csv`, buildDaoComplianceExport({ countyLabel, daoRows }));
             setToast("DAO compliance CSV exported.");
           }}
           className="rounded-lg border border-slate-600 px-4 py-2 text-[12px] text-slate-100 hover:bg-slate-900"
@@ -76,7 +76,7 @@ export default function CaoReportingSection({
         <button
           type="button"
           onClick={() => {
-            downloadTextFile(`cao-subsidy-summary-${countyLabel.replace(/\s+/g, "-").toLowerCase()}.txt`, buildSubsidyUtilizationSummary(countyLabel, warehouses));
+            downloadTextFile(`cac-subsidy-summary-${countyLabel.replace(/\s+/g, "-").toLowerCase()}.txt`, buildSubsidyUtilizationSummary(countyLabel, warehouses));
             setToast("Subsidy utilization summary downloaded.");
           }}
           className="rounded-lg border border-slate-600 px-4 py-2 text-[12px] text-slate-100 hover:bg-slate-900"
@@ -86,7 +86,7 @@ export default function CaoReportingSection({
         <button
           type="button"
           onClick={() => {
-            downloadTextFile(`cao-district-compare-${countyLabel.replace(/\s+/g, "-").toLowerCase()}.csv`, buildDistrictComparisonReport(countyLabel, districtCards));
+            downloadTextFile(`cac-district-compare-${countyLabel.replace(/\s+/g, "-").toLowerCase()}.csv`, buildDistrictComparisonReport(countyLabel, districtCards));
             setToast("District comparison report exported.");
           }}
           className="rounded-lg border border-slate-600 px-4 py-2 text-[12px] text-slate-100 hover:bg-slate-900"

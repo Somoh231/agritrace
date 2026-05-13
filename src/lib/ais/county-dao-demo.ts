@@ -1,4 +1,4 @@
-/** DAO oversight metrics for CAO workspace — merged from `pilot_dao_officers` or ministry canonical fallback. */
+/** DAO oversight metrics for CAC workspace — merged from `pilot_dao_officers` or ministry canonical fallback. */
 
 export type DaoSyncStatus = "synced" | "pending" | "at_risk";
 

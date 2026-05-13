@@ -1,18 +1,31 @@
 import type { UserRole } from "@/lib/supabase/types";
 
+import {
+  CAC_COUNTY_ROLES,
+  CLAN_FIELD_ROLES,
+  DAO_DISTRICT_ROLES,
+  DONOR_VISIBILITY_ROLES,
+  MINISTRY_NATIONAL_ROLES,
+} from "@/lib/auth/operational-roles";
+
 /** Safe default when profile.role is missing or invalid (matches ministry-wide read posture). */
 export const MINISTRY_NAV_FALLBACK_ROLE: UserRole = "ministry_officer";
 
 const KNOWN_ROLES_SET = new Set<UserRole>([
   "super_admin",
   "admin",
+  "ministry_admin",
   "ministry_officer",
   "government_officer",
+  "county_agriculture_coordinator",
   "county_officer",
+  "dao_officer",
   "district_officer",
+  "clan_technician",
   "cooperative_manager",
   "field_agent",
   "warehouse_manager",
+  "donor_observer",
   "donor_partner",
   "exporter",
   "call_center_agent",
@@ -55,15 +68,37 @@ function sectionVisible(role: UserRole, section: MinistryNavSection): boolean {
   return true;
 }
 
-/** District-facing DAO workspace roles */
-export const DAO_WORKSPACE_ROLES: UserRole[] = ["district_officer", "field_agent"];
+/** District-facing DAO workspace roles (includes CLAN technicians using DAO tools). */
+export const DAO_WORKSPACE_ROLES: UserRole[] = [...DAO_DISTRICT_ROLES, ...CLAN_FIELD_ROLES];
 
 const DAO_DENY: UserRole[] = [...DAO_WORKSPACE_ROLES];
 
 /** Read-mostly external stakeholders */
-const DONOR_AUDITOR_DENY: UserRole[] = ["donor_partner", "auditor"];
+const DONOR_AUDITOR_DENY: UserRole[] = [...DONOR_VISIBILITY_ROLES, "auditor"];
 
 export const MINISTRY_NAV: MinistryNavSection[] = [
+  {
+    id: "operational-workspaces",
+    label: "Operational workspaces",
+    items: [
+      {
+        label: "CLAN workspace",
+        href: "/workspace/clan",
+        rolesAllow: [...CLAN_FIELD_ROLES, ...DAO_DISTRICT_ROLES, ...CAC_COUNTY_ROLES, ...MINISTRY_NATIONAL_ROLES],
+      },
+      {
+        label: "DAO workspace",
+        href: "/workspace/dao",
+        rolesAllow: [...CLAN_FIELD_ROLES, ...DAO_DISTRICT_ROLES, ...CAC_COUNTY_ROLES, ...MINISTRY_NATIONAL_ROLES],
+      },
+      {
+        label: "CAC workspace",
+        href: "/workspace/cac",
+        rolesAllow: [...CAC_COUNTY_ROLES, ...MINISTRY_NATIONAL_ROLES],
+      },
+      { label: "Ministry workspace", href: "/workspace/ministry", rolesAllow: [...MINISTRY_NATIONAL_ROLES] },
+    ],
+  },
   {
     id: "national-overview",
     label: "National Overview",
@@ -77,7 +112,7 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
     id: "reporting",
     label: "Reporting",
     items: [
-      { label: "DAO & CAO Reports", href: "/reporting" },
+      { label: "DAO & CAC reports", href: "/reporting" },
       { label: "Pending Verifications", href: "/verification-queue", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Escalations", href: "/alerts", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Reporting Analytics", href: "/reports", rolesDeny: [...DONOR_AUDITOR_DENY] },
@@ -98,7 +133,7 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
     items: [
       { label: "Warehouse Command", href: "/logistics", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Transfers", href: "/transfers", rolesDeny: [...DONOR_AUDITOR_DENY] },
-      { label: "Inventory", href: "/inventory", rolesDeny: ["donor_partner"] },
+      { label: "Inventory", href: "/inventory", rolesDeny: ["donor_partner", "donor_observer"] },
     ],
   },
   {
@@ -114,9 +149,9 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
     id: "farmers",
     label: "Farmers",
     items: [
-      { label: "Farmer Registry", href: "/farmers", rolesDeny: ["donor_partner"] },
-      { label: "Cooperatives", href: "/cooperatives", rolesDeny: ["donor_partner"] },
-      { label: "Farm Profiles", href: "/farm-profiles", rolesDeny: ["donor_partner"] },
+      { label: "Farmer Registry", href: "/farmers", rolesDeny: ["donor_partner", "donor_observer"] },
+      { label: "Cooperatives", href: "/cooperatives", rolesDeny: ["donor_partner", "donor_observer"] },
+      { label: "Farm Profiles", href: "/farm-profiles", rolesDeny: ["donor_partner", "donor_observer"] },
     ],
   },
   {
@@ -143,8 +178,8 @@ export function ministryNavForRole(role: UserRole | null | undefined): MinistryN
 
 /** Longest href match wins */
 export function ministryBreadcrumb(pathname: string): { kicker: string; title: string } {
-  if (pathname === "/reporting") return { kicker: "Reporting", title: "DAO & CAO reports" };
-  if (pathname === "/reporting/workspace") return { kicker: "Reporting", title: "DAO & CAO reports" };
+  if (pathname === "/reporting") return { kicker: "Reporting", title: "DAO & CAC reports" };
+  if (pathname === "/reporting/workspace") return { kicker: "Reporting", title: "DAO & CAC reports" };
   if (pathname === "/logistics") return { kicker: "Warehouses & Logistics", title: "Warehouse command" };
   if (pathname === "/compliance") return { kicker: "Administration", title: "Compliance" };
   if (pathname === "/reports") return { kicker: "Reporting", title: "Ministry reports center" };
@@ -156,6 +191,10 @@ export function ministryBreadcrumb(pathname: string): { kicker: string; title: s
   if (pathname.startsWith("/admin/users")) return { kicker: "Administration", title: "Users & roles" };
   if (pathname.startsWith("/admin/system")) return { kicker: "Administration", title: "System diagnostics" };
   if (pathname.startsWith("/admin/governance")) return { kicker: "Administration", title: "Permissions" };
+  if (pathname.startsWith("/workspace/clan")) return { kicker: "Operational workspaces", title: "CLAN workspace" };
+  if (pathname.startsWith("/workspace/dao")) return { kicker: "Operational workspaces", title: "DAO workspace" };
+  if (pathname.startsWith("/workspace/cac")) return { kicker: "Operational workspaces", title: "CAC workspace" };
+  if (pathname.startsWith("/workspace/ministry")) return { kicker: "Operational workspaces", title: "Ministry workspace" };
   if (pathname.startsWith("/county-dashboard")) return { kicker: "Operations", title: "County dashboard" };
   if (pathname.startsWith("/district-dashboard")) return { kicker: "Operations", title: "District operations" };
 

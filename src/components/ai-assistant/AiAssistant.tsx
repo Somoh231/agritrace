@@ -14,9 +14,9 @@ type ChatMsg = {
 
 function roleLabel(role: UserRole): string {
   if (role === "warehouse_manager") return "Warehouse intelligence";
-  if (role === "district_officer" || role === "field_agent") return "DAO support";
-  if (role === "county_officer") return "CAO operations";
-  if (role === "donor_partner" || role === "auditor") return "Transparency & audit";
+  if (role === "district_officer" || role === "dao_officer" || role === "field_agent" || role === "clan_technician") return "DAO / CLAN support";
+  if (role === "county_officer" || role === "county_agriculture_coordinator") return "CAC operations";
+  if (role === "donor_partner" || role === "donor_observer" || role === "auditor") return "Transparency & audit";
   return "Ministry operations";
 }
 
@@ -31,7 +31,7 @@ function quickActionsForRole(role: UserRole): Array<{ label: string; prompt: str
     { label: "Subsidy Progress", prompt: "Show subsidy distribution progress and flag potential fraud/anomalies. Recommend audit checks." },
   ];
 
-  if (role === "donor_partner" || role === "auditor") {
+  if (role === "donor_partner" || role === "donor_observer" || role === "auditor") {
     return [
       { label: "Donor Summary", prompt: "Summarize programme utilization and delivery verification posture. Include what evidence chains are available and what is redacted." },
       { label: "Audit Chain", prompt: "Explain the subsidy verification chain and how to validate it across distribution_logs, geo_locations, and audit_log." },

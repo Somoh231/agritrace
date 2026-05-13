@@ -61,12 +61,15 @@ function systemPromptForRole(role: UserRole): string {
   const roleLens =
     role === "warehouse_manager"
       ? "Role lens: Warehouse Manager — emphasize stockouts, expiry risk, receipts, transfers, and custody confirmation."
-      : role === "district_officer" || role === "field_agent"
-        ? "Role lens: DAO — emphasize field reporting cadence, inspections, pest evidence, subsidy delivery verification, and offline queue hygiene."
-        : role === "county_officer"
-          ? "Role lens: CAO — emphasize county intervention priorities, DAO supervision, subsidy progress, and anomaly routing."
-          : role === "donor_partner" || role === "auditor"
-            ? "Role lens: Donor/Auditor — emphasize transparency, immutable ledgers, verification chains, and read-only evidence trails."
+      : role === "district_officer" ||
+          role === "dao_officer" ||
+          role === "field_agent" ||
+          role === "clan_technician"
+        ? "Role lens: DAO / CLAN field — emphasize reporting cadence, inspections, pest evidence, subsidy delivery verification, and offline queue hygiene."
+        : role === "county_officer" || role === "county_agriculture_coordinator"
+          ? "Role lens: CAC — emphasize county intervention priorities, DAO supervision, subsidy progress, and anomaly routing."
+          : role === "donor_partner" || role === "donor_observer" || role === "auditor"
+            ? "Role lens: Donor / Auditor — emphasize transparency, immutable ledgers, verification chains, and read-only evidence trails."
             : "Role lens: Ministry leadership — emphasize national posture, inter-county prioritization, and briefing-ready language.";
 
   return `${base}\n\n${roleLens}`;

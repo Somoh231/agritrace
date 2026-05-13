@@ -51,7 +51,7 @@ export type VerificationQueueDetail = {
 };
 
 const REVIEWERS = [
-  "CAO · J. Weah (pool)",
+  "CAC · J. Weah (pool)",
   "DAO reviewer · M. Kanneh",
   "Ministry logistics · P. Dennis",
   "Subsidy desk · A. Johnson",
@@ -96,21 +96,21 @@ function priorityLabel(p: "routine" | "elevated" | "critical"): string {
   return p.toUpperCase();
 }
 
-/** DAO → CAO → Ministry narrative cues */
+/** DAO → CAC → Ministry narrative cues */
 function routingFor(type: VerificationSubmissionType): string {
   switch (type) {
     case "farmer_registration":
-      return "Routing: DAO capture → CAO desk QA → Ministry registry attestation.";
+      return "Routing: DAO capture → CAC desk QA → Ministry registry attestation.";
     case "dao_inspection":
-      return "Routing: DAO field packet → CAO compliance → Ministry oversight if escalated.";
+      return "Routing: DAO field packet → CAC compliance → Ministry oversight if escalated.";
     case "subsidy_verification":
-      return "Routing: DAO beneficiary checks → CAO consolidation → Ministry subsidy clearance.";
+      return "Routing: DAO beneficiary checks → CAC consolidation → Ministry subsidy clearance.";
     case "warehouse_transfer_confirmation":
       return "Routing: Warehouse custody event → County logistics sign-off → Ministry corridor reconcile.";
     case "donor_shipment_verification":
       return "Routing: Donor manifest → Ministry verification (direct) → warehouse receipt attestation.";
     case "gps_verification":
-      return "Routing: Field GPS capture → DAO geometry QA → CAO sign-off → Ministry registry linkage.";
+      return "Routing: Field GPS capture → DAO geometry QA → CAC sign-off → Ministry registry linkage.";
     default:
       return "Routing: Standard ministry workflow chain.";
   }
@@ -183,7 +183,7 @@ export function buildUnifiedVerificationQueue(): VerificationGridRow[] {
       attachmentPlaceholders: ["dao_inspection_photo_01.jpg", "hh_roster_stub.pdf"],
       aiSummary:
         hours > 120
-          ? "Verification latency exceeds ministry SLA for this county — CAO routing recommended."
+          ? "Verification latency exceeds ministry SLA for this county — CAC routing recommended."
           : "Queue posture stable — prioritize subsidy-linked pending farmers before inputs window.",
       chips: pickChips({ type: "farmer_registration", status: st, hours }),
     };
@@ -224,7 +224,7 @@ export function buildUnifiedVerificationQueue(): VerificationGridRow[] {
         { at: submitted, actor: d.daoCode, stage: "dao", note: "Partial inspection bundle uploaded." },
         {
           at: submitted,
-          actor: "CAO routing",
+          actor: "CAC routing",
           stage: "county",
           note: "Compliance reminder issued — awaiting closing narratives.",
         },
@@ -243,7 +243,7 @@ export function buildUnifiedVerificationQueue(): VerificationGridRow[] {
       aiSummary:
         d.county === "Montserrado"
           ? "Montserrado DAO cadence diverging — connectivity and staffing risk flagged for ministry desk."
-          : "District inspection documentation drift detected — consolidate CAO review before subsidy releases.",
+          : "District inspection documentation drift detected — consolidate CAC review before subsidy releases.",
       chips: pickChips({
         type: "dao_inspection",
         status: st,
@@ -394,7 +394,7 @@ export function buildUnifiedVerificationQueue(): VerificationGridRow[] {
       routingCaption: routingFor("subsidy_verification"),
       auditTimeline: [
         { at: submitted, actor: f.daoCode, stage: "dao", note: "Voucher packet assembled." },
-        { at: submitted, actor: "CAO subsidy desk", stage: "county", note: "Awaiting secondary signature." },
+        { at: submitted, actor: "CAC subsidy desk", stage: "county", note: "Awaiting secondary signature." },
       ],
       metadata: {
         "Allocation qty": String(f.subsidyAllocationQty),
