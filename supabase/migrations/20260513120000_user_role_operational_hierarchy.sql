@@ -1,25 +1,6 @@
 -- Operational hierarchy roles (MoA Liberia): CLAN → DAO → CAC → Ministry.
--- Adds canonical enum labels alongside legacy values. RLS policies extended in this migration for workflow tables.
-
-do $$ begin
-  alter type user_role add value 'clan_technician';
-exception when duplicate_object then null; end $$;
-
-do $$ begin
-  alter type user_role add value 'dao_officer';
-exception when duplicate_object then null; end $$;
-
-do $$ begin
-  alter type user_role add value 'county_agriculture_coordinator';
-exception when duplicate_object then null; end $$;
-
-do $$ begin
-  alter type user_role add value 'ministry_admin';
-exception when duplicate_object then null; end $$;
-
-do $$ begin
-  alter type user_role add value 'donor_observer';
-exception when duplicate_object then null; end $$;
+-- Enum labels are added in migration 20260513110000_add_user_role_enums.sql (must run first).
+-- This migration: functions, policies, RLS, and handle_new_user updates only.
 
 create or replace function public.is_ministry_wide()
 returns boolean
