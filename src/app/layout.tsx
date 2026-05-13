@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "@/styles/public-marketing.css";
 import { DM_Mono, Inter, Inter_Tight } from "next/font/google";
 
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";

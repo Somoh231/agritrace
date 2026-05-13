@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import PublicFooter from "@/components/agrivault/site/PublicFooter";
 import PublicNav from "@/components/agrivault/site/PublicNav";
+import PublicSiteShell from "@/components/agrivault/site/PublicSiteShell";
 import { getPublicContent } from "@/lib/growth/content";
 import { createClient } from "@/lib/supabase/server";
 
@@ -57,7 +58,7 @@ export default async function Page() {
 
   const content = await getPublicContent();
   return (
-    <div className="min-h-screen flex flex-col">
+    <PublicSiteShell>
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
         <section
@@ -175,6 +176,6 @@ export default async function Page() {
         </section>
       </main>
       <PublicFooter />
-    </div>
+    </PublicSiteShell>
   );
 }

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import PublicFooter from "@/components/agrivault/site/PublicFooter";
 import PublicNav from "@/components/agrivault/site/PublicNav";
+import PublicSiteShell from "@/components/agrivault/site/PublicSiteShell";
 import { NEWS_ARTICLES, getArticleBySlug } from "@/content/news/articles";
 
 type Props = {
@@ -27,7 +28,7 @@ export default function ArticlePage({ params }: Props) {
   if (!article) notFound();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <PublicSiteShell>
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
         <article style={{ padding: "84px 0" }}>
@@ -50,7 +51,7 @@ export default function ArticlePage({ params }: Props) {
         </article>
       </main>
       <PublicFooter />
-    </div>
+    </PublicSiteShell>
   );
 }
 

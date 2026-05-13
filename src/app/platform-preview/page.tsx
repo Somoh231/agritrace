@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import PublicFooter from "@/components/agrivault/site/PublicFooter";
 import PublicNav from "@/components/agrivault/site/PublicNav";
+import PublicSiteShell from "@/components/agrivault/site/PublicSiteShell";
 
 export const metadata: Metadata = {
   title: "Platform Preview — Agrivault",
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function PlatformPreviewPage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <PublicSiteShell>
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
         <section style={{ padding: "64px 0 28px", borderBottom: "1px solid var(--border)", background: "var(--warm)" }}>
@@ -150,7 +151,7 @@ export default async function PlatformPreviewPage() {
         </section>
       </main>
       <PublicFooter />
-    </div>
+    </PublicSiteShell>
   );
 }
 

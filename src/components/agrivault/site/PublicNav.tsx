@@ -1,187 +1,150 @@
 "use client";
 
 import Link from "next/link";
+import * as React from "react";
 
 import LanguageSwitcher from "@/components/agrivault/site/LanguageSwitcher";
 import { track } from "@/lib/analytics/client";
 
-function Chevron() {
+const NAV_LINKS = [
+  { href: "/government", label: "Government Partnership" },
+  { href: "/platform", label: "Platform" },
+  { href: "/governance", label: "Security" },
+  { href: "/offline", label: "Offline Operations" },
+] as const;
+
+function LogoMark() {
   return (
-    <svg className="chevron" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M1 1l4 4 4-4" />
-    </svg>
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-800">
+      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" aria-hidden>
+        <path d="M12 2C8 2 5 6 5 10c0 4 3 7 7 9 4-2 7-5 7-9 0-4-3-8-7-8z" />
+        <path d="M12 2v18M8 8c1.5 1 2.5 2.5 4 4 1.5-1.5 2.5-3 4-4" />
+      </svg>
+    </span>
   );
 }
 
 export default function PublicNav() {
-  const trackCta = (label: string) => {
-    track("cta_click", { label, placement: "public_nav" });
-  };
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const trackCta = (label: string) => track("cta_click", { label, placement: "public_nav" });
+
+  React.useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
 
   return (
-    <nav aria-label="Primary">
-      <Link href="/" className="logo">
-        <div className="logo-mark">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-            <path d="M12 2C8 2 5 6 5 10c0 4 3 7 7 9 4-2 7-5 7-9 0-4-3-8-7-8z" />
-            <path d="M12 2v18M8 8c1.5 1 2.5 2.5 4 4 1.5-1.5 2.5-3 4-4" />
-          </svg>
-        </div>
-        <div className="logo-name">
-          <strong>AgriVault Data</strong>
-          <span>Africa · Traceability</span>
-        </div>
-      </Link>
+    <header className="sticky top-0 z-[100] border-b border-white/10 bg-slate-950/95 text-slate-200 shadow-[0_1px_0_rgba(0,0,0,0.35)] backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-[90rem] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="flex min-w-0 items-center gap-2.5 no-underline" onClick={() => setMobileOpen(false)}>
+          <LogoMark />
+          <span className="min-w-0 leading-tight">
+            <span className="block text-[15px] font-semibold tracking-tight text-white">Agrivault Data</span>
+            <span className="hidden text-[9px] font-medium uppercase tracking-[0.14em] text-slate-500 sm:block">
+              National agricultural intelligence
+            </span>
+          </span>
+        </Link>
 
-      <ul className="nav-center">
-        <li>
-          <button>
-            Platform <Chevron />
-          </button>
-          <div className="drop">
-            <span className="drop-label">Core modules</span>
-            <Link href="/platform">
-              <div className="drop-text">
-                <strong>Farmer Registry</strong>
-                <span>Permanent IDs, GPS plots, records</span>
-              </div>
+        <nav aria-label="Primary" className="hidden items-center gap-0.5 lg:flex">
+          {NAV_LINKS.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="rounded-md px-3 py-2 text-[13px] font-normal text-slate-400 transition hover:bg-white/5 hover:text-white"
+            >
+              {item.label}
             </Link>
-            <Link href="/platform-preview">
-              <div className="drop-text">
-                <strong>Production Dashboard</strong>
-                <span>Live county data, NADP tracking</span>
-              </div>
-            </Link>
-            <Link href="/platform-preview">
-              <div className="drop-text">
-                <strong>Audit Trail & Compliance</strong>
-                <span>Chain of custody, EUDR docs</span>
-              </div>
-            </Link>
-            <Link href="/platform-preview">
-              <div className="drop-text">
-                <strong>Ministry Reports</strong>
-                <span>Cabinet PDFs, donor exports</span>
-              </div>
-            </Link>
-          </div>
-        </li>
-        <li>
-          <button>
-            Countries <Chevron />
-          </button>
-          <div className="drop">
-            <span className="drop-label">Active</span>
-            <Link href="/liberia">
-              <span className="status-dot dot-live pulse" />
-              <div className="drop-text">
-                <strong>Liberia</strong>
-                <span>Pilot live · Nimba, Bong & Lofa</span>
-              </div>
-            </Link>
-            <div className="drop-divider" />
-            <span className="drop-label">Pipeline</span>
-            <Link href="/africa">
-              <span className="status-dot dot-plan" />
-              <div className="drop-text">
-                <strong>Sierra Leone</strong>
-                <span>2027</span>
-              </div>
-            </Link>
-            <Link href="/africa">
-              <span className="status-dot dot-plan" />
-              <div className="drop-text">
-                <strong>Guinea</strong>
-                <span>2028</span>
-              </div>
-            </Link>
-          </div>
-        </li>
-        <li>
-          <button>
-            Company <Chevron />
-          </button>
-          <div className="drop drop-wide">
-            <div className="drop-col">
-              <span className="drop-label">Company</span>
-              <Link href="/about" className="drop-simple">
-                <div className="drop-text">
-                  <strong>About</strong>
-                  <span>Mission, founder, story</span>
-                </div>
-              </Link>
-              <Link href="/partners" className="drop-simple">
-                <div className="drop-text">
-                  <strong>Partners</strong>
-                  <span>Who we work with</span>
-                </div>
-              </Link>
-              <Link href="/contact" className="drop-simple">
-                <div className="drop-text">
-                  <strong>Contact</strong>
-                  <span>Get in touch</span>
-                </div>
-              </Link>
-            </div>
-            <div className="drop-col">
-              <span className="drop-label">For Governments</span>
-              <Link href="/government" className="drop-simple">
-                <div className="drop-text">
-                  <strong>Partnership model</strong>
-                  <span>Asset-based PPP framework</span>
-                </div>
-              </Link>
-              <Link href="/governance" className="drop-simple">
-                <div className="drop-text">
-                  <strong>Data governance</strong>
-                  <span>Ownership, access, audit</span>
-                </div>
-              </Link>
-              <Link href="/capabilities" className="drop-simple">
-                <div className="drop-text">
-                  <strong>System capabilities</strong>
-                  <span>Operational modules and field tools</span>
-                </div>
-              </Link>
-              <Link href="/integrations" className="drop-simple">
-                <div className="drop-text">
-                  <strong>Integrations</strong>
-                  <span>API and interoperability readiness</span>
-                </div>
-              </Link>
-              <Link href="/government#sovereignty" className="drop-simple">
-                <div className="drop-text">
-                  <strong>Data sovereignty</strong>
-                  <span>Ownership and governance</span>
-                </div>
-              </Link>
-            </div>
-          </div>
-        </li>
-        <li>
-          <Link href="/pricing">Pricing</Link>
-        </li>
-        <li>
-          <Link href="/docs">Docs</Link>
-        </li>
-        <li>
-          <Link href="/news">News</Link>
-        </li>
-      </ul>
+          ))}
+        </nav>
 
-      <div className="nav-right">
-        <LanguageSwitcher />
-        <Link href="/login" className="btn-ghost" onClick={() => trackCta("sign_in")}>
-          Sign in
-        </Link>
-        <Link href="/government" className="btn-outline" onClick={() => trackCta("government_partnership")}>
-          Government partnership
-        </Link>
-        <Link href="/request-demo" className="btn-primary" onClick={() => trackCta("request_demo")}>
-          Request demo →
-        </Link>
+        <div className="hidden items-center gap-2 lg:flex">
+          <LanguageSwitcher variant="dark" />
+          <Link
+            href="/request-demo"
+            className="inline-flex h-9 items-center rounded-md bg-emerald-700 px-3.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-emerald-600"
+            onClick={() => trackCta("request_demo")}
+          >
+            Request Demo
+          </Link>
+          <Link
+            href="/login"
+            className="inline-flex h-9 items-center rounded-md border border-white/15 bg-white/5 px-3.5 text-[13px] font-medium text-slate-200 transition hover:bg-white/10"
+            onClick={() => trackCta("sign_in")}
+          >
+            Sign In
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-2 lg:hidden">
+          <LanguageSwitcher variant="dark" />
+          <button
+            type="button"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-white/5 text-slate-200"
+            aria-expanded={mobileOpen}
+            aria-controls="public-mobile-nav"
+            onClick={() => setMobileOpen((o) => !o)}
+          >
+            <span className="sr-only">{mobileOpen ? "Close menu" : "Open menu"}</span>
+            {mobileOpen ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
-    </nav>
+
+      {mobileOpen ? (
+        <div
+          id="public-mobile-nav"
+          className="border-t border-white/10 bg-slate-950 px-4 py-4 lg:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile navigation"
+        >
+          <div className="flex flex-col gap-1">
+            {NAV_LINKS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-md px-3 py-2.5 text-[14px] text-slate-300 hover:bg-white/5"
+                onClick={() => setMobileOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+            <Link
+              href="/request-demo"
+              className="mt-2 inline-flex h-10 items-center justify-center rounded-md bg-emerald-700 text-[14px] font-medium text-white"
+              onClick={() => {
+                trackCta("request_demo");
+                setMobileOpen(false);
+              }}
+            >
+              Request Demo
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex h-10 items-center justify-center rounded-md border border-white/15 text-[14px] font-medium text-slate-200"
+              onClick={() => {
+                trackCta("sign_in");
+                setMobileOpen(false);
+              }}
+            >
+              Sign In
+            </Link>
+          </div>
+        </div>
+      ) : null}
+    </header>
   );
 }
-

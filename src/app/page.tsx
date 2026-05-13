@@ -3,344 +3,198 @@ import Link from "next/link";
 
 import PublicFooter from "@/components/agrivault/site/PublicFooter";
 import PublicNav from "@/components/agrivault/site/PublicNav";
+import PublicSiteShell from "@/components/agrivault/site/PublicSiteShell";
 
 export const metadata: Metadata = {
-  title: "AgriVault — National agricultural data infrastructure",
+  title: "Agrivault Data — National agricultural intelligence",
   description:
-    "Government-grade registry, mapping, and production intelligence for national food sovereignty and trusted reporting.",
+    "Government-grade registry, operational reporting, warehouse traceability, and ministry coordination — the data backbone for national food security and trusted exports.",
 };
 
 const METRICS = [
-  { label: "Pilot counties live", value: "3", note: "Nimba · Bong · Lofa" },
-  { label: "Geotagged farmer profiles", value: "38,214", note: "registry + plots" },
+  { label: "Pilot counties", value: "3", note: "Nimba · Bong · Lofa" },
+  { label: "Geotagged profiles", value: "38,214+", note: "registry + plots" },
   { label: "Production tracked (YTD)", value: "482,940 MT", note: "season 2025/26" },
-  { label: "Avg post-harvest loss", value: "14.2%", note: "target <10%" },
+  { label: "Post-harvest loss (avg.)", value: "14.2%", note: "national target <10%" },
 ] as const;
 
-const CAPABILITY_CARDS = [
+const PILLARS = [
   {
-    title: "National farmer registry",
-    body: "Permanent IDs, county coverage, household profiles, and auditable registration history.",
+    title: "Reporting & verification",
+    body: "DAO capture through CAO review to ministry consolidation — one pipeline for defensible national numbers and audit-ready workflows.",
+    href: "/platform",
   },
   {
-    title: "Farm geo-mapping",
-    body: "Plot records, GPS references, and operational geography for field planning and verification.",
+    title: "GIS & operational maps",
+    body: "Plot anchors, corridor posture, and district cadence visualised from the same reporting fabric — not decorative mapping.",
+    href: "/platform",
   },
   {
-    title: "Production intelligence",
-    body: "County comparisons, yield signals, loss alerts, and season-by-season performance.",
-  },
-  {
-    title: "Audit trail & exports",
-    body: "Every change is logged and exportable for ministry oversight, donors, and compliance workflows.",
-  },
-  {
-    title: "Offline-first field operations",
-    body: "Mobile-friendly forms that work without internet and sync automatically when connected.",
-  },
-  {
-    title: "Programme operations",
-    body: "Coverage, beneficiary targeting, and reporting surfaces for subsidy and programme execution.",
+    title: "Warehouses & custody",
+    body: "Inventory pressure, transfers, and chain-of-custody signals tied to field reporting and national oversight desks.",
+    href: "/platform",
   },
 ] as const;
 
-const TRUST_SIGNALS = [
-  "Government-owned data",
-  "Role-based access control",
-  "Audit trails and exportable history",
-  "Offline-first field execution",
-  "API-ready interoperability",
-] as const;
-
-const STAKEHOLDERS = [
-  {
-    title: "Ministry leadership",
-    body: "Defensible national numbers by county, by season, by farmer — ready for cabinet and parliament.",
-  },
-  { title: "County offices", body: "Work queues, coverage visibility, and operational follow-up in one system." },
-  { title: "Donors & DFIs", body: "Audit-ready reporting, transparent KPIs, and traceable field activity." },
-  { title: "Cooperatives & exporters", body: "Registry + records + compliance artifacts packaged for market access." },
-] as const;
+function MapVisual() {
+  return (
+    <div
+      className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl"
+      aria-hidden
+    >
+      <div
+        className="absolute inset-0 opacity-40"
+        style={{
+          backgroundImage: `linear-gradient(rgba(16,185,129,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.12) 1px, transparent 1px)`,
+          backgroundSize: "28px 28px",
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/80 via-slate-950/90 to-slate-950" />
+      <div className="absolute left-[12%] top-[22%] h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.6)]" />
+      <div className="absolute left-[38%] top-[48%] h-3 w-3 rounded-full bg-emerald-300 shadow-[0_0_16px_rgba(110,231,183,0.5)]" />
+      <div className="absolute right-[28%] top-[34%] h-3 w-3 rounded-full bg-amber-400/90 shadow-[0_0_18px_rgba(251,191,36,0.45)]" />
+      <div className="absolute bottom-[18%] left-[22%] right-[18%] h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+      <div className="absolute bottom-4 left-4 font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">
+        Operational layer · anonymised
+      </div>
+    </div>
+  );
+}
 
 export default function Page() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <PublicSiteShell>
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
-        <section
-          style={{
-            padding: "56px 0 48px",
-            borderBottom: "1px solid var(--border)",
-            background: "linear-gradient(180deg,var(--warm),var(--cream))",
-          }}
-        >
-          <div className="container">
-            <h1 className="section-h" style={{ marginTop: 0, maxWidth: 920 }}>
-              Real-time data infrastructure for Africa&apos;s{" "}
-              <span style={{ fontStyle: "italic", color: "var(--amber)" }}>agricultural economy</span>.
-            </h1>
-            <p style={{ fontSize: 18, fontWeight: 300, color: "var(--mid)", maxWidth: 820, lineHeight: 1.7 }}>
-              AgriVault is the operational backbone for national food sovereignty — geotagged farmer registry,
-              county-level production telemetry, and the audit trail ministries, donors, and exporters can rely on.
-            </p>
-
-            <div style={{ marginTop: 24 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
-                {METRICS.map((m) => (
-                  <article
-                    key={m.label}
-                    style={{
-                      border: "1px solid var(--border)",
-                      borderRadius: 12,
-                      background: "rgba(255,255,255,.75)",
-                      padding: 16,
-                    }}
-                  >
-                    <div style={{ fontFamily: "var(--ff-d)", fontSize: 24, color: "var(--navy)" }}>{m.value}</div>
-                    <div style={{ marginTop: 6, fontSize: 12, color: "var(--mid)" }}>{m.label}</div>
-                    <div style={{ marginTop: 4, fontFamily: "var(--ff-m)", fontSize: 11, color: "var(--muted)" }}>
-                      {m.note}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 26 }}>
-              <Link href="/request-demo" className="btn-primary">
-                Request demo →
-              </Link>
-              <Link href="/platform" className="btn-outline">
-                View platform
-              </Link>
-            </div>
-
-            <div style={{ marginTop: 14, fontSize: 12, color: "var(--muted)" }}>
-              Used by ministries, cooperatives, and exporters.{" "}
-              <Link href="/government" className="underline underline-offset-2">
-                Government partnership
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <section style={{ padding: "56px 0", background: "#fff", borderTop: "1px solid var(--border)" }}>
-          <div className="container">
-            <span className="section-tag">How the system works</span>
-            <h2 className="section-h" style={{ marginTop: 12, maxWidth: 820 }}>
-              How the system works
-            </h2>
-            <p style={{ fontSize: 16, fontWeight: 300, color: "var(--mid)", lineHeight: 1.7, maxWidth: 820 }}>
-              A simple operational pipeline: field teams capture data offline, support teams ensure continuity, the central
-              database remains ministry-owned, and decision-makers get dashboards and reports.
-            </p>
-
-            <div style={{ marginTop: 22, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 24 }}>
-              {[
-                {
-                  title: "Field data collection",
-                  body: "Mobile-first forms work offline and sync when connectivity returns, so collection continues without disruption.",
-                },
-                {
-                  title: "Call center support layer",
-                  body: "A support desk helps agents resolve issues, validate entries, and keep workflows moving during collection windows.",
-                },
-                {
-                  title: "Central database (Ministry-owned)",
-                  body: "All records are stored in a single authoritative system under government governance, with auditable change history.",
-                },
-                {
-                  title: "Dashboard + reporting",
-                  body: "Operational dashboards and exportable reports translate field activity into defensible national numbers.",
-                },
-              ].map((step, idx) => (
-                <article
-                  key={step.title}
-                  style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                    padding: 22,
-                    background: "rgba(45,122,62,.03)",
-                  }}
-                >
-                  <div style={{ fontFamily: "var(--ff-m)", fontSize: 11, color: "var(--muted)" }}>
-                    Step {idx + 1}
-                  </div>
-                  <h3 style={{ fontFamily: "var(--ff-d)", fontSize: 20, color: "var(--forest)", marginTop: 10, marginBottom: 8 }}>
-                    {step.title}
-                  </h3>
-                  <p style={{ fontSize: 14, color: "var(--mid)", fontWeight: 300, lineHeight: 1.7 }}>
-                    {step.body}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section style={{ padding: "56px 0", background: "var(--warm)" }}>
-          <div className="container">
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-                gap: 22,
-                alignItems: "start",
-              }}
-            >
+        {/* Hero */}
+        <section className="border-b border-slate-200/80 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100">
+          <div className="container py-14 sm:py-20 lg:py-24">
+            <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
               <div>
-                <span className="section-tag">National priority</span>
-                <h2 className="section-h" style={{ marginTop: 12, color: "var(--ink)" }}>
-                  Liberia imports <span style={{ fontStyle: "italic", color: "var(--amber)" }}>59%</span> of its rice.
-                  <br />
-                  We make every kilogram count.
-                </h2>
-                <p style={{ marginTop: 14, fontSize: 16, fontWeight: 300, color: "var(--mid)", lineHeight: 1.7, maxWidth: 640 }}>
-                  Cutting import dependence requires defensible data — not estimates. AgriVault instruments the full chain:
-                  planting → harvest → loss → market, with auditable records and ministry-ready reports.
+                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-emerald-400/90">
+                  National infrastructure · Liberia pilot
+                </p>
+                <h1 className="mt-4 text-4xl font-semibold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.25rem]">
+                  Agricultural intelligence and coordination for{" "}
+                  <span className="text-emerald-300/95">ministry-grade</span> operations.
+                </h1>
+                <p className="mt-5 max-w-xl text-[15px] font-light leading-relaxed text-slate-400 sm:text-base">
+                  Agrivault Data is the reporting and traceability backbone: field capture, verification queues, warehouse
+                  posture, and consolidated national visibility — built for intermittent connectivity and sovereign governance.
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link
+                    href="/request-demo"
+                    className="inline-flex h-11 items-center rounded-lg bg-emerald-600 px-5 text-[14px] font-medium text-white shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-500"
+                  >
+                    Request demo
+                  </Link>
+                  <Link
+                    href="/government"
+                    className="inline-flex h-11 items-center rounded-lg border border-white/15 bg-white/5 px-5 text-[14px] font-medium text-slate-200 transition hover:bg-white/10"
+                  >
+                    Government partnership
+                  </Link>
+                </div>
+                <p className="mt-6 text-[12px] text-slate-500">
+                  Offline-capable field capture · signed audit exports · role-based access aligned to DAO / CAO / national desks.
                 </p>
               </div>
-
-              <div style={{ border: "1px solid var(--border)", borderRadius: 14, background: "#fff", padding: 22 }}>
-                <div style={{ fontFamily: "var(--ff-m)", fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".18em" }}>
-                  Pilot trust signals
-                </div>
-                <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
-                  {TRUST_SIGNALS.map((t) => (
-                    <div key={t} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                      <span style={{ color: "var(--forest-brt)", fontSize: 16, lineHeight: "18px", marginTop: 1 }}>✓</span>
-                      <span style={{ fontSize: 14, color: "var(--mid)", fontWeight: 300, lineHeight: 1.5 }}>{t}</span>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginTop: 18, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <Link href="/request-demo" className="btn-primary">
-                    Request demo →
-                  </Link>
-                  <Link href="/platform" className="btn-outline">
-                    View platform
-                  </Link>
-                </div>
-              </div>
+              <MapVisual />
             </div>
           </div>
         </section>
 
-        <section style={{ padding: "56px 0", background: "#fff", borderTop: "1px solid var(--border)" }}>
+        {/* Metrics */}
+        <section className="border-b border-[var(--border)] bg-[var(--warm)] py-12 sm:py-16">
           <div className="container">
-            <span className="section-tag">Platform</span>
-            <h2 className="section-h" style={{ marginTop: 12, maxWidth: 820 }}>
-              Government-grade modules built for field reality.
-            </h2>
-            <p style={{ fontSize: 16, fontWeight: 300, color: "var(--mid)", lineHeight: 1.7, maxWidth: 820 }}>
-              Registry, mapping, dashboards, reporting, and compliance surfaces — designed to produce numbers ministries can
-              defend.
-            </p>
-
-            <div style={{ marginTop: 22, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 24 }}>
-              {CAPABILITY_CARDS.map((c) => (
-                <article key={c.title} style={{ border: "1px solid var(--border)", borderRadius: 12, padding: 22, background: "rgba(45,122,62,.03)" }}>
-                  <h3 style={{ fontFamily: "var(--ff-d)", fontSize: 22, color: "var(--forest)", marginBottom: 8 }}>{c.title}</h3>
-                  <p style={{ fontSize: 14, color: "var(--mid)", fontWeight: 300, lineHeight: 1.7 }}>{c.body}</p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {METRICS.map((m) => (
+                <article
+                  key={m.label}
+                  className="rounded-xl border border-[var(--border)] bg-white/80 p-4 shadow-sm backdrop-blur-sm"
+                >
+                  <div className="text-2xl font-semibold tracking-tight text-[var(--forest)] sm:text-[1.65rem]">{m.value}</div>
+                  <div className="mt-1 text-[13px] text-[var(--mid)]">{m.label}</div>
+                  <div className="mt-1 text-[11px] text-[var(--muted)]">{m.note}</div>
                 </article>
               ))}
             </div>
+          </div>
+        </section>
 
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 22 }}>
-              <Link href="/request-demo" className="btn-primary">
+        {/* Pillars */}
+        <section className="border-b border-[var(--border)] bg-white py-14 sm:py-20">
+          <div className="container">
+            <span className="section-tag">Operational backbone</span>
+            <h2 className="section-h mt-3 max-w-3xl text-[var(--forest)]">Reporting is the core. Everything else derives from it.</h2>
+            <p className="mt-3 max-w-2xl text-base font-light leading-relaxed text-[var(--mid)]">
+              Dashboards, maps, alerts, and exports are projections of the same institutional pipeline — not disconnected modules.
+            </p>
+            <div className="mt-10 grid gap-6 md:grid-cols-3">
+              {PILLARS.map((p) => (
+                <Link
+                  key={p.title}
+                  href={p.href}
+                  className="group rounded-2xl border border-[var(--border)] bg-[var(--warm)] p-6 transition hover:border-emerald-800/25 hover:shadow-md"
+                >
+                  <h3 className="text-lg font-semibold text-[var(--forest)] group-hover:text-emerald-900">{p.title}</h3>
+                  <p className="mt-3 text-[14px] font-light leading-relaxed text-[var(--mid)]">{p.body}</p>
+                  <span className="mt-4 inline-block text-[12px] font-medium text-emerald-800">View platform →</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Workflow strip */}
+        <section className="border-b border-[var(--border)] bg-[var(--warm)] py-14 sm:py-20">
+          <div className="container">
+            <span className="section-tag">National workflow</span>
+            <h2 className="section-h mt-3 max-w-2xl">Field → county → ministry → intelligence</h2>
+            <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+              {[
+                { step: "01", title: "Field capture", body: "Offline-first forms, timestamps, and evidence stubs for DAO-led collection." },
+                { step: "02", title: "County review", body: "CAO verification, escalations, and compliance posture within county scope." },
+                { step: "03", title: "Ministry consolidation", body: "National registries, transfers, warehouses, and subsidy signals in one ledger." },
+                { step: "04", title: "Operational intelligence", body: "Heat maps, queues, and cabinet-ready exports from the same source of truth." },
+              ].map((s) => (
+                <article key={s.step} className="rounded-xl border border-[var(--border)] bg-white p-5">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">{s.step}</div>
+                  <h3 className="mt-2 text-base font-semibold text-[var(--forest)]">{s.title}</h3>
+                  <p className="mt-2 text-[13px] font-light leading-relaxed text-[var(--mid)]">{s.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Quote + CTA */}
+        <section className="bg-[var(--navy)] py-16 text-white sm:py-20">
+          <div className="container max-w-4xl">
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/50">Institutional posture</p>
+            <blockquote className="mt-6 text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">
+              “A single defensible number for national production — by county, by season, by farmer — is not a dashboard feature.
+              It is sovereignty.”
+            </blockquote>
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Link
+                href="/request-demo"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-[13px] font-medium text-white shadow-lg transition hover:bg-emerald-500"
+              >
                 Request demo →
               </Link>
-              <Link href="/platform" className="btn-outline">
-                View platform
+              <Link
+                href="/platform"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 py-2.5 text-[13px] font-medium text-white transition hover:bg-white/15"
+              >
+                Platform overview
               </Link>
-            </div>
-          </div>
-        </section>
-
-        <section style={{ padding: "56px 0", background: "var(--warm)", borderTop: "1px solid var(--border)" }}>
-          <div className="container">
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-                gap: 18,
-                alignItems: "start",
-              }}
-            >
-              <div style={{ maxWidth: 680 }}>
-                <span className="section-tag">Stakeholders</span>
-                <h2 className="section-h" style={{ marginTop: 12, color: "var(--ink)" }}>
-                  One source of truth across institutions.
-                </h2>
-                <p style={{ marginTop: 14, fontSize: 16, fontWeight: 300, color: "var(--mid)", lineHeight: 1.7 }}>
-                  AgriVault supports government oversight, donor reporting, and market readiness with a single operational
-                  system and a consistent audit trail.
-                </p>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-                {STAKEHOLDERS.map((s) => (
-                  <article key={s.title} style={{ border: "1px solid var(--border)", borderRadius: 12, padding: 18, background: "#fff" }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--navy)" }}>{s.title}</div>
-                    <div style={{ marginTop: 8, fontSize: 13, color: "var(--mid)", fontWeight: 300, lineHeight: 1.6 }}>{s.body}</div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section style={{ padding: "56px 0", background: "var(--navy)", color: "white" }}>
-          <div className="container">
-            <div style={{ maxWidth: 960 }}>
-              <div style={{ fontFamily: "var(--ff-m)", fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(255,255,255,.6)" }}>
-                Trust signal
-              </div>
-              <blockquote style={{ marginTop: 18, fontFamily: "var(--ff-d)", fontSize: 40, lineHeight: 1.15, letterSpacing: "-.02em" }}>
-                “For the first time, we have a single number for national rice production that we can defend — by county, by
-                season, by farmer.”
-              </blockquote>
-              <div style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 12, color: "rgba(255,255,255,.74)" }}>
-                <div style={{ width: 44, height: 44, borderRadius: 999, background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.12)" }} />
-                <div>
-                  <div style={{ fontSize: 13, color: "white" }}>Senior Advisor, Food Security</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,.62)" }}>Public-sector pilot program</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section style={{ padding: "48px 0 56px", background: "var(--warm)" }}>
-          <div className="container">
-            <div style={{ border: "1px solid var(--border)", borderRadius: 14, background: "#fff", padding: "28px 24px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
-                <div style={{ maxWidth: 720 }}>
-                  <span className="section-tag">Request demo</span>
-                  <h2 style={{ fontFamily: "var(--ff-d)", fontSize: 36, lineHeight: 1.12, letterSpacing: "-.02em", color: "var(--ink)", marginTop: 12 }}>
-                    Brief us. We’ll bring the numbers.
-                  </h2>
-                  <p style={{ marginTop: 12, fontSize: 16, fontWeight: 300, color: "var(--mid)", lineHeight: 1.7 }}>
-                    A 90-minute walkthrough tailored to ministry oversight, donor reporting, or commercial deployment —
-                    Monrovia or remote.
-                  </p>
-                </div>
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <Link href="/request-demo" className="btn-primary">
-                    Request demo →
-                  </Link>
-                  <Link href="/platform" className="btn-outline">
-                    View platform
-                  </Link>
-                </div>
-              </div>
-              <div style={{ marginTop: 20, paddingTop: 14, borderTop: "1px solid var(--border)", fontFamily: "var(--ff-m)", fontSize: 11, color: "var(--muted)" }}>
-                {TRUST_SIGNALS.join(" · ")}
-              </div>
             </div>
           </div>
         </section>
       </main>
       <PublicFooter />
-    </div>
+    </PublicSiteShell>
   );
 }

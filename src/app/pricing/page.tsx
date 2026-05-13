@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import PublicFooter from "@/components/agrivault/site/PublicFooter";
 import PublicNav from "@/components/agrivault/site/PublicNav";
+import PublicSiteShell from "@/components/agrivault/site/PublicSiteShell";
 
 export const metadata: Metadata = {
   title: "Pricing — AgriVault Data",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <PublicSiteShell>
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
         <section style={{ padding: "64px 0 48px", borderBottom: "1px solid var(--border)" }}>
@@ -121,7 +122,7 @@ export default function Page() {
         </section>
       </main>
       <PublicFooter />
-    </div>
+    </PublicSiteShell>
   );
 }
 

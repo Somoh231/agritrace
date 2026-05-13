@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 
 import PublicFooter from "@/components/agrivault/site/PublicFooter";
 import PublicNav from "@/components/agrivault/site/PublicNav";
+import PublicSiteShell from "@/components/agrivault/site/PublicSiteShell";
 import { getPublicContent } from "@/lib/growth/content";
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export default async function Page() {
   const content = await getPublicContent();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <PublicSiteShell>
       <PublicNav />
       <main className="page agrivault-html-main flex-1">
         <section style={{ padding: "64px 0 48px", borderBottom: "1px solid var(--border)" }}>
@@ -139,7 +140,7 @@ export default async function Page() {
         </section>
       </main>
       <PublicFooter />
-    </div>
+    </PublicSiteShell>
   );
 }
 

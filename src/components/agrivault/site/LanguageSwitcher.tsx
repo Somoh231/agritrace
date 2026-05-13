@@ -4,7 +4,12 @@ import * as React from "react";
 
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/i18n/config";
 
-export default function LanguageSwitcher() {
+type LanguageSwitcherProps = {
+  /** Dark navbar (public site) vs light marketing body */
+  variant?: "light" | "dark";
+};
+
+export default function LanguageSwitcher({ variant = "light" }: LanguageSwitcherProps) {
   const [current, setCurrent] = React.useState<SupportedLocale>(DEFAULT_LOCALE);
 
   React.useEffect(() => {
@@ -28,30 +33,19 @@ export default function LanguageSwitcher() {
     window.location.assign(nextUrl);
   };
 
+  const isDark = variant === "dark";
+
   return (
-    <label
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        fontFamily: "var(--ff-m)",
-        fontSize: 11,
-        color: "var(--muted)",
-      }}
-    >
-      <span>Lang</span>
+    <label className="inline-flex items-center gap-1.5 text-[11px] text-slate-500">
+      <span className={isDark ? "text-slate-500" : "text-slate-600"}>Lang</span>
       <select
         value={current}
         onChange={onChange}
-        style={{
-          border: "1px solid var(--border-mid)",
-          borderRadius: 6,
-          padding: "4px 8px",
-          background: "transparent",
-          color: "var(--forest)",
-          fontFamily: "var(--ff-m)",
-          fontSize: 11,
-        }}
+        className={
+          isDark
+            ? "rounded-md border border-white/15 bg-slate-900/80 px-2 py-1 text-[11px] text-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+            : "rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-800 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+        }
         aria-label="Language"
       >
         {SUPPORTED_LOCALES.map((locale) => (
