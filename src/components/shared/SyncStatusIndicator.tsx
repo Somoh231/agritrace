@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Loader2 } from "lucide-react";
 
-import { getPendingCount, getSyncErrors, processSyncQueue } from "@/lib/offline/sync-queue";
+import { getPendingCount, getSyncErrors, processSyncQueue, recordQueueClearTimestamp } from "@/lib/offline/sync-queue";
 
 export default function SyncStatusIndicator() {
   const [online, setOnline] = React.useState<boolean>(() => (typeof navigator !== "undefined" ? navigator.onLine : true));
@@ -15,7 +15,10 @@ export default function SyncStatusIndicator() {
   const refresh = React.useCallback(async () => {
     try {
       const [pending, errs] = await Promise.all([getPendingCount(), getSyncErrors()]);
-      setPendingCount(pending);
+      setPendingCount((prev) => {
+        if (prev > 0 && pending === 0) recordQueueClearTimestamp();
+        return pending;
+      });
       setErrors(errs);
     } catch {
       // Offline DB should never break topbar rendering

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
+import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import { assertPilotWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { createClient } from "@/lib/supabase/server";
@@ -27,7 +28,12 @@ export default async function CacWorkspacePage() {
     <MinistryPageShell
       title="CAC workspace"
       description="County Agriculture Coordinators (CAC) — county verification and approval, escalation management, reporting compliance, operational coordination, and consolidation toward ministry reporting."
-      actions={<SyncStatusIndicator />}
+      actions={
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <InstallAppButton label="Install App" />
+          <SyncStatusIndicator />
+        </div>
+      }
     >
       <div className="rounded-xl border border-amber-900/35 bg-amber-950/15 px-4 py-3 text-[12px] text-slate-300">
         <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-200/90">Reporting chain</span>

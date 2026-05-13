@@ -4,6 +4,7 @@ import Link from "next/link";
 import * as React from "react";
 
 import LanguageSwitcher from "@/components/agrivault/site/LanguageSwitcher";
+import InstallAppButton from "@/components/pwa/InstallAppButton";
 import { track } from "@/lib/analytics/client";
 
 const NAV_LINKS = [
@@ -63,6 +64,7 @@ export default function PublicNav() {
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
+          <InstallAppButton variant="compact" label="Install App" />
           <LanguageSwitcher variant="dark" />
           <Link
             href="/request-demo"
@@ -81,6 +83,7 @@ export default function PublicNav() {
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">
+          <InstallAppButton variant="compact" label="Install" className="min-w-[4.5rem]" />
           <LanguageSwitcher variant="dark" />
           <button
             type="button"
@@ -122,6 +125,7 @@ export default function PublicNav() {
                 {item.label}
               </Link>
             ))}
+            <InstallAppButton variant="compact" label="Install App" className="w-full justify-center" />
             <Link
               href="/request-demo"
               className="mt-2 inline-flex h-10 items-center justify-center rounded-md bg-emerald-700 text-[14px] font-medium text-white"

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
+import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import { assertPilotWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { createClient } from "@/lib/supabase/server";
@@ -27,7 +28,12 @@ export default async function DaoWorkspacePage() {
     <MinistryPageShell
       title="DAO workspace"
       description="District Agriculture Officers (DAO) — district oversight, review of CLAN submissions, district summaries, operational verification, and coordination with warehouses and programmes."
-      actions={<SyncStatusIndicator />}
+      actions={
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <InstallAppButton label="Install App" />
+          <SyncStatusIndicator />
+        </div>
+      }
     >
       <div className="rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-3 text-[12px] text-slate-300">
         <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Reporting chain</span>

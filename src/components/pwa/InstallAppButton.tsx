@@ -2,54 +2,63 @@
 
 import * as React from "react";
 
+import InstallAppGuide, { detectInstallSurface } from "@/components/pwa/InstallAppGuide";
+import { usePwaInstall } from "@/components/pwa/install-prompt-context";
 import { useToast } from "@/components/shared/toast/ToastProvider";
 
-type InstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+type Props = {
+  className?: string;
+  /** Button label — keep short for toolbars. */
+  label?: string;
+  variant?: "toolbar" | "primary" | "compact";
 };
 
-export default function InstallAppButton({ className }: { className?: string }) {
+const variantClass: Record<NonNullable<Props["variant"]>, string> = {
+  toolbar:
+    "h-9 px-3 rounded-lg border border-slate-600 bg-slate-950 text-[12px] font-medium text-slate-200 hover:bg-slate-900",
+  primary:
+    "min-h-[48px] w-full px-4 rounded-xl bg-emerald-600 text-[15px] font-semibold text-white shadow-sm hover:bg-emerald-500 active:scale-[0.99] sm:w-auto",
+  compact:
+    "h-10 min-h-[44px] px-3 rounded-lg border border-white/15 bg-white/5 text-[13px] font-medium text-slate-100 hover:bg-white/10",
+};
+
+export default function InstallAppButton({ className, label = "Install for offline use", variant = "toolbar" }: Props) {
   const toast = useToast();
-  const [promptEvt, setPromptEvt] = React.useState<InstallPromptEvent | null>(null);
+  const { deferredPrompt, installed, runBrowserInstall } = usePwaInstall();
+  const [guideOpen, setGuideOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    const handler = (e: Event) => {
-      // Chrome / Edge: `beforeinstallprompt` is non-standard but the only way to show an install prompt on demand.
-      e.preventDefault();
-      setPromptEvt(e as InstallPromptEvent);
-    };
-    window.addEventListener("beforeinstallprompt", handler as any);
-    return () => window.removeEventListener("beforeinstallprompt", handler as any);
-  }, []);
+  const isStandalone = () =>
+    typeof window !== "undefined" &&
+    (window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as unknown as { standalone?: boolean }).standalone === true);
 
-  if (!promptEvt) return null;
+  const onClick = async () => {
+    const surface = detectInstallSurface();
+    if (surface === "installed" || installed || isStandalone()) {
+      toast.info("Already installed", "Open Agrivault Data from your home screen or app list.");
+      return;
+    }
+    if (deferredPrompt) {
+      const r = await runBrowserInstall();
+      if (r.status === "accepted") {
+        toast.success("App installed", "Agrivault Data is ready for offline field reporting and sync when connected.");
+      } else if (r.status === "dismissed") {
+        toast.info("Install dismissed", "You can try again or follow the steps in the guide.");
+        setGuideOpen(true);
+      }
+      return;
+    }
+    setGuideOpen(true);
+  };
+
+  const mergedClass = className ? `${variantClass[variant]} ${className}` : variantClass[variant];
 
   return (
-    <button
-      type="button"
-      className={
-        className ??
-        "h-9 px-3 rounded-lg border border-slate-600 bg-slate-950 text-[12px] text-slate-200 hover:bg-slate-900"
-      }
-      onClick={() => {
-        void (async () => {
-          try {
-            await promptEvt.prompt();
-            const res = await promptEvt.userChoice;
-            if (res.outcome === "accepted") toast.success("Install started", "Agrivault will install as an offline-capable app.");
-            else toast.info("Install dismissed", "You can install later from the Reporting hub.");
-          } catch (e) {
-            console.error("[pwa] install prompt failed", e);
-            toast.error("Install failed", "This device/browser cannot install the app right now.");
-          } finally {
-            setPromptEvt(null);
-          }
-        })();
-      }}
-    >
-      Install app
-    </button>
+    <>
+      <button type="button" className={mergedClass} onClick={() => void onClick()}>
+        {label}
+      </button>
+      <InstallAppGuide open={guideOpen} onClose={() => setGuideOpen(false)} />
+    </>
   );
 }
-

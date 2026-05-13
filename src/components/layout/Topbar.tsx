@@ -8,6 +8,7 @@ import { ClientErrorBoundary } from "@/components/layout/ClientErrorBoundary";
 import NotificationsMenu from "@/components/layout/NotificationsMenu";
 import UserWorkspaceMenu from "@/components/layout/UserWorkspaceMenu";
 import WorkspaceRoleSwitcher from "@/components/layout/WorkspaceRoleSwitcher";
+import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import { ministryBreadcrumb } from "@/lib/navigation/ministry-nav";
 import type { Profile, UserRole } from "@/lib/supabase/types";
@@ -111,6 +112,7 @@ export default function Topbar({
           </ClientErrorBoundary>
         </div>
         <SyncStatusIndicator />
+        <InstallAppButton variant="toolbar" label="Install App" />
         <NotificationsMenu />
         <UserWorkspaceMenu
           name={profile?.full_name?.trim() || "User"}

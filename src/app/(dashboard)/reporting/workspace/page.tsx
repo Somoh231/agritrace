@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
+import OfflineFieldOperationsCard from "@/components/pwa/OfflineFieldOperationsCard";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 
 type TabId = "dao" | "cac" | "drafts" | "submitted" | "review" | "verified" | "escalated" | "archived";
@@ -319,13 +320,13 @@ export default async function ReportingWorkspacePage({
       title="DAO & CAC reports"
       description="Unified reporting workspace. Operational chain: CLAN field capture → DAO district review and consolidation → CAC county verification and approval → Ministry national aggregation and intelligence."
       actions={
-        <div className="flex items-center gap-2">
-          <InstallAppButton />
+        <div className="flex flex-wrap items-center gap-2">
+          <InstallAppButton label="Install App" />
           <Link
             href="/field/sync-queue"
             className="h-9 px-3 rounded-lg border border-slate-600 bg-slate-950 text-[12px] text-slate-200 hover:bg-slate-900 inline-flex items-center"
           >
-            Drafts / offline queue
+            Offline queue
           </Link>
           <div className="rounded-lg border border-slate-700 bg-slate-950/60 px-2 py-1">
             <SyncStatusIndicator />
@@ -338,6 +339,10 @@ export default async function ReportingWorkspacePage({
         <p className="mt-2 text-[12px] leading-relaxed text-slate-300">
           Offline-first capture is supported. Workflow decisions and audits remain authoritative and traceable across counties.
         </p>
+      </div>
+
+      <div className="mt-6">
+        <OfflineFieldOperationsCard />
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">

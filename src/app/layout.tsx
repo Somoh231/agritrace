@@ -5,6 +5,7 @@ import { DM_Mono, Inter, Inter_Tight } from "next/font/google";
 
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import ToastProvider from "@/components/shared/toast/ToastProvider";
+import { PwaInstallProvider } from "@/components/pwa/install-prompt-context";
 import PwaRegistrar from "@/components/pwa/PwaRegistrar";
 
 const fontHeading = Inter_Tight({
@@ -125,8 +126,10 @@ export default function RootLayout({
       <body className="h-full bg-[rgb(var(--surface))] text-[rgb(var(--text))]">
         <AnalyticsProvider>
           <ToastProvider>
-            <PwaRegistrar />
-            {children}
+            <PwaInstallProvider>
+              <PwaRegistrar />
+              {children}
+            </PwaInstallProvider>
           </ToastProvider>
         </AnalyticsProvider>
       </body>

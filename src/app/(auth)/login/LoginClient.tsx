@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import AlertBanner from "@/components/shared/AlertBanner";
+import InstallAppButton from "@/components/pwa/InstallAppButton";
 import { postLoginHomeForRole } from "@/lib/auth/post-login-home";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { describeAuthFetchFailure } from "@/lib/supabase/env";
@@ -183,6 +184,16 @@ export default function LoginClient() {
               </div>
               <div className="mt-2 text-[11px] text-slate-500">
                 Run <span className="font-mono">npm run seed:demo</span> to create these demo users.
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-emerald-200/60 bg-emerald-50/80 px-4 py-4">
+              <div className="text-[13px] font-semibold text-ink-900">Using Agrivault in the field?</div>
+              <p className="mt-2 text-[12px] leading-relaxed text-slate-700">
+                Install the app on this device for offline reporting and GPS capture. Drafts stay on the device until you are back online.
+              </p>
+              <div className="mt-3">
+                <InstallAppButton variant="primary" label="Install for Offline Use" className="w-full justify-center" />
               </div>
             </div>
 

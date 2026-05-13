@@ -212,3 +212,24 @@ export async function getSyncErrors(): Promise<string[]> {
   return msgs;
 }
 
+const QUEUE_CLEAR_KEY = "av_offline_queue_clear_at";
+
+/** Pilot UX: timestamp when the offline queue last became empty (local clock). */
+export function recordQueueClearTimestamp(): void {
+  try {
+    if (typeof localStorage === "undefined") return;
+    localStorage.setItem(QUEUE_CLEAR_KEY, new Date().toISOString());
+  } catch {
+    /* ignore */
+  }
+}
+
+export function readQueueClearTimestamp(): string | null {
+  try {
+    if (typeof localStorage === "undefined") return null;
+    return localStorage.getItem(QUEUE_CLEAR_KEY);
+  } catch {
+    return null;
+  }
+}
+

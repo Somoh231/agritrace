@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
+import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import { assertPilotWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { createClient } from "@/lib/supabase/server";
@@ -27,7 +28,12 @@ export default async function ClanWorkspacePage() {
     <MinistryPageShell
       title="CLAN workspace"
       description="Clan Agriculture Crops Technicians (CLAN) — field capture, farm registration, GPS boundaries, observations, and offline-first reporting. Submissions flow to the District Agriculture Officer (DAO) for district review."
-      actions={<SyncStatusIndicator />}
+      actions={
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <InstallAppButton label="Install App" />
+          <SyncStatusIndicator />
+        </div>
+      }
     >
       <div className="rounded-xl border border-emerald-900/40 bg-emerald-950/20 px-4 py-3 text-[12px] text-slate-300">
         <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300/90">Reporting chain</span>
