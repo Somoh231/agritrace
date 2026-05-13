@@ -24,7 +24,7 @@ const variantClass: Record<NonNullable<Props["variant"]>, string> = {
 
 export default function InstallAppButton({ className, label = "Install for offline use", variant = "toolbar" }: Props) {
   const toast = useToast();
-  const { deferredPrompt, installed, runBrowserInstall } = usePwaInstall();
+  const { installed, runBrowserInstall } = usePwaInstall();
   const [guideOpen, setGuideOpen] = React.useState(false);
 
   const isStandalone = () =>
@@ -38,16 +38,18 @@ export default function InstallAppButton({ className, label = "Install for offli
       toast.info("Already installed", "Open Agrivault Data from your home screen or app list.");
       return;
     }
-    if (deferredPrompt) {
-      const r = await runBrowserInstall();
-      if (r.status === "accepted") {
-        toast.success("App installed", "Agrivault Data is ready for offline field reporting and sync when connected.");
-      } else if (r.status === "dismissed") {
-        toast.info("Install dismissed", "You can try again or follow the steps in the guide.");
-        setGuideOpen(true);
-      }
+    // Prefer native prompt whenever `beforeinstallprompt` was captured (ref-backed in provider).
+    const native = await runBrowserInstall();
+    if (native.status === "in_progress") return;
+    if (native.status === "accepted") {
+      toast.success("App installed", "Agrivault Data is ready for offline field reporting and sync when connected.");
       return;
     }
+    if (native.status === "dismissed") {
+      toast.info("Install dismissed", "Tap Install again when you are ready, or wait for the install option to return.");
+      return;
+    }
+    // No deferred prompt: iOS / unsupported / prompt not offered yet — show manual steps only.
     setGuideOpen(true);
   };
 

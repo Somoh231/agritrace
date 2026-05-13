@@ -81,11 +81,7 @@ export default function OfflineReadinessPanel({ className }: { className?: strin
 
   const surface = detectInstallSurface();
   const installedView = installed || standalone || surface === "installed";
-  const installable = Boolean(deferredPrompt) && !installedView;
-
-  let installLabel = "Needs setup";
-  if (installedView) installLabel = "Ready";
-  else if (installable) installLabel = "Ready";
+  const installAvailable = Boolean(deferredPrompt) && !installedView;
 
   let storageLabel = "Needs setup";
   if (typeof indexedDB !== "undefined") storageLabel = "Ready";
@@ -111,14 +107,14 @@ export default function OfflineReadinessPanel({ className }: { className?: strin
       <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Offline readiness</div>
       <ul className="mt-2 space-y-1.5 font-mono text-[11px] leading-snug">
         <li className="flex flex-wrap justify-between gap-2">
-          <span className="text-slate-500">App</span>
-          <span className={installedView ? "text-emerald-300" : installable ? "text-emerald-300" : "text-amber-200/90"}>
-            {installedView ? "Installed" : installable ? "Installable" : "Use browser install steps"}
+          <span className="text-slate-500">Install</span>
+          <span
+            className={
+              installedView ? "text-emerald-300" : installAvailable ? "text-emerald-300" : "text-amber-200/90"
+            }
+          >
+            {installedView ? "Installed" : installAvailable ? "Install available" : "Manual setup required"}
           </span>
-        </li>
-        <li className="flex flex-wrap justify-between gap-2">
-          <span className="text-slate-500">Install status</span>
-          <span className={installLabel === "Ready" ? "text-emerald-300" : "text-amber-200/90"}>{installLabel}</span>
         </li>
         <li className="flex flex-wrap justify-between gap-2">
           <span className="text-slate-500">GPS permission</span>
