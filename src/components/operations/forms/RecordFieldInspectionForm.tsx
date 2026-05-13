@@ -5,6 +5,9 @@ import * as React from "react";
 import type { DaoWorkflowFormBindings } from "@/lib/dao/dao-workflow-types";
 import { persistFarmInspectionPayload } from "@/lib/dao/dao-workflow-writers";
 
+import type { OperationalFarmBoundary } from "@/lib/gis/operational-boundary-types";
+import FarmBoundaryCapture from "@/components/gis/FarmBoundaryCapture";
+
 function composeInspectionNotes(
   farmCondition: string,
   pestIssue: string,
@@ -54,6 +57,8 @@ export default function RecordFieldInspectionForm({
   const [lng, setLng] = React.useState("");
   const [verification, setVerification] = React.useState("verified");
 
+  const [boundary, setBoundary] = React.useState<OperationalFarmBoundary | null>(null);
+
   const composedNotes = () =>
     composeInspectionNotes(farmCondition, pestIssue, irrigation, fertilizerUse, expectedYield, photoBundle, notes);
 
@@ -71,6 +76,7 @@ export default function RecordFieldInspectionForm({
     verification_status: verification,
     composed_notes: composedNotes(),
     queued_at: new Date().toISOString(),
+    operational_boundary: boundary,
   });
 
   const saveDraftLocal = async () => {
@@ -210,6 +216,15 @@ export default function RecordFieldInspectionForm({
           className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
         />
       </label>
+
+      <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-2">
+        <FarmBoundaryCapture
+          disabled={disabled}
+          readOnly={disabled}
+          value={boundary}
+          onChange={setBoundary}
+        />
+      </div>
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block text-slate-300">

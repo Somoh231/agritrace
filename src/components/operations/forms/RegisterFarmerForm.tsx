@@ -5,6 +5,9 @@ import * as React from "react";
 import type { DaoWorkflowFormBindings } from "@/lib/dao/dao-workflow-types";
 import { persistRegisterFarmerPayload } from "@/lib/dao/dao-workflow-writers";
 
+import FarmBoundaryCapture from "@/components/gis/FarmBoundaryCapture";
+import type { OperationalFarmBoundary } from "@/lib/gis/operational-boundary-types";
+
 const DRAFT_KEY = "agritrace-draft-register-farmer";
 
 export default function RegisterFarmerForm({
@@ -43,6 +46,7 @@ export default function RegisterFarmerForm({
     profile_photo_url: "",
     notes: "",
   });
+  const [operationalBoundary, setOperationalBoundary] = React.useState<OperationalFarmBoundary | null>(null);
 
   const seededRef = React.useRef(false);
   React.useEffect(() => {
@@ -78,6 +82,7 @@ export default function RegisterFarmerForm({
     ...form,
     notes_composed: buildNotes(),
     queued_at: new Date().toISOString(),
+    operational_boundary: operationalBoundary,
   });
 
   const saveDraft = async () => {
@@ -239,6 +244,15 @@ export default function RegisterFarmerForm({
             className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
           />
         </label>
+      </div>
+
+      <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-2">
+        <FarmBoundaryCapture
+          disabled={disabled}
+          readOnly={disabled}
+          value={operationalBoundary}
+          onChange={setOperationalBoundary}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3">

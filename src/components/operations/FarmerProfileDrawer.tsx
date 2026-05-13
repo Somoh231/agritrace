@@ -2,12 +2,15 @@
 
 import * as React from "react";
 
+import FarmBoundaryCapture from "@/components/gis/FarmBoundaryCapture";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { operationalBoundaryFromPersistedRow, operationalBoundaryFromPlotGeoJson } from "@/lib/gis/operational-boundary-math";
 
 export default function FarmerProfileDrawer({ farmerId, onClose }: { farmerId: string | null; onClose: () => void }) {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [farmer, setFarmer] = React.useState<Record<string, unknown> | null>(null);
+  const [plots, setPlots] = React.useState<Record<string, unknown>[]>([]);
   const [visits, setVisits] = React.useState<Record<string, unknown>[]>([]);
   const [subsidies, setSubsidies] = React.useState<Record<string, unknown>[]>([]);
   const [rice, setRice] = React.useState<Record<string, unknown>[]>([]);
@@ -21,8 +24,17 @@ export default function FarmerProfileDrawer({ farmerId, onClose }: { farmerId: s
       try {
         const supabase = getSupabaseBrowserClient();
         const [{ data: f, error: fe }, vRes, sRes, rRes] = await Promise.all([
-          supabase.from("farmers").select("*").eq("id", farmerId).maybeSingle(),
-          supabase.from("farmer_visits").select("*").eq("farmer_id", farmerId).order("visited_at", { ascending: false }).limit(15),
+          supabase
+            .from("farmers")
+            .select("*, plots(id, polygon_geojson, area_hectares, created_at, commodity)")
+            .eq("id", farmerId)
+            .maybeSingle(),
+          supabase
+            .from("farmer_visits")
+            .select("id, visited_at, notes, verification_status, boundary_geometry, boundary_points, boundary_area_ha, boundary_captured_at, visited_by")
+            .eq("farmer_id", farmerId)
+            .order("visited_at", { ascending: false })
+            .limit(15),
           supabase.from("farmer_subsidies").select("*").eq("farmer_id", farmerId).order("created_at", { ascending: false }).limit(15),
           supabase.from("rice_production_records").select("*").eq("farmer_id", farmerId).order("recorded_at", { ascending: false }).limit(10),
         ]);
@@ -30,9 +42,16 @@ export default function FarmerProfileDrawer({ farmerId, onClose }: { farmerId: s
         if (fe || !f) {
           setError("Farmer record could not be loaded.");
           setFarmer(null);
+          setPlots([]);
+          setVisits([]);
+          setSubsidies([]);
+          setRice([]);
           return;
         }
-        setFarmer(f as Record<string, unknown>);
+        const row = f as Record<string, unknown> & { plots?: Record<string, unknown>[] };
+        const { plots: plotRows = [], ...farmerRest } = row;
+        setFarmer(farmerRest);
+        setPlots(plotRows);
         setVisits((vRes.data ?? []) as Record<string, unknown>[]);
         setSubsidies((sRes.data ?? []) as Record<string, unknown>[]);
         setRice((rRes.data ?? []) as Record<string, unknown>[]);
@@ -46,6 +65,14 @@ export default function FarmerProfileDrawer({ farmerId, onClose }: { farmerId: s
       cancelled = true;
     };
   }, [farmerId]);
+
+  const latestInspectionBoundary = React.useMemo(() => {
+    for (const v of visits) {
+      const b = operationalBoundaryFromPersistedRow(v);
+      if (b) return { visit: v, boundary: b };
+    }
+    return null;
+  }, [visits]);
 
   if (!farmerId) return null;
 
@@ -98,16 +125,65 @@ export default function FarmerProfileDrawer({ farmerId, onClose }: { farmerId: s
             </div>
           ) : null}
 
+          {plots.some((p) => p.polygon_geojson) ? (
+            <section>
+              <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">Farm Boundary &amp; Location</div>
+              <p className="mb-3 text-[11px] leading-relaxed text-slate-500">
+                Operational outlines from field capture — approximate, for traceability and reporting. Not cadastral or legal proof of ownership.
+              </p>
+              <div className="space-y-4">
+                {plots.map((p) => {
+                  const b = operationalBoundaryFromPlotGeoJson(p.polygon_geojson, typeof p.created_at === "string" ? p.created_at : undefined);
+                  if (!b) return null;
+                  return (
+                    <div key={String(p.id)} className="rounded-xl border border-slate-800 bg-slate-950/30 p-2">
+                      <div className="mb-2 text-[11px] text-slate-400">
+                        Registered plot · {String(p.commodity ?? "—")} · <span className="font-mono text-slate-500">{String(p.id).slice(0, 8)}…</span>
+                      </div>
+                      <FarmBoundaryCapture readOnly disabled value={b} onChange={() => {}} />
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ) : null}
+
+          {latestInspectionBoundary ? (
+            <section>
+              <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">Latest inspection boundary</div>
+              <div className="mb-2 flex flex-wrap gap-2 text-[11px] text-slate-400">
+                <span className="rounded border border-slate-700 px-2 py-0.5 capitalize">
+                  Verification: {String(latestInspectionBoundary.visit.verification_status ?? "—")}
+                </span>
+                <span className="font-mono text-slate-500">
+                  Visit {String(latestInspectionBoundary.visit.visited_at ?? "").slice(0, 16)}
+                </span>
+              </div>
+              <FarmBoundaryCapture readOnly disabled value={latestInspectionBoundary.boundary} onChange={() => {}} />
+            </section>
+          ) : null}
+
           <section>
             <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">Field visits</div>
             <ul className="space-y-2 max-h-40 overflow-y-auto">
               {visits.length ? (
-                visits.map((v) => (
+                visits.map((v) => {
+                  const vb = operationalBoundaryFromPersistedRow(v);
+                  return (
                   <li key={String(v.id)} className="rounded-lg border border-slate-800 px-3 py-2 text-[12px]">
                     <div className="text-slate-400">{String(v.visited_at ?? "").slice(0, 16)}</div>
-                    <div className="text-slate-200 whitespace-pre-wrap">{String(v.notes ?? "—")}</div>
+                    <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-500">
+                      <span className="capitalize">Outcome: {String(v.verification_status ?? "—")}</span>
+                      {vb ? (
+                        <span className="text-emerald-200/90">
+                          Boundary on file · {vb.areaHectares.toFixed(2)} ha est.
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="mt-1 text-slate-200 whitespace-pre-wrap">{String(v.notes ?? "—")}</div>
                   </li>
-                ))
+                  );
+                })
               ) : (
                 <li className="text-slate-500">No visits logged.</li>
               )}

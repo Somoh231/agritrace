@@ -23,6 +23,13 @@ export default function FieldMobileClient() {
           <div className="mt-2 text-slate-400">Log geo-stamped visits against farmer UUIDs.</div>
         </Link>
         <Link
+          href="/field/boundary-capture"
+          className="rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-5 text-[13px] text-slate-200 hover:border-emerald-700"
+        >
+          <div className="font-semibold text-white">Capture farm boundary</div>
+          <div className="mt-2 text-slate-400">Corner walk, approximate outline, queue for sync when offline.</div>
+        </Link>
+        <Link
           href="/field/pest-reports"
           className="rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-5 text-[13px] text-slate-200 hover:border-emerald-700"
         >

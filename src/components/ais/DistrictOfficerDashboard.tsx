@@ -197,7 +197,7 @@ export default function DistrictOfficerDashboard({
         </div>
       </MinistryPageShell>
 
-      <OperationDrawer open={farmerOpen} onClose={() => setFarmerOpen(false)} title="Register farmer" widthClassName="max-w-lg">
+      <OperationDrawer open={farmerOpen} onClose={() => setFarmerOpen(false)} title="Register farmer" widthClassName="max-w-3xl w-full">
         <RegisterFarmerForm
           countyDefault={county ?? undefined}
           districtDefault={district ?? undefined}
@@ -208,7 +208,7 @@ export default function DistrictOfficerDashboard({
         />
       </OperationDrawer>
 
-      <OperationDrawer open={inspectOpen} onClose={() => setInspectOpen(false)} title="Farm inspection (DAO visit)" widthClassName="max-w-lg">
+      <OperationDrawer open={inspectOpen} onClose={() => setInspectOpen(false)} title="Farm inspection (DAO visit)" widthClassName="max-w-3xl w-full">
         <RecordFieldInspectionForm readOnly={readOnly} daoWorkflow={wfInspect} onCancel={() => setInspectOpen(false)} onSuccess={() => setInspectOpen(false)} />
       </OperationDrawer>
 

@@ -4,7 +4,10 @@ import * as React from "react";
 
 import AlertBanner from "@/components/shared/AlertBanner";
 import CountySelect from "@/components/shared/CountySelect";
+import FarmBoundaryCapture from "@/components/gis/FarmBoundaryCapture";
 import { useToast } from "@/components/shared/toast/ToastProvider";
+import { polygonCentroidLngLat } from "@/lib/gis/operational-boundary-math";
+import type { OperationalFarmBoundary } from "@/lib/gis/operational-boundary-types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { PILOT_COUNTIES } from "@/lib/utils/pilot-config";
 import { PILOT_MODE } from "@/lib/utils/pilot-config";
@@ -27,6 +30,7 @@ export default function RegisterFarmerQuick({ onDone }: { onDone: () => void }) 
   const [waterSource, setWaterSource] = React.useState<"rain_fed" | "irrigated" | "both">("rain_fed");
   const [yearsFarmingPlot, setYearsFarmingPlot] = React.useState<string>("");
   const [priorProgrammes, setPriorProgrammes] = React.useState<"yes" | "no">("no");
+  const [operationalBoundary, setOperationalBoundary] = React.useState<OperationalFarmBoundary | null>(null);
 
   const capture = () => {
     setErr(null);
@@ -128,6 +132,14 @@ export default function RegisterFarmerQuick({ onDone }: { onDone: () => void }) 
               <option value="no">Previous govt programmes: No</option>
               <option value="yes">Previous govt programmes: Yes</option>
             </select>
+            <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-2">
+              <FarmBoundaryCapture
+                disabled={busy}
+                readOnly={false}
+                value={operationalBoundary}
+                onChange={setOperationalBoundary}
+              />
+            </div>
           </div>
         ) : null}
 
@@ -164,12 +176,34 @@ export default function RegisterFarmerQuick({ onDone }: { onDone: () => void }) 
               } as any);
 
               if (PILOT_MODE) {
-                const area = plotSizeHa.trim() ? Number(plotSizeHa) : null;
+                const areaManual = plotSizeHa.trim() ? Number(plotSizeHa) : null;
                 const years = yearsFarmingPlot.trim() ? Number(yearsFarmingPlot) : null;
+                const poly = operationalBoundary?.geometry ?? null;
+                const centroid = poly ? polygonCentroidLngLat(poly) : null;
+                const polygonGeojson = operationalBoundary
+                  ? ({
+                      type: "Feature",
+                      properties: {
+                        source: "operational_farm_boundary_capture",
+                        captured_at: operationalBoundary.capturedAt,
+                        captured_points: operationalBoundary.capturedPoints,
+                      },
+                      geometry: operationalBoundary.geometry,
+                    } as Record<string, unknown>)
+                  : null;
+                const areaHa =
+                  operationalBoundary != null
+                    ? operationalBoundary.areaHectares
+                    : areaManual != null && Number.isFinite(areaManual)
+                      ? areaManual
+                      : null;
                 await queuePlot({
                   farmer_id: farmerClientId,
                   commodity: "rice",
-                  area_hectares: area != null && Number.isFinite(area) ? area : null,
+                  area_hectares: areaHa,
+                  polygon_geojson: polygonGeojson,
+                  center_latitude: centroid?.lat ?? gps?.lat ?? null,
+                  center_longitude: centroid?.lng ?? gps?.lng ?? null,
                   land_tenure: landTenure,
                   water_source: waterSource,
                   years_farming_plot: years != null && Number.isFinite(years) ? Math.trunc(years) : null,

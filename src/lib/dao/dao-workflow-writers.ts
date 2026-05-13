@@ -1,6 +1,7 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import { daoAuditInsertSafe } from "@/lib/dao/dao-audit";
+import { isOperationalFarmBoundary } from "@/lib/gis/operational-boundary-types";
 
 export type PersistResult = { ok: true } | { ok: false; error: string };
 
@@ -65,6 +66,15 @@ export async function persistFarmInspectionPayload(payload: Record<string, unkno
     const lat = payload.gps_latitude != null && String(payload.gps_latitude).trim() ? Number(payload.gps_latitude) : null;
     const lng = payload.gps_longitude != null && String(payload.gps_longitude).trim() ? Number(payload.gps_longitude) : null;
 
+    const boundary = payload.operational_boundary;
+    const boundaryInsert: Record<string, unknown> = {};
+    if (isOperationalFarmBoundary(boundary)) {
+      boundaryInsert.boundary_geometry = boundary.geometry;
+      boundaryInsert.boundary_points = boundary.capturedPoints;
+      boundaryInsert.boundary_area_ha = boundary.areaHectares;
+      boundaryInsert.boundary_captured_at = boundary.capturedAt;
+    }
+
     const { error } = await supabase.from("farmer_visits").insert({
       farmer_id,
       visited_by: user?.id ?? null,
@@ -72,6 +82,7 @@ export async function persistFarmInspectionPayload(payload: Record<string, unkno
       gps_latitude: lat != null && Number.isFinite(lat) ? lat : null,
       gps_longitude: lng != null && Number.isFinite(lng) ? lng : null,
       verification_status: payload.verification_status ? String(payload.verification_status) : null,
+      ...boundaryInsert,
     } as Record<string, unknown>);
     if (error) return { ok: false, error: error.message };
 
