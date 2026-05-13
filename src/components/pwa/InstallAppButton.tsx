@@ -24,7 +24,7 @@ const variantClass: Record<NonNullable<Props["variant"]>, string> = {
 
 export default function InstallAppButton({ className, label = "Install for offline use", variant = "toolbar" }: Props) {
   const toast = useToast();
-  const { installed, runBrowserInstall } = usePwaInstall();
+  const { installed, runBrowserInstall, hasDeferredInstallPrompt } = usePwaInstall();
   const [guideOpen, setGuideOpen] = React.useState(false);
 
   const isStandalone = () =>
@@ -39,7 +39,10 @@ export default function InstallAppButton({ className, label = "Install for offli
       return;
     }
     // Prefer native prompt whenever `beforeinstallprompt` was captured (ref-backed in provider).
-    const native = await runBrowserInstall();
+    let native = await runBrowserInstall();
+    if (native.status === "unavailable" && hasDeferredInstallPrompt()) {
+      native = await runBrowserInstall();
+    }
     if (native.status === "in_progress") return;
     if (native.status === "accepted") {
       toast.success("App installed", "Agrivault Data is ready for offline field reporting and sync when connected.");
@@ -49,8 +52,10 @@ export default function InstallAppButton({ className, label = "Install for offli
       toast.info("Install dismissed", "Tap Install again when you are ready, or wait for the install option to return.");
       return;
     }
-    // No deferred prompt: iOS / unsupported / prompt not offered yet — show manual steps only.
-    setGuideOpen(true);
+    if (native.status === "unavailable") {
+      if (hasDeferredInstallPrompt()) return;
+      setGuideOpen(true);
+    }
   };
 
   const mergedClass = className ? `${variantClass[variant]} ${className}` : variantClass[variant];

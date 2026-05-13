@@ -10,9 +10,12 @@ export type InstallPromptEvent = Event & {
 type PwaInstallContextValue = {
   /** Browser install prompt (Chrome / Edge / Android Chrome) when available. */
   deferredPrompt: InstallPromptEvent | null;
+  /** True after at least one `beforeinstallprompt` in this session (diagnostics). */
+  beforeInstallPromptCaptured: boolean;
   /** Fired after `appinstalled` or successful accepted install flow. */
   installed: boolean;
-  /** Run OS install UI; returns result for toasts. */
+  /** Synchronous read — true if a deferred install event is held (avoids click vs. setState races). */
+  hasDeferredInstallPrompt: () => boolean;
   /** Run OS install UI; `in_progress` = prompt already showing (ignore duplicate taps). */
   runBrowserInstall: () => Promise<{ status: "accepted" | "dismissed" | "unavailable" | "in_progress" }>;
 };
@@ -21,6 +24,7 @@ const PwaInstallContext = React.createContext<PwaInstallContextValue | null>(nul
 
 export function PwaInstallProvider({ children }: { children: React.ReactNode }) {
   const [deferredPrompt, setDeferredPrompt] = React.useState<InstallPromptEvent | null>(null);
+  const [beforeInstallPromptCaptured, setBeforeInstallPromptCaptured] = React.useState(false);
   const [installed, setInstalled] = React.useState(false);
   /** Source of truth for `prompt()` — set synchronously on `beforeinstallprompt` before React re-renders. */
   const deferredRef = React.useRef<InstallPromptEvent | null>(null);
@@ -32,6 +36,8 @@ export function PwaInstallProvider({ children }: { children: React.ReactNode }) 
       const ev = e as InstallPromptEvent;
       deferredRef.current = ev;
       setDeferredPrompt(ev);
+      setBeforeInstallPromptCaptured(true);
+      console.log("[PWA] beforeinstallprompt received");
     };
     const onAppInstalled = () => {
       setInstalled(true);
@@ -46,6 +52,8 @@ export function PwaInstallProvider({ children }: { children: React.ReactNode }) 
       window.removeEventListener("appinstalled", onAppInstalled);
     };
   }, []);
+
+  const hasDeferredInstallPrompt = React.useCallback(() => deferredRef.current != null, []);
 
   const runBrowserInstall = React.useCallback(async () => {
     if (installInFlightRef.current) return { status: "in_progress" as const };
@@ -74,10 +82,12 @@ export function PwaInstallProvider({ children }: { children: React.ReactNode }) 
   const value = React.useMemo(
     () => ({
       deferredPrompt,
+      beforeInstallPromptCaptured,
       installed,
+      hasDeferredInstallPrompt,
       runBrowserInstall,
     }),
-    [deferredPrompt, installed, runBrowserInstall],
+    [deferredPrompt, beforeInstallPromptCaptured, installed, hasDeferredInstallPrompt, runBrowserInstall],
   );
 
   return <PwaInstallContext.Provider value={value}>{children}</PwaInstallContext.Provider>;

@@ -2,15 +2,21 @@
  * Scope: same-origin only. Falls back to /offline for navigations when disconnected.
  */
 
-const CACHE = "agrivault-offline-v1";
-const CORE = ["/offline", "/favicon.ico", "/og.svg"];
+const CACHE = "agrivault-offline-v2";
+const CORE = ["/", "/offline", "/favicon.ico", "/og.svg", "/icons/pwa-192.png", "/icons/pwa-512.png", "/icons/pwa-512-maskable.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE);
-      await cache.addAll(CORE);
-      self.skipWaiting();
+      for (const path of CORE) {
+        try {
+          await cache.add(path);
+        } catch (err) {
+          console.warn("[sw] precache failed", path, err);
+        }
+      }
+      await self.skipWaiting();
     })(),
   );
 });

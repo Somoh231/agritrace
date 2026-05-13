@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Agrivault",
+    name: "Agrivault Data",
     short_name: "Agrivault",
     description:
       "Ministry operational reporting and traceability platform (offline-capable).",
@@ -13,14 +13,22 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#0b1220",
     icons: [
       {
-        src: "/favicon.ico",
-        sizes: "any",
-        type: "image/x-icon",
+        src: "/icons/pwa-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
       },
       {
-        src: "/og.svg",
-        sizes: "any",
-        type: "image/svg+xml",
+        src: "/icons/pwa-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/pwa-512-maskable.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
       },
     ],
   };

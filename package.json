@@ -7,13 +7,13 @@
   },
   "scripts": {
     "dev": "WATCHPACK_POLLING=true next dev",
-    "build": "next build",
+    "build": "node scripts/generate-pwa-icons.mjs && next build",
     "postbuild": "node scripts/postbuild-fix-nft-manifests.mjs",
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx src/lib/supabase/seed.ts",
     "seed:demo": "tsx src/lib/supabase/seed-demo.ts",
-    "seed:national": "tsx src/lib/supabase/seed-national-pilot.ts",
+    "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
     "seed:ministry": "tsx src/lib/supabase/seed-ministry-canonical.ts"
   },
   "dependencies": {
