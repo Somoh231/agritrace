@@ -167,8 +167,8 @@ export default function AiOperationalIntelligenceRail() {
       </div>
 
       <div className="mt-4 flex flex-wrap gap-3 text-[11px]">
-        <Link href="/gis-intelligence" className="text-emerald-400 hover:text-emerald-300">
-          Open GIS triage →
+        <Link href="/map" className="text-emerald-400 hover:text-emerald-300">
+          Open operational map →
         </Link>
         <Link href="/inventory" className="text-emerald-400 hover:text-emerald-300">
           Inventory command →

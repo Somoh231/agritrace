@@ -221,10 +221,10 @@ export default function VerificationQueueWorkspace() {
       actions={
         <div className="flex flex-wrap gap-2">
           <Link
-            href="/gis-intelligence"
+            href="/map"
             className="h-9 rounded-lg border border-slate-600 bg-slate-950 px-3 text-[12px] text-slate-200 hover:bg-slate-900 inline-flex items-center"
           >
-            GIS linkage
+            Operational map
           </Link>
           <OperationalWorkflowButton
             allowed={exportAllowed}

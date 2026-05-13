@@ -113,8 +113,8 @@ export default function NationalOperationalIntelStrip() {
           >
             Executive briefing
           </Link>
-          <Link href="/gis-intelligence" className="h-9 inline-flex items-center rounded-lg border border-slate-600 bg-slate-900 px-3 text-[12px] text-slate-200 hover:bg-slate-800">
-            GIS workspace
+          <Link href="/map" className="h-9 inline-flex items-center rounded-lg border border-slate-600 bg-slate-900 px-3 text-[12px] text-slate-200 hover:bg-slate-800">
+            Operational map
           </Link>
         </div>
       </div>

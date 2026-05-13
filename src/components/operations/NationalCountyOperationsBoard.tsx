@@ -38,8 +38,8 @@ export default function NationalCountyOperationsBoard({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/gis-intelligence" className="text-[12px] font-medium text-emerald-400 hover:text-emerald-300">
-            GIS map room →
+          <Link href="/map" className="text-[12px] font-medium text-emerald-400 hover:text-emerald-300">
+            Operational map →
           </Link>
           <Link href="/production/county" className="text-[12px] font-medium text-slate-400 hover:text-slate-300">
             County registry →
@@ -72,7 +72,7 @@ export default function NationalCountyOperationsBoard({
                 </div>
               </div>
               <Link
-                href={`/gis-intelligence?county=${encodeURIComponent(s.county)}`}
+                href={`/map?county=${encodeURIComponent(s.county)}`}
                 className="shrink-0 font-mono text-[9px] text-emerald-400 hover:text-emerald-300"
               >
                 Map →

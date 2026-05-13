@@ -15,11 +15,11 @@ import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 
 const WORKFLOW_OPTIONS: { id: MoaWorkflowStatus; label: string }[] = [
   { id: "draft", label: "Draft" },
-  { id: "saved_offline", label: "Saved offline" },
-  { id: "pending_submission", label: "Pending submission" },
+  { id: "saved_offline", label: "Saved Offline" },
+  { id: "pending_submission", label: "Pending Submission" },
   { id: "submitted", label: "Submitted" },
-  { id: "under_dao_review", label: "Under DAO review" },
-  { id: "under_cac_verification", label: "Under CAC verification" },
+  { id: "under_dao_review", label: "Under DAO Review" },
+  { id: "under_cac_verification", label: "Under CAC Verification" },
   { id: "escalated", label: "Escalated" },
   { id: "verified", label: "Verified" },
   { id: "archived", label: "Archived" },

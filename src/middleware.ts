@@ -1,7 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { assertPilotRouteAccess, needsPilotRoleGate } from "@/lib/auth/workspace-access";
 import { normalizeHttpUrl } from "@/lib/supabase/env";
+import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
+import type { UserRole } from "@/lib/supabase/types";
 
 function matchesProtectedRoute(pathname: string, pattern: string) {
   return pathname === pattern || pathname.startsWith(`${pattern}/`);
@@ -29,6 +32,8 @@ function isProtectedPath(pathname: string): boolean {
     "/production",
     "/compliance",
     "/reports",
+    "/reporting",
+    "/logistics",
     "/food-security",
     "/county-operations",
     "/rice",
@@ -97,6 +102,21 @@ export async function middleware(request: NextRequest) {
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirectTo", pathname);
     return NextResponse.redirect(redirectUrl);
+  }
+
+  if (user && isProtectedPath(pathname) && needsPilotRoleGate(pathname)) {
+    const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+    const role = (prof?.role as UserRole | undefined) ?? buildDemoProfileForAuthUser(user).role;
+    const gate = assertPilotRouteAccess(role, pathname);
+    if (!gate.ok) {
+      const normalized = pathname.split("?")[0] ?? pathname;
+      if (gate.redirectTo !== normalized) {
+        const next = request.nextUrl.clone();
+        next.pathname = gate.redirectTo;
+        next.search = "";
+        return NextResponse.redirect(next);
+      }
+    }
   }
 
   return response;

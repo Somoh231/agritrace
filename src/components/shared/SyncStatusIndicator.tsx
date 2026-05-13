@@ -71,7 +71,7 @@ export default function SyncStatusIndicator() {
           className="flex items-center gap-1.5 rounded-lg px-2 py-1 hover:bg-gray-50"
         >
           <span className="h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
-          <span className="font-mono text-[10px] text-red-700">Sync failed · tap to review</span>
+          <span className="font-mono text-[10px] text-red-700">Sync Failed · tap to review</span>
         </button>
 
         {reviewOpen ? (
@@ -79,7 +79,7 @@ export default function SyncStatusIndicator() {
             <div className="w-full max-w-[640px] rounded-2xl border border-gray-200 bg-white shadow-lift overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="font-display text-[16px] text-ink-900">Sync failed</div>
+                  <div className="font-display text-[16px] text-ink-900">Sync Failed</div>
                   <div className="mt-1 font-mono text-[10px] text-slate-500">
                     Records that failed after multiple retries — review, correct, then retry sync
                   </div>
@@ -117,7 +117,7 @@ export default function SyncStatusIndicator() {
     return (
       <div className="flex items-center gap-1.5">
         <span className="h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
-        <span className="font-mono text-[10px] text-green-600">Synced</span>
+        <span className="font-mono text-[10px] text-green-600">No pending sync</span>
       </div>
     );
   }
@@ -128,7 +128,7 @@ export default function SyncStatusIndicator() {
       <div className="flex items-center gap-1.5">
         <span className="h-2 w-2 rounded-full bg-gray-400" aria-hidden="true" />
         <span className="font-mono text-[10px] text-gray-500">
-          Pending sync · {pendingCount} on device until connected
+          Pending Sync · {pendingCount} on device until connected
         </span>
       </div>
     );
@@ -138,7 +138,7 @@ export default function SyncStatusIndicator() {
   return (
     <div className="flex items-center gap-1.5">
       <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-600" aria-hidden="true" />
-      <span className="font-mono text-[10px] text-amber-700">Pending sync · {pendingCount}</span>
+      <span className="font-mono text-[10px] text-amber-700">Pending Sync · {pendingCount}</span>
     </div>
   );
 }

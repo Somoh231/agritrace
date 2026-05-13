@@ -165,13 +165,13 @@ export default function DistrictOfficerDashboard({
                 Draft · <span className="text-white">{wf.counts.draft}</span>
               </span>
               <span className="rounded-md border border-amber-800/50 px-2 py-0.5 font-mono text-amber-100/95">
-                Pending sync · <span className="text-white">{wf.counts.pending_sync}</span>
+                Pending Sync · <span className="text-white">{wf.counts.pending_sync}</span>
               </span>
               <span className="rounded-md border border-emerald-800/45 px-2 py-0.5 font-mono text-emerald-100/90">
-                Synced · <span className="text-white">{wf.counts.submitted}</span>
+                Submitted · <span className="text-white">{wf.counts.submitted}</span>
               </span>
               <span className="rounded-md border border-rose-800/45 px-2 py-0.5 font-mono text-rose-100/90">
-                Sync failed · <span className="text-white">{wf.counts.failed}</span>
+                Sync Failed · <span className="text-white">{wf.counts.failed}</span>
               </span>
             </div>
             {!online && queuedPending ? (

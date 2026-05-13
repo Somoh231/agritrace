@@ -165,7 +165,7 @@ export default function CountyHeatmap() {
     const props = (f.properties ?? {}) as any;
     const county = (props.countyName ?? props.county ?? props.name ?? "") as string;
     if (county && county !== "Unknown") {
-      router.push(`/gis-intelligence?county=${encodeURIComponent(county)}`);
+      router.push(`/map?county=${encodeURIComponent(county)}`);
     }
   };
 

@@ -43,8 +43,8 @@ export default function NationalHeatMapPage() {
           </span>
         </div>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Link href="/gis-intelligence" className="inline-flex text-[12px] font-medium text-amber-200 hover:text-amber-100">
-            Advanced GIS workspace →
+          <Link href="/map" className="inline-flex text-[12px] font-medium text-amber-200 hover:text-amber-100">
+            Operational map (pilot) →
           </Link>
           <Link href="/command-center" className="inline-flex text-[12px] font-medium text-emerald-300 hover:text-emerald-200">
             ← Command center

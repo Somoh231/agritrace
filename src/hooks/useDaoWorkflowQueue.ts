@@ -141,7 +141,7 @@ export function useDaoWorkflowQueue() {
         sync_attempts: 0,
         created_at: nowIso(),
         updated_at: nowIso(),
-        title: `${titleForDaoWorkflowKind(kind)} · Synced`,
+        title: `${titleForDaoWorkflowKind(kind)} · Submitted`,
       };
       await put(rec);
     },
@@ -166,7 +166,7 @@ export function useDaoWorkflowQueue() {
           error_message: undefined,
           sync_attempts: attempts,
           updated_at: nowIso(),
-          title: `${row.title ?? titleForDaoWorkflowKind(row.kind)} · Synced`,
+          title: `${row.title ?? titleForDaoWorkflowKind(row.kind)} · Submitted`,
         });
       } else {
         await daoQueuePut({

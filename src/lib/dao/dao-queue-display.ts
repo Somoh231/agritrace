@@ -6,11 +6,11 @@ export function pilotQueueStatusLabel(status: DaoWorkflowStatus): string {
     case "draft":
       return "Draft";
     case "pending_sync":
-      return "Pending sync";
+      return "Pending Sync";
     case "submitted":
-      return "Synced";
+      return "Submitted";
     case "failed":
-      return "Sync failed";
+      return "Sync Failed";
     default:
       return status;
   }

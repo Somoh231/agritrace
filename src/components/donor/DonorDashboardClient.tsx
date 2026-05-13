@@ -219,8 +219,8 @@ export default function DonorDashboardClient() {
                 </li>
               ))}
             </ul>
-            <Link href="/gis-intelligence" className="mt-4 inline-flex text-[12px] font-medium text-emerald-400 hover:text-emerald-300">
-              Open GIS allocation map →
+            <Link href="/map" className="mt-4 inline-flex text-[12px] font-medium text-emerald-400 hover:text-emerald-300">
+              Open operational map →
             </Link>
           </div>
         </section>
