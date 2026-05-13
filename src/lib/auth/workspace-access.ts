@@ -48,3 +48,28 @@ export function assertPilotWorkspaceAccess(
   if (canAccessPilotWorkspace(role, workspace)) return { ok: true };
   return { ok: false, redirectTo: pilotRoleLandingPath(role) };
 }
+
+/** County command center — CAC desk + ministry national oversight. */
+export function canAccessCountyDashboard(role: UserRole): boolean {
+  if (isDonorObserverRole(role) || role === "auditor") return false;
+  return isCountyCoordinatorRole(role) || isMinistryNationalRole(role);
+}
+
+/**
+ * District operations hub — CLAN + DAO capture; CAC and ministry may open for oversight
+ * (district UI applies read-only for non-DAO roles where applicable).
+ */
+export function canAccessDistrictDashboard(role: UserRole): boolean {
+  if (isDonorObserverRole(role) || role === "auditor") return false;
+  return isClanFieldRole(role) || isDaoDistrictRole(role) || isCountyCoordinatorRole(role) || isMinistryNationalRole(role);
+}
+
+export function assertCountyDashboardAccess(role: UserRole): { ok: true } | { ok: false; redirectTo: string } {
+  if (canAccessCountyDashboard(role)) return { ok: true };
+  return { ok: false, redirectTo: pilotRoleLandingPath(role) };
+}
+
+export function assertDistrictDashboardAccess(role: UserRole): { ok: true } | { ok: false; redirectTo: string } {
+  if (canAccessDistrictDashboard(role)) return { ok: true };
+  return { ok: false, redirectTo: pilotRoleLandingPath(role) };
+}

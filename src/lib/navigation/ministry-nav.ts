@@ -122,9 +122,38 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
     id: "county-operations",
     label: "County Operations",
     items: [
-      { label: "County Dashboard", href: "/county-dashboard", rolesDeny: [...DONOR_AUDITOR_DENY] },
+      {
+        label: "County Dashboard",
+        href: "/county-dashboard",
+        rolesAllow: [...CAC_COUNTY_ROLES, ...MINISTRY_NATIONAL_ROLES],
+        rolesDeny: [...DONOR_AUDITOR_DENY],
+      },
       { label: "DAO Monitoring", href: "/field-agents", rolesDeny: [...DAO_DENY, ...DONOR_AUDITOR_DENY] },
       { label: "Inspection Queue", href: "/field/inspections", rolesDeny: [...DONOR_AUDITOR_DENY] },
+    ],
+  },
+  {
+    id: "pilot-gis",
+    label: "Pilot GIS",
+    items: [
+      {
+        label: "Farm boundary capture",
+        href: "/field/boundary-capture",
+        rolesAllow: [...DAO_WORKSPACE_ROLES, ...CAC_COUNTY_ROLES, ...MINISTRY_NATIONAL_ROLES],
+        rolesDeny: [...DONOR_AUDITOR_DENY],
+      },
+      {
+        label: "Geo registry",
+        href: "/geo-registry",
+        rolesAllow: [...DAO_WORKSPACE_ROLES, ...CAC_COUNTY_ROLES, ...MINISTRY_NATIONAL_ROLES],
+        rolesDeny: [...DONOR_AUDITOR_DENY],
+      },
+      {
+        label: "Operational map",
+        href: "/map",
+        rolesAllow: [...DAO_WORKSPACE_ROLES, ...CAC_COUNTY_ROLES, ...MINISTRY_NATIONAL_ROLES],
+        rolesDeny: [...DONOR_AUDITOR_DENY],
+      },
     ],
   },
   {
@@ -196,6 +225,9 @@ export function ministryBreadcrumb(pathname: string): { kicker: string; title: s
   if (pathname.startsWith("/workspace/ministry")) return { kicker: "Operational workspaces", title: "Ministry workspace" };
   if (pathname.startsWith("/county-dashboard")) return { kicker: "Operations", title: "County dashboard" };
   if (pathname.startsWith("/district-dashboard")) return { kicker: "Operations", title: "District operations" };
+  if (pathname.startsWith("/field/boundary-capture")) return { kicker: "Pilot GIS", title: "Farm boundary capture" };
+  if (pathname.startsWith("/geo-registry")) return { kicker: "Pilot GIS", title: "Geo registry" };
+  if (pathname.startsWith("/map")) return { kicker: "Pilot GIS", title: "Operational map" };
 
   let best = { href: "", section: "AIS", label: "Workspace" };
   for (const sec of MINISTRY_NAV) {
