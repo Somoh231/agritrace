@@ -15,25 +15,25 @@ export default function OperationalWorkflowPipeline() {
 
   const stages = [
     {
-      label: "Field agent",
-      detail: "Capture & GPS",
+      label: "Clan Agriculture Crops Technician (CLAN)",
+      detail: "Field capture",
       queue: p.pendingVerification + p.flagged,
       hint: "Pending + flagged registry touches",
-      href: "/field-inspections",
+      href: "/field/mobile",
     },
     {
-      label: "District officer",
-      detail: "QA & DAO packet",
+      label: "District Agriculture Officer (DAO)",
+      detail: "District review",
       queue: p.pendingVerification,
       hint: "Verification queue pressure",
       href: "/verification-queue",
     },
     {
-      label: "County officer",
-      detail: "Consolidate & attest",
+      label: "County Agriculture Coordinator (CAC)",
+      detail: "County verification",
       queue: Math.max(2, Math.round(p.pendingVerification / 4)),
       hint: "County attest backlog (illustrative)",
-      href: "/county-operations",
+      href: "/county-dashboard",
     },
     {
       label: "Warehouse",
@@ -43,18 +43,11 @@ export default function OperationalWorkflowPipeline() {
       href: "/transfers",
     },
     {
-      label: "National ops",
-      detail: "Reconcile",
-      queue: 3,
-      hint: "Open reconciliation threads (demo)",
-      href: "/inventory",
-    },
-    {
-      label: "Ministerial",
-      detail: "Brief & policy",
-      queue: 1,
-      hint: "Executive briefing cycle",
-      href: "/executive-briefing",
+      label: "Ministry / national",
+      detail: "Reconcile & brief",
+      queue: 4,
+      hint: "National reconcile + executive briefing (demo)",
+      href: "/command-center",
     },
   ] as const;
 
@@ -65,7 +58,7 @@ export default function OperationalWorkflowPipeline() {
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-500">Operational workflow</div>
           <h2 className="mt-1 font-display text-[16px] font-semibold text-white">How responsibilities chain across the ministry stack</h2>
           <p className="mt-1 max-w-[880px] text-[11px] leading-relaxed text-slate-500">
-            Field capture escalates through district QA and county attestation before warehouse logistics and national reconcile feed ministerial
+            Field capture escalates through DAO district review and CAC county verification before warehouse logistics and national reconcile feed ministerial
             reporting. Queue figures are indicative operational pressure, not personnel counts.
           </p>
         </div>

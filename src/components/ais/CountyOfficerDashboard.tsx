@@ -178,13 +178,13 @@ export default function CountyOfficerDashboard({
   return (
     <>
       <MinistryPageShell
-      title={assignmentGap ? "County workspace" : `${county ?? "County"} · CAC command center`}
-      description={
-        assignmentGap
-          ? "Your profile has no county assignment. Contact the ministry administrator to bind jurisdiction."
-          : `County Agriculture Coordinator (CAC) oversight for ${fullName}. CLAN and DAO activity, warehouses, subsidies, and approvals below are scoped to ${county ?? "your county"} — national ministry roles still inherit read-through without expanding scope.`
-      }
-      actions={
+        title={assignmentGap ? "County workspace" : `${county ?? "County"} · CAC command center`}
+        description={
+          assignmentGap
+            ? "Your profile has no county assignment. Contact the ministry administrator to bind jurisdiction."
+            : `County Agriculture Coordinator (CAC) oversight for ${fullName}. CLAN → DAO → CAC → Ministry reporting chain; scope below is ${county ?? "your county"}. National ministry roles retain read-through without expanding edit authority.`
+        }
+        actions={
         <div className="flex flex-wrap gap-2">
           <Link href="/district-dashboard" className="h-10 inline-flex items-center rounded-lg border border-slate-600 px-4 text-[13px] text-slate-100 hover:bg-slate-800">
             DAO operational workspace
@@ -223,11 +223,24 @@ export default function CountyOfficerDashboard({
         ) : null}
 
         {!assignmentGap ? (
+          <CaoKpiStrip
+            farmersRegistered={farmersCount}
+            activeDaos={daoRows.length}
+            overdueReports={overdueDaoReports}
+            productionEstimateMt={productionEstimateMt}
+            subsidyUtilizationPct={subsidyUtilizationPct}
+            warehouseCoverage={scopedWarehouses.length}
+            activeAlerts={activeAlerts}
+            unresolvedEscalations={unresolvedEscalations}
+          />
+        ) : null}
+
+        {!assignmentGap ? (
           <div className="rounded-xl border border-slate-800/80 bg-slate-950/40 p-4">
             <h2 className="mb-1 font-display text-[14px] font-semibold text-white">CAC operational reporting</h2>
             <p className="mb-3 text-[12px] leading-relaxed text-slate-400">
-              County-level MoA survey templates: operational summary, verification, escalation, and reporting compliance. Drafts save locally; the DAO offline queue
-              handles sync when connectivity drops.
+              County-level MoA survey templates: operational summary, verification, escalation, and reporting compliance. Drafts persist on this device; pending
+              work uses the same operational reporting queue pattern as the district hub when connectivity drops.
             </p>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <button
@@ -274,19 +287,6 @@ export default function CountyOfficerDashboard({
         ) : null}
 
         {!assignmentGap ? (
-          <CaoKpiStrip
-            farmersRegistered={farmersCount}
-            activeDaos={daoRows.length}
-            overdueReports={overdueDaoReports}
-            productionEstimateMt={productionEstimateMt}
-            subsidyUtilizationPct={subsidyUtilizationPct}
-            warehouseCoverage={scopedWarehouses.length}
-            activeAlerts={activeAlerts}
-            unresolvedEscalations={unresolvedEscalations}
-          />
-        ) : null}
-
-        {!assignmentGap ? (
           <>
             <CaoApprovalQueues county={county} readOnly={!approvalsInteractive} />
 
@@ -298,23 +298,29 @@ export default function CountyOfficerDashboard({
               onSyncFilterChange={setSyncFilter}
             />
 
-            <CaoDistrictPerformance cards={districtCards} />
-
-            <CaoCountyOperationsMap county={county} daoRows={daoRows} />
-
-            <div className="grid gap-8 xl:grid-cols-2">
-              <CaoReportingSection
-                countyLabel={countyLabel}
-                fullName={fullName}
-                farmersRegistered={farmersCount}
-                daoRows={daoRows}
-                warehouses={scopedWarehouses}
-                districtCards={districtCards}
-                productionEstimateMt={productionEstimateMt}
-                subsidyUtilPct={subsidyUtilizationPct}
-              />
-              <CaoActivityTimeline county={county} daoRows={daoRows} />
-            </div>
+            <details className="group rounded-xl border border-slate-800/80 bg-slate-950/30 open:border-slate-700/90">
+              <summary className="cursor-pointer list-none px-4 py-3 font-display text-[13px] font-semibold text-white marker:content-none [&::-webkit-details-marker]:hidden">
+                <span className="mr-2 inline-block text-slate-500 transition group-open:rotate-90">▸</span>
+                District maps, performance, and reporting archives
+              </summary>
+              <div className="space-y-8 border-t border-slate-800/60 px-4 py-5">
+                <CaoDistrictPerformance cards={districtCards} />
+                <CaoCountyOperationsMap county={county} daoRows={daoRows} />
+                <div className="grid gap-8 xl:grid-cols-2">
+                  <CaoReportingSection
+                    countyLabel={countyLabel}
+                    fullName={fullName}
+                    farmersRegistered={farmersCount}
+                    daoRows={daoRows}
+                    warehouses={scopedWarehouses}
+                    districtCards={districtCards}
+                    productionEstimateMt={productionEstimateMt}
+                    subsidyUtilPct={subsidyUtilizationPct}
+                  />
+                  <CaoActivityTimeline county={county} daoRows={daoRows} />
+                </div>
+              </div>
+            </details>
           </>
         ) : null}
       </div>

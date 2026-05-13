@@ -59,7 +59,7 @@ export default function DistrictOfficerDashboard({
   const [moaKind, setMoaKind] = React.useState<MoaOperationalSurveyKind | null>(null);
 
   const officerRoleLabel = React.useMemo(() => {
-    if (isClanFieldRole(role)) return "CLAN field enumerator";
+    if (isClanFieldRole(role)) return "Clan Agriculture Crops Technician (CLAN)";
     if (isDaoDistrictRole(role)) return "District Agriculture Officer (DAO)";
     return "Field operations";
   }, [role]);
@@ -137,7 +137,7 @@ export default function DistrictOfficerDashboard({
     <>
       <MinistryPageShell
         title="District operations hub"
-        description={`District Agriculture Officer (DAO) workspace · ${fullName}${county ? ` · ${county}` : ""}${district ? ` · ${district}` : ""}. Capture workflows on mobile; submissions sync to Supabase when available or land in the DAO offline queue.`}
+        description={`CLAN → DAO operational hub · ${fullName}${county ? ` · ${county}` : ""}${district ? ` · ${district}` : ""}. Field reporting syncs to Supabase when online; otherwise submissions stay in the operational reporting queue on this device.`}
         actions={
           <Link href="#dao-offline-queue" className="h-10 inline-flex items-center rounded-lg border border-slate-600 px-4 text-[13px] text-slate-100 hover:bg-slate-800">
             Jump to offline queue
@@ -165,24 +165,35 @@ export default function DistrictOfficerDashboard({
                 Draft · <span className="text-white">{wf.counts.draft}</span>
               </span>
               <span className="rounded-md border border-amber-800/50 px-2 py-0.5 font-mono text-amber-100/95">
-                Pending · <span className="text-white">{wf.counts.pending_sync}</span>
+                Pending sync · <span className="text-white">{wf.counts.pending_sync}</span>
               </span>
               <span className="rounded-md border border-emerald-800/45 px-2 py-0.5 font-mono text-emerald-100/90">
-                Submitted · <span className="text-white">{wf.counts.submitted}</span>
+                Synced · <span className="text-white">{wf.counts.submitted}</span>
               </span>
               <span className="rounded-md border border-rose-800/45 px-2 py-0.5 font-mono text-rose-100/90">
-                Failed · <span className="text-white">{wf.counts.failed}</span>
+                Sync failed · <span className="text-white">{wf.counts.failed}</span>
               </span>
             </div>
             {!online && queuedPending ? (
-              <span className="text-[11px] text-amber-200/90">DAO queue holds {queuedPending} item(s) until connectivity returns — open Offline queue to retry.</span>
+              <span className="text-[11px] text-amber-200/90">
+                Operational reporting queue holds {queuedPending} item(s) until connectivity returns — open the queue below to retry sync.
+              </span>
             ) : null}
           </div>
 
           <DaoTodaysTasksPanel county={county} district={district} />
 
+          <DaoOfflineQueuePanel
+            items={wf.items}
+            counts={wf.counts}
+            flushing={wf.flushing}
+            onFlushPending={() => void wf.flushPending()}
+            onRetryOne={(row) => void wf.retryOne(row)}
+            onRemove={(id) => void wf.remove(id)}
+          />
+
           <div>
-            <h2 className="mb-3 font-display text-[14px] font-semibold text-white">DAO workflows</h2>
+            <h2 className="mb-3 font-display text-[14px] font-semibold text-white">DAO field workflows</h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
               <Tile kicker="Registry" title="Register farmer" body="Household ID · cooperative · GPS · ministry registry" accent="emerald" onClick={() => setFarmerOpen(true)} />
               <Tile kicker="Visit" title="Farm inspection" body="Condition · inputs · verification outcome · DAO notes" accent="slate" onClick={() => setInspectOpen(true)} />
@@ -243,15 +254,6 @@ export default function DistrictOfficerDashboard({
               />
             </div>
           </div>
-
-          <DaoOfflineQueuePanel
-            items={wf.items}
-            counts={wf.counts}
-            flushing={wf.flushing}
-            onFlushPending={() => void wf.flushPending()}
-            onRetryOne={(row) => void wf.retryOne(row)}
-            onRemove={(id) => void wf.remove(id)}
-          />
         </div>
       </MinistryPageShell>
 

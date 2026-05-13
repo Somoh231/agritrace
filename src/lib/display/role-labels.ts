@@ -20,10 +20,11 @@ export function formatRoleLabel(role: UserRole): string {
     case "warehouse_manager":
       return "Warehouse manager";
     case "donor_observer":
+      return "Donor observer (read-only)";
     case "donor_partner":
-      return "Donor observer";
+      return "Donor partner (read-only)";
     case "auditor":
-      return "Auditor";
+      return "Auditor (read-only)";
     case "super_admin":
       return "System administrator";
     case "admin":

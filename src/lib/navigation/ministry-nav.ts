@@ -140,7 +140,6 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
     id: "food-security",
     label: "Food Security",
     items: [
-      { label: "National Heat Map", href: "/national-heat-map", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Food Security Dashboard", href: "/food-security", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Alerts", href: "/alerts", rolesDeny: [...DONOR_AUDITOR_DENY] },
     ],

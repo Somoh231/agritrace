@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { titleForDaoWorkflowKind } from "@/hooks/useDaoWorkflowQueue";
+import { pilotQueueStatusLabel } from "@/lib/dao/dao-queue-display";
 import type { DaoWorkflowRecord, DaoWorkflowStatus } from "@/lib/dao/dao-workflow-types";
 
 function statusStyles(s: DaoWorkflowStatus): string {
@@ -44,10 +45,10 @@ export default function DaoOfflineQueuePanel({
 
   const chips: Array<{ id: DaoWorkflowStatus | "all"; label: string; n?: number }> = [
     { id: "all", label: "All", n: items.length },
-    { id: "draft", label: "Draft", n: counts.draft },
-    { id: "pending_sync", label: "Pending sync", n: counts.pending_sync },
-    { id: "submitted", label: "Submitted", n: counts.submitted },
-    { id: "failed", label: "Failed", n: counts.failed },
+    { id: "draft", label: pilotQueueStatusLabel("draft"), n: counts.draft },
+    { id: "pending_sync", label: pilotQueueStatusLabel("pending_sync"), n: counts.pending_sync },
+    { id: "submitted", label: pilotQueueStatusLabel("submitted"), n: counts.submitted },
+    { id: "failed", label: pilotQueueStatusLabel("failed"), n: counts.failed },
   ];
 
   const actionable = counts.pending_sync + counts.failed > 0;
@@ -56,10 +57,10 @@ export default function DaoOfflineQueuePanel({
     <section id="dao-offline-queue" className="scroll-mt-24 rounded-xl border border-slate-700/90 bg-slate-950/55 p-4 sm:p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="font-display text-[15px] font-semibold text-white">DAO offline queue</h2>
+          <h2 className="font-display text-[15px] font-semibold text-white">Operational reporting queue</h2>
           <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-slate-400">
-            Drafts stay on this device. Pending and failed rows retry against Supabase when you tap sync. Submitted rows are confirmation copies after a
-            successful push (or manual marker).
+            CLAN → DAO capture pipeline: drafts stay on this device. Pending sync and sync-failed rows retry to Supabase when you tap sync. Synced rows are
+            confirmation copies after a successful push.
           </p>
         </div>
         <button
@@ -68,7 +69,7 @@ export default function DaoOfflineQueuePanel({
           onClick={onFlushPending}
           className="h-10 shrink-0 rounded-lg bg-emerald-800 px-4 text-[12px] font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {flushing ? "Syncing…" : "Sync pending & failed"}
+          {flushing ? "Syncing…" : "Retry sync (pending & failed)"}
         </button>
       </div>
 
@@ -96,7 +97,9 @@ export default function DaoOfflineQueuePanel({
             <li key={row.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${statusStyles(row.status)}`}>{row.status.replace(/_/g, " ")}</span>
+                  <span className={`rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wide ${statusStyles(row.status)}`}>
+                    {pilotQueueStatusLabel(row.status)}
+                  </span>
                   <span className="truncate font-medium text-[13px] text-slate-100">{row.title ?? titleForDaoWorkflowKind(row.kind)}</span>
                   <span className="font-mono text-[10px] text-slate-500">{titleForDaoWorkflowKind(row.kind)}</span>
                 </div>
@@ -115,7 +118,7 @@ export default function DaoOfflineQueuePanel({
                     onClick={() => onRetryOne(row)}
                     className="rounded-md border border-emerald-700/50 px-2 py-1 text-[11px] text-emerald-100 hover:bg-emerald-950/50"
                   >
-                    Retry
+                    Retry sync
                   </button>
                 ) : null}
                 <button type="button" onClick={() => onRemove(row.id)} className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-300 hover:bg-slate-900">

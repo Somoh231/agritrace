@@ -3,6 +3,8 @@ import type { DaoWorkflowKind } from "@/lib/dao/dao-workflow-types";
 /** Hierarchical reporting / approval chain (payload; ministry systems may mirror). */
 export type MoaWorkflowStatus =
   | "draft"
+  | "saved_offline"
+  | "pending_submission"
   | "submitted"
   | "under_dao_review"
   | "under_cac_verification"

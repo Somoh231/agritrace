@@ -15,6 +15,8 @@ import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 
 const WORKFLOW_OPTIONS: { id: MoaWorkflowStatus; label: string }[] = [
   { id: "draft", label: "Draft" },
+  { id: "saved_offline", label: "Saved offline" },
+  { id: "pending_submission", label: "Pending submission" },
   { id: "submitted", label: "Submitted" },
   { id: "under_dao_review", label: "Under DAO review" },
   { id: "under_cac_verification", label: "Under CAC verification" },
@@ -31,9 +33,9 @@ const inputClass =
 export function titleForMoaOperationalSurveyKind(k: MoaOperationalSurveyKind): string {
   switch (k) {
     case "clan_crop_monitoring":
-      return "Crop monitoring (enumerator)";
+      return "Crop monitoring (CLAN)";
     case "clan_field_activity_report":
-      return "Field activity report (enumerator)";
+      return "Field activity report (CLAN)";
     case "dao_district_summary":
       return "District operational summary (DAO)";
     case "dao_operational_review":
@@ -86,9 +88,27 @@ export default function MoaOperationalSurveyForm({
       officerRole: officerRoleLabel,
     }),
   );
+  const disabled = Boolean(readOnly);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const online = typeof navigator !== "undefined" && navigator.onLine;
+  const pRef = React.useRef(p);
+  pRef.current = p;
+
+  React.useEffect(() => {
+    if (disabled || !daoWorkflow?.enabled || !daoWorkflow.saveDraft) return;
+    const t = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const snap = { ...pRef.current, workflow_status: pRef.current.workflow_status };
+          await daoWorkflow.saveDraft!(snap as Record<string, unknown>);
+        } catch {
+          /* never break form typing */
+        }
+      })();
+    }, 2200);
+    return () => window.clearTimeout(t);
+  }, [p, disabled, daoWorkflow]);
 
   React.useEffect(() => {
     setP((prev) => ({
@@ -172,7 +192,6 @@ export default function MoaOperationalSurveyForm({
     }
   };
 
-  const disabled = Boolean(readOnly);
   const showPest = p.pest_issue_observed === "yes";
   const showWarehouse = p.warehouse_linked === "yes";
   const showInputs = p.inputs_distributed === "yes";
@@ -202,6 +221,10 @@ export default function MoaOperationalSurveyForm({
       </div>
 
       {error ? <div className="rounded-lg border border-rose-800 bg-rose-950/50 px-3 py-2 text-rose-100">{error}</div> : null}
+
+      {daoWorkflow?.enabled && daoWorkflow.saveDraft && !disabled ? (
+        <p className="text-[11px] text-slate-500">Draft autosaves to this device every few seconds while you edit (operational reporting queue).</p>
+      ) : null}
 
       <div className={sectionClass}>
         <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Officer identity & posting</div>
