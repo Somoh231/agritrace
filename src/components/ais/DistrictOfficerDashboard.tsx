@@ -13,9 +13,11 @@ import OperationDrawer from "@/components/operations/OperationDrawer";
 import RecordFieldInspectionForm from "@/components/operations/forms/RecordFieldInspectionForm";
 import RegisterFarmerForm from "@/components/operations/forms/RegisterFarmerForm";
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
+import MoaOperationalSurveyForm, { titleForMoaOperationalSurveyKind } from "@/components/reporting/MoaOperationalSurveyForm";
 import { useDaoWorkflowQueue } from "@/hooks/useDaoWorkflowQueue";
 import type { DaoWorkflowFormBindings, DaoWorkflowKind } from "@/lib/dao/dao-workflow-types";
-import { daoReviewReadOnly } from "@/lib/auth/operational-roles";
+import { daoReviewReadOnly, isClanFieldRole, isDaoDistrictRole } from "@/lib/auth/operational-roles";
+import type { MoaOperationalSurveyKind } from "@/lib/reporting/moa-operational-payload";
 import type { UserRole } from "@/lib/supabase/types";
 
 function daoWorkflowBindings(
@@ -54,6 +56,13 @@ export default function DistrictOfficerDashboard({
   const [productionOpen, setProductionOpen] = React.useState(false);
   const [subsidyOpen, setSubsidyOpen] = React.useState(false);
   const [gpsOpen, setGpsOpen] = React.useState(false);
+  const [moaKind, setMoaKind] = React.useState<MoaOperationalSurveyKind | null>(null);
+
+  const officerRoleLabel = React.useMemo(() => {
+    if (isClanFieldRole(role)) return "CLAN field enumerator";
+    if (isDaoDistrictRole(role)) return "District Agriculture Officer (DAO)";
+    return "Field operations";
+  }, [role]);
 
   React.useEffect(() => {
     const sync = () => setOnline(navigator.onLine);
@@ -71,6 +80,7 @@ export default function DistrictOfficerDashboard({
   const wfProduction = daoWorkflowBindings(wf, "production_estimate", readOnly);
   const wfSubsidy = daoWorkflowBindings(wf, "subsidy_delivery_verify", readOnly);
   const wfGps = daoWorkflowBindings(wf, "gps_field_evidence", readOnly);
+  const wfMoa = React.useMemo(() => (moaKind ? daoWorkflowBindings(wf, moaKind, readOnly) : undefined), [wf, moaKind, readOnly]);
 
   const queuedPending = wf.counts.pending_sync + wf.counts.failed;
 
@@ -183,6 +193,57 @@ export default function DistrictOfficerDashboard({
             </div>
           </div>
 
+          <div>
+            <h2 className="mb-1 font-display text-[14px] font-semibold text-white">MoA operational surveys</h2>
+            <p className="mb-3 text-[12px] leading-relaxed text-slate-400">
+              Structured enumerator and DAO desk reports aligned to ministry registry and warehouse codes. Drafts save locally; submissions queue offline when needed.
+            </p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <Tile
+                kicker="CLAN"
+                title="Crop monitoring"
+                body="Growth stage · stress · GPS/photo evidence · farmer registry ID"
+                accent="emerald"
+                onClick={() => setMoaKind("clan_crop_monitoring")}
+              />
+              <Tile
+                kicker="CLAN"
+                title="Field activity report"
+                body="Activities · inputs · operational notes · traceability envelope"
+                accent="slate"
+                onClick={() => setMoaKind("clan_field_activity_report")}
+              />
+              <Tile
+                kicker="DAO desk"
+                title="District summary"
+                body="District operational rollup · county/district scope"
+                accent="sky"
+                onClick={() => setMoaKind("dao_district_summary")}
+              />
+              <Tile
+                kicker="DAO desk"
+                title="Operational review"
+                body="Monitoring narrative · DAO verification pathway"
+                accent="sky"
+                onClick={() => setMoaKind("dao_operational_review")}
+              />
+              <Tile
+                kicker="DAO desk"
+                title="Verification review"
+                body="Evidence checks · escalation hooks"
+                accent="amber"
+                onClick={() => setMoaKind("dao_verification_review")}
+              />
+              <Tile
+                kicker="DAO desk"
+                title="District escalation"
+                body="Risk signal · CAC handoff · operational notes"
+                accent="rose"
+                onClick={() => setMoaKind("dao_district_escalation")}
+              />
+            </div>
+          </div>
+
           <DaoOfflineQueuePanel
             items={wf.items}
             counts={wf.counts}
@@ -244,6 +305,27 @@ export default function DistrictOfficerDashboard({
 
       <OperationDrawer open={gpsOpen} onClose={() => setGpsOpen(false)} title="GPS point / field evidence" widthClassName="max-w-lg">
         <DaoGpsEvidenceForm readOnly={readOnly} daoWorkflow={wfGps} onCancel={() => setGpsOpen(false)} onSuccess={() => setGpsOpen(false)} />
+      </OperationDrawer>
+
+      <OperationDrawer
+        open={moaKind !== null}
+        onClose={() => setMoaKind(null)}
+        title={moaKind ? titleForMoaOperationalSurveyKind(moaKind) : "MoA operational survey"}
+        widthClassName="max-w-3xl w-full"
+      >
+        {moaKind ? (
+          <MoaOperationalSurveyForm
+            kind={moaKind}
+            countyDefault={county}
+            districtDefault={district}
+            officerName={fullName}
+            officerRoleLabel={officerRoleLabel}
+            readOnly={readOnly}
+            daoWorkflow={wfMoa}
+            onCancel={() => setMoaKind(null)}
+            onSuccess={() => setMoaKind(null)}
+          />
+        ) : null}
       </OperationDrawer>
     </>
   );

@@ -2,6 +2,12 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import { daoAuditInsertSafe } from "@/lib/dao/dao-audit";
 import { isOperationalFarmBoundary } from "@/lib/gis/operational-boundary-types";
+import {
+  buildFieldReportSummary,
+  isMoaOperationalSurveyKind,
+  type MoaOperationalSurveyKind,
+  type MoaOperationalSurveyPayload,
+} from "@/lib/reporting/moa-operational-payload";
 
 export type PersistResult = { ok: true } | { ok: false; error: string };
 
@@ -253,10 +259,58 @@ export async function persistGpsEvidencePayload(payload: Record<string, unknown>
   }
 }
 
+export async function persistMoaOperationalSurvey(
+  kind: MoaOperationalSurveyKind,
+  payload: Record<string, unknown>,
+): Promise<PersistResult> {
+  try {
+    const supabase = getSupabaseBrowserClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const packed: MoaOperationalSurveyPayload = {
+      ...(payload as unknown as MoaOperationalSurveyPayload),
+      schema_version: 1,
+      report_kind: kind,
+    };
+    const county = String(packed.county ?? "").trim();
+    if (!county) return { ok: false, error: "County is required." };
+
+    const summary = buildFieldReportSummary(kind, packed).slice(0, 480);
+    const channel = typeof navigator !== "undefined" && navigator.onLine ? "online" : "offline";
+
+    const { error } = await supabase.from("field_reports").insert({
+      county,
+      officer_profile_id: user?.id ?? null,
+      summary,
+      channel,
+      payload: {
+        moa_operational_survey: true,
+        dao_workflow_kind: kind,
+        ...JSON.parse(JSON.stringify(packed)) as Record<string, unknown>,
+      },
+    } as Record<string, unknown>);
+    if (error) return { ok: false, error: error.message };
+
+    await daoAuditInsertSafe(supabase, {
+      action: "MOA_OPERATIONAL_SURVEY",
+      table_name: "field_reports",
+      new_values: { county, report_kind: kind },
+    });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Unknown error" };
+  }
+}
+
 export async function persistWorkflowByKind(
   kind: import("@/lib/dao/dao-workflow-types").DaoWorkflowKind,
   payload: Record<string, unknown>,
 ): Promise<PersistResult> {
+  if (isMoaOperationalSurveyKind(kind)) {
+    return persistMoaOperationalSurvey(kind, payload);
+  }
   switch (kind) {
     case "register_farmer":
       return persistRegisterFarmerPayload(payload);

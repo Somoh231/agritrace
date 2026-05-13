@@ -4,7 +4,18 @@ export type DaoWorkflowKind =
   | "pest_disease_report"
   | "production_estimate"
   | "subsidy_delivery_verify"
-  | "gps_field_evidence";
+  | "gps_field_evidence"
+  /** MoA operational survey templates (stored on `field_reports` with structured JSON payload). */
+  | "clan_crop_monitoring"
+  | "clan_field_activity_report"
+  | "dao_district_summary"
+  | "dao_operational_review"
+  | "dao_verification_review"
+  | "dao_district_escalation"
+  | "cac_county_operational_summary"
+  | "cac_county_verification"
+  | "cac_county_escalation"
+  | "cac_reporting_compliance";
 
 export type DaoWorkflowStatus = "draft" | "pending_sync" | "submitted" | "failed";
 

@@ -36,6 +36,26 @@ export function titleForDaoWorkflowKind(kind: DaoWorkflowKind): string {
       return "Verify subsidy delivery";
     case "gps_field_evidence":
       return "GPS point / field evidence";
+    case "clan_crop_monitoring":
+      return "Crop monitoring (CLAN)";
+    case "clan_field_activity_report":
+      return "Field activity report (CLAN)";
+    case "dao_district_summary":
+      return "District summary (DAO)";
+    case "dao_operational_review":
+      return "Operational review (DAO)";
+    case "dao_verification_review":
+      return "Verification review (DAO)";
+    case "dao_district_escalation":
+      return "District escalation (DAO)";
+    case "cac_county_operational_summary":
+      return "County operational summary (CAC)";
+    case "cac_county_verification":
+      return "County verification (CAC)";
+    case "cac_county_escalation":
+      return "County escalation (CAC)";
+    case "cac_reporting_compliance":
+      return "Reporting compliance (CAC)";
     default:
       return kind;
   }

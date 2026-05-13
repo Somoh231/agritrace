@@ -11,6 +11,10 @@ import CaoDistrictPerformance from "@/components/cao/CaoDistrictPerformance";
 import CaoKpiStrip from "@/components/cao/CaoKpiStrip";
 import CaoReportingSection from "@/components/cao/CaoReportingSection";
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
+import OperationDrawer from "@/components/operations/OperationDrawer";
+import MoaOperationalSurveyForm, { titleForMoaOperationalSurveyKind } from "@/components/reporting/MoaOperationalSurveyForm";
+import { useDaoWorkflowQueue } from "@/hooks/useDaoWorkflowQueue";
+import type { DaoWorkflowFormBindings, DaoWorkflowKind } from "@/lib/dao/dao-workflow-types";
 import type { DaoOversightRow } from "@/lib/ais/county-dao-demo";
 import { buildCaoDistrictCards } from "@/lib/cao/cao-district-cards";
 import { MINISTRY_COUNTY_METRICS, MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
@@ -23,9 +27,25 @@ import {
 } from "@/lib/data/ministry-data-service";
 import type { WarehouseRow } from "@/lib/demo/agriculture-pilot-data";
 import { warehouses as demoWarehouses } from "@/lib/demo/agriculture-pilot-data";
-import { isCountyCoordinatorRole } from "@/lib/auth/operational-roles";
+import { isCountyCoordinatorRole, isMinistryNationalRole } from "@/lib/auth/operational-roles";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { MoaOperationalSurveyKind } from "@/lib/reporting/moa-operational-payload";
 import type { UserRole } from "@/lib/supabase/types";
+
+function daoWorkflowBindings(
+  wf: ReturnType<typeof useDaoWorkflowQueue>,
+  kind: DaoWorkflowKind,
+  readOnly: boolean,
+): DaoWorkflowFormBindings | undefined {
+  if (readOnly) return undefined;
+  return {
+    enabled: true,
+    saveDraft: (s) => wf.saveDraft(kind, s),
+    queuePending: (s) => wf.queuePending(kind, s),
+    onSubmitFailure: (s, m) => wf.onRemoteFailure(kind, s, m),
+    markSynced: (b) => wf.markSubmitted(kind, b),
+  };
+}
 
 function normalizeCounty(c: string | null | undefined) {
   return (c ?? "").trim().toLowerCase();
@@ -53,6 +73,19 @@ export default function CountyOfficerDashboard({
   const assignmentGap = isCountyCoordinatorRole(role) && !county?.trim();
 
   const approvalsInteractive = isCountyCoordinatorRole(role) || role === "super_admin" || role === "admin";
+
+  const wf = useDaoWorkflowQueue();
+  const moaDeskReadOnly = !approvalsInteractive;
+  const [moaKind, setMoaKind] = React.useState<MoaOperationalSurveyKind | null>(null);
+  const wfMoa = React.useMemo(
+    () => (moaKind ? daoWorkflowBindings(wf, moaKind, moaDeskReadOnly) : undefined),
+    [wf, moaKind, moaDeskReadOnly],
+  );
+  const officerRoleLabel = React.useMemo(() => {
+    if (isCountyCoordinatorRole(role)) return "County Agriculture Coordinator (CAC)";
+    if (isMinistryNationalRole(role)) return "Ministry national reviewer";
+    return "County workspace";
+  }, [role]);
 
   React.useEffect(() => {
     void (async () => {
@@ -143,7 +176,8 @@ export default function CountyOfficerDashboard({
   const countyLabel = county ?? "Unassigned county";
 
   return (
-    <MinistryPageShell
+    <>
+      <MinistryPageShell
       title={assignmentGap ? "County workspace" : `${county ?? "County"} · CAC command center`}
       description={
         assignmentGap
@@ -185,6 +219,57 @@ export default function CountyOfficerDashboard({
             <button type="button" className="ml-2 text-sky-300 underline" onClick={() => setActionBanner(null)}>
               Clear
             </button>
+          </div>
+        ) : null}
+
+        {!assignmentGap ? (
+          <div className="rounded-xl border border-slate-800/80 bg-slate-950/40 p-4">
+            <h2 className="mb-1 font-display text-[14px] font-semibold text-white">CAC operational reporting</h2>
+            <p className="mb-3 text-[12px] leading-relaxed text-slate-400">
+              County-level MoA survey templates: operational summary, verification, escalation, and reporting compliance. Drafts save locally; the DAO offline queue
+              handles sync when connectivity drops.
+            </p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setMoaKind("cac_county_operational_summary")}
+                className="min-h-[100px] rounded-xl border border-emerald-900/40 bg-gradient-to-br from-emerald-950/40 to-slate-950 px-4 py-3 text-left shadow-md transition hover:border-emerald-600/45"
+              >
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-200/70">CAC desk</div>
+                <div className="mt-2 font-display text-[15px] font-semibold text-white">County operational summary</div>
+                <div className="mt-1 text-[12px] text-emerald-100/75">Roll-up signals · DAO alignment · traceability notes</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMoaKind("cac_county_verification")}
+                className="min-h-[100px] rounded-xl border border-sky-900/40 bg-gradient-to-br from-sky-950/35 to-slate-950 px-4 py-3 text-left shadow-md transition hover:border-sky-600/45"
+              >
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-sky-200/70">CAC desk</div>
+                <div className="mt-2 font-display text-[15px] font-semibold text-white">County verification</div>
+                <div className="mt-1 text-[12px] text-sky-100/75">Evidence status · hierarchical review · registry cross-check</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMoaKind("cac_county_escalation")}
+                className="min-h-[100px] rounded-xl border border-rose-900/40 bg-gradient-to-br from-rose-950/30 to-slate-950 px-4 py-3 text-left shadow-md transition hover:border-rose-600/45"
+              >
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-rose-200/70">CAC desk</div>
+                <div className="mt-2 font-display text-[15px] font-semibold text-white">County escalation</div>
+                <div className="mt-1 text-[12px] text-rose-100/75">Risk routing · ministry handoff · operational notes</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMoaKind("cac_reporting_compliance")}
+                className="min-h-[100px] rounded-xl border border-amber-900/40 bg-gradient-to-br from-amber-950/25 to-slate-950 px-4 py-3 text-left shadow-md transition hover:border-amber-600/45"
+              >
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-amber-200/70">CAC desk</div>
+                <div className="mt-2 font-display text-[15px] font-semibold text-white">Reporting compliance</div>
+                <div className="mt-1 text-[12px] text-amber-100/75">Enumerator coverage · submission hygiene · audit trail</div>
+              </button>
+            </div>
+            {moaDeskReadOnly ? (
+              <p className="mt-3 text-[11px] text-amber-200/85">This profile cannot queue CAC submissions — open forms in read-only review mode.</p>
+            ) : null}
           </div>
         ) : null}
 
@@ -234,5 +319,27 @@ export default function CountyOfficerDashboard({
         ) : null}
       </div>
     </MinistryPageShell>
+
+      <OperationDrawer
+        open={moaKind !== null}
+        onClose={() => setMoaKind(null)}
+        title={moaKind ? titleForMoaOperationalSurveyKind(moaKind) : "CAC operational survey"}
+        widthClassName="max-w-3xl w-full"
+      >
+        {moaKind ? (
+          <MoaOperationalSurveyForm
+            kind={moaKind}
+            countyDefault={county}
+            districtDefault={null}
+            officerName={fullName}
+            officerRoleLabel={officerRoleLabel}
+            readOnly={moaDeskReadOnly}
+            daoWorkflow={wfMoa}
+            onCancel={() => setMoaKind(null)}
+            onSuccess={() => setMoaKind(null)}
+          />
+        ) : null}
+      </OperationDrawer>
+    </>
   );
 }
