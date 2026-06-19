@@ -34,22 +34,60 @@
   --text: 11 18 32; /* ink-900 */
   --text-muted: 71 85 105; /* slate-600 */
 
-  /* Ministry command workspace */
-  --ministry-sidebar: 6 46 26;
+  /* Ministry command workspace — institutional forest-green command center */
+  --ministry-sidebar: 7 33 20;
   --ministry-sidebar-fg: 236 253 245;
   --ministry-border: 255 255 255;
-  --ministry-workspace: 17 24 32;
-  --ministry-panel: 30 41 59;
-  --ministry-panel-border: 51 65 85;
+  --ministry-workspace: 11 34 21; /* #0B2215 deep forest command surface */
+  --ministry-panel: 16 45 28; /* #102D1C raised panel */
+  --ministry-panel-border: 34 70 50; /* subtle green hairline */
+  --ministry-gold: 201 162 75; /* #C9A24B institutional gold accent */
+  --ministry-emerald: 52 211 153; /* operational accent */
+
+  --font-serif: var(--font-serif-display), Georgia, "Times New Roman", serif;
 }
 
 .ministry-shell-sidebar {
-  box-shadow: inset -1px 0 0 rgb(0 0 0 / 0.2);
+  box-shadow: inset -1px 0 0 rgb(0 0 0 / 0.25);
   background: linear-gradient(
     180deg,
-    rgb(6 42 28) 0%,
-    rgb(4 28 20) 42%,
-    rgb(15 28 46) 100%
+    rgb(8 42 26) 0%,
+    rgb(6 30 20) 48%,
+    rgb(8 26 18) 100%
+  );
+}
+
+/* Institutional command-center primitives */
+.font-serif-display {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+}
+.cmd-kicker {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: rgb(var(--ministry-gold));
+}
+.cmd-surface {
+  background: rgb(var(--ministry-panel) / 0.55);
+  border: 1px solid rgb(var(--ministry-panel-border) / 0.7);
+  border-radius: 0.75rem;
+}
+.cmd-surface-hover {
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.cmd-surface-hover:hover {
+  border-color: rgb(var(--ministry-gold) / 0.5);
+  background: rgb(var(--ministry-panel) / 0.8);
+}
+.cmd-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--ministry-gold) / 0.5),
+    rgb(var(--ministry-gold) / 0)
   );
 }
 

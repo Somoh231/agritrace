@@ -62,23 +62,23 @@ export default function Topbar({
   const scopeLabel = county || district ? [county, district].filter(Boolean).join(" · ") : null;
 
   return (
-    <header className="min-h-[56px] px-4 md:px-6 py-2 border-b border-slate-700/90 bg-slate-950/95 backdrop-blur-sm flex flex-wrap items-center justify-between gap-3">
+    <header className="min-h-[56px] px-4 md:px-6 py-2 border-b border-[rgb(var(--ministry-gold))]/15 bg-[rgb(var(--ministry-workspace))]/95 backdrop-blur-sm flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         {onOpenMobileNav ? (
           <button
             type="button"
             onClick={onOpenMobileNav}
-            className="md:hidden h-9 w-9 rounded-lg border border-slate-700 bg-slate-900 text-slate-200 inline-flex items-center justify-center shrink-0"
+            className="md:hidden h-9 w-9 rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-panel))]/60 text-emerald-50 inline-flex items-center justify-center shrink-0"
             aria-label="Open navigation"
           >
             <Menu className="h-5 w-5" />
           </button>
         ) : null}
-        <div className="text-[12px] min-w-0">
-          <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-500/90 truncate">{kicker}</div>
-          <div className="font-semibold text-slate-100 truncate">{title}</div>
+        <div className="text-[12px] min-w-0 border-l-2 border-[rgb(var(--ministry-gold))]/60 pl-3">
+          <div className="cmd-kicker truncate">{kicker}</div>
+          <div className="mt-1 font-serif-display text-[15px] leading-none text-white truncate">{title}</div>
           {scopeLabel ? (
-            <div className="font-mono text-[10px] text-slate-500 truncate mt-0.5">Jurisdiction · {scopeLabel}</div>
+            <div className="font-mono text-[9px] text-emerald-200/55 truncate mt-1">Jurisdiction · {scopeLabel}</div>
           ) : null}
         </div>
       </div>
@@ -97,7 +97,7 @@ export default function Topbar({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search registry, warehouses, reports…"
-            className="h-9 w-[240px] lg:w-[280px] rounded-lg border border-slate-700 bg-slate-900 px-3 text-[12px] text-slate-100 placeholder:text-slate-600 outline-none focus:border-emerald-700"
+            className="h-9 w-[240px] lg:w-[280px] rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-panel))]/50 px-3 text-[12px] text-emerald-50 placeholder:text-emerald-200/40 outline-none focus:border-[rgb(var(--ministry-gold))]/60"
             aria-label="Global search"
           />
         </form>
@@ -118,7 +118,7 @@ export default function Topbar({
           <button
             type="button"
             onClick={onOpenOps}
-            className="xl:hidden h-9 w-9 rounded-lg border border-slate-700 bg-slate-900 text-slate-200 inline-flex items-center justify-center shrink-0"
+            className="xl:hidden h-9 w-9 rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-panel))]/60 text-emerald-50 inline-flex items-center justify-center shrink-0"
             aria-label="Open operations panel"
           >
             <PanelRightOpen className="h-5 w-5" />
@@ -139,7 +139,7 @@ export default function Topbar({
             const sp = nextUrlWithParam(next.searchParams, "present", "1");
             router.push(next.pathname + "?" + sp.toString());
           }}
-          className="hidden lg:inline-flex h-9 px-3 rounded-lg border border-slate-700 bg-slate-900 text-[12px] text-slate-200 hover:bg-slate-800"
+          className="hidden lg:inline-flex h-9 px-3 rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-panel))]/50 text-[12px] text-emerald-50/90 hover:bg-[rgb(var(--ministry-panel))]/80 hover:border-[rgb(var(--ministry-gold))]/40"
         >
           Briefing mode
         </button>
@@ -151,14 +151,14 @@ export default function Topbar({
             const sp = nextUrlWithParam(next.searchParams, "print", "1");
             router.push(next.pathname + "?" + sp.toString());
           }}
-          className="hidden lg:inline-flex h-9 px-3 rounded-lg border border-slate-700 bg-slate-900 text-[12px] text-slate-200 hover:bg-slate-800"
+          className="hidden lg:inline-flex h-9 px-3 rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-panel))]/50 text-[12px] text-emerald-50/90 hover:bg-[rgb(var(--ministry-panel))]/80 hover:border-[rgb(var(--ministry-gold))]/40"
         >
           Print view
         </button>
         <button
           type="button"
           onClick={onExportPdf}
-          className="hidden sm:inline-flex h-9 px-3 rounded-lg border border-slate-700 bg-slate-900 text-[12px] text-slate-200 hover:bg-slate-800"
+          className="hidden sm:inline-flex h-9 px-3 rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-panel))]/50 text-[12px] text-emerald-50/90 hover:bg-[rgb(var(--ministry-panel))]/80 hover:border-[rgb(var(--ministry-gold))]/40"
         >
           Export PDF
         </button>
@@ -170,7 +170,7 @@ export default function Topbar({
           {primaryAction.label}
         </button>
       </div>
-      <div className="w-full xl:hidden border-t border-slate-800/80 pt-2 pb-1">
+      <div className="w-full xl:hidden border-t border-[rgb(var(--ministry-panel-border))]/40 pt-2 pb-1">
         <ClientErrorBoundary
           name="workspace-preview-mobile"
           fallback={

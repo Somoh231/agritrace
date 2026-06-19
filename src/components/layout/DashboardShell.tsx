@@ -254,7 +254,7 @@ export default function DashboardShell({
               : "xl:grid-cols-[280px_minmax(0,1fr)_340px]"
           }`}
         >
-          <div className="hidden md:block h-full border-r border-white/[0.06] overflow-hidden">
+          <div className="hidden md:block h-full border-r border-[rgb(var(--ministry-gold))]/10 overflow-hidden">
             <div className="h-full overflow-y-auto overscroll-contain">
               <MinistrySidebar pathname={pathname} onNavigate={(href) => router.push(href)} user={user} />
             </div>
@@ -311,7 +311,7 @@ export default function DashboardShell({
           </div>
 
           {/* Operations rail (third column, xl+) */}
-          <aside className="hidden xl:block h-full border-l border-white/[0.06] bg-[rgb(var(--ministry-panel))]/30 overflow-hidden">
+          <aside className="hidden xl:block h-full border-l border-[rgb(var(--ministry-gold))]/10 bg-[rgb(var(--ministry-panel))]/25 overflow-hidden">
             {opsCollapsed ? (
               <button
                 type="button"

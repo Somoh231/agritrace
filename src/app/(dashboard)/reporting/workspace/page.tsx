@@ -33,17 +33,14 @@ type LinkCard = {
 
 function Card({ item }: { item: LinkCard }) {
   return (
-    <Link
-      href={item.href}
-      className="rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-4 hover:border-emerald-600/40 transition"
-    >
+    <Link href={item.href} className="group cmd-surface cmd-surface-hover px-4 py-3.5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="font-semibold text-white truncate">{item.title}</div>
-          <p className="mt-2 text-[12px] leading-relaxed text-slate-400">{item.body}</p>
-          <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">{item.meta}</div>
+          <p className="mt-1.5 text-[12px] leading-relaxed text-emerald-100/50">{item.body}</p>
+          <div className="mt-2.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-200/40">{item.meta}</div>
         </div>
-        <span className="font-mono text-[12px] text-emerald-300/80 shrink-0">→</span>
+        <span className="font-mono text-[13px] text-[rgb(var(--ministry-gold))] shrink-0 transition group-hover:translate-x-0.5">→</span>
       </div>
     </Link>
   );
@@ -317,35 +314,36 @@ export default async function ReportingWorkspacePage({
 
   return (
     <MinistryPageShell
-      title="DAO & CAC reports"
+      title="Reporting operations center"
+      kicker="Operations · DAO & CAC Reporting"
       description="Unified reporting workspace. Operational chain: CLAN field capture → DAO district review and consolidation → CAC county verification and approval → Ministry national aggregation and intelligence."
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <InstallAppButton label="Install App" />
           <Link
             href="/field/sync-queue"
-            className="h-9 px-3 rounded-lg border border-slate-600 bg-slate-950 text-[12px] text-slate-200 hover:bg-slate-900 inline-flex items-center"
+            className="h-9 px-3 rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-panel))]/50 text-[12px] text-emerald-50/90 hover:border-[rgb(var(--ministry-gold))]/40 inline-flex items-center"
           >
             Offline queue
           </Link>
-          <div className="rounded-lg border border-slate-700 bg-slate-950/60 px-2 py-1">
+          <div className="cmd-surface px-2 py-1">
             <SyncStatusIndicator />
           </div>
         </div>
       }
     >
-      <div className="rounded-xl border border-emerald-900/35 bg-emerald-950/15 px-5 py-4">
-        <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-300/80">Operational posture</div>
-        <p className="mt-2 text-[12px] leading-relaxed text-slate-300">
+      <div className="cmd-surface px-4 py-3">
+        <div className="cmd-kicker">Operational posture</div>
+        <p className="mt-1.5 text-[12px] leading-relaxed text-emerald-100/55">
           Offline-first capture is supported. Workflow decisions and audits remain authoritative and traceable across counties.
         </p>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-4">
         <OfflineFieldOperationsCard />
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mt-5 flex flex-wrap gap-1.5">
         {TABS.map((t) => {
           const active = t.id === tab;
           return (
@@ -353,10 +351,10 @@ export default async function ReportingWorkspacePage({
               key={t.id}
               href={`/reporting/workspace?tab=${t.id}`}
               className={[
-                "h-9 px-3 rounded-lg border text-[12px] inline-flex items-center",
+                "h-8 px-3 rounded-md border text-[12px] inline-flex items-center transition",
                 active
-                  ? "border-emerald-600/60 bg-emerald-950/25 text-emerald-200"
-                  : "border-slate-700 bg-slate-950/40 text-slate-300 hover:bg-slate-900/60",
+                  ? "border-[rgb(var(--ministry-gold))]/50 bg-[rgb(var(--ministry-gold))]/[0.12] text-white font-medium"
+                  : "border-[rgb(var(--ministry-panel-border))]/60 bg-[rgb(var(--ministry-panel))]/40 text-emerald-100/70 hover:border-[rgb(var(--ministry-gold))]/30",
               ].join(" ")}
             >
               {t.label}
@@ -365,15 +363,15 @@ export default async function ReportingWorkspacePage({
         })}
       </div>
 
-      <div className="mt-3 text-[12px] text-slate-400">
-        <span className="font-semibold text-slate-200">{tabMeta.label}.</span> {tabMeta.hint}
+      <div className="mt-2.5 text-[12px] text-emerald-100/55">
+        <span className="font-semibold text-white">{tabMeta.label}.</span> {tabMeta.hint}
       </div>
 
-      <div className="mt-6 space-y-6">
+      <div className="mt-5 space-y-5">
         {sections.map((sec) => (
-          <section key={sec.label} className="space-y-3">
-            <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-slate-500">{sec.label}</div>
-            <div className="grid gap-3 md:grid-cols-2">
+          <section key={sec.label} className="space-y-2.5">
+            <div className="cmd-kicker">{sec.label}</div>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {sec.items.map((item) => (
                 <Card key={item.href} item={item} />
               ))}

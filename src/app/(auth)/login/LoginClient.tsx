@@ -13,20 +13,10 @@ import { track } from "@/lib/analytics/client";
 
 function LogoMark() {
   return (
-    <div className="h-10 w-10 rounded-xl bg-forest-700 grid place-items-center shadow-sm">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path
-          d="M20 4c-7 1-12 6-13 13 7-1 12-6 13-13Z"
-          stroke="#c4edcb"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M7 17c2-3 6-7 10-9"
-          stroke="#c4edcb"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
+    <div className="relative h-11 w-11 rounded-xl bg-gradient-to-br from-[#0c4a21] to-[#052e16] grid place-items-center shadow-md ring-1 ring-[rgb(var(--ministry-gold))]/40">
+      <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none" stroke="rgb(var(--ministry-gold))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M12 2C8 2 5 6 5 10c0 4 3 7 7 9 4-2 7-5 7-9 0-4-3-8-7-8z" />
+        <path d="M12 2v18" />
       </svg>
     </div>
   );
@@ -79,24 +69,44 @@ export default function LoginClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[rgb(var(--surface-muted))] flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-[380px]">
-        <div className="av-card p-6 sm:p-7">
+    <div className="relative min-h-screen flex items-center justify-center px-4 py-10 bg-[rgb(var(--ministry-workspace))]">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(900px 500px at 50% -10%, rgba(52,211,153,0.10), transparent 60%), radial-gradient(700px 400px at 50% 110%, rgba(201,162,75,0.08), transparent 60%)",
+        }}
+      />
+      <div className="relative w-full max-w-[400px]">
+        <div className="text-center mb-5">
+          <div className="cmd-kicker">Ministry of Agriculture · Liberia</div>
+          <div className="mt-2 font-serif-display text-[30px] leading-none text-white">
+            AgriVault <span className="text-[rgb(var(--ministry-gold))]">Data</span>
+          </div>
+          <div className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-emerald-200/50">
+            National Agricultural Intelligence Platform
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[rgb(var(--ministry-gold))]/15 bg-[rgb(var(--ministry-panel))]/55 backdrop-blur-sm p-6 sm:p-7 shadow-2xl">
           <div className="flex items-center gap-3">
             <LogoMark />
             <div className="min-w-0">
-              <div className="font-display text-lg text-ink-900 leading-tight">Agrivault</div>
-              <div className="text-[12px] text-slate-600">
-                Agricultural traceability platform · Liberia
+              <div className="font-serif-display text-[17px] text-white leading-tight">Operator sign-in</div>
+              <div className="text-[11px] text-emerald-100/55">
+                Secure access · Role-based command views
               </div>
             </div>
           </div>
 
-          <div className="mt-6 space-y-3">
+          <div className="cmd-rule my-4" aria-hidden />
+
+          <div className="space-y-3">
             {error ? <AlertBanner severity="danger" message={error} /> : null}
 
             <div>
-              <label className="block font-mono text-[10px] uppercase tracking-widest text-gray-400 mb-1.5">
+              <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[rgb(var(--ministry-gold))]/70 mb-1.5">
                 Email
               </label>
               <input
@@ -105,12 +115,12 @@ export default function LoginClient() {
                 inputMode="email"
                 autoComplete="email"
                 placeholder="name@organization.org"
-                className="av-input"
+                className="h-11 w-full rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-workspace))]/60 px-3 text-[13px] text-emerald-50 placeholder:text-emerald-200/30 outline-none focus:border-[rgb(var(--ministry-gold))]/60"
               />
             </div>
 
             <div>
-              <label className="block font-mono text-[10px] uppercase tracking-widest text-gray-400 mb-1.5">
+              <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[rgb(var(--ministry-gold))]/70 mb-1.5">
                 Password
               </label>
               <input
@@ -119,7 +129,7 @@ export default function LoginClient() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="av-input"
+                className="h-11 w-full rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-workspace))]/60 px-3 text-[13px] text-emerald-50 placeholder:text-emerald-200/30 outline-none focus:border-[rgb(var(--ministry-gold))]/60"
               />
             </div>
 
@@ -127,13 +137,13 @@ export default function LoginClient() {
               type="button"
               onClick={() => onSignIn()}
               disabled={isLoading || !email || !password}
-              className="av-btn-primary h-12 w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-12 w-full rounded-lg bg-gradient-to-b from-emerald-600 to-emerald-700 text-white text-[13px] font-semibold shadow-lg ring-1 ring-[rgb(var(--ministry-gold))]/30 hover:from-emerald-500 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
-              {isLoading ? "Signing in…" : "Sign in"}
+              {isLoading ? "Signing in…" : "Sign in to command center"}
             </button>
 
             <div className="pt-2">
-              <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400 mb-2">
+              <div className="cmd-kicker mb-2">
                 Demo access profiles
               </div>
               <div className="grid grid-cols-1 gap-2">
@@ -182,14 +192,14 @@ export default function LoginClient() {
                   }
                 />
               </div>
-              <div className="mt-2 text-[11px] text-slate-500">
-                Run <span className="font-mono">npm run seed:demo</span> to create these demo users.
+              <div className="mt-2 text-[11px] text-emerald-100/40">
+                Run <span className="font-mono text-emerald-100/60">npm run seed:demo</span> to create these demo users.
               </div>
             </div>
 
-            <div className="rounded-xl border border-emerald-200/60 bg-emerald-50/80 px-4 py-4">
-              <div className="text-[13px] font-semibold text-ink-900">Using Agrivault in the field?</div>
-              <p className="mt-2 text-[12px] leading-relaxed text-slate-700">
+            <div className="cmd-surface px-4 py-4">
+              <div className="text-[13px] font-semibold text-white">Using AgriVault in the field?</div>
+              <p className="mt-1.5 text-[12px] leading-relaxed text-emerald-100/55">
                 Install the app on this device for offline reporting and GPS capture. Drafts stay on the device until you are back online.
               </p>
               <div className="mt-3">
@@ -197,14 +207,14 @@ export default function LoginClient() {
               </div>
             </div>
 
-            <div className="pt-1 text-[11px] text-slate-500">
+            <div className="pt-1 text-[11px] text-emerald-100/40">
               For first-time setup: create a user in Supabase Auth, then insert a matching row
-              in <span className="font-mono">profiles</span>.
+              in <span className="font-mono text-emerald-100/60">profiles</span>.
             </div>
           </div>
         </div>
 
-        <div className="mt-4 text-center text-[11px] text-slate-400 font-mono">
+        <div className="mt-4 text-center text-[10px] text-emerald-200/40 font-mono uppercase tracking-[0.18em]">
           Secure access · Role-based views · Audit-ready outputs
         </div>
       </div>
@@ -225,10 +235,10 @@ function DemoRoleButton({
     <button
       type="button"
       onClick={onClick}
-      className="w-full text-left rounded-xl border border-gray-200 bg-white px-3 py-2.5 hover:bg-gray-50"
+      className="group w-full text-left rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-workspace))]/40 px-3 py-2.5 hover:border-[rgb(var(--ministry-gold))]/40 hover:bg-[rgb(var(--ministry-panel))]/60 transition"
     >
-      <div className="text-[12px] font-medium text-ink-900">{title}</div>
-      <div className="text-[11px] text-slate-600">{subtitle}</div>
+      <div className="text-[12px] font-medium text-white">{title}</div>
+      <div className="text-[11px] text-emerald-100/50">{subtitle}</div>
     </button>
   );
 }

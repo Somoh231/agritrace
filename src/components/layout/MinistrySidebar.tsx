@@ -9,8 +9,11 @@ import type { UserRole } from "@/lib/supabase/types";
 
 function MoMark() {
   return (
-    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#0c4a21] to-[#052e16] grid place-items-center ring-1 ring-white/10 shadow-md">
-      <span className="text-[11px] font-bold tracking-tight text-emerald-100">MoA</span>
+    <div className="relative h-9 w-9 shrink-0 rounded-lg bg-gradient-to-br from-[#0c4a21] to-[#052e16] grid place-items-center ring-1 ring-[rgb(var(--ministry-gold))]/40 shadow-md">
+      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="rgb(var(--ministry-gold))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M12 2C8 2 5 6 5 10c0 4 3 7 7 9 4-2 7-5 7-9 0-4-3-8-7-8z" />
+        <path d="M12 2v18" />
+      </svg>
     </div>
   );
 }
@@ -59,25 +62,31 @@ export default function MinistrySidebar({
   return (
     <aside className="ministry-shell-sidebar h-full w-[280px] shrink-0 flex flex-col text-[rgb(var(--ministry-sidebar-fg))]">
       <div className="px-4 py-4 border-b border-white/[0.06]">
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-3">
           <MoMark />
-          <div className="min-w-0 pt-0.5">
-            <div className="font-display text-[14px] font-semibold tracking-tight text-white leading-tight">AgriVault</div>
-            <div className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.16em] text-emerald-200/75">
-              AIS · Ministry of Agriculture · Liberia
+          <div className="min-w-0">
+            <div className="font-serif-display text-[18px] leading-none text-white">
+              AgriVault <span className="text-[rgb(var(--ministry-gold))]">Data</span>
+            </div>
+            <div className="mt-1.5 font-mono text-[8.5px] uppercase tracking-[0.18em] text-emerald-200/70">
+              Ministry of Agriculture · Liberia
             </div>
           </div>
+        </div>
+        <div className="cmd-rule mt-3" aria-hidden />
+        <div className="mt-2 font-mono text-[8.5px] uppercase tracking-[0.2em] text-emerald-200/45">
+          National Agricultural Intelligence
         </div>
       </div>
 
       <nav className="px-2 pb-4 pt-3 flex-1 overflow-y-auto min-h-0">
-        <div className="space-y-6">
+        <div className="space-y-4">
           {sections.map((section) => (
             <div key={section.id}>
-              <div className="px-3 mb-2 font-mono text-[9px] uppercase tracking-[0.22em] text-emerald-200/45">
+              <div className="px-3 mb-1.5 font-mono text-[8.5px] uppercase tracking-[0.24em] text-[rgb(var(--ministry-gold))]/70">
                 {section.label}
               </div>
-              <div className="space-y-0.5">
+              <div className="space-y-px">
                 {section.items.map((item) => {
                   const active = navActive(pathname, item.href);
                   return (
@@ -85,19 +94,19 @@ export default function MinistrySidebar({
                       key={item.href}
                       type="button"
                       onClick={() => onNavigate(item.href)}
-                      className={`relative w-full text-left px-3 py-2 rounded-lg text-[12px] transition leading-snug ${
+                      className={`relative w-full text-left px-3 py-1.5 rounded-md text-[12px] transition leading-snug ${
                         active
-                          ? "bg-white/[0.12] text-white font-medium shadow-inner"
-                          : "text-emerald-50/75 hover:bg-white/[0.06] hover:text-white"
+                          ? "bg-[rgb(var(--ministry-gold))]/[0.12] text-white font-medium"
+                          : "text-emerald-50/70 hover:bg-white/[0.05] hover:text-white"
                       }`}
                     >
                       {active ? (
                         <span
                           aria-hidden="true"
-                          className="absolute left-0 top-1.5 bottom-1.5 w-[3px] bg-emerald-400 rounded-r"
+                          className="absolute left-0 top-1 bottom-1 w-[3px] bg-[rgb(var(--ministry-gold))] rounded-r"
                         />
                       ) : null}
-                      <span className="block truncate pl-1">{item.label}</span>
+                      <span className="block truncate pl-1.5">{item.label}</span>
                     </button>
                   );
                 })}
@@ -107,10 +116,10 @@ export default function MinistrySidebar({
 
           {adminSection ? (
             <div>
-              <div className="px-3 mb-2 font-mono text-[9px] uppercase tracking-[0.22em] text-emerald-200/45">
+              <div className="px-3 mb-1.5 font-mono text-[8.5px] uppercase tracking-[0.24em] text-[rgb(var(--ministry-gold))]/70">
                 {adminSection.label}
               </div>
-              <div className="space-y-0.5">
+              <div className="space-y-px">
                 {adminSection.items.map((item) => {
                   const active = navActive(pathname, item.href);
                   return (
@@ -118,13 +127,19 @@ export default function MinistrySidebar({
                       key={item.href}
                       type="button"
                       onClick={() => onNavigate(item.href)}
-                      className={`relative w-full text-left px-3 py-2 rounded-lg text-[12px] transition leading-snug ${
+                      className={`relative w-full text-left px-3 py-1.5 rounded-md text-[12px] transition leading-snug ${
                         active
-                          ? "bg-white/[0.12] text-white font-medium"
-                          : "text-emerald-50/75 hover:bg-white/[0.06] hover:text-white"
+                          ? "bg-[rgb(var(--ministry-gold))]/[0.12] text-white font-medium"
+                          : "text-emerald-50/70 hover:bg-white/[0.05] hover:text-white"
                       }`}
                     >
-                      <span className="block truncate pl-1">{item.label}</span>
+                      {active ? (
+                        <span
+                          aria-hidden="true"
+                          className="absolute left-0 top-1 bottom-1 w-[3px] bg-[rgb(var(--ministry-gold))] rounded-r"
+                        />
+                      ) : null}
+                      <span className="block truncate pl-1.5">{item.label}</span>
                     </button>
                   );
                 })}
@@ -136,8 +151,8 @@ export default function MinistrySidebar({
 
       <div className="mt-auto border-t border-white/[0.06] p-3 bg-black/20">
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-full bg-emerald-600/30 grid place-items-center ring-2 ring-emerald-400/20">
-            <span className="text-[11px] font-semibold text-emerald-100">{user.initials}</span>
+          <div className="h-9 w-9 rounded-full bg-emerald-600/25 grid place-items-center ring-2 ring-[rgb(var(--ministry-gold))]/30">
+            <span className="text-[11px] font-semibold text-emerald-50">{user.initials}</span>
           </div>
           <div className="min-w-0">
             <div className="text-[12px] font-medium text-white truncate">{user.name}</div>

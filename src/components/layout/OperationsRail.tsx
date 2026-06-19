@@ -57,10 +57,10 @@ export default function OperationsRail({
 
   return (
     <div className="flex h-full min-h-0 flex-col text-slate-200">
-      <div className="flex items-center justify-between gap-2 border-b border-white/[0.06] px-3 py-2.5">
+      <div className="flex items-center justify-between gap-2 border-b border-[rgb(var(--ministry-gold))]/15 px-3 py-2.5">
         <div className="min-w-0">
-          <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-400/80">Operations</div>
-          <div className="truncate text-[13px] font-semibold text-white">{config.tier} status</div>
+          <div className="cmd-kicker">Operations</div>
+          <div className="mt-1 truncate font-serif-display text-[15px] leading-none text-white">{config.tier} status</div>
         </div>
         {variant === "drawer" ? (
           <button
@@ -87,8 +87,8 @@ export default function OperationsRail({
         <p className="text-[11px] leading-snug text-slate-400">{config.focus}</p>
 
         {/* Persistent operational context */}
-        <div className="mt-3 rounded-lg border border-white/[0.07] bg-[rgb(var(--ministry-panel))]/50 p-2.5">
-          <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Live status</div>
+        <div className="mt-3 cmd-surface p-2.5">
+          <div className="cmd-kicker">Live status</div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <span className="text-[11px] text-slate-400">Connectivity</span>
             <span
@@ -115,7 +115,7 @@ export default function OperationsRail({
 
         {config.sections.map((section) => (
           <div key={section.id} className="mt-4">
-            <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">{section.label}</div>
+            <div className="cmd-kicker mb-1.5">{section.label}</div>
             <ul className="mt-1.5 space-y-1">
               {section.links.map((link) => {
                 const active = isActive(pathname, link.href);

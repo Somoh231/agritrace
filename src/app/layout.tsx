@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "@/styles/public-marketing.css";
-import { DM_Mono, Inter, Inter_Tight } from "next/font/google";
+import { DM_Mono, DM_Serif_Display, Inter, Inter_Tight } from "next/font/google";
 
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import ToastProvider from "@/components/shared/toast/ToastProvider";
@@ -25,6 +25,13 @@ const fontMono = DM_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   weight: ["400", "500"],
+});
+
+const fontSerif = DM_Serif_Display({
+  variable: "--font-serif-display",
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
 });
 
 const agrivaultDisplay = Inter_Tight({
@@ -122,7 +129,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} ${agrivaultDisplay.variable} ${agrivaultBody.variable} ${agrivaultMono.variable} h-full antialiased`}
+      className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} ${fontSerif.variable} ${agrivaultDisplay.variable} ${agrivaultBody.variable} ${agrivaultMono.variable} h-full antialiased`}
     >
       <body className="h-full bg-[rgb(var(--surface))] text-[rgb(var(--text))]">
         <AnalyticsProvider>
