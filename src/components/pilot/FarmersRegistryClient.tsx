@@ -141,10 +141,10 @@ export default function FarmersRegistryClient() {
         }
       >
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 mb-6">
-          <OpsMetric label="Verified (pipeline)" value={Intl.NumberFormat().format(p.verified)} tone="forest" />
-          <OpsMetric label="Pending verification" value={Intl.NumberFormat().format(p.pendingVerification)} tone="amber" />
-          <OpsMetric label="Geo completion" value={`${p.geoTaggedPct}%`} tone="navy" />
-          <OpsMetric label="Flagged" value={Intl.NumberFormat().format(p.flagged)} tone="rose" />
+          <OpsMetric theme="dark" label="Verified (pipeline)" value={Intl.NumberFormat().format(p.verified)} tone="forest" />
+          <OpsMetric theme="dark" label="Pending verification" value={Intl.NumberFormat().format(p.pendingVerification)} tone="amber" />
+          <OpsMetric theme="dark" label="Geo completion" value={`${p.geoTaggedPct}%`} tone="navy" />
+          <OpsMetric theme="dark" label="Flagged" value={Intl.NumberFormat().format(p.flagged)} tone="rose" />
         </div>
 
         <EnterpriseDataGrid<FarmerRegistryDemoRow>

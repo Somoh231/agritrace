@@ -35,15 +35,15 @@ export default function FoodSecurityClient() {
 
       <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">National status</div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
-        <OpsMetric label="Indicative rice demand" value={`${Intl.NumberFormat().format(fi.riceDemandMt)} t`} tone="navy" />
-        <OpsMetric label="Domestic production (est.)" value={`${Intl.NumberFormat().format(fi.domesticProductionMt)} t`} tone="forest" />
-        <OpsMetric label="Supply coverage (modeled)" value={`${coveragePct}%`} tone="amber" />
-        <OpsMetric label="National risk index" value={String(fi.nationalRiskScore)} tone="rose" />
-        <OpsMetric label="Avg post-harvest loss" value={`${avgLoss}%`} tone="amber" />
-        <OpsMetric label="Counties at risk" value={String(countiesAtRisk)} tone="rose" />
+        <OpsMetric theme="dark" label="Indicative rice demand" value={`${Intl.NumberFormat().format(fi.riceDemandMt)} t`} tone="navy" />
+        <OpsMetric theme="dark" label="Domestic production (est.)" value={`${Intl.NumberFormat().format(fi.domesticProductionMt)} t`} tone="forest" />
+        <OpsMetric theme="dark" label="Supply coverage (modeled)" value={`${coveragePct}%`} tone="amber" />
+        <OpsMetric theme="dark" label="National risk index" value={String(fi.nationalRiskScore)} tone="rose" />
+        <OpsMetric theme="dark" label="Avg post-harvest loss" value={`${avgLoss}%`} tone="amber" />
+        <OpsMetric theme="dark" label="Counties at risk" value={String(countiesAtRisk)} tone="rose" />
       </div>
 
-      <OpsCard>
+      <OpsCard theme="dark">
         <div className="grid gap-6 lg:grid-cols-2">
           <div>
             <div className="font-display text-[15px] font-semibold text-white">Import dependency modeling</div>
@@ -68,7 +68,7 @@ export default function FoodSecurityClient() {
       </OpsCard>
 
       <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Risk &amp; hotspots</div>
-      <OpsCard>
+      <OpsCard theme="dark">
         <div className="font-display text-[15px] font-semibold text-white">County vulnerability heat · loss-adjusted</div>
         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
           {heat.map((c) => (
@@ -90,7 +90,7 @@ export default function FoodSecurityClient() {
       </OpsCard>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <OpsCard>
+        <OpsCard theme="dark">
           <div className="font-display text-[15px] font-semibold text-white">Yield forecasting & rainfall correlation</div>
           <p className="mt-2 text-[12px] text-slate-400 leading-relaxed">
             Forecast ensembles ingest agronomic surveys and meteorological feeds when integrations are enabled. Correlation matrices publish alongside DAO verification batches.
@@ -99,7 +99,7 @@ export default function FoodSecurityClient() {
             Precipitation anomaly overlays ship with Phase 2 meteorological connectors.
           </div>
         </OpsCard>
-        <OpsCard>
+        <OpsCard theme="dark">
           <div className="font-display text-[15px] font-semibold text-white">Emergency escalation hotspots</div>
           <div className="mt-3 grid gap-2">
             {postHarvestLossAlerts.map((a) => (
@@ -115,7 +115,7 @@ export default function FoodSecurityClient() {
       </div>
 
       <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Required action</div>
-      <OpsCard>
+      <OpsCard theme="dark">
         <div className="grid gap-3 md:grid-cols-3">
           <Link
             href="/alerts"
@@ -144,7 +144,7 @@ export default function FoodSecurityClient() {
         </div>
       </OpsCard>
 
-      <OpsCard dense>
+      <OpsCard dense theme="dark">
         <div className="font-medium text-slate-100">Market intelligence brief</div>
         <p className="mt-2 text-[12px] text-slate-400">{fi.marketPriceWatch}</p>
       </OpsCard>

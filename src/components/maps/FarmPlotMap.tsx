@@ -97,10 +97,10 @@ export default function FarmPlotMap() {
   }, []);
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-      <div className="p-4 border-b border-gray-100">
-        <div className="font-display text-[16px] text-gray-900">Farm plot map</div>
-        <div className="text-[12px] text-gray-500">Cocoa plots colored by deforestation status.</div>
+    <div className="rounded-xl border border-white/10 bg-slate-950/40 overflow-hidden">
+      <div className="p-4 border-b border-white/10">
+        <div className="font-display text-[16px] text-white">Farm plot map</div>
+        <div className="text-[12px] text-slate-400">Cocoa plots colored by deforestation status.</div>
       </div>
       <div className="relative h-[460px]">
         <MapGL
