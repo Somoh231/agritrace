@@ -4,7 +4,6 @@ import * as React from "react";
 
 import { formatRoleLabel } from "@/lib/display/role-labels";
 import { ministryNavForRole, normalizeMinistryNavRole } from "@/lib/navigation/ministry-nav";
-import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
 import type { UserRole } from "@/lib/supabase/types";
 
 function MoMark() {
@@ -18,10 +17,26 @@ function MoMark() {
   );
 }
 
-function navActive(pathname: string, href: string) {
+function matchesHref(pathname: string, href: string) {
   if (pathname === href) return true;
   if (href !== "/" && pathname.startsWith(href + "/")) return true;
   return false;
+}
+
+/**
+ * Pick the single best-matching nav href for the current path (longest match wins),
+ * so nested routes like /admin vs /admin/users never both highlight.
+ */
+function resolveActiveHref(pathname: string, sections: ReturnType<typeof ministryNavForRole>): string | null {
+  let best: string | null = null;
+  for (const section of sections) {
+    for (const item of section.items) {
+      if (matchesHref(pathname, item.href) && (best === null || item.href.length > best.length)) {
+        best = item.href;
+      }
+    }
+  }
+  return best;
 }
 
 export default function MinistrySidebar({
@@ -42,22 +57,7 @@ export default function MinistrySidebar({
     sections = ministryNavForRole(normalizeMinistryNavRole(undefined));
   }
 
-  const adminSection = isAdminConsoleRole(navRole)
-    ? {
-        label: "Administration",
-        items: [
-          { label: "Users & roles", href: "/admin/users" },
-          { label: "Permissions", href: "/admin/governance" },
-          { label: "System diagnostics", href: "/admin/system" },
-          { label: "Data integrations", href: "/admin/integrations" },
-          { label: "Organizations", href: "/admin/organizations" },
-          { label: "Import & pipelines", href: "/admin/import" },
-          { label: "Reports center", href: "/admin/reports" },
-          { label: "Settings", href: "/admin/settings" },
-          { label: "Activity", href: "/activity" },
-        ],
-      }
-    : null;
+  const activeHref = resolveActiveHref(pathname, sections);
 
   return (
     <aside className="ministry-shell-sidebar h-full w-full shrink-0 flex flex-col text-[rgb(var(--ministry-sidebar-fg))]">
@@ -84,7 +84,7 @@ export default function MinistrySidebar({
               </div>
               <div className="space-y-px">
                 {section.items.map((item) => {
-                  const active = navActive(pathname, item.href);
+                  const active = item.href === activeHref;
                   return (
                     <button
                       key={item.href}
@@ -109,39 +109,6 @@ export default function MinistrySidebar({
               </div>
             </div>
           ))}
-
-          {adminSection ? (
-            <div>
-              <div className="px-3 mb-1.5 font-mono text-[8.5px] uppercase tracking-[0.24em] text-[rgb(var(--ministry-gold))]/70">
-                {adminSection.label}
-              </div>
-              <div className="space-y-px">
-                {adminSection.items.map((item) => {
-                  const active = navActive(pathname, item.href);
-                  return (
-                    <button
-                      key={item.href}
-                      type="button"
-                      onClick={() => onNavigate(item.href)}
-                      className={`relative w-full text-left px-3 py-1.5 rounded-md text-[12px] transition leading-snug ${
-                        active
-                          ? "bg-[rgb(var(--ministry-gold))]/[0.12] text-white font-medium"
-                          : "text-emerald-50/70 hover:bg-white/[0.05] hover:text-white"
-                      }`}
-                    >
-                      {active ? (
-                        <span
-                          aria-hidden="true"
-                          className="absolute left-0 top-1 bottom-1 w-[3px] bg-[rgb(var(--ministry-gold))] rounded-r"
-                        />
-                      ) : null}
-                      <span className="block truncate pl-1.5">{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
         </div>
       </nav>
 

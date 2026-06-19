@@ -79,7 +79,7 @@ const DONOR_AUDITOR_DENY: UserRole[] = [...DONOR_VISIBILITY_ROLES, "auditor"];
 export const MINISTRY_NAV: MinistryNavSection[] = [
   {
     id: "operational-workspaces",
-    label: "Operational workspaces",
+    label: "Workspaces",
     items: [
       {
         label: "CLAN workspace",
@@ -101,7 +101,7 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
   },
   {
     id: "national-overview",
-    label: "National Overview",
+    label: "National Command",
     items: [
       { label: "Command Center", href: "/command-center", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "National Operations", href: "/national-operations", rolesDeny: [...DONOR_AUDITOR_DENY] },
@@ -134,7 +134,7 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
   },
   {
     id: "pilot-gis",
-    label: "Pilot GIS",
+    label: "Field GIS",
     items: [
       {
         label: "Farm boundary capture",
@@ -170,7 +170,6 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
     label: "Food Security",
     items: [
       { label: "Food Security Dashboard", href: "/food-security", rolesDeny: [...DONOR_AUDITOR_DENY] },
-      { label: "Alerts", href: "/alerts", rolesDeny: [...DONOR_AUDITOR_DENY] },
     ],
   },
   {
@@ -187,9 +186,10 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
     label: "Administration",
     items: [
       { label: "Users & Roles", href: "/admin/users", rolesDeny: [...DONOR_AUDITOR_DENY] },
-      { label: "Audit Logs", href: "/compliance/audit-log", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Compliance", href: "/compliance", rolesDeny: [...DONOR_AUDITOR_DENY] },
-      { label: "System Settings", href: "/admin/settings", rolesDeny: [...DONOR_AUDITOR_DENY] },
+      { label: "Audit Logs", href: "/compliance/audit-log", rolesDeny: [...DONOR_AUDITOR_DENY] },
+      // Low-use consoles (system, integrations, import, reports, settings, …) live under the hub.
+      { label: "Administration hub", href: "/admin", rolesDeny: [...DONOR_AUDITOR_DENY] },
     ],
   },
 ];
@@ -211,7 +211,7 @@ export function ministryBreadcrumb(pathname: string): { kicker: string; title: s
   if (pathname === "/logistics") return { kicker: "Warehouses & Logistics", title: "Warehouse command" };
   if (pathname === "/compliance") return { kicker: "Administration", title: "Compliance" };
   if (pathname === "/reports") return { kicker: "Reporting", title: "Ministry reports center" };
-  if (pathname.startsWith("/national-heat-map")) return { kicker: "National command", title: "National heat map" };
+  if (pathname.startsWith("/national-heat-map")) return { kicker: "National Command", title: "National heat map" };
   if (pathname.startsWith("/farm-profiles")) return { kicker: "Farmer system", title: "Farm profiles" };
   if (pathname.startsWith("/inventory/equipment")) return { kicker: "Inputs & inventory", title: "Equipment" };
   if (pathname.startsWith("/production/market-prices")) return { kicker: "Production intelligence", title: "Market prices" };
@@ -219,15 +219,21 @@ export function ministryBreadcrumb(pathname: string): { kicker: string; title: s
   if (pathname.startsWith("/admin/users")) return { kicker: "Administration", title: "Users & roles" };
   if (pathname.startsWith("/admin/system")) return { kicker: "Administration", title: "System diagnostics" };
   if (pathname.startsWith("/admin/governance")) return { kicker: "Administration", title: "Permissions" };
-  if (pathname.startsWith("/workspace/clan")) return { kicker: "Operational workspaces", title: "CLAN workspace" };
-  if (pathname.startsWith("/workspace/dao")) return { kicker: "Operational workspaces", title: "DAO workspace" };
-  if (pathname.startsWith("/workspace/cac")) return { kicker: "Operational workspaces", title: "CAC workspace" };
-  if (pathname.startsWith("/workspace/ministry")) return { kicker: "Operational workspaces", title: "Ministry workspace" };
-  if (pathname.startsWith("/county-dashboard")) return { kicker: "Operations", title: "County dashboard" };
-  if (pathname.startsWith("/district-dashboard")) return { kicker: "Operations", title: "District operations" };
-  if (pathname.startsWith("/field/boundary-capture")) return { kicker: "Pilot GIS", title: "Farm boundary capture" };
-  if (pathname.startsWith("/geo-registry")) return { kicker: "Pilot GIS", title: "Geo registry" };
-  if (pathname.startsWith("/map")) return { kicker: "Pilot GIS", title: "Operational map" };
+  if (pathname.startsWith("/admin/organizations")) return { kicker: "Administration", title: "Organizations" };
+  if (pathname.startsWith("/admin/integrations")) return { kicker: "Administration", title: "Data integrations" };
+  if (pathname.startsWith("/admin/import")) return { kicker: "Administration", title: "Import & pipelines" };
+  if (pathname.startsWith("/admin/reports")) return { kicker: "Administration", title: "Reports center" };
+  if (pathname.startsWith("/admin/settings")) return { kicker: "Administration", title: "Settings" };
+  if (pathname === "/admin") return { kicker: "Administration", title: "Administration hub" };
+  if (pathname.startsWith("/workspace/clan")) return { kicker: "Workspaces", title: "CLAN workspace" };
+  if (pathname.startsWith("/workspace/dao")) return { kicker: "Workspaces", title: "DAO workspace" };
+  if (pathname.startsWith("/workspace/cac")) return { kicker: "Workspaces", title: "CAC workspace" };
+  if (pathname.startsWith("/workspace/ministry")) return { kicker: "Workspaces", title: "Ministry workspace" };
+  if (pathname.startsWith("/county-dashboard")) return { kicker: "County Operations", title: "County dashboard" };
+  if (pathname.startsWith("/district-dashboard")) return { kicker: "County Operations", title: "District operations" };
+  if (pathname.startsWith("/field/boundary-capture")) return { kicker: "Field GIS", title: "Farm boundary capture" };
+  if (pathname.startsWith("/geo-registry")) return { kicker: "Field GIS", title: "Geo registry" };
+  if (pathname.startsWith("/map")) return { kicker: "Field GIS", title: "Operational map" };
 
   let best = { href: "", section: "AIS", label: "Workspace" };
   for (const sec of MINISTRY_NAV) {
