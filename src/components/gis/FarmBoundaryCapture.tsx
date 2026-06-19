@@ -93,9 +93,13 @@ export type FarmBoundaryCaptureProps = {
   value: OperationalFarmBoundary | null;
   /** Called when officer saves or clears the operational boundary. */
   onChange: (next: OperationalFarmBoundary | null) => void;
+  /** Map-first mode: drop the bordered card chrome and descriptive header. */
+  chromeless?: boolean;
+  /** CSS height for the map surface (e.g. "100%", "70vh"). Defaults to a capped responsive height. */
+  mapHeight?: string;
 };
 
-export default function FarmBoundaryCapture({ disabled, readOnly, value, onChange }: FarmBoundaryCaptureProps) {
+export default function FarmBoundaryCapture({ disabled, readOnly, value, onChange, chromeless, mapHeight }: FarmBoundaryCaptureProps) {
   const token = optionalMapboxToken();
   const mapRef = React.useRef<MapRef | null>(null);
   const userAdjustedViewRef = React.useRef(false);
@@ -429,32 +433,42 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
           ? "Boundary closed — review the outline, then Save Boundary."
           : "Boundary preview active — adjust corners with Undo if needed, then Close Boundary.";
 
+  const mapH = mapHeight ?? "min(52vh, 420px)";
+
   return (
-    <section className="rounded-2xl border border-slate-700 bg-slate-950/50 p-3 sm:p-4">
-      <div className="flex flex-wrap items-start justify-between gap-2 border-b border-slate-800 pb-3">
-        <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400/80">Farm Boundary &amp; Location</div>
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-slate-400">
-            Approximate operational outline for traceability — not a legal survey. Map auto-follows corners until you pan or zoom manually.
-          </p>
-        </div>
-        <div className="flex flex-col items-end gap-1.5 sm:flex-row sm:flex-wrap sm:items-center">
-          <SyncStatusIndicator />
-          <div className="flex flex-wrap justify-end gap-1.5 text-[10px] font-mono">
-            {!online ? (
-              <span className="rounded-md border border-amber-800/60 bg-amber-950/40 px-2 py-1 uppercase tracking-wide text-amber-100">
-                Offline · saved locally
-              </span>
-            ) : (
-              <span className="rounded-md border border-emerald-800/40 bg-emerald-950/30 px-2 py-1 text-emerald-100/95">Online · pending sync when queued</span>
-            )}
+    <section
+      className={
+        chromeless
+          ? "flex h-full min-h-0 flex-col"
+          : "rounded-2xl border border-slate-700 bg-slate-950/50 p-3 sm:p-4"
+      }
+    >
+      {!chromeless ? (
+        <div className="flex flex-wrap items-start justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400/80">Farm Boundary &amp; Location</div>
+            <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-slate-400">
+              Approximate operational outline for traceability — not a legal survey. Map auto-follows corners until you pan or zoom manually.
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-1.5 sm:flex-row sm:flex-wrap sm:items-center">
+            <SyncStatusIndicator />
+            <div className="flex flex-wrap justify-end gap-1.5 text-[10px] font-mono">
+              {!online ? (
+                <span className="rounded-md border border-amber-800/60 bg-amber-950/40 px-2 py-1 uppercase tracking-wide text-amber-100">
+                  Offline · saved locally
+                </span>
+              ) : (
+                <span className="rounded-md border border-emerald-800/40 bg-emerald-950/30 px-2 py-1 text-emerald-100/95">Online · pending sync when queued</span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
 
-      <p className="mt-3 rounded-lg border border-slate-800/80 bg-slate-900/50 px-3 py-2 text-[13px] leading-snug text-slate-200">{instruction}</p>
+      <p className={`${chromeless ? "" : "mt-3"} rounded-lg border border-slate-800/80 bg-slate-900/50 px-3 py-2 text-[13px] leading-snug text-slate-200`}>{instruction}</p>
 
-      {!readOnly && !value ? (
+      {!readOnly && !value && !chromeless ? (
         <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
           <span className="font-mono uppercase tracking-wide text-slate-500">Sync</span>
           <span className="rounded border border-slate-700 px-1.5 py-0.5 text-slate-300">Saved locally</span>
@@ -524,10 +538,13 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
         </div>
       ) : null}
 
-      <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-[1fr_minmax(160px,220px)] lg:items-stretch">
-        <div className="relative min-h-[min(52vh,420px)] w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-900 sm:min-h-[340px]">
+      <div className={`mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-[1fr_minmax(160px,220px)] lg:items-stretch ${chromeless ? "min-h-0 flex-1" : ""}`}>
+        <div
+          className="relative w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-900"
+          style={{ height: mapH, minHeight: 260 }}
+        >
           {!token ? (
-            <div className="flex min-h-[min(48vh,380px)] flex-col items-center justify-center gap-2 p-4 text-center sm:min-h-[320px]">
+            <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center">
               <p className="text-[13px] text-slate-300">Map background needs a Mapbox token.</p>
               <p className="text-[12px] text-slate-500">You can still capture points; coordinates list below after each capture.</p>
             </div>
@@ -544,7 +561,7 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
                     : DEFAULT_REGION_ZOOM,
               }}
               mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
-              style={{ width: "100%", height: "min(52vh, 420px)", minHeight: 260 }}
+              style={{ width: "100%", height: "100%", minHeight: 260 }}
               attributionControl={false}
               onDragEnd={() => {
                 if (!programmaticMoveRef.current) userAdjustedViewRef.current = true;

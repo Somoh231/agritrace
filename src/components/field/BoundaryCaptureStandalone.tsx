@@ -4,7 +4,6 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 
 import FarmBoundaryCapture from "@/components/gis/FarmBoundaryCapture";
-import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import { useToast } from "@/components/shared/toast/ToastProvider";
 import { polygonCentroidLngLat } from "@/lib/gis/operational-boundary-math";
@@ -70,40 +69,53 @@ export default function BoundaryCaptureStandalone() {
   };
 
   return (
-    <MinistryPageShell
-      title="Capture farm boundary"
-      description="Walk corners, capture points, save — works offline; syncs when connectivity returns."
-      actions={<SyncStatusIndicator />}
-    >
-      <div className="space-y-4 text-[13px] text-slate-300">
-        <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-4 py-3">
-          <label className="block text-slate-400">
-            Farmer UUID (from registry)
-            <input
-              value={farmerInput}
-              onChange={(e) => setFarmerInput(e.target.value)}
-              placeholder="Paste farmer UUID (or use ?farmer= in the link)"
-              className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-[11px] text-slate-100 outline-none focus:border-emerald-600"
-            />
-          </label>
-          {!farmerId ? (
-            <p className="mt-2 text-[12px] text-amber-200/90">
-              Enter the farmer&apos;s registry id above, or open this page with <span className="font-mono text-white">?farmer=</span> in the URL.
-            </p>
-          ) : null}
+    <div className="flex h-[100dvh] min-h-0 flex-col bg-[rgb(var(--ministry-workspace))]">
+      {/* Compact field command strip */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[rgb(var(--ministry-gold))]/15 px-3 py-2.5 md:px-4">
+        <div className="min-w-0">
+          <div className="cmd-kicker">Field GIS · Boundary capture</div>
+          <div className="mt-0.5 font-serif-display text-[16px] leading-none text-white">Capture farm boundary</div>
         </div>
-
-        <FarmBoundaryCapture disabled={!farmerId} readOnly={false} value={boundary} onChange={setBoundary} />
-
-        <button
-          type="button"
-          disabled={saving || !farmerId || !boundary}
-          onClick={() => void queueFarmBoundary()}
-          className="min-h-[48px] w-full rounded-xl bg-emerald-700 px-4 text-[14px] font-semibold text-white hover:bg-emerald-600 disabled:opacity-40"
-        >
-          {saving ? "Saving…" : "Save to farm record (queue)"}
-        </button>
+        <label className="flex min-w-0 flex-1 items-center gap-2 sm:max-w-[420px]">
+          <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.16em] text-emerald-200/55">Farmer</span>
+          <input
+            value={farmerInput}
+            onChange={(e) => setFarmerInput(e.target.value)}
+            placeholder="Paste farmer UUID or use ?farmer="
+            className="h-9 w-full min-w-0 rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-panel))]/50 px-3 font-mono text-[11px] text-emerald-50 placeholder:text-emerald-200/35 outline-none focus:border-[rgb(var(--ministry-gold))]/60"
+          />
+        </label>
+        <div className="ml-auto flex items-center gap-3">
+          <div className="cmd-surface px-2 py-1">
+            <SyncStatusIndicator />
+          </div>
+          <button
+            type="button"
+            disabled={saving || !farmerId || !boundary}
+            onClick={() => void queueFarmBoundary()}
+            className="h-9 rounded-lg bg-emerald-600 px-4 text-[13px] font-semibold text-white shadow-sm ring-1 ring-[rgb(var(--ministry-gold))]/30 hover:bg-emerald-500 disabled:opacity-40"
+          >
+            {saving ? "Saving…" : "Save boundary"}
+          </button>
+        </div>
+        {!farmerId ? (
+          <p className="w-full font-mono text-[10px] text-amber-200/80">
+            Enter the farmer&apos;s registry id to enable saving — capture still works for testing.
+          </p>
+        ) : null}
       </div>
-    </MinistryPageShell>
+
+      {/* Map-dominant capture surface */}
+      <div className="min-h-0 flex-1 px-2 py-2 md:px-3 md:py-3">
+        <FarmBoundaryCapture
+          disabled={!farmerId}
+          readOnly={false}
+          value={boundary}
+          onChange={setBoundary}
+          chromeless
+          mapHeight="100%"
+        />
+      </div>
+    </div>
   );
 }

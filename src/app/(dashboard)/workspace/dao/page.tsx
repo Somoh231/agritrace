@@ -4,13 +4,11 @@ import { redirect } from "next/navigation";
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
+import { Panel, QueueRow } from "@/components/workspace/ui";
 import { assertPilotWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { createClient } from "@/lib/supabase/server";
 import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { Profile } from "@/lib/supabase/types";
-
-const TILE_CLASS =
-  "group cmd-surface cmd-surface-hover px-3.5 py-3 text-[13px] text-emerald-50/90";
 
 export default async function DaoWorkspacePage() {
   const supabase = await createClient();
@@ -26,48 +24,64 @@ export default async function DaoWorkspacePage() {
 
   return (
     <MinistryPageShell
-      title="DAO district workspace"
+      title="District review desk"
       kicker="District Operations · District Agriculture Officer"
-      description="District oversight, review of CLAN submissions, district summaries, operational verification, and coordination with warehouses and programmes."
+      description="Review CLAN field submissions, clear the district queue, and consolidate before county sign-off."
       actions={
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <InstallAppButton label="Install App" />
-          <SyncStatusIndicator />
+          <div className="cmd-surface px-2 py-1">
+            <SyncStatusIndicator />
+          </div>
         </div>
       }
     >
-      <div className="cmd-kicker">Queues & approvals</div>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <Link href="/verification-queue" className={TILE_CLASS}>
-          <div className="font-semibold text-white">Verification & approvals</div>
-          <p className="mt-1 text-emerald-100/45">District-level review before county sign-off.</p>
-        </Link>
-        <Link href="/field/inspections" className={TILE_CLASS}>
-          <div className="font-semibold text-white">Inspection queue</div>
-          <p className="mt-1 text-emerald-100/45">District inspection posture and follow-up.</p>
-        </Link>
-        <Link href="/district-dashboard" className={TILE_CLASS}>
-          <div className="font-semibold text-white">District command</div>
-          <p className="mt-1 text-emerald-100/45">DAO workflows, registry, inspections, and operational reporting queue.</p>
-        </Link>
-        <Link href="/field-agents" className={TILE_CLASS}>
-          <div className="font-semibold text-white">CLAN / field monitoring</div>
-          <p className="mt-1 text-emerald-100/45">District view of capture cadence and coverage.</p>
-        </Link>
-        <Link href="/operations/warehouses" className={TILE_CLASS}>
-          <div className="font-semibold text-white">Warehouse coordination</div>
-          <p className="mt-1 text-emerald-100/45">Custody and corridor posture in the district.</p>
-        </Link>
-        <Link href="/reporting/workspace?tab=dao" className={TILE_CLASS}>
-          <div className="font-semibold text-white">DAO reporting hub</div>
-          <p className="mt-1 text-emerald-100/45">Links to capture surfaces and district summaries.</p>
-        </Link>
-      </div>
-      <div className="cmd-surface px-3.5 py-2.5 text-[11px] text-emerald-100/55">
-        <span className="cmd-kicker">Reporting chain</span>
-        <span className="mt-1 block">
-          CLAN capture → <span className="text-white">DAO review and consolidation</span> → CAC county verification → Ministry / national intelligence.
-        </span>
+      {/* Review-queue-centered: dominant queue column + supporting context rail */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
+          <Panel
+            title="Pending DAO review"
+            hint="CLAN submissions awaiting your district decision"
+            action={
+              <Link
+                href="/verification-queue"
+                className="h-8 rounded-lg bg-emerald-600 px-3 text-[12px] font-semibold text-white ring-1 ring-[rgb(var(--ministry-gold))]/30 hover:bg-emerald-500 inline-flex items-center"
+              >
+                Open queue
+              </Link>
+            }
+          >
+            <div className="space-y-0.5">
+              <QueueRow href="/verification-queue" title="Field captures to verify" meta="Approve, reject, or request corrections" tone="escalation" />
+              <QueueRow href="/field/inspections" title="Inspection follow-ups" meta="Visits needing district outcome" />
+              <QueueRow href="/registration-approvals" title="Registration approvals" meta="Flagged registrations needing sign-off" />
+            </div>
+          </Panel>
+
+          <Panel title="Submitted reports" hint="Recently consolidated district reporting">
+            <div className="space-y-0.5">
+              <QueueRow href="/reporting/workspace?tab=dao" title="DAO reporting hub" meta="District summaries and capture surfaces" />
+              <QueueRow href="/reporting/workspace?tab=submitted" title="Recently submitted" meta="Artefacts sent up the chain" tone="ok" />
+              <QueueRow href="/district-dashboard" title="District command" meta="Registry, inspections, and operational view" />
+            </div>
+          </Panel>
+        </div>
+
+        <div className="space-y-4">
+          <Panel title="Field officer activity" hint="CLAN capture cadence & coverage">
+            <div className="space-y-0.5">
+              <QueueRow href="/field-agents" title="CLAN / field monitoring" meta="Who is active and where" />
+              <QueueRow href="/operations/warehouses" title="Warehouse coordination" meta="Custody posture in the district" />
+            </div>
+          </Panel>
+
+          <Panel title="Exceptions & escalations" hint="Items needing attention">
+            <div className="space-y-0.5">
+              <QueueRow href="/alerts" title="Open escalations" meta="Anomalies routed for resolution" tone="alert" />
+              <QueueRow href="/compliance/anomalies" title="Compliance anomalies" meta="Distribution & data checks" tone="escalation" />
+            </div>
+          </Panel>
+        </div>
       </div>
     </MinistryPageShell>
   );

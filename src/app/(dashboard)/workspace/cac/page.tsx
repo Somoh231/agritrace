@@ -4,13 +4,11 @@ import { redirect } from "next/navigation";
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
+import { Panel, QueueRow } from "@/components/workspace/ui";
 import { assertPilotWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { createClient } from "@/lib/supabase/server";
 import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { Profile } from "@/lib/supabase/types";
-
-const TILE_CLASS =
-  "group cmd-surface cmd-surface-hover px-3.5 py-3 text-[13px] text-emerald-50/90";
 
 export default async function CacWorkspacePage() {
   const supabase = await createClient();
@@ -26,48 +24,62 @@ export default async function CacWorkspacePage() {
 
   return (
     <MinistryPageShell
-      title="CAC county workspace"
+      title="County verification desk"
       kicker="County Operations · County Agriculture Coordinator"
-      description="County verification and approval, escalation management, reporting compliance, operational coordination, and consolidation toward ministry reporting."
+      description="Verify district submissions, run the county approval queue, and manage escalations toward the Ministry."
       actions={
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <InstallAppButton label="Install App" />
-          <SyncStatusIndicator />
+          <div className="cmd-surface px-2 py-1">
+            <SyncStatusIndicator />
+          </div>
         </div>
       }
     >
-      <div className="cmd-kicker">Approvals & escalations</div>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <Link href="/verification-queue" className={TILE_CLASS}>
-          <div className="font-semibold text-white">County verification queue</div>
-          <p className="mt-1 text-emerald-100/45">Approve, reject, escalate, or request corrections.</p>
-        </Link>
-        <Link href="/alerts" className={TILE_CLASS}>
-          <div className="font-semibold text-white">Escalations</div>
-          <p className="mt-1 text-emerald-100/45">County routing to ministry where required.</p>
-        </Link>
-        <Link href="/county-dashboard" className={TILE_CLASS}>
-          <div className="font-semibold text-white">County command center</div>
-          <p className="mt-1 text-emerald-100/45">District posture, approvals, maps, and CAC reporting exports.</p>
-        </Link>
-        <Link href="/compliance" className={TILE_CLASS}>
-          <div className="font-semibold text-white">Compliance & audits</div>
-          <p className="mt-1 text-emerald-100/45">County compliance posture and tooling.</p>
-        </Link>
-        <Link href="/reporting/workspace?tab=cac" className={TILE_CLASS}>
-          <div className="font-semibold text-white">CAC reporting hub</div>
-          <p className="mt-1 text-emerald-100/45">County consolidation and ministry handoff surfaces.</p>
-        </Link>
-        <Link href="/executive-briefing" className={TILE_CLASS}>
-          <div className="font-semibold text-white">Executive briefing</div>
-          <p className="mt-1 text-emerald-100/45">Cross-cutting county and national summaries.</p>
-        </Link>
-      </div>
-      <div className="cmd-surface px-3.5 py-2.5 text-[11px] text-emerald-100/55">
-        <span className="cmd-kicker">Reporting chain</span>
-        <span className="mt-1 block">
-          CLAN capture → DAO consolidation → <span className="text-white">CAC county verification</span> → Ministry / national aggregation.
-        </span>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
+          <Panel
+            title="County approval queue"
+            hint="DAO submissions awaiting county verification"
+            action={
+              <Link
+                href="/verification-queue"
+                className="h-8 rounded-lg bg-emerald-600 px-3 text-[12px] font-semibold text-white ring-1 ring-[rgb(var(--ministry-gold))]/30 hover:bg-emerald-500 inline-flex items-center"
+              >
+                Open queue
+              </Link>
+            }
+          >
+            <div className="space-y-0.5">
+              <QueueRow href="/verification-queue" title="Pending county approvals" meta="Approve, reject, escalate, or return" tone="escalation" />
+              <QueueRow href="/registration-approvals" title="Registration sign-off" meta="Supervisory review for the county" />
+              <QueueRow href="/compliance" title="Compliance reviews" meta="Audits and anomaly tooling" />
+            </div>
+          </Panel>
+
+          <Panel title="DAO submissions" hint="District consolidation feeding the county">
+            <div className="space-y-0.5">
+              <QueueRow href="/reporting/workspace?tab=cac" title="CAC reporting hub" meta="County consolidation & ministry handoff" />
+              <QueueRow href="/county-dashboard" title="County command center" meta="District posture, maps, and exports" />
+              <QueueRow href="/executive-briefing" title="Executive briefing" meta="Cross-cutting county summaries" />
+            </div>
+          </Panel>
+        </div>
+
+        <div className="space-y-4">
+          <Panel title="District performance" hint="How districts are tracking">
+            <div className="space-y-0.5">
+              <QueueRow href="/county-dashboard" title="District scorecards" meta="Cadence and coverage by district" tone="ok" />
+              <QueueRow href="/food-security" title="County food security" meta="Early-warning signals" />
+            </div>
+          </Panel>
+
+          <Panel title="Escalations" hint="Routed to Ministry where required">
+            <div className="space-y-0.5">
+              <QueueRow href="/alerts" title="County escalations" meta="Incidents and anomaly routing" tone="alert" />
+            </div>
+          </Panel>
+        </div>
       </div>
     </MinistryPageShell>
   );

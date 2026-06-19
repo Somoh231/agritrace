@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Menu, PanelRightOpen } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { ClientErrorBoundary } from "@/components/layout/ClientErrorBoundary";
@@ -35,7 +35,6 @@ export default function Topbar({
   primaryAction,
   onExportPdf,
   onOpenMobileNav,
-  onOpenOps,
 }: {
   pathname: string;
   profile: Profile;
@@ -44,7 +43,6 @@ export default function Topbar({
   primaryAction: { label: string; onClick: () => void };
   onExportPdf: () => void;
   onOpenMobileNav?: () => void;
-  onOpenOps?: () => void;
 }) {
   const router = useRouter();
   const { kicker, title } = React.useMemo(() => {
@@ -113,19 +111,42 @@ export default function Topbar({
             <WorkspaceRoleSwitcher effectiveRole={effectiveRole} authenticRole={authenticRole} />
           </ClientErrorBoundary>
         </div>
-        <SyncStatusIndicator />
-        {onOpenOps ? (
-          <button
-            type="button"
-            onClick={onOpenOps}
-            className="xl:hidden h-9 w-9 rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-panel))]/60 text-emerald-50 inline-flex items-center justify-center shrink-0"
-            aria-label="Open operations panel"
-          >
-            <PanelRightOpen className="h-5 w-5" />
-          </button>
-        ) : null}
-        <InstallAppButton variant="toolbar" label="Install App" />
+        <div className="hidden sm:flex items-center pr-1">
+          <SyncStatusIndicator />
+        </div>
         <NotificationsMenu />
+
+        <details className="relative group">
+          <summary className="list-none h-9 w-9 rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-panel))]/50 text-emerald-50/90 inline-flex items-center justify-center cursor-pointer hover:border-[rgb(var(--ministry-gold))]/40 [&::-webkit-details-marker]:hidden">
+            <span className="text-[16px] leading-none">⋯</span>
+          </summary>
+          <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-[rgb(var(--ministry-gold))]/15 bg-[rgb(var(--ministry-panel))] p-1.5 shadow-2xl">
+            <div className="px-2 py-1.5">
+              <InstallAppButton variant="toolbar" label="Install App" className="w-full justify-center" />
+            </div>
+            <div className="my-1 h-px bg-[rgb(var(--ministry-panel-border))]/50" />
+            <ToolItem
+              label="Briefing mode"
+              onClick={() => {
+                if (typeof window === "undefined") return;
+                const next = new URL(window.location.href);
+                const sp = nextUrlWithParam(next.searchParams, "present", "1");
+                router.push(next.pathname + "?" + sp.toString());
+              }}
+            />
+            <ToolItem
+              label="Print view"
+              onClick={() => {
+                if (typeof window === "undefined") return;
+                const next = new URL(window.location.href);
+                const sp = nextUrlWithParam(next.searchParams, "print", "1");
+                router.push(next.pathname + "?" + sp.toString());
+              }}
+            />
+            <ToolItem label="Export PDF" onClick={onExportPdf} />
+          </div>
+        </details>
+
         <UserWorkspaceMenu
           name={profile?.full_name?.trim() || "User"}
           role={effectiveRole}
@@ -133,39 +154,8 @@ export default function Topbar({
         />
         <button
           type="button"
-          onClick={() => {
-            if (typeof window === "undefined") return;
-            const next = new URL(window.location.href);
-            const sp = nextUrlWithParam(next.searchParams, "present", "1");
-            router.push(next.pathname + "?" + sp.toString());
-          }}
-          className="hidden lg:inline-flex h-9 px-3 rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-panel))]/50 text-[12px] text-emerald-50/90 hover:bg-[rgb(var(--ministry-panel))]/80 hover:border-[rgb(var(--ministry-gold))]/40"
-        >
-          Briefing mode
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (typeof window === "undefined") return;
-            const next = new URL(window.location.href);
-            const sp = nextUrlWithParam(next.searchParams, "print", "1");
-            router.push(next.pathname + "?" + sp.toString());
-          }}
-          className="hidden lg:inline-flex h-9 px-3 rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-panel))]/50 text-[12px] text-emerald-50/90 hover:bg-[rgb(var(--ministry-panel))]/80 hover:border-[rgb(var(--ministry-gold))]/40"
-        >
-          Print view
-        </button>
-        <button
-          type="button"
-          onClick={onExportPdf}
-          className="hidden sm:inline-flex h-9 px-3 rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-panel))]/50 text-[12px] text-emerald-50/90 hover:bg-[rgb(var(--ministry-panel))]/80 hover:border-[rgb(var(--ministry-gold))]/40"
-        >
-          Export PDF
-        </button>
-        <button
-          type="button"
           onClick={primaryAction.onClick}
-          className="h-9 px-3 rounded-lg bg-emerald-700 text-white text-[12px] font-medium hover:bg-emerald-600 shadow-sm"
+          className="h-9 px-3.5 rounded-lg bg-gradient-to-b from-emerald-600 to-emerald-700 text-white text-[12px] font-semibold ring-1 ring-[rgb(var(--ministry-gold))]/30 hover:from-emerald-500 hover:to-emerald-600 shadow-sm"
         >
           {primaryAction.label}
         </button>
@@ -183,5 +173,17 @@ export default function Topbar({
         </ClientErrorBoundary>
       </div>
     </header>
+  );
+}
+
+function ToolItem({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left rounded-lg px-2.5 py-2 text-[12px] text-emerald-50/90 hover:bg-[rgb(var(--ministry-gold))]/[0.12]"
+    >
+      {label}
+    </button>
   );
 }

@@ -1,16 +1,14 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
+import LiveQueueStat from "@/components/workspace/LiveQueueStat";
+import { BigAction, Panel, QueueRow } from "@/components/workspace/ui";
 import { assertPilotWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { createClient } from "@/lib/supabase/server";
 import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { Profile } from "@/lib/supabase/types";
-
-const TILE_CLASS =
-  "group cmd-surface cmd-surface-hover px-3.5 py-3 text-[13px] text-emerald-50/90";
 
 export default async function ClanWorkspacePage() {
   const supabase = await createClient();
@@ -26,48 +24,59 @@ export default async function ClanWorkspacePage() {
 
   return (
     <MinistryPageShell
-      title="CLAN field workspace"
-      kicker="Field Operations · Clan Agriculture Crops Technicians"
-      description="Field capture, farm registration, GPS boundaries, observations, and offline-first reporting. Submissions flow to the District Agriculture Officer (DAO) for district review."
-      actions={
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <InstallAppButton label="Install App" />
-          <SyncStatusIndicator />
-        </div>
-      }
+      title="Field workspace"
+      kicker="Field Operations · CLAN Technician"
+      description="Your field tasks for today. Everything works offline and syncs automatically when you reconnect."
+      actions={<InstallAppButton label="Install App" />}
     >
-      <div className="cmd-kicker">Priority field tasks</div>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <Link href="/field/boundary-capture" className={TILE_CLASS}>
-          <div className="font-semibold text-white">GPS boundary capture</div>
-          <p className="mt-1 text-emerald-100/45">Walk corners, approximate farm outline, queue when offline.</p>
-        </Link>
-        <Link href="/field/mobile" className={TILE_CLASS}>
-          <div className="font-semibold text-white">Field activity & checklists</div>
-          <p className="mt-1 text-emerald-100/45">Mobile-first capture with offline queue.</p>
-        </Link>
-        <Link href="/field/sync-queue" className={TILE_CLASS}>
-          <div className="font-semibold text-white">Offline queue</div>
-          <p className="mt-1 text-emerald-100/45">Pending sync and reconciliation.</p>
-        </Link>
-        <Link href="/field" className={TILE_CLASS}>
-          <div className="font-semibold text-white">Field home</div>
-          <p className="mt-1 text-emerald-100/45">Farm registration and pilot field tools.</p>
-        </Link>
-        <Link href="/field/inspections" className={TILE_CLASS}>
-          <div className="font-semibold text-white">Inspection visits</div>
-          <p className="mt-1 text-emerald-100/45">Geo-stamped visits and outcomes.</p>
-        </Link>
-        <Link href="/field/pest-reports" className={TILE_CLASS}>
-          <div className="font-semibold text-white">Pest & disease</div>
-          <p className="mt-1 text-emerald-100/45">Structured field alerts.</p>
-        </Link>
-      </div>
-      <div className="cmd-surface px-3.5 py-2.5 text-[11px] text-emerald-100/55">
-        <span className="cmd-kicker">Reporting chain</span>
-        <span className="mt-1 block">
-          CLAN field capture → DAO review and consolidation → CAC county verification → Ministry / national aggregation.
-        </span>
+      {/* Field-first: a focused single column sized for handheld use */}
+      <div className="mx-auto w-full max-w-3xl space-y-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <BigAction
+            href="/field/boundary-capture"
+            title="Capture boundary"
+            subtitle="Walk the farm corners and map the plot"
+            primary
+          />
+          <BigAction
+            href="/field/mobile"
+            title="Submit field report"
+            subtitle="Checklists, notes, and observations"
+          />
+        </div>
+
+        <LiveQueueStat href="/field/sync-queue" label="Offline queue" />
+
+        <Panel title="Today's field work" hint="Tasks assigned to your clan area">
+          <div className="space-y-0.5">
+            <QueueRow href="/farmers" title="Register a farmer" meta="Add to the registry with identity + plot" />
+            <QueueRow href="/field/inspections" title="Inspection visit" meta="Geo-stamped visit and outcome" />
+            <QueueRow href="/field/pest-reports" title="Pest & disease report" meta="Structured phytosanitary alert" tone="escalation" />
+            <QueueRow href="/field/mobile" title="Field activity checklist" meta="Mobile-first capture, offline-ready" />
+          </div>
+        </Panel>
+
+        <Panel
+          title="Recent submissions"
+          hint="What you have captured recently"
+          action={
+            <div className="cmd-surface px-2 py-1">
+              <SyncStatusIndicator />
+            </div>
+          }
+        >
+          <div className="space-y-0.5">
+            <QueueRow href="/field/sync-queue" title="Offline queue & reconciliation" meta="Review drafts and push when online" tone="ok" />
+            <QueueRow href="/activity" title="Activity history" meta="Your recent captures and updates" />
+          </div>
+        </Panel>
+
+        <div className="cmd-surface px-3.5 py-2.5 text-[11px] text-emerald-100/55">
+          <span className="cmd-kicker">Reporting chain</span>
+          <span className="mt-1 block">
+            Your captures go to the <span className="text-white">District Agriculture Officer (DAO)</span> for review, then CAC county verification and Ministry aggregation.
+          </span>
+        </div>
       </div>
     </MinistryPageShell>
   );
