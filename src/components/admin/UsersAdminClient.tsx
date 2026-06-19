@@ -3,6 +3,7 @@
 import * as React from "react";
 import { ChevronRight, Loader2, RefreshCcw, Search } from "lucide-react";
 
+import AdminPageShell, { ADMIN_CARD } from "@/components/admin/AdminPageShell";
 import AlertBanner from "@/components/shared/AlertBanner";
 import CountySelect from "@/components/shared/CountySelect";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
@@ -141,17 +142,11 @@ export default function UsersAdminClient() {
   };
 
   return (
-    <div className="w-full space-y-4">
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
-        <div className="flex flex-col md:flex-row md:items-end gap-3 justify-between">
-          <div>
-            <div className="font-display text-lg text-gray-900">User Management</div>
-            <div className="mt-1 text-[12px] text-gray-600">
-              Search users, assign roles, and activate/deactivate accounts. (Super admin only)
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2">
+    <AdminPageShell
+      title="User Management"
+      description="Search users, assign roles, and activate/deactivate accounts. (Super admin only)"
+      actions={
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2">
             <div className="relative">
               <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
                 Search
@@ -207,30 +202,25 @@ export default function UsersAdminClient() {
               Refresh
             </button>
           </div>
-        </div>
+      }
+    >
+      {error ? (
+        <AlertBanner
+          severity="danger"
+          message={error}
+          actions={[{ label: "Retry", onClick: loadUsers }]}
+        />
+      ) : null}
 
-        {error ? (
-          <div className="mt-4">
-            <AlertBanner
-              severity="danger"
-              message={error}
-              actions={[{ label: "Retry", onClick: loadUsers }]}
-            />
-          </div>
-        ) : null}
+      {orgsError ? (
+        <AlertBanner
+          severity="warning"
+          message={orgsError}
+          actions={[{ label: "Retry", onClick: loadOrgs }]}
+        />
+      ) : null}
 
-        {orgsError ? (
-          <div className="mt-2">
-            <AlertBanner
-              severity="warning"
-              message={orgsError}
-              actions={[{ label: "Retry", onClick: loadOrgs }]}
-            />
-          </div>
-        ) : null}
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className={`${ADMIN_CARD} overflow-hidden`}>
         <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
           <div className="text-[12px] text-gray-700">
             Showing <span className="font-mono">{users.length}</span> users
@@ -346,7 +336,7 @@ export default function UsersAdminClient() {
           }
         }}
       />
-    </div>
+    </AdminPageShell>
   );
 }
 

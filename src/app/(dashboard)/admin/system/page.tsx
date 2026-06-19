@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 
+import AdminPageShell, { ADMIN_CARD } from "@/components/admin/AdminPageShell";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -76,16 +77,12 @@ export default async function SystemDiagnosticsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div>
-        <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">Administration</div>
-        <h1 className="mt-2 font-display text-[22px] text-gray-900">System diagnostics</h1>
-        <p className="mt-2 text-[13px] text-gray-600">
-          Safe environment visibility and database reachability. Service-role secrets are never printed in full.
-        </p>
-      </div>
-
-      <section className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
+    <AdminPageShell
+      title="System diagnostics"
+      description="Safe environment visibility and database reachability. Service-role secrets are never printed in full."
+    >
+      <div className="grid gap-4 lg:grid-cols-2 items-start">
+      <section className={`${ADMIN_CARD} p-5 space-y-3`}>
         <div className="font-semibold text-[13px] text-gray-900">Environment</div>
         <ul className="text-[12px] text-gray-700 space-y-1 font-mono">
           <li>NEXT_PUBLIC_SUPABASE_URL: {origin.label}</li>
@@ -100,7 +97,7 @@ export default async function SystemDiagnosticsPage() {
         </ul>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
+      <section className={`${ADMIN_CARD} p-5 space-y-3`}>
         <div className="font-semibold text-[13px] text-gray-900">Auth (current session)</div>
         <div className="text-[12px] text-gray-700">
           {user ? (
@@ -113,7 +110,7 @@ export default async function SystemDiagnosticsPage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
+      <section className={`${ADMIN_CARD} p-5 space-y-3`}>
         <div className="font-semibold text-[13px] text-gray-900">Supabase admin API</div>
         <div className="text-[12px] text-gray-700">
           {adminReachable ? (
@@ -124,7 +121,7 @@ export default async function SystemDiagnosticsPage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
+      <section className={`${ADMIN_CARD} p-5 space-y-3`}>
         <div className="font-semibold text-[13px] text-gray-900">Migrations (repository)</div>
         <ul className="text-[11px] font-mono text-gray-700 space-y-1 list-decimal list-inside">
           {migrationFiles.length ? (
@@ -135,7 +132,7 @@ export default async function SystemDiagnosticsPage() {
         </ul>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
+      <section className={`${ADMIN_CARD} p-5 space-y-3`}>
         <div className="font-semibold text-[13px] text-gray-900">Table row counts (service role)</div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-[11px] font-mono border-collapse">
@@ -164,7 +161,7 @@ export default async function SystemDiagnosticsPage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5 space-y-2 text-[12px] text-gray-700">
+      <section className={`${ADMIN_CARD} p-5 space-y-2 text-[12px] text-gray-700`}>
         <div className="font-semibold text-[13px] text-gray-900">Offline sync queue</div>
         <p>
           Client sync state is tracked in the browser (IndexedDB / service worker). Inspect via Field Agents or browser devtools;
@@ -172,15 +169,16 @@ export default async function SystemDiagnosticsPage() {
         </p>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5 space-y-2 text-[12px] text-gray-700">
+      <section className={`${ADMIN_CARD} p-5 space-y-2 text-[12px] text-gray-700`}>
         <div className="font-semibold text-[13px] text-gray-900">Storage usage</div>
         <p>Blob and attachment usage are managed in Supabase Dashboard → Storage and Bucket policies.</p>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5 space-y-2 text-[12px] text-gray-700">
+      <section className={`${ADMIN_CARD} p-5 space-y-2 text-[12px] text-gray-700`}>
         <div className="font-semibold text-[13px] text-gray-900">Recent errors</div>
         <p>Use Vercel deployment logs and Supabase logs for stack traces; this page does not ingest external log drains.</p>
       </section>
-    </div>
+      </div>
+    </AdminPageShell>
   );
 }

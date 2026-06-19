@@ -3,6 +3,7 @@
 import * as React from "react";
 import { ChevronRight, Loader2, Plus, RefreshCcw } from "lucide-react";
 
+import AdminPageShell, { ADMIN_CARD } from "@/components/admin/AdminPageShell";
 import AlertBanner from "@/components/shared/AlertBanner";
 import CountySelect from "@/components/shared/CountySelect";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
@@ -63,46 +64,38 @@ export default function OrganizationsAdminClient() {
   }, [load]);
 
   return (
-    <div className="w-full space-y-4">
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <div className="font-display text-lg text-gray-900">Organizations</div>
-            <div className="mt-1 text-[12px] text-gray-600">
-              Create/edit organizations and manage pilot structure. (Super admin only)
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => load()}
-              className="h-9 px-3 rounded-md border border-gray-200 bg-white text-[12px] text-gray-700 hover:bg-gray-50 inline-flex items-center gap-2"
-            >
-              <RefreshCcw className="h-4 w-4" />
-              Refresh
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsCreating(true);
-                setSelected(null);
-              }}
-              className="h-9 px-3 rounded-md bg-forest-700 text-white text-[12px] hover:bg-forest-800 inline-flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              New org
-            </button>
-          </div>
-        </div>
+    <AdminPageShell
+      title="Organizations"
+      description="Create/edit organizations and manage pilot structure. (Super admin only)"
+      actions={
+        <>
+          <button
+            type="button"
+            onClick={() => load()}
+            className="h-9 px-3 rounded-md border border-gray-200 bg-white text-[12px] text-gray-700 hover:bg-gray-50 inline-flex items-center gap-2"
+          >
+            <RefreshCcw className="h-4 w-4" />
+            Refresh
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsCreating(true);
+              setSelected(null);
+            }}
+            className="h-9 px-3 rounded-md bg-forest-700 text-white text-[12px] hover:bg-forest-800 inline-flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            New org
+          </button>
+        </>
+      }
+    >
+      {error ? (
+        <AlertBanner severity="danger" message={error} actions={[{ label: "Retry", onClick: load }]} />
+      ) : null}
 
-        {error ? (
-          <div className="mt-4">
-            <AlertBanner severity="danger" message={error} actions={[{ label: "Retry", onClick: load }]} />
-          </div>
-        ) : null}
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className={`${ADMIN_CARD} overflow-hidden`}>
         <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
           <div className="text-[12px] text-gray-700">
             Showing <span className="font-mono">{orgs.length}</span> organizations
@@ -201,7 +194,7 @@ export default function OrganizationsAdminClient() {
           setSelected(null);
         }}
       />
-    </div>
+    </AdminPageShell>
   );
 }
 

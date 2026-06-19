@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Download, Loader2, Save } from "lucide-react";
 
+import AdminPageShell, { ADMIN_CARD } from "@/components/admin/AdminPageShell";
 import AlertBanner from "@/components/shared/AlertBanner";
 import { useToast } from "@/components/shared/toast/ToastProvider";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -87,43 +88,34 @@ export default function ReportsCenterClient() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4">
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
-        <div className="flex flex-col md:flex-row md:items-end gap-3 justify-between">
-          <div>
-            <div className="font-display text-lg text-gray-900">Advanced Reports Center</div>
-            <div className="mt-1 text-[12px] text-gray-600">
-              Saved templates + schedule-ready export layouts. (Pilot-friendly v1)
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => toast.info("Templates", "Template saving is ready for next iteration.")}
-              className="h-9 px-3 rounded-md border border-gray-200 bg-white text-[12px] text-gray-700 hover:bg-gray-50 inline-flex items-center gap-2"
-            >
-              <Save className="h-4 w-4" />
-              Save template
-            </button>
-            <button
-              type="button"
-              onClick={exportNow}
-              className="h-9 px-3 rounded-md bg-forest-700 text-white text-[12px] hover:bg-forest-800 inline-flex items-center gap-2"
-            >
-              <Download className="h-4 w-4" />
-              Export
-            </button>
-          </div>
-        </div>
-        {error ? (
-          <div className="mt-4">
-            <AlertBanner severity="warning" message={error} />
-          </div>
-        ) : null}
-      </div>
+    <AdminPageShell
+      title="Advanced Reports Center"
+      description="Saved templates + schedule-ready export layouts. (Pilot-friendly v1)"
+      actions={
+        <>
+          <button
+            type="button"
+            onClick={() => toast.info("Templates", "Template saving is ready for next iteration.")}
+            className="h-9 px-3 rounded-md border border-gray-200 bg-white text-[12px] text-gray-700 hover:bg-gray-50 inline-flex items-center gap-2"
+          >
+            <Save className="h-4 w-4" />
+            Save template
+          </button>
+          <button
+            type="button"
+            onClick={exportNow}
+            className="h-9 px-3 rounded-md bg-forest-700 text-white text-[12px] hover:bg-forest-800 inline-flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Export
+          </button>
+        </>
+      }
+    >
+      {error ? <AlertBanner severity="warning" message={error} /> : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4">
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
+        <div className={`${ADMIN_CARD} p-5`}>
           <div className="font-display text-[16px] text-gray-900">Templates</div>
           <div className="mt-3 space-y-2">
             {templates.map((t) => (
@@ -149,7 +141,7 @@ export default function ReportsCenterClient() {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
+        <div className={`${ADMIN_CARD} p-5`}>
           <div className="font-display text-[16px] text-gray-900">Filters</div>
           <div className="mt-1 text-[12px] text-gray-600">
             Filters are applied where supported by the export endpoint.
@@ -231,7 +223,7 @@ export default function ReportsCenterClient() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminPageShell>
   );
 }
 

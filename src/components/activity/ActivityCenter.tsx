@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Loader2 } from "lucide-react";
 
+import AdminPageShell, { ADMIN_CARD } from "@/components/admin/AdminPageShell";
 import AlertBanner from "@/components/shared/AlertBanner";
 import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
 import StatusChip, { type ChipTone } from "@/components/shared/table/StatusChip";
@@ -148,36 +149,32 @@ export default function ActivityCenter() {
       key: "module",
       header: "Module",
       render: (r) => (
-        <StatusChip tone={toneForModule(r.module)} theme="dark">
+        <StatusChip tone={toneForModule(r.module)} theme="light">
           {r.module}
         </StatusChip>
       ),
     },
-    { key: "action", header: "Action", render: (r) => <span className="font-mono text-[11px]">{r.action}</span> },
+    { key: "action", header: "Action", render: (r) => <span className="font-mono text-[11px] text-gray-800">{r.action}</span> },
     { key: "target", header: "Table" },
     { key: "user", header: "User" },
-    { key: "role", header: "Role", render: (r) => <span className="font-mono text-[10px] text-slate-400">{r.role}</span> },
-    { key: "record", header: "Record", render: (r) => <span className="font-mono text-[10px] text-slate-500">{r.record}</span> },
-    { key: "time", header: "Time", render: (r) => <span className="font-mono text-[10px] text-slate-400">{r.time}</span> },
+    { key: "role", header: "Role", render: (r) => <span className="font-mono text-[10px] text-gray-500">{r.role}</span> },
+    { key: "record", header: "Record", render: (r) => <span className="font-mono text-[10px] text-gray-400">{r.record}</span> },
+    { key: "time", header: "Time", render: (r) => <span className="font-mono text-[10px] text-gray-500">{r.time}</span> },
   ];
 
   const selectClass =
-    "h-9 rounded-lg border border-slate-600 bg-slate-950 px-2 text-[12px] text-slate-100 outline-none focus:border-emerald-600";
+    "h-9 rounded-md border border-gray-200 bg-white px-2 text-[12px] text-gray-900 outline-none focus:border-forest-300 focus:ring-2 focus:ring-forest-50";
 
   return (
-    <div className="w-full space-y-4">
-      <div className="cmd-surface rounded-2xl p-5">
-        <div className="flex flex-col md:flex-row md:items-end gap-3 justify-between">
-          <div>
-            <div className="font-serif-display text-lg text-white">Audit &amp; Activity Center</div>
-            <div className="mt-1 text-[12px] text-slate-400">
-              A filtered, investor-ready timeline of system actions (RLS restricted).
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:flex items-end gap-2">
+    <AdminPageShell
+      kicker="Oversight"
+      title="Audit & Activity Center"
+      description="A filtered, investor-ready timeline of system actions (RLS restricted)."
+    >
+      <div className={`${ADMIN_CARD} p-4`}>
+        <div className="grid grid-cols-2 md:flex items-end gap-2">
             <div>
-              <div className="cmd-kicker mb-1">Module</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Module</div>
               <select
                 value={moduleFilter}
                 onChange={(e) => setModuleFilter(e.target.value as any)}
@@ -191,7 +188,7 @@ export default function ActivityCenter() {
             </div>
 
             <div>
-              <div className="cmd-kicker mb-1">Role</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Role</div>
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value as any)}
@@ -220,17 +217,17 @@ export default function ActivityCenter() {
             </div>
 
             <div className="col-span-2 md:col-span-1">
-              <div className="cmd-kicker mb-1">User / action</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">User / action</div>
               <input
                 value={userQuery}
                 onChange={(e) => setUserQuery(e.target.value)}
                 placeholder="e.g. demo, CREATE, MOVE"
-                className="h-9 w-full md:w-[220px] rounded-lg border border-slate-600 bg-slate-950 px-3 text-[12px] text-slate-100 placeholder:text-slate-600 outline-none focus:border-emerald-600"
+                className="h-9 w-full md:w-[220px] rounded-md border border-gray-200 bg-white px-3 text-[12px] text-gray-900 placeholder:text-gray-400 outline-none focus:border-forest-300 focus:ring-2 focus:ring-forest-50"
               />
             </div>
 
             <div>
-              <div className="cmd-kicker mb-1">Range</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Range</div>
               <select
                 value={range}
                 onChange={(e) => setRange(e.target.value as any)}
@@ -241,7 +238,6 @@ export default function ActivityCenter() {
                 <option value="all">All</option>
               </select>
             </div>
-          </div>
         </div>
 
         {error ? (
@@ -252,7 +248,7 @@ export default function ActivityCenter() {
       </div>
 
       {isLoading ? (
-        <div className="cmd-surface rounded-2xl p-6 text-[12px] text-slate-400 flex items-center gap-2">
+        <div className={`${ADMIN_CARD} p-6 text-[12px] text-gray-600 flex items-center gap-2`}>
           <Loader2 className="h-4 w-4 animate-spin" />
           Loading activity…
         </div>
@@ -264,11 +260,12 @@ export default function ActivityCenter() {
           filename="activity-audit.csv"
           pageSize={50}
           dense
+          theme="light"
           getRowKey={(r) => r.id}
           emptyLabel="No audit events match the current module, role, user, or date filters. Broaden the range or seed demo data to generate a baseline timeline."
         />
       )}
-    </div>
+    </AdminPageShell>
   );
 }
 

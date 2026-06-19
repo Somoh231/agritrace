@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Loader2, RefreshCcw, Upload } from "lucide-react";
 
+import AdminPageShell, { ADMIN_CARD } from "@/components/admin/AdminPageShell";
 import AlertBanner from "@/components/shared/AlertBanner";
 import { useToast } from "@/components/shared/toast/ToastProvider";
 
@@ -64,55 +65,51 @@ export default function SettingsAdminClient() {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-5 text-[12px] text-gray-600 flex items-center gap-2">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Loading settings…
-      </div>
+      <AdminPageShell title="Settings" description="Basic branding + pilot preferences. (Super admin only)">
+        <div className={`${ADMIN_CARD} p-5 text-[12px] text-gray-600 flex items-center gap-2`}>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading settings…
+        </div>
+      </AdminPageShell>
     );
   }
 
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto space-y-3">
+      <AdminPageShell title="Settings" description="Basic branding + pilot preferences. (Super admin only)">
         <AlertBanner severity="danger" message={error} actions={[{ label: "Retry", onClick: load }]} />
-      </div>
+      </AdminPageShell>
     );
   }
 
   if (!settings) {
     return (
-      <div className="max-w-4xl mx-auto space-y-3">
+      <AdminPageShell title="Settings" description="Basic branding + pilot preferences. (Super admin only)">
         <AlertBanner
           severity="warning"
           message="No settings row found. Run schema.enterprise.sql to create app_settings."
           actions={[{ label: "Go to setup", onClick: () => (window.location.href = "/setup") }]}
         />
-      </div>
+      </AdminPageShell>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <div className="font-display text-lg text-gray-900">Settings</div>
-            <div className="mt-1 text-[12px] text-gray-600">
-              Basic branding + pilot preferences. (Super admin only)
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={load}
-            className="h-9 px-3 rounded-md border border-gray-200 bg-white text-[12px] text-gray-700 hover:bg-gray-50 inline-flex items-center gap-2"
-          >
-            <RefreshCcw className="h-4 w-4" />
-            Refresh
-          </button>
-        </div>
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 space-y-4">
+    <AdminPageShell
+      title="Settings"
+      description="Basic branding + pilot preferences. (Super admin only)"
+      actions={
+        <button
+          type="button"
+          onClick={load}
+          className="h-9 px-3 rounded-md border border-gray-200 bg-white text-[12px] text-gray-700 hover:bg-gray-50 inline-flex items-center gap-2"
+        >
+          <RefreshCcw className="h-4 w-4" />
+          Refresh
+        </button>
+      }
+    >
+      <div className={`${ADMIN_CARD} p-5 space-y-4`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <Field label="App name">
             <input
@@ -217,7 +214,7 @@ export default function SettingsAdminClient() {
 
         <div className="text-[11px] text-gray-500 font-mono">Last updated: {settings.updated_at}</div>
       </div>
-    </div>
+    </AdminPageShell>
   );
 }
 

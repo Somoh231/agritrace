@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import AdminPageShell, { ADMIN_CARD } from "@/components/admin/AdminPageShell";
+
 const API_ENDPOINTS = [
   { path: "/api/farmers", purpose: "Farmer registry records", auth: "Bearer token (required)" },
   { path: "/api/registrations", purpose: "Farm registration and renewal data", auth: "Bearer token (required)" },
@@ -17,18 +19,13 @@ const CONNECTOR_STATUS = [
 
 export default function IntegrationsPage() {
   return (
-    <div className="space-y-4 max-w-6xl">
-      <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">Interoperability</div>
-        <h1 className="mt-2 font-display text-[24px] text-gray-900">Integration and API readiness center</h1>
-        <p className="mt-2 text-[13px] text-gray-600 max-w-3xl">
-          Institutional integration readiness for ministry systems, partner reporting, and future national data
-          exchange.
-        </p>
-      </section>
-
+    <AdminPageShell
+      kicker="Interoperability"
+      title="Integration and API readiness center"
+      description="Institutional integration readiness for ministry systems, partner reporting, and future national data exchange."
+    >
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className={`${ADMIN_CARD} p-4`}>
           <h2 className="font-display text-[18px] text-gray-900">API documentation</h2>
           <p className="mt-1 text-[12px] text-gray-600">
             Core secure endpoints for government and integration partners.
@@ -44,7 +41,7 @@ export default function IntegrationsPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className={`${ADMIN_CARD} p-4`}>
           <h2 className="font-display text-[18px] text-gray-900">Import / export operations</h2>
           <p className="mt-1 text-[12px] text-gray-600">
             Data exchange tooling for ingestion and formal report outputs.
@@ -58,7 +55,7 @@ export default function IntegrationsPage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <section className={`${ADMIN_CARD} overflow-hidden`}>
         <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-400">
           Connected systems status
         </div>
@@ -83,7 +80,7 @@ export default function IntegrationsPage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-4">
+      <section className={`${ADMIN_CARD} p-4`}>
         <h2 className="font-display text-[18px] text-gray-900">Sample secure request</h2>
         <pre className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-[11px] overflow-x-auto">
 {`curl -H "Authorization: Bearer <token>" \\
@@ -91,7 +88,7 @@ export default function IntegrationsPage() {
   https://your-domain.com/api/farmers?limit=50`}
         </pre>
       </section>
-    </div>
+    </AdminPageShell>
   );
 }
 

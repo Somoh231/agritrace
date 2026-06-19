@@ -3,6 +3,7 @@
 import * as React from "react";
 import { FileUp, Loader2, RefreshCcw } from "lucide-react";
 
+import AdminPageShell, { ADMIN_CARD } from "@/components/admin/AdminPageShell";
 import AlertBanner from "@/components/shared/AlertBanner";
 import { useToast } from "@/components/shared/toast/ToastProvider";
 import { parseCsv } from "@/lib/utils/csv";
@@ -89,23 +90,17 @@ export default function ImportCenterClient() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4">
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
-        <div className="flex flex-col md:flex-row md:items-end gap-3 justify-between">
-          <div>
-            <div className="font-display text-lg text-gray-900">Data Import Center</div>
-            <div className="mt-1 text-[12px] text-gray-600">
-              CSV preview → validate → import with a clear summary. (Super admin only)
-            </div>
-          </div>
-          <a href="/setup" className="text-[12px] text-forest-800 hover:underline">
-            Setup help →
-          </a>
-        </div>
-      </div>
-
+    <AdminPageShell
+      title="Data Import Center"
+      description="CSV preview → validate → import with a clear summary. (Super admin only)"
+      actions={
+        <a href="/setup" className="text-[12px] text-forest-800 hover:underline">
+          Setup help →
+        </a>
+      }
+    >
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-4">
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
+        <div className={`${ADMIN_CARD} p-5`}>
           <div className="flex items-end justify-between gap-3">
             <div>
               <div className="font-display text-[16px] text-gray-900">Upload CSV</div>
@@ -217,7 +212,7 @@ export default function ImportCenterClient() {
         </div>
 
         <div className="space-y-4">
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
+          <div className={`${ADMIN_CARD} p-5`}>
             <div className="font-display text-[16px] text-gray-900">Template</div>
             <div className="mt-2 text-[12px] text-gray-700">
               Required headers:
@@ -231,7 +226,7 @@ export default function ImportCenterClient() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className={`${ADMIN_CARD} overflow-hidden`}>
             <div className="px-5 py-3 border-b border-gray-100">
               <div className="font-display text-[16px] text-gray-900">Preview</div>
               <div className="mt-1 text-[12px] text-gray-600">
@@ -273,7 +268,7 @@ export default function ImportCenterClient() {
             )}
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
+          <div className={`${ADMIN_CARD} p-5`}>
             <div className="font-display text-[16px] text-gray-900">Result</div>
             <div className="mt-2 text-[12px] text-gray-700">
               {result ? (
@@ -315,7 +310,7 @@ export default function ImportCenterClient() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminPageShell>
   );
 }
 

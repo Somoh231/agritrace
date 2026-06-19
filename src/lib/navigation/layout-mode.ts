@@ -12,6 +12,9 @@ export type LayoutMode = "command" | "table" | "admin" | "map";
 /** Routes that are a single full-height map canvas (must fill the viewport). */
 const MAP_PREFIXES = ["/field/boundary-capture"];
 
+/** Light-canvas admin console routes (full-width light surface). */
+const ADMIN_PREFIXES = ["/admin", "/activity"];
+
 /** Wide, list/table-heavy workspaces that benefit from horizontal space. */
 const TABLE_PREFIXES = [
   "/farmers",
@@ -23,7 +26,6 @@ const TABLE_PREFIXES = [
   "/verification-queue",
   "/registration-approvals",
   "/alerts",
-  "/activity",
   "/compliance",
   "/field-agents",
   "/field/inspections",
@@ -44,7 +46,7 @@ function matches(pathname: string, prefix: string): boolean {
 
 export function resolveLayoutMode(pathname: string): LayoutMode {
   if (MAP_PREFIXES.some((p) => matches(pathname, p))) return "map";
-  if (pathname === "/admin" || pathname.startsWith("/admin/")) return "admin";
+  if (ADMIN_PREFIXES.some((p) => matches(pathname, p))) return "admin";
   if (TABLE_PREFIXES.some((p) => matches(pathname, p))) return "table";
   return "command";
 }
@@ -53,5 +55,5 @@ export function resolveLayoutMode(pathname: string): LayoutMode {
 export const LAYOUT_CONTAINER_CLASS: Record<Exclude<LayoutMode, "map">, string> = {
   command: "mx-auto w-full max-w-[1240px] min-w-0 px-4 py-5 md:px-8 md:py-7",
   table: "mx-auto w-full max-w-[1760px] min-w-0 px-4 py-5 md:px-6 md:py-6",
-  admin: "mx-auto w-full max-w-[1600px] min-w-0 px-4 py-5 md:px-7 md:py-7",
+  admin: "mx-auto w-full max-w-[1760px] min-w-0 px-4 py-5 md:px-7 md:py-7",
 };
