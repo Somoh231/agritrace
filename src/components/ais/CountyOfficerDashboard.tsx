@@ -10,6 +10,8 @@ import CaoDaoOversightGrid from "@/components/cao/CaoDaoOversightGrid";
 import CaoDistrictPerformance from "@/components/cao/CaoDistrictPerformance";
 import CaoKpiStrip from "@/components/cao/CaoKpiStrip";
 import CaoReportingSection from "@/components/cao/CaoReportingSection";
+import WorkflowReviewPanel from "@/components/workflow/WorkflowReviewPanel";
+import { workflowStageForRole } from "@/lib/workflow/roles";
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import OperationDrawer from "@/components/operations/OperationDrawer";
 import MoaOperationalSurveyForm, { titleForMoaOperationalSurveyKind } from "@/components/reporting/MoaOperationalSurveyForm";
@@ -288,6 +290,13 @@ export default function CountyOfficerDashboard({
 
         {!assignmentGap ? (
           <>
+            <WorkflowReviewPanel
+              stage={workflowStageForRole(role)}
+              readOnly={!approvalsInteractive}
+              canCreate={approvalsInteractive}
+              title="County approval workflow (persistent)"
+            />
+
             <CaoApprovalQueues county={county} readOnly={!approvalsInteractive} />
 
             <CaoDaoOversightGrid

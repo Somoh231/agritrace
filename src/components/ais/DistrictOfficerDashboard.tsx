@@ -14,6 +14,8 @@ import RecordFieldInspectionForm from "@/components/operations/forms/RecordField
 import RegisterFarmerForm from "@/components/operations/forms/RegisterFarmerForm";
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import MoaOperationalSurveyForm, { titleForMoaOperationalSurveyKind } from "@/components/reporting/MoaOperationalSurveyForm";
+import WorkflowReviewPanel from "@/components/workflow/WorkflowReviewPanel";
+import { workflowStageForRole } from "@/lib/workflow/roles";
 import { useDaoWorkflowQueue } from "@/hooks/useDaoWorkflowQueue";
 import type { DaoWorkflowFormBindings, DaoWorkflowKind } from "@/lib/dao/dao-workflow-types";
 import { daoReviewReadOnly, isClanFieldRole, isDaoDistrictRole } from "@/lib/auth/operational-roles";
@@ -182,6 +184,13 @@ export default function DistrictOfficerDashboard({
           </div>
 
           <DaoTodaysTasksPanel county={county} district={district} />
+
+          <WorkflowReviewPanel
+            stage={workflowStageForRole(role)}
+            readOnly={readOnly}
+            canCreate={!readOnly}
+            title="District review workflow (persistent)"
+          />
 
           <DaoOfflineQueuePanel
             items={wf.items}

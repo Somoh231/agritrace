@@ -4,6 +4,10 @@ import * as React from "react";
 
 import type { CaoApprovalItem, CaoApprovalQueueKind, CaoApprovalStatus } from "@/lib/cao/cao-approval-seed";
 import { seedCaoApprovalItems } from "@/lib/cao/cao-approval-seed";
+import { postWorkflowAction } from "@/lib/workflow/client";
+import type { WorkflowAction } from "@/lib/workflow/status-model";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const QUEUE_LABELS: Record<CaoApprovalQueueKind, string> = {
   farmer_registration: "Farmer registrations",
@@ -35,10 +39,36 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
   const [items, setItems] = React.useState<CaoApprovalItem[]>(() => seedCaoApprovalItems(county));
   const [tab, setTab] = React.useState<CaoApprovalQueueKind>("farmer_registration");
   const [statusFilter, setStatusFilter] = React.useState<CaoApprovalStatus | "all">("all");
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setItems(seedCaoApprovalItems(county));
   }, [county]);
+
+  /**
+   * Persists the decision through the audited workflow API when the row maps to
+   * a real submission; otherwise the optimistic patch stands as temporary UI
+   * state (demo seeds). Reverts on server rejection.
+   */
+  const decide = React.useCallback(
+    async (row: CaoApprovalItem, action: WorkflowAction, nextStatus: CaoApprovalStatus, detailSuffix?: string) => {
+      if (readOnly) return;
+      const prevStatus = row.status;
+      setItems((prev) =>
+        prev.map((x) =>
+          x.id === row.id ? { ...x, status: nextStatus, detail: detailSuffix ? `${x.detail} · ${detailSuffix}` : x.detail } : x,
+        ),
+      );
+      if (row.submissionId && UUID_RE.test(row.submissionId)) {
+        const res = await postWorkflowAction({ action, submissionId: row.submissionId, note: detailSuffix });
+        if (!res.ok) {
+          setError(res.message);
+          setItems((prev) => prev.map((x) => (x.id === row.id ? { ...x, status: prevStatus } : x)));
+        }
+      }
+    },
+    [readOnly],
+  );
 
   const tabItems = React.useMemo(() => items.filter((x) => x.queue === tab), [items, tab]);
   const visible = React.useMemo(
@@ -46,18 +76,14 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
     [tabItems, statusFilter],
   );
 
-  const patch = (id: string, partial: Partial<CaoApprovalItem>) => {
-    if (readOnly) return;
-    setItems((prev) => prev.map((x) => (x.id === id ? { ...x, ...partial } : x)));
-  };
-
   return (
     <section className="rounded-xl border border-slate-700/85 bg-slate-950/45 p-4 sm:p-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-display text-[15px] font-semibold text-white">CAC approval queues</h2>
           <p className="mt-1 text-[12px] text-slate-400">
-            County-scoped supervisory actions — statuses mirror ministry routing (demo state updates locally until backend queues are wired).
+            County-scoped supervisory actions — statuses mirror ministry routing. Decisions on rows backed by a real submission persist via the audited
+            workflow engine; demo seed rows update locally as temporary UI state.
           </p>
         </div>
         <label className="flex items-center gap-2 text-[11px] text-slate-400">
@@ -96,6 +122,15 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
         })}
       </div>
 
+      {error ? (
+        <div className="mt-3 rounded-lg border border-rose-800/50 bg-rose-950/30 px-3 py-2 text-[12px] text-rose-100">
+          {error}{" "}
+          <button type="button" className="ml-1 underline" onClick={() => setError(null)}>
+            Dismiss
+          </button>
+        </div>
+      ) : null}
+
       <ul className="mt-4 divide-y divide-slate-800/90">
         {visible.length === 0 ? (
           <li className="py-10 text-center text-[12px] text-slate-500">No items in this queue for the current filters.</li>
@@ -114,30 +149,25 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
               </div>
               {!readOnly ? (
                 <div className="flex shrink-0 flex-wrap gap-2">
-                  <button type="button" onClick={() => patch(row.id, { status: "approved" })} className="rounded-lg bg-emerald-800 px-3 py-1.5 text-[11px] text-white hover:bg-emerald-700">
+                  <button type="button" onClick={() => void decide(row, "approve", "approved")} className="rounded-lg bg-emerald-800 px-3 py-1.5 text-[11px] text-white hover:bg-emerald-700">
                     Approve
                   </button>
-                  <button type="button" onClick={() => patch(row.id, { status: "rejected" })} className="rounded-lg border border-rose-700/60 px-3 py-1.5 text-[11px] text-rose-100 hover:bg-rose-950/35">
+                  <button type="button" onClick={() => void decide(row, "reject", "rejected", "CAC rejected")} className="rounded-lg border border-rose-700/60 px-3 py-1.5 text-[11px] text-rose-100 hover:bg-rose-950/35">
                     Reject
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      patch(row.id, {
-                        status: "under_review",
-                        detail: `${row.detail} · CAC requested corrections ${new Date().toISOString().slice(0, 10)}.`,
-                      })
-                    }
+                    onClick={() => void decide(row, "request_corrections", "under_review", `CAC requested corrections ${new Date().toISOString().slice(0, 10)}`)}
                     className="rounded-lg border border-slate-600 px-3 py-1.5 text-[11px] text-slate-200 hover:bg-slate-900"
                   >
                     Request corrections
                   </button>
-                  <button type="button" onClick={() => patch(row.id, { status: "escalated" })} className="rounded-lg border border-amber-700/55 px-3 py-1.5 text-[11px] text-amber-100 hover:bg-amber-950/30">
+                  <button type="button" onClick={() => void decide(row, "escalate", "escalated", "Escalated to ministry")} className="rounded-lg border border-amber-700/55 px-3 py-1.5 text-[11px] text-amber-100 hover:bg-amber-950/30">
                     Escalate to ministry
                   </button>
                   <button
                     type="button"
-                    onClick={() => patch(row.id, { status: "under_review", detail: `${row.detail} · Investigation assigned.` })}
+                    onClick={() => void decide(row, "comment", "under_review", "Investigation assigned")}
                     className="rounded-lg border border-sky-700/50 px-3 py-1.5 text-[11px] text-sky-100 hover:bg-sky-950/30"
                   >
                     Assign investigation

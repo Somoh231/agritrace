@@ -14,7 +14,8 @@
     "seed": "tsx src/lib/supabase/seed.ts",
     "seed:demo": "tsx src/lib/supabase/seed-demo.ts",
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
-    "seed:ministry": "tsx src/lib/supabase/seed-ministry-canonical.ts"
+    "seed:ministry": "tsx src/lib/supabase/seed-ministry-canonical.ts",
+    "test:workflow": "tsx src/lib/workflow/__tests__/workflow.spec.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",

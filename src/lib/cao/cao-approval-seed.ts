@@ -19,6 +19,12 @@ export type CaoApprovalItem = {
   submittedAt: string;
   status: CaoApprovalStatus;
   detail: string;
+  /**
+   * When present and a real `operational_submissions` UUID, the queue buttons
+   * persist decisions via the workflow API. Demo seed rows omit this and update
+   * optimistically as temporary UI state only.
+   */
+  submissionId?: string;
 };
 
 export function seedCaoApprovalItems(county: string | null): CaoApprovalItem[] {
