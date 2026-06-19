@@ -1,13 +1,22 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Plus, RefreshCcw } from "lucide-react";
+import { ChevronRight, Loader2, Plus, RefreshCcw } from "lucide-react";
 
 import AlertBanner from "@/components/shared/AlertBanner";
 import CountySelect from "@/components/shared/CountySelect";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import StatusChip, { type ChipTone } from "@/components/shared/table/StatusChip";
 import { useToast } from "@/components/shared/toast/ToastProvider";
 import type { Organization, OrgType } from "@/lib/supabase/types";
+
+const ORG_TYPE_TONE: Record<string, ChipTone> = {
+  government: "info",
+  exporter: "warn",
+  cooperative: "ok",
+  ngo: "neutral",
+  certifier: "info",
+};
 
 type OrgWithStats = Organization & {
   stats?: {
@@ -54,9 +63,9 @@ export default function OrganizationsAdminClient() {
   }, [load]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4">
+    <div className="w-full space-y-4">
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
-        <div className="flex items-end justify-between gap-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <div className="font-display text-lg text-gray-900">Organizations</div>
             <div className="mt-1 text-[12px] text-gray-600">
@@ -116,29 +125,35 @@ export default function OrganizationsAdminClient() {
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="max-h-[70vh] overflow-auto">
             <table className="min-w-[860px] w-full text-[12px]">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className="sticky top-0 z-10 bg-gray-50 text-gray-600 shadow-[0_1px_0_rgba(0,0,0,0.06)]">
                 <tr>
                   <th className="text-left font-medium px-5 py-3">Organization</th>
                   <th className="text-left font-medium px-3 py-3">Type</th>
                   <th className="text-left font-medium px-3 py-3">County</th>
                   <th className="text-left font-medium px-3 py-3">License</th>
                   <th className="text-left font-medium px-3 py-3">Created</th>
+                  <th className="w-10 px-3 py-3" aria-label="Open" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {orgs.map((o) => (
-                  <tr key={o.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelected(o)}>
+                  <tr key={o.id} className="group hover:bg-gray-50 cursor-pointer" onClick={() => setSelected(o)}>
                     <td className="px-5 py-3">
                       <div className="font-medium text-gray-900">{o.name}</div>
                       <div className="text-[11px] text-gray-500 font-mono">{o.id}</div>
                     </td>
-                    <td className="px-3 py-3 font-mono text-[11px]">{o.type}</td>
+                    <td className="px-3 py-3">
+                      <StatusChip tone={ORG_TYPE_TONE[o.type] ?? "neutral"}>{o.type}</StatusChip>
+                    </td>
                     <td className="px-3 py-3">{o.county ?? "—"}</td>
                     <td className="px-3 py-3 font-mono text-[11px]">{o.license_number ?? "—"}</td>
                     <td className="px-3 py-3 font-mono text-[11px] text-gray-500">
                       {new Date(o.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      <ChevronRight className="ml-auto h-4 w-4 text-gray-300 group-hover:text-forest-700" aria-hidden />
                     </td>
                   </tr>
                 ))}

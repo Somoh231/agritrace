@@ -85,7 +85,9 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   }, []);
 
   const expandable = Boolean(renderExpanded);
-  const colSpan = columns.length + (expandable ? 1 : 0);
+  // Clickable rows that don't expand get a trailing disclosure affordance so they read as actionable.
+  const hasRowAction = Boolean(onRowClick) && !expandable;
+  const colSpan = columns.length + (expandable ? 1 : 0) + (hasRowAction ? 1 : 0);
 
   const filtered = React.useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -210,6 +212,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
                   </button>
                 </th>
               ))}
+              {hasRowAction ? <th className={`${headPad} w-10`} aria-label="Open detail" /> : null}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/90">
@@ -249,7 +252,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
                   frag.push(
                     <React.Fragment key={rk}>
                       <tr
-                        className={`hover:bg-slate-800/40 text-slate-200 ${onRowClick ? "cursor-pointer" : ""} ${rowClassName?.(row) ?? ""}`}
+                        className={`group hover:bg-slate-800/40 text-slate-200 ${onRowClick ? "cursor-pointer" : ""} ${rowClassName?.(row) ?? ""}`}
                         onClick={() => onRowClick?.(row)}
                       >
                         {expandable ? (
@@ -273,6 +276,11 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
                             {c.render ? c.render(row) : String(row[c.key as keyof T] ?? "—")}
                           </td>
                         ))}
+                        {hasRowAction ? (
+                          <td className={`${cellPad} w-10 text-right align-middle`}>
+                            <ChevronRight className="ml-auto h-4 w-4 text-slate-600 transition group-hover:text-emerald-300" aria-hidden />
+                          </td>
+                        ) : null}
                       </tr>
                       {expandable && renderExpanded && open ? (
                         <tr className="border-b border-slate-800/90 bg-black/35">
@@ -293,7 +301,10 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
 
       <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-t border-slate-700/80 bg-slate-950/60 text-[11px] text-slate-500">
         <span>
-          {filtered.length} rows · page {safePage + 1}/{pages}
+          {filtered.length === 0
+            ? "0 rows"
+            : `Showing ${safePage * pageSize + 1}–${Math.min(filtered.length, safePage * pageSize + pageSize)} of ${filtered.length}`}
+          {" · "}page {safePage + 1}/{pages}
         </span>
         <div className="flex items-center gap-1">
           <button

@@ -4,7 +4,8 @@ import * as React from "react";
 import { Loader2 } from "lucide-react";
 
 import AlertBanner from "@/components/shared/AlertBanner";
-import StatusPill from "@/components/shared/StatusPill";
+import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
+import StatusChip, { type ChipTone } from "@/components/shared/table/StatusChip";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { UserRole } from "@/lib/supabase/types";
 import { formatDateTime } from "@/lib/utils/formatters";
@@ -37,16 +38,27 @@ function moduleFromTable(table: string | null): Module {
   return "system";
 }
 
-function toneForModule(m: Module) {
+function toneForModule(m: Module): ChipTone {
   switch (m) {
     case "rice":
-      return "info" as const;
+      return "info";
     case "cocoa":
-      return "ok" as const;
+      return "ok";
     default:
-      return "neutral" as const;
+      return "neutral";
   }
 }
+
+type ActivityRow = {
+  id: string;
+  module: Module;
+  action: string;
+  target: string;
+  user: string;
+  role: string;
+  record: string;
+  time: string;
+};
 
 export default function ActivityCenter() {
   const [isLoading, setIsLoading] = React.useState(true);
@@ -116,26 +128,60 @@ export default function ActivityCenter() {
     });
   }, [rows, moduleFilter, roleFilter, userQuery, range]);
 
+  const gridRows = React.useMemo<ActivityRow[]>(
+    () =>
+      filtered.map((r) => ({
+        id: r.id,
+        module: moduleFromTable(r.table_name),
+        action: r.action,
+        target: r.table_name ?? "system",
+        user: r.profiles?.full_name ?? "Unknown user",
+        role: r.profiles?.role ?? "—",
+        record: r.record_id ?? "—",
+        time: formatDateTime(r.created_at),
+      })),
+    [filtered],
+  );
+
+  const columns: GridColumn<ActivityRow>[] = [
+    {
+      key: "module",
+      header: "Module",
+      render: (r) => (
+        <StatusChip tone={toneForModule(r.module)} theme="dark">
+          {r.module}
+        </StatusChip>
+      ),
+    },
+    { key: "action", header: "Action", render: (r) => <span className="font-mono text-[11px]">{r.action}</span> },
+    { key: "target", header: "Table" },
+    { key: "user", header: "User" },
+    { key: "role", header: "Role", render: (r) => <span className="font-mono text-[10px] text-slate-400">{r.role}</span> },
+    { key: "record", header: "Record", render: (r) => <span className="font-mono text-[10px] text-slate-500">{r.record}</span> },
+    { key: "time", header: "Time", render: (r) => <span className="font-mono text-[10px] text-slate-400">{r.time}</span> },
+  ];
+
+  const selectClass =
+    "h-9 rounded-lg border border-slate-600 bg-slate-950 px-2 text-[12px] text-slate-100 outline-none focus:border-emerald-600";
+
   return (
-    <div className="max-w-5xl mx-auto space-y-4">
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
+    <div className="w-full space-y-4">
+      <div className="cmd-surface rounded-2xl p-5">
         <div className="flex flex-col md:flex-row md:items-end gap-3 justify-between">
           <div>
-            <div className="font-display text-lg text-gray-900">Audit + Activity Center</div>
-            <div className="mt-1 text-[12px] text-gray-600">
+            <div className="font-serif-display text-lg text-white">Audit &amp; Activity Center</div>
+            <div className="mt-1 text-[12px] text-slate-400">
               A filtered, investor-ready timeline of system actions (RLS restricted).
             </div>
           </div>
 
           <div className="grid grid-cols-2 md:flex items-end gap-2">
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
-                Module
-              </div>
+              <div className="cmd-kicker mb-1">Module</div>
               <select
                 value={moduleFilter}
                 onChange={(e) => setModuleFilter(e.target.value as any)}
-                className="h-9 rounded-md border border-gray-200 bg-white px-2 text-[12px]"
+                className={selectClass}
               >
                 <option value="">All</option>
                 <option value="rice">Rice</option>
@@ -145,13 +191,11 @@ export default function ActivityCenter() {
             </div>
 
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
-                Role
-              </div>
+              <div className="cmd-kicker mb-1">Role</div>
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value as any)}
-                className="h-9 rounded-md border border-gray-200 bg-white px-2 text-[12px]"
+                className={selectClass}
               >
                 <option value="">All</option>
                 <option value="super_admin">super_admin</option>
@@ -176,25 +220,21 @@ export default function ActivityCenter() {
             </div>
 
             <div className="col-span-2 md:col-span-1">
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
-                User / action
-              </div>
+              <div className="cmd-kicker mb-1">User / action</div>
               <input
                 value={userQuery}
                 onChange={(e) => setUserQuery(e.target.value)}
                 placeholder="e.g. demo, CREATE, MOVE"
-                className="h-9 w-full md:w-[220px] rounded-md border border-gray-200 bg-white px-3 text-[12px] outline-none focus:border-forest-300 focus:ring-2 focus:ring-forest-50"
+                className="h-9 w-full md:w-[220px] rounded-lg border border-slate-600 bg-slate-950 px-3 text-[12px] text-slate-100 placeholder:text-slate-600 outline-none focus:border-emerald-600"
               />
             </div>
 
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
-                Range
-              </div>
+              <div className="cmd-kicker mb-1">Range</div>
               <select
                 value={range}
                 onChange={(e) => setRange(e.target.value as any)}
-                className="h-9 rounded-md border border-gray-200 bg-white px-2 text-[12px]"
+                className={selectClass}
               >
                 <option value="7d">Last 7 days</option>
                 <option value="30d">Last 30 days</option>
@@ -211,57 +251,23 @@ export default function ActivityCenter() {
         ) : null}
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-          <div className="text-[12px] text-gray-700">
-            Showing <span className="font-mono">{filtered.length}</span> events
-          </div>
-          <a href="/setup" className="text-[12px] text-forest-800 hover:underline">
-            Setup help
-          </a>
+      {isLoading ? (
+        <div className="cmd-surface rounded-2xl p-6 text-[12px] text-slate-400 flex items-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading activity…
         </div>
-
-        {isLoading ? (
-          <div className="p-5 text-[12px] text-gray-600 flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading activity…
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="p-10 text-center">
-            <div className="text-[12px] font-medium text-gray-900">No matching events</div>
-            <div className="mt-1 text-[11px] text-gray-500">
-              Try broadening filters, or seed demo data to generate a baseline timeline.
-            </div>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {filtered.map((r) => {
-              const m = moduleFromTable(r.table_name);
-              return (
-                <div key={r.id} className="px-5 py-3 hover:bg-gray-50">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <StatusPill status={toneForModule(m)} label={m.toUpperCase()} />
-                        <div className="text-[12px] font-medium text-gray-900">
-                          {r.action} {r.table_name ?? "system"}
-                        </div>
-                      </div>
-                      <div className="mt-1 text-[11px] text-gray-500">
-                        {(r.profiles?.full_name ?? "Unknown user") + (r.profiles?.role ? ` · ${r.profiles.role}` : "")}
-                        {r.record_id ? ` · record ${r.record_id}` : ""}
-                      </div>
-                    </div>
-                    <div className="shrink-0 font-mono text-[10px] text-gray-400">
-                      {formatDateTime(r.created_at)}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      ) : (
+        <EnterpriseDataGrid<ActivityRow>
+          title="System audit timeline"
+          rows={gridRows}
+          columns={columns}
+          filename="activity-audit.csv"
+          pageSize={50}
+          dense
+          getRowKey={(r) => r.id}
+          emptyLabel="No audit events match the current module, role, user, or date filters. Broaden the range or seed demo data to generate a baseline timeline."
+        />
+      )}
     </div>
   );
 }

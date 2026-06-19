@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, RefreshCcw, Search } from "lucide-react";
+import { ChevronRight, Loader2, RefreshCcw, Search } from "lucide-react";
 
 import AlertBanner from "@/components/shared/AlertBanner";
 import CountySelect from "@/components/shared/CountySelect";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import StatusChip from "@/components/shared/table/StatusChip";
 import { useToast } from "@/components/shared/toast/ToastProvider";
 import type { Organization, UserRole } from "@/lib/supabase/types";
 
@@ -140,7 +141,7 @@ export default function UsersAdminClient() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4">
+    <div className="w-full space-y-4">
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
         <div className="flex flex-col md:flex-row md:items-end gap-3 justify-between">
           <div>
@@ -252,22 +253,23 @@ export default function UsersAdminClient() {
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="max-h-[70vh] overflow-auto">
             <table className="min-w-[860px] w-full text-[12px]">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className="sticky top-0 z-10 bg-gray-50 text-gray-600 shadow-[0_1px_0_rgba(0,0,0,0.06)]">
                 <tr>
                   <th className="text-left font-medium px-5 py-3">User</th>
                   <th className="text-left font-medium px-3 py-3">Role</th>
                   <th className="text-left font-medium px-3 py-3">Org</th>
                   <th className="text-left font-medium px-3 py-3">Status</th>
                   <th className="text-left font-medium px-3 py-3">Last sign-in</th>
+                  <th className="w-10 px-3 py-3" aria-label="Open" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {users.map((u) => (
                   <tr
                     key={u.id}
-                    className="hover:bg-gray-50 cursor-pointer"
+                    className="group hover:bg-gray-50 cursor-pointer"
                     onClick={() => setSelected(u)}
                   >
                     <td className="px-5 py-3">
@@ -276,7 +278,13 @@ export default function UsersAdminClient() {
                       </div>
                       <div className="text-[11px] text-gray-500 font-mono">{u.email ?? u.id}</div>
                     </td>
-                    <td className="px-3 py-3 font-mono text-[11px]">{u.profile?.role ?? "—"}</td>
+                    <td className="px-3 py-3">
+                      {u.profile?.role ? (
+                        <StatusChip tone="neutral" dot={false}>{u.profile.role}</StatusChip>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td className="px-3 py-3">
                       {u.profile?.organization_id
                         ? orgs.find((o) => o.id === u.profile?.organization_id)?.name ??
@@ -285,13 +293,16 @@ export default function UsersAdminClient() {
                     </td>
                     <td className="px-3 py-3">
                       {u.profile?.is_active === false ? (
-                        <span className="font-mono text-[11px] text-red-700">deactivated</span>
+                        <StatusChip tone="danger">Deactivated</StatusChip>
                       ) : (
-                        <span className="font-mono text-[11px] text-green-700">active</span>
+                        <StatusChip tone="ok">Active</StatusChip>
                       )}
                     </td>
                     <td className="px-3 py-3 font-mono text-[11px] text-gray-500">
                       {fmt(u.last_sign_in_at)}
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      <ChevronRight className="ml-auto h-4 w-4 text-gray-300 group-hover:text-forest-700" aria-hidden />
                     </td>
                   </tr>
                 ))}
