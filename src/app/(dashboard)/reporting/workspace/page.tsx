@@ -4,6 +4,13 @@ import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import OfflineFieldOperationsCard from "@/components/pwa/OfflineFieldOperationsCard";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
+import { StatTile } from "@/components/workspace/ui";
+import {
+  dataQualityAlerts,
+  farmerRegistrationPipeline,
+  nationalHeroMetrics,
+  postHarvestLossAlerts,
+} from "@/lib/demo/agriculture-pilot-data";
 
 type TabId = "dao" | "cac" | "drafts" | "submitted" | "review" | "verified" | "escalated" | "archived";
 
@@ -312,6 +319,12 @@ export default async function ReportingWorkspacePage({
   const tabMeta = TABS.find((t) => t.id === tab) ?? TABS[0]!;
   const sections = sectionForTab(tab);
 
+  const hero = nationalHeroMetrics;
+  const pipeline = farmerRegistrationPipeline;
+  const activeAlerts =
+    postHarvestLossAlerts.filter((a) => a.lossPct > 10).length + dataQualityAlerts.length;
+  const nf = (n: number) => Intl.NumberFormat().format(n);
+
   return (
     <MinistryPageShell
       title="Reporting operations center"
@@ -337,6 +350,15 @@ export default async function ReportingWorkspacePage({
         <p className="mt-1.5 text-[12px] leading-relaxed text-emerald-100/55">
           Offline-first capture is supported. Workflow decisions and audits remain authoritative and traceable across counties.
         </p>
+      </div>
+
+      {/* Reporting status strip — seeded pilot metrics */}
+      <div className="cmd-kicker mt-5">Reporting status</div>
+      <div className="mt-2 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatTile href="/national-heat-map" label="Counties reporting" value={`${hero.countiesReporting}/15`} hint="pilot cadence" />
+        <StatTile href="/field-agents" label="Active field officers" value={nf(hero.activeFieldOfficers)} hint={`${hero.activeCountyAgOfficers} county coordinators`} />
+        <StatTile href="/verification-queue" label="Pending verification" value={nf(pipeline.pendingVerification)} hint="awaiting CAC decision" />
+        <StatTile href="/alerts" label="Active alerts" value={String(activeAlerts)} hint="escalations & quality signals" />
       </div>
 
       <div className="mt-4">

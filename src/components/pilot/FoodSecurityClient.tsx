@@ -15,6 +15,13 @@ export default function FoodSecurityClient() {
   const fi = foodSecurityIndicators;
   const heat = [...countyProductionPerformance].sort((a, b) => b.lossPct - a.lossPct).slice(0, 10);
   const coveragePct = ((fi.domesticProductionMt / Math.max(1, fi.riceDemandMt)) * 100).toFixed(1);
+  const avgLoss = countyProductionPerformance.length
+    ? (
+        countyProductionPerformance.reduce((s, c) => s + c.lossPct, 0) /
+        countyProductionPerformance.length
+      ).toFixed(1)
+    : "0";
+  const countiesAtRisk = postHarvestLossAlerts.length;
 
   return (
     <div className="space-y-6">
@@ -26,11 +33,14 @@ export default function FoodSecurityClient() {
         </p>
       </header>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">National status</div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
         <OpsMetric label="Indicative rice demand" value={`${Intl.NumberFormat().format(fi.riceDemandMt)} t`} tone="navy" />
         <OpsMetric label="Domestic production (est.)" value={`${Intl.NumberFormat().format(fi.domesticProductionMt)} t`} tone="forest" />
         <OpsMetric label="Supply coverage (modeled)" value={`${coveragePct}%`} tone="amber" />
         <OpsMetric label="National risk index" value={String(fi.nationalRiskScore)} tone="rose" />
+        <OpsMetric label="Avg post-harvest loss" value={`${avgLoss}%`} tone="amber" />
+        <OpsMetric label="Counties at risk" value={String(countiesAtRisk)} tone="rose" />
       </div>
 
       <OpsCard>
@@ -57,6 +67,7 @@ export default function FoodSecurityClient() {
         </div>
       </OpsCard>
 
+      <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Risk &amp; hotspots</div>
       <OpsCard>
         <div className="font-display text-[15px] font-semibold text-white">County vulnerability heat · loss-adjusted</div>
         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
@@ -102,6 +113,36 @@ export default function FoodSecurityClient() {
           </div>
         </OpsCard>
       </div>
+
+      <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Required action</div>
+      <OpsCard>
+        <div className="grid gap-3 md:grid-cols-3">
+          <Link
+            href="/alerts"
+            className="group rounded-xl border border-rose-900/40 bg-rose-950/20 px-4 py-3.5 transition hover:bg-rose-950/35"
+          >
+            <div className="font-display text-[14px] font-semibold text-rose-50">Escalations & incidents</div>
+            <p className="mt-1.5 text-[12px] text-rose-100/70 leading-relaxed">Route unresolved early-warning signals to county and ministry desks.</p>
+            <span className="mt-2 inline-flex text-[12px] font-medium text-rose-200 transition group-hover:translate-x-0.5">Open alerts →</span>
+          </Link>
+          <Link
+            href="/verification-queue"
+            className="group rounded-xl border border-amber-900/40 bg-amber-950/20 px-4 py-3.5 transition hover:bg-amber-950/35"
+          >
+            <div className="font-display text-[14px] font-semibold text-amber-50">Verification queue</div>
+            <p className="mt-1.5 text-[12px] text-amber-100/70 leading-relaxed">Clear DAO/CAC verification items tied to loss and supply anomalies.</p>
+            <span className="mt-2 inline-flex text-[12px] font-medium text-amber-200 transition group-hover:translate-x-0.5">Open queue →</span>
+          </Link>
+          <Link
+            href="/national-heat-map"
+            className="group rounded-xl border border-emerald-900/40 bg-emerald-950/20 px-4 py-3.5 transition hover:bg-emerald-950/35"
+          >
+            <div className="font-display text-[14px] font-semibold text-emerald-50">County heat map</div>
+            <p className="mt-1.5 text-[12px] text-emerald-100/70 leading-relaxed">Inspect county-level vulnerability and production signals on the map.</p>
+            <span className="mt-2 inline-flex text-[12px] font-medium text-emerald-200 transition group-hover:translate-x-0.5">View map →</span>
+          </Link>
+        </div>
+      </OpsCard>
 
       <OpsCard dense>
         <div className="font-medium text-slate-100">Market intelligence brief</div>

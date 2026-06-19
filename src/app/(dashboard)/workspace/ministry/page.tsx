@@ -4,6 +4,11 @@ import { redirect } from "next/navigation";
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import { Panel, QueueRow, StatTile } from "@/components/workspace/ui";
+import {
+  farmerRegistrationPipeline,
+  foodSecurityIndicators,
+  nationalHeroMetrics,
+} from "@/lib/demo/agriculture-pilot-data";
 import { assertPilotWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { createClient } from "@/lib/supabase/server";
 import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
@@ -21,6 +26,11 @@ export default async function MinistryWorkspacePage() {
   const gate = assertPilotWorkspaceAccess(effective.role, "ministry");
   if (!gate.ok) redirect(gate.redirectTo);
 
+  const nf = (n: number) => Intl.NumberFormat().format(n);
+  const hero = nationalHeroMetrics;
+  const pipeline = farmerRegistrationPipeline;
+  const fi = foodSecurityIndicators;
+
   return (
     <MinistryPageShell
       title="National command"
@@ -28,16 +38,22 @@ export default async function MinistryWorkspacePage() {
       description="National status across the 15 counties — operational posture, reporting health, and risk signals."
       actions={<SyncStatusIndicator />}
     >
-      {/* National status strip */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile href="/national-heat-map" label="Counties" value="15" hint="national coverage" />
-        <StatTile href="/reporting/workspace" label="Reporting chain" value="4 tiers" hint="CLAN → DAO → CAC → Ministry" />
-        <StatTile href="/command-center" label="Command" value="Live" hint="national operations posture" />
-        <StatTile href="/compliance/audit-log" label="Audit" value="On" hint="immutable oversight trail" />
+      {/* National status strip — seeded pilot metrics */}
+      <div className="cmd-kicker">National status</div>
+      <div className="mt-2 grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-4">
+        <StatTile href="/farmers" label="Registered farmers" value={nf(hero.registeredFarmers)} hint={`${nf(pipeline.verified)} verified`} />
+        <StatTile href="/national-heat-map" label="Counties reporting" value={`${hero.countiesReporting}/15`} hint="national coverage" />
+        <StatTile href="/inventory" label="Input coverage" value={`${hero.inputInventoryCoveragePct}%`} hint="allocation reach" />
+        <StatTile href="/food-security" label="Food risk index" value={String(fi.nationalRiskScore)} hint="composite ministry index" />
+        <StatTile href="/verification-queue" label="Pending verification" value={nf(pipeline.pendingVerification)} hint="awaiting CAC decision" />
+        <StatTile href="/field-agents" label="Active field officers" value={nf(hero.activeFieldOfficers)} hint={`${hero.activeCountyAgOfficers} county coordinators`} />
+        <StatTile href="/compliance/anomalies" label="Data quality" value={`${hero.dataQualityScore}%`} hint="integrity score" />
+        <StatTile href="/field/sync-queue" label="Offline pending" value={nf(hero.offlinePendingSync)} hint="awaiting reconcile" />
       </div>
 
       {/* Command + county map */}
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="cmd-kicker mt-6">Map &amp; command</div>
+      <div className="mt-2 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Link
           href="/command-center"
           className="group cmd-surface cmd-surface-hover flex flex-col justify-between p-5 lg:col-span-1"
@@ -91,22 +107,31 @@ export default async function MinistryWorkspacePage() {
         </Link>
       </div>
 
-      {/* Reporting health + risk signals */}
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Panel title="Reporting health" hint="Pipeline, analytics, and oversight">
+      {/* Required action · risk · recent activity */}
+      <div className="cmd-kicker mt-6">Required action &amp; signals</div>
+      <div className="mt-2 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <Panel title="Required action" hint="Queues awaiting a national decision">
           <div className="space-y-0.5">
-            <QueueRow href="/reports" title="Reporting & analytics" meta="Ministry reporting center and exports" tone="ok" />
-            <QueueRow href="/reporting/workspace" title="Reporting operations center" meta="DAO & CAC consolidation surfaces" />
-            <QueueRow href="/national-operations" title="National operations" meta="Cross-programme operational view" />
-            <QueueRow href="/compliance/audit-log" title="Audit log" meta="Immutable trail for oversight" />
+            <QueueRow href="/verification-queue" title="Verification queue" meta={`${Intl.NumberFormat().format(pipeline.pendingVerification)} pending CAC review`} tone="alert" badge="Act" />
+            <QueueRow href="/registration-approvals" title="Registration approvals" meta={`${Intl.NumberFormat().format(pipeline.flagged)} flagged registrations`} tone="escalation" />
+            <QueueRow href="/field/sync-queue" title="Offline reconcile" meta={`${hero.offlinePendingSync} records awaiting sync`} />
           </div>
         </Panel>
 
         <Panel title="Risk signals" hint="What needs national attention">
           <div className="space-y-0.5">
             <QueueRow href="/alerts" title="Escalations & incidents" meta="Unresolved anomalies requiring oversight" tone="alert" />
-            <QueueRow href="/food-security" title="Food security" meta="Early-warning indicators" tone="escalation" />
+            <QueueRow href="/food-security" title="Food security" meta={`Risk index ${fi.nationalRiskScore} · early-warning`} tone="escalation" />
             <QueueRow href="/compliance/anomalies" title="Compliance anomalies" meta="Distribution and data integrity" tone="escalation" />
+          </div>
+        </Panel>
+
+        <Panel title="Reporting & recent activity" hint="Pipeline, analytics, and oversight">
+          <div className="space-y-0.5">
+            <QueueRow href="/reports" title="Reporting & analytics" meta="Ministry reporting center and exports" tone="ok" />
+            <QueueRow href="/reporting/workspace" title="Reporting operations center" meta="DAO & CAC consolidation surfaces" />
+            <QueueRow href="/activity" title="Audit & activity center" meta="Recent system actions timeline" />
+            <QueueRow href="/compliance/audit-log" title="Audit log" meta="Immutable trail for oversight" />
           </div>
         </Panel>
       </div>
