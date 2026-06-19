@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Menu } from "lucide-react";
+import { Menu, PanelRightOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { ClientErrorBoundary } from "@/components/layout/ClientErrorBoundary";
@@ -35,6 +35,7 @@ export default function Topbar({
   primaryAction,
   onExportPdf,
   onOpenMobileNav,
+  onOpenOps,
 }: {
   pathname: string;
   profile: Profile;
@@ -43,6 +44,7 @@ export default function Topbar({
   primaryAction: { label: string; onClick: () => void };
   onExportPdf: () => void;
   onOpenMobileNav?: () => void;
+  onOpenOps?: () => void;
 }) {
   const router = useRouter();
   const { kicker, title } = React.useMemo(() => {
@@ -112,6 +114,16 @@ export default function Topbar({
           </ClientErrorBoundary>
         </div>
         <SyncStatusIndicator />
+        {onOpenOps ? (
+          <button
+            type="button"
+            onClick={onOpenOps}
+            className="xl:hidden h-9 w-9 rounded-lg border border-slate-700 bg-slate-900 text-slate-200 inline-flex items-center justify-center shrink-0"
+            aria-label="Open operations panel"
+          >
+            <PanelRightOpen className="h-5 w-5" />
+          </button>
+        ) : null}
         <InstallAppButton variant="toolbar" label="Install App" />
         <NotificationsMenu />
         <UserWorkspaceMenu

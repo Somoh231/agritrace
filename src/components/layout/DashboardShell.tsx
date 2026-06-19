@@ -4,6 +4,7 @@ import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import MinistrySidebar from "@/components/layout/MinistrySidebar";
+import OperationsRail from "@/components/layout/OperationsRail";
 import Topbar from "@/components/layout/Topbar";
 // import DemoRail from "@/components/demo/DemoRail";
 import PilotBanner from "@/components/shared/PilotBanner";
@@ -137,6 +138,28 @@ export default function DashboardShell({
   );
 
   const [mobileNav, setMobileNav] = React.useState(false);
+  const [opsOpen, setOpsOpen] = React.useState(false);
+  const [opsCollapsed, setOpsCollapsed] = React.useState(false);
+
+  React.useEffect(() => {
+    try {
+      setOpsCollapsed(window.localStorage.getItem("av_ops_rail_collapsed") === "1");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const toggleOpsCollapsed = React.useCallback(() => {
+    setOpsCollapsed((c) => {
+      const next = !c;
+      try {
+        window.localStorage.setItem("av_ops_rail_collapsed", next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
 
   const exportHref = React.useMemo(() => {
     const county = profile?.county?.trim() ?? "";
@@ -224,7 +247,13 @@ export default function DashboardShell({
   return (
     <DashboardShellFatalBoundary>
       <div className="bg-[rgb(var(--ministry-workspace))] overflow-x-hidden h-[100dvh]">
-        <div className="grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] h-full overflow-hidden">
+        <div
+          className={`grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] h-full overflow-hidden ${
+            opsCollapsed
+              ? "xl:grid-cols-[280px_minmax(0,1fr)_48px]"
+              : "xl:grid-cols-[280px_minmax(0,1fr)_340px]"
+          }`}
+        >
           <div className="hidden md:block h-full border-r border-white/[0.06] overflow-hidden">
             <div className="h-full overflow-y-auto overscroll-contain">
               <MinistrySidebar pathname={pathname} onNavigate={(href) => router.push(href)} user={user} />
@@ -238,6 +267,7 @@ export default function DashboardShell({
               authenticRole={safeAuthenticRole}
               effectiveRole={safeEffectiveRole}
               onOpenMobileNav={() => setMobileNav(true)}
+              onOpenOps={() => setOpsOpen(true)}
               primaryAction={{
                 label: primary.label,
                 onClick: () => {
@@ -276,14 +306,71 @@ export default function DashboardShell({
             ) : null}
             <main className="flex-1 min-w-0 overflow-y-auto overscroll-contain">
               <PilotBanner />
-              <div className="w-full max-w-none min-w-0 px-5 py-6 md:px-8 md:py-8 xl:px-10">{children}</div>
+              <div className="w-full max-w-none min-w-0 px-4 py-4 md:px-6 md:py-5 xl:px-7">{children}</div>
             </main>
           </div>
+
+          {/* Operations rail (third column, xl+) */}
+          <aside className="hidden xl:block h-full border-l border-white/[0.06] bg-[rgb(var(--ministry-panel))]/30 overflow-hidden">
+            {opsCollapsed ? (
+              <button
+                type="button"
+                onClick={toggleOpsCollapsed}
+                aria-label="Expand operations panel"
+                className="flex h-full w-full flex-col items-center gap-3 py-4 text-slate-300 hover:bg-white/[0.04]"
+              >
+                <PanelLeftOpenIcon />
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] [writing-mode:vertical-rl] rotate-180">
+                  Operations
+                </span>
+              </button>
+            ) : (
+              <div className="h-full overflow-hidden">
+                <OperationsRail
+                  role={safeEffectiveRole}
+                  pathname={pathname}
+                  variant="desktop"
+                  onCollapse={toggleOpsCollapsed}
+                />
+              </div>
+            )}
+          </aside>
         </div>
+
+        {/* Operations rail — mobile / tablet drawer (below xl) */}
+        {opsOpen ? (
+          <div className="fixed inset-0 z-[70] xl:hidden">
+            <button
+              type="button"
+              aria-label="Close operations panel"
+              className="absolute inset-0 bg-black/55"
+              onClick={() => setOpsOpen(false)}
+            />
+            <div className="absolute right-0 top-0 bottom-0 w-[min(340px,92vw)] border-l border-white/10 bg-[rgb(var(--ministry-workspace))] shadow-2xl">
+              <OperationsRail
+                role={safeEffectiveRole}
+                pathname={pathname}
+                variant="drawer"
+                onClose={() => setOpsOpen(false)}
+                onNavigate={() => setOpsOpen(false)}
+              />
+            </div>
+          </div>
+        ) : null}
 
         {/* {showDemoRail ? <DemoRail /> : null} */}
         {/* <AiAssistant profileId={profile.id} role={safeEffectiveRole} pathname={pathname} /> */}
       </div>
     </DashboardShellFatalBoundary>
+  );
+}
+
+function PanelLeftOpenIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M15 3v18" />
+      <path d="m8 9 3 3-3 3" />
+    </svg>
   );
 }
