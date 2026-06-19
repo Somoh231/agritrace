@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import MinistrySidebar from "@/components/layout/MinistrySidebar";
 import Topbar from "@/components/layout/Topbar";
+import { LAYOUT_CONTAINER_CLASS, resolveLayoutMode } from "@/lib/navigation/layout-mode";
 // import DemoRail from "@/components/demo/DemoRail";
 import PilotBanner from "@/components/shared/PilotBanner";
 // import AiAssistant from "@/components/ai-assistant/AiAssistant";
@@ -138,12 +139,8 @@ export default function DashboardShell({
 
   const [mobileNav, setMobileNav] = React.useState(false);
 
-  // Page-specific shell modes — not every screen wants the dark command surface.
-  const fullBleed = React.useMemo(
-    () => pathname.startsWith("/field/boundary-capture"),
-    [pathname],
-  );
-  const adminLight = React.useMemo(() => pathname.startsWith("/admin"), [pathname]);
+  // Centralized page layout modes (command | table | admin | map).
+  const layoutMode = React.useMemo(() => resolveLayoutMode(pathname), [pathname]);
 
   const exportHref = React.useMemo(() => {
     const county = profile?.county?.trim() ?? "";
@@ -281,17 +278,17 @@ export default function DashboardShell({
                 </div>
               </div>
             ) : null}
-            {fullBleed ? (
+            {layoutMode === "map" ? (
               <main className="flex-1 min-w-0 overflow-hidden">{children}</main>
-            ) : adminLight ? (
+            ) : layoutMode === "admin" ? (
               <main className="flex-1 min-w-0 overflow-y-auto overscroll-contain bg-slate-50 text-slate-900">
                 <PilotBanner />
-                <div className="w-full max-w-none min-w-0 px-4 py-5 md:px-7 md:py-7">{children}</div>
+                <div className={LAYOUT_CONTAINER_CLASS.admin}>{children}</div>
               </main>
             ) : (
               <main className="flex-1 min-w-0 overflow-y-auto overscroll-contain">
                 <PilotBanner />
-                <div className="mx-auto w-full max-w-[1400px] min-w-0 px-4 py-5 md:px-8 md:py-7">{children}</div>
+                <div className={LAYOUT_CONTAINER_CLASS[layoutMode === "table" ? "table" : "command"]}>{children}</div>
               </main>
             )}
           </div>
