@@ -8,13 +8,13 @@ import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/Ent
 
 function GridSkeleton({ rows = 8 }: { rows?: number }) {
   return (
-    <div className="rounded-xl border border-slate-700/80 bg-slate-900/40 overflow-hidden">
-      <div className="px-4 py-3 border-b border-slate-700/80 bg-slate-950/60">
-        <div className="h-4 w-40 rounded bg-white/[0.06] animate-pulse" />
+    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
+        <div className="h-4 w-40 rounded bg-slate-200 animate-pulse" />
       </div>
       <div className="p-4 space-y-2">
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="h-9 rounded bg-white/[0.05] animate-pulse" />
+          <div key={i} className="h-9 rounded bg-slate-100 animate-pulse" />
         ))}
       </div>
     </div>
@@ -31,14 +31,14 @@ function SoftWarning({
   onRetry?: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-amber-900/45 bg-amber-950/15 px-6 py-5 text-[13px] text-amber-100">
-      <div className="font-medium text-white">{title}</div>
-      <div className="mt-1 text-[12px] text-amber-100/80 leading-relaxed">{detail}</div>
+    <div className="rounded-xl border border-amber-200 bg-amber-50 px-6 py-5 text-[13px] text-amber-800">
+      <div className="font-semibold text-amber-900">{title}</div>
+      <div className="mt-1 text-[12px] text-amber-700 leading-relaxed">{detail}</div>
       {onRetry ? (
         <button
           type="button"
           onClick={onRetry}
-          className="mt-3 h-9 rounded-lg border border-slate-700 bg-slate-900 px-3 text-[12px] text-slate-200 hover:bg-slate-800"
+          className="mt-3 h-9 rounded-lg border border-slate-300 bg-white px-3 text-[12px] text-slate-700 hover:bg-slate-50"
         >
           Retry
         </button>
@@ -136,7 +136,7 @@ export default function LiveQueryGrid({
           <button
             type="button"
             onClick={() => void load()}
-            className="h-9 px-3 rounded-lg border border-slate-600 bg-slate-950 text-[12px] text-slate-200 hover:bg-slate-900"
+            className="h-9 px-3 rounded-lg border border-slate-300 bg-white text-[12px] text-slate-700 hover:bg-slate-50"
           >
             Refresh
           </button>

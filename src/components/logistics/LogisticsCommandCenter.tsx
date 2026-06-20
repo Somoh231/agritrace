@@ -99,20 +99,20 @@ export default function LogisticsCommandCenter() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-emerald-900/35 bg-gradient-to-br from-emerald-950/40 to-slate-950/60 px-5 py-5">
+      <div className="gov-card px-5 py-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-emerald-300/80">Warehouse command</div>
-            <h2 className="mt-1 font-display text-[clamp(1.25rem,2vw,1.65rem)] font-semibold text-white">National logistics platform</h2>
-            <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-slate-400">
+            <div className="gov-kicker gov-kicker-gold">Warehouse command</div>
+            <h2 className="mt-1 font-serif-display text-[clamp(1.25rem,2vw,1.65rem)] font-semibold text-slate-900">National logistics platform</h2>
+            <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-slate-600">
               Unified ministry view for hubs, corridors, donor flows, and bottleneck surveillance — paired with transfer workflow TRF routing and immutable movement ledger.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link href="/inventory/transfers" className="h-10 rounded-lg bg-emerald-600 px-4 text-[12px] font-medium text-white hover:bg-emerald-500 inline-flex items-center">
+            <Link href="/inventory/transfers" className="btn-emerald h-10 rounded-lg px-4 text-[12px]">
               Transfer operations
             </Link>
-            <a href="#logistics-movements" className="h-10 rounded-lg border border-slate-600 px-4 text-[12px] text-slate-100 hover:bg-slate-900 inline-flex items-center">
+            <a href="#logistics-movements" className="btn-gov-outline h-10 rounded-lg px-4 text-[12px]">
               Movement timeline
             </a>
           </div>
@@ -126,8 +126,8 @@ export default function LogisticsCommandCenter() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <section className="rounded-xl border border-slate-700/80 bg-slate-950/45 p-4 lg:col-span-2">
-          <div className="font-display text-[14px] font-semibold text-white">Operational alerts</div>
+        <section className="gov-card p-4 lg:col-span-2">
+          <div className="font-serif-display text-[15px] font-semibold text-slate-900">Operational alerts</div>
           <p className="mt-1 text-[11px] text-slate-500">Low stock, expiry, corridor delays, capacity pressure, missing confirmations.</p>
           <ul className="mt-3 space-y-2">
             {alerts.length === 0 ? (
@@ -138,29 +138,29 @@ export default function LogisticsCommandCenter() {
                   key={a.id}
                   className={`rounded-lg border px-3 py-2 text-[12px] ${
                     a.severity === "critical"
-                      ? "border-rose-800/50 bg-rose-950/25 text-rose-50"
+                      ? "border-rose-200 bg-rose-50 text-rose-800"
                       : a.severity === "warning"
-                        ? "border-amber-800/45 bg-amber-950/25 text-amber-50"
-                        : "border-slate-800 bg-slate-900/40 text-slate-300"
+                        ? "border-amber-200 bg-amber-50 text-amber-800"
+                        : "border-slate-200 bg-slate-50 text-slate-600"
                   }`}
                 >
-                  <div className="font-medium text-white">{a.title}</div>
+                  <div className="font-medium text-slate-900">{a.title}</div>
                   <div className="mt-1 text-[11px] opacity-90">{a.detail}</div>
                 </li>
               ))
             )}
           </ul>
         </section>
-        <section className="rounded-xl border border-slate-700/80 bg-slate-950/45 p-4">
-          <div className="font-display text-[14px] font-semibold text-white">Reporting</div>
+        <section className="gov-card p-4">
+          <div className="font-serif-display text-[15px] font-semibold text-slate-900">Reporting</div>
           <div className="mt-3 flex flex-col gap-2">
-            <button type="button" onClick={() => exportWarehouseUtilization()} className="rounded-lg border border-slate-600 px-3 py-2 text-left text-[12px] text-slate-100 hover:bg-slate-900">
+            <button type="button" onClick={() => exportWarehouseUtilization()} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-[12px] text-slate-700 hover:bg-slate-50">
               Warehouse utilization export
             </button>
-            <button type="button" onClick={() => exportMinistryAllocationReport(transfers)} className="rounded-lg border border-slate-600 px-3 py-2 text-left text-[12px] text-slate-100 hover:bg-slate-900">
+            <button type="button" onClick={() => exportMinistryAllocationReport(transfers)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-[12px] text-slate-700 hover:bg-slate-50">
               Ministry allocation (TRF manifest)
             </button>
-            <button type="button" onClick={() => void exportDonor()} className="rounded-lg border border-slate-600 px-3 py-2 text-left text-[12px] text-slate-100 hover:bg-slate-900">
+            <button type="button" onClick={() => void exportDonor()} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-[12px] text-slate-700 hover:bg-slate-50">
               Donor shipment tracker CSV
             </button>
             <button
@@ -174,7 +174,7 @@ export default function LogisticsCommandCenter() {
                 a.click();
                 URL.revokeObjectURL(url);
               }}
-              className="rounded-lg border border-emerald-800/45 px-3 py-2 text-left text-[12px] text-emerald-100 hover:bg-emerald-950/25"
+              className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-left text-[12px] text-emerald-700 hover:bg-emerald-100"
             >
               Stockout forecasting note
             </button>
@@ -182,9 +182,9 @@ export default function LogisticsCommandCenter() {
         </section>
       </div>
 
-      <section className="rounded-xl border border-slate-700/80 bg-slate-950/35 p-4">
+      <section className="gov-card p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <div className="font-display text-[14px] font-semibold text-white">Warehouse grid</div>
+          <div className="font-serif-display text-[15px] font-semibold text-slate-900">Warehouse grid</div>
           <span className="text-[11px] text-slate-500">County allocation flow · click hub detail</span>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -192,10 +192,10 @@ export default function LogisticsCommandCenter() {
             <Link
               key={w.ministryCode}
               href={`/inventory/warehouse/${encodeURIComponent(w.ministryCode)}`}
-              className="rounded-lg border border-slate-800 bg-slate-900/50 px-3 py-2 hover:border-emerald-700/45"
+              className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 hover:border-emerald-400 hover:bg-white"
             >
-              <div className="font-mono text-[11px] text-emerald-300/90">{w.ministryCode}</div>
-              <div className="text-[13px] font-medium text-white">{w.name}</div>
+              <div className="font-mono text-[11px] text-emerald-700">{w.ministryCode}</div>
+              <div className="text-[13px] font-medium text-slate-900">{w.name}</div>
               <div className="mt-1 text-[11px] text-slate-500">
                 {w.county} · {w.utilizationPct}% util
               </div>

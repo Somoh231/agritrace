@@ -42,7 +42,9 @@
   --ministry-panel: 16 45 28; /* #102D1C raised panel */
   --ministry-panel-border: 34 70 50; /* subtle green hairline */
   --ministry-gold: 201 162 75; /* #C9A24B institutional gold accent */
+  --ministry-gold-strong: 176 132 45; /* deeper gold for text/borders on light */
   --ministry-emerald: 52 211 153; /* operational accent */
+  --ministry-canvas: 244 245 241; /* #F4F5F1 light government workspace canvas */
 
   --font-serif: var(--font-serif-display), Georgia, "Times New Roman", serif;
 }
@@ -89,6 +91,81 @@
     rgb(var(--ministry-gold) / 0.5),
     rgb(var(--ministry-gold) / 0)
   );
+}
+
+/* ===========================================================================
+ * Government light-canvas primitives — premium cabinet-brief surfaces.
+ * Used on command/registry/reporting/admin pages (light), while the dark
+ * cmd-* primitives remain for map-first and auth screens.
+ * ======================================================================== */
+.gov-canvas {
+  background: rgb(var(--ministry-canvas));
+}
+.gov-card {
+  background: #ffffff;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.875rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 4px 12px rgb(15 23 42 / 0.05);
+}
+.gov-card-hover {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.gov-card-hover:hover {
+  border-color: rgb(var(--ministry-gold) / 0.55);
+  box-shadow: 0 2px 4px rgb(15 23 42 / 0.05), 0 12px 28px rgb(15 23 42 / 0.09);
+}
+.gov-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgb(100 116 139); /* slate-500 */
+}
+.gov-kicker-gold {
+  color: rgb(var(--ministry-gold-strong));
+}
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: linear-gradient(180deg, #d8b25a 0%, rgb(var(--ministry-gold)) 100%);
+  color: #1c1303;
+  font-weight: 600;
+  border: 1px solid rgb(var(--ministry-gold-strong) / 0.6);
+  box-shadow: 0 1px 2px rgb(120 90 20 / 0.25);
+}
+.btn-gold:hover {
+  filter: brightness(1.04);
+}
+.btn-emerald {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: linear-gradient(180deg, #0e9f6e 0%, #047857 100%);
+  color: #ffffff;
+  font-weight: 600;
+  border: 1px solid rgb(4 120 87 / 0.5);
+  box-shadow: 0 1px 2px rgb(6 78 59 / 0.25);
+}
+.btn-emerald:hover {
+  filter: brightness(1.05);
+}
+.btn-gov-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: #ffffff;
+  color: rgb(30 41 59);
+  font-weight: 500;
+  border: 1px solid rgb(203 213 225);
+}
+.btn-gov-outline:hover {
+  background: rgb(248 250 252);
+  border-color: rgb(148 163 184);
 }
 
 html,

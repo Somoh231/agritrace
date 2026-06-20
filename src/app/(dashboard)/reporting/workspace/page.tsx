@@ -40,14 +40,14 @@ type LinkCard = {
 
 function Card({ item }: { item: LinkCard }) {
   return (
-    <Link href={item.href} className="group cmd-surface cmd-surface-hover px-4 py-3.5">
+    <Link href={item.href} className="group gov-card gov-card-hover px-4 py-3.5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="font-semibold text-white truncate">{item.title}</div>
-          <p className="mt-1.5 text-[12px] leading-relaxed text-emerald-100/50">{item.body}</p>
-          <div className="mt-2.5 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-200/40">{item.meta}</div>
+          <div className="font-semibold text-slate-900 truncate">{item.title}</div>
+          <p className="mt-1.5 text-[12px] leading-relaxed text-slate-600">{item.body}</p>
+          <div className="mt-2.5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">{item.meta}</div>
         </div>
-        <span className="font-mono text-[13px] text-[rgb(var(--ministry-gold))] shrink-0 transition group-hover:translate-x-0.5">→</span>
+        <span className="font-mono text-[13px] text-[rgb(var(--ministry-gold-strong))] shrink-0 transition group-hover:translate-x-0.5">→</span>
       </div>
     </Link>
   );
@@ -335,25 +335,25 @@ export default async function ReportingWorkspacePage({
           <InstallAppButton label="Install App" />
           <Link
             href="/field/sync-queue"
-            className="h-9 px-3 rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-panel))]/50 text-[12px] text-emerald-50/90 hover:border-[rgb(var(--ministry-gold))]/40 inline-flex items-center"
+            className="btn-gov-outline h-9 px-3 rounded-lg text-[12px]"
           >
             Offline queue
           </Link>
-          <div className="cmd-surface px-2 py-1">
+          <div className="gov-card px-3 py-1.5">
             <SyncStatusIndicator />
           </div>
         </div>
       }
     >
-      <div className="cmd-surface px-4 py-3">
-        <div className="cmd-kicker">Operational posture</div>
-        <p className="mt-1.5 text-[12px] leading-relaxed text-emerald-100/55">
+      <div className="gov-card px-4 py-3.5">
+        <div className="gov-kicker gov-kicker-gold">Operational posture</div>
+        <p className="mt-1.5 text-[12px] leading-relaxed text-slate-600">
           Offline-first capture is supported. Workflow decisions and audits remain authoritative and traceable across counties.
         </p>
       </div>
 
       {/* Reporting status strip — seeded pilot metrics */}
-      <div className="cmd-kicker mt-5">Reporting status</div>
+      <div className="gov-kicker gov-kicker-gold mt-5">Reporting status</div>
       <div className="mt-2 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile href="/national-heat-map" label="Counties reporting" value={`${hero.countiesReporting}/15`} hint="pilot cadence" />
         <StatTile href="/field-agents" label="Active field officers" value={nf(hero.activeFieldOfficers)} hint={`${hero.activeCountyAgOfficers} county coordinators`} />
@@ -375,8 +375,8 @@ export default async function ReportingWorkspacePage({
               className={[
                 "h-8 px-3 rounded-md border text-[12px] inline-flex items-center transition",
                 active
-                  ? "border-[rgb(var(--ministry-gold))]/50 bg-[rgb(var(--ministry-gold))]/[0.12] text-white font-medium"
-                  : "border-[rgb(var(--ministry-panel-border))]/60 bg-[rgb(var(--ministry-panel))]/40 text-emerald-100/70 hover:border-[rgb(var(--ministry-gold))]/30",
+                  ? "border-[rgb(var(--ministry-gold-strong))]/50 bg-[rgb(var(--ministry-gold))]/[0.16] text-slate-900 font-medium"
+                  : "border-slate-200 bg-white text-slate-600 hover:border-[rgb(var(--ministry-gold))]/40",
               ].join(" ")}
             >
               {t.label}
@@ -385,14 +385,14 @@ export default async function ReportingWorkspacePage({
         })}
       </div>
 
-      <div className="mt-2.5 text-[12px] text-emerald-100/55">
-        <span className="font-semibold text-white">{tabMeta.label}.</span> {tabMeta.hint}
+      <div className="mt-2.5 text-[12px] text-slate-600">
+        <span className="font-semibold text-slate-900">{tabMeta.label}.</span> {tabMeta.hint}
       </div>
 
       <div className="mt-5 space-y-5">
         {sections.map((sec) => (
           <section key={sec.label} className="space-y-2.5">
-            <div className="cmd-kicker">{sec.label}</div>
+            <div className="gov-kicker gov-kicker-gold">{sec.label}</div>
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {sec.items.map((item) => (
                 <Card key={item.href} item={item} />

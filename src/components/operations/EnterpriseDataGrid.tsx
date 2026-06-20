@@ -39,7 +39,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   getRowKey,
   groupHeaderKey,
   groupHeaderTitle = "Group",
-  theme = "dark",
+  theme = "light",
 }: {
   title?: string;
   rows: T[];

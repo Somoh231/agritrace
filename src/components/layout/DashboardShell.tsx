@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import MinistrySidebar from "@/components/layout/MinistrySidebar";
 import Topbar from "@/components/layout/Topbar";
-import { LAYOUT_CONTAINER_CLASS, resolveLayoutMode } from "@/lib/navigation/layout-mode";
+import { LAYOUT_CONTAINER_CLASS, isDarkCanvasRoute, resolveLayoutMode } from "@/lib/navigation/layout-mode";
 // import DemoRail from "@/components/demo/DemoRail";
 import PilotBanner from "@/components/shared/PilotBanner";
 // import AiAssistant from "@/components/ai-assistant/AiAssistant";
@@ -141,6 +141,8 @@ export default function DashboardShell({
 
   // Centralized page layout modes (command | table | admin | map).
   const layoutMode = React.useMemo(() => resolveLayoutMode(pathname), [pathname]);
+  // Map-first/geospatial routes stay dark; everything else uses the light canvas.
+  const darkCanvas = React.useMemo(() => isDarkCanvasRoute(pathname), [pathname]);
 
   const exportHref = React.useMemo(() => {
     const county = profile?.county?.trim() ?? "";
@@ -286,7 +288,11 @@ export default function DashboardShell({
                 <div className={LAYOUT_CONTAINER_CLASS.admin}>{children}</div>
               </main>
             ) : (
-              <main className="flex-1 min-w-0 overflow-y-auto overscroll-contain">
+              <main
+                className={`flex-1 min-w-0 overflow-y-auto overscroll-contain ${
+                  darkCanvas ? "" : "gov-canvas text-slate-900"
+                }`}
+              >
                 <PilotBanner />
                 <div className={LAYOUT_CONTAINER_CLASS[layoutMode === "table" ? "table" : "command"]}>{children}</div>
               </main>

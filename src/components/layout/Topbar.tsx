@@ -79,6 +79,9 @@ export default function Topbar({
             <div className="font-mono text-[9px] text-emerald-200/55 truncate mt-1">Jurisdiction · {scopeLabel}</div>
           ) : null}
         </div>
+        <div className="hidden lg:flex items-center rounded-full border border-emerald-500/40 bg-emerald-500/[0.08] px-3 py-1.5 shrink-0">
+          <SyncStatusIndicator />
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 justify-end">
@@ -111,7 +114,7 @@ export default function Topbar({
             <WorkspaceRoleSwitcher effectiveRole={effectiveRole} authenticRole={authenticRole} />
           </ClientErrorBoundary>
         </div>
-        <div className="hidden sm:flex items-center pr-1">
+        <div className="sm:hidden flex items-center pr-1">
           <SyncStatusIndicator />
         </div>
         <NotificationsMenu />
@@ -126,15 +129,6 @@ export default function Topbar({
             </div>
             <div className="my-1 h-px bg-[rgb(var(--ministry-panel-border))]/50" />
             <ToolItem
-              label="Briefing mode"
-              onClick={() => {
-                if (typeof window === "undefined") return;
-                const next = new URL(window.location.href);
-                const sp = nextUrlWithParam(next.searchParams, "present", "1");
-                router.push(next.pathname + "?" + sp.toString());
-              }}
-            />
-            <ToolItem
               label="Print view"
               onClick={() => {
                 if (typeof window === "undefined") return;
@@ -144,8 +138,32 @@ export default function Topbar({
               }}
             />
             <ToolItem label="Export PDF" onClick={onExportPdf} />
+            <ToolItem
+              label={`Action · ${primaryAction.label}`}
+              onClick={primaryAction.onClick}
+            />
           </div>
         </details>
+
+        <button
+          type="button"
+          onClick={onExportPdf}
+          className="hidden md:inline-flex btn-gov-outline h-9 px-3 rounded-lg text-[12px]"
+        >
+          Export PDF
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window === "undefined") return;
+            const next = new URL(window.location.href);
+            const sp = nextUrlWithParam(next.searchParams, "present", "1");
+            router.push(next.pathname + "?" + sp.toString());
+          }}
+          className="btn-gold h-9 px-3.5 rounded-lg text-[12px]"
+        >
+          Briefing mode
+        </button>
 
         <UserWorkspaceMenu
           name={profile?.full_name?.trim() || "User"}
@@ -155,7 +173,7 @@ export default function Topbar({
         <button
           type="button"
           onClick={primaryAction.onClick}
-          className="h-9 px-3.5 rounded-lg bg-gradient-to-b from-emerald-600 to-emerald-700 text-white text-[12px] font-semibold ring-1 ring-[rgb(var(--ministry-gold))]/30 hover:from-emerald-500 hover:to-emerald-600 shadow-sm"
+          className="hidden sm:inline-flex btn-emerald h-9 px-3.5 rounded-lg text-[12px]"
         >
           {primaryAction.label}
         </button>

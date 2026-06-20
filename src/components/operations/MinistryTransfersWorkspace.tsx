@@ -304,13 +304,13 @@ export default function MinistryTransfersWorkspace() {
         <div className="flex flex-wrap gap-2">
           <Link
             href="/map"
-            className="h-9 rounded-lg border border-slate-600 bg-slate-950 px-3 text-[12px] text-slate-200 hover:bg-slate-900 inline-flex items-center"
+            className="btn-gov-outline h-9 rounded-lg px-3 text-[12px]"
           >
             Map corridors
           </Link>
           <Link
             href="/inventory/transfers"
-            className="h-9 rounded-lg border border-slate-600 bg-slate-950 px-3 text-[12px] text-slate-200 hover:bg-slate-900 inline-flex items-center"
+            className="btn-gov-outline h-9 rounded-lg px-3 text-[12px]"
           >
             Stock movement UI
           </Link>
@@ -318,32 +318,32 @@ export default function MinistryTransfersWorkspace() {
       }
     >
       {isError ?
-        <div className="rounded-lg border border-rose-900/40 bg-rose-950/20 px-4 py-3 text-[12px] text-rose-100">
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-[12px] text-rose-800">
           Could not load transfers — {error instanceof Error ? error.message : "unknown error"}.
         </div>
       : null}
       {isPending ?
-        <div className="rounded-lg border border-slate-700 bg-slate-950/60 px-4 py-2 font-mono text-[11px] text-slate-500">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 font-mono text-[11px] text-slate-500">
           Loading corridor ledger…
         </div>
       : null}
       {codeFilter ? (
-        <div className="rounded-lg border border-slate-700 bg-slate-950/60 px-4 py-2 font-mono text-[11px] text-slate-400">
-          Filter: <span className="text-emerald-300">{codeFilter}</span> ·{" "}
-          <Link href="/transfers" className="text-emerald-400 hover:text-emerald-300">
+        <div className="rounded-lg border border-slate-200 bg-white px-4 py-2 font-mono text-[11px] text-slate-600">
+          Filter: <span className="text-emerald-700">{codeFilter}</span> ·{" "}
+          <Link href="/transfers" className="text-emerald-700 hover:underline">
             Clear
           </Link>
         </div>
       ) : null}
 
       {actor.role === "donor_observer" ?
-        <div className="rounded-lg border border-slate-700 bg-slate-950/70 px-4 py-2 text-[11px] text-slate-400">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-[11px] text-slate-600">
           Donor observer posture — corridor ledger read-only; custody mutations require logistics or county ministry roles.
         </div>
       : null}
 
       {workflowErr ?
-        <div className="rounded-lg border border-rose-900/45 bg-rose-950/25 px-4 py-2 text-[11px] text-rose-100">
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-[11px] text-rose-800">
           {workflowErr}
         </div>
       : null}
@@ -372,61 +372,61 @@ export default function MinistryTransfersWorkspace() {
               <div className="space-y-3">
                 <div>
                   <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">Transfer manifest</div>
-                  <ul className="mt-2 space-y-1 font-mono text-[11px] text-slate-300">
+                  <ul className="mt-2 space-y-1 font-mono text-[11px] text-slate-700">
                     {d.manifestLines.map((l) => (
                       <li key={l}>{l}</li>
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-lg border border-slate-700/80 bg-black/25 p-3">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Shipment timeline</div>
-                  <ol className="mt-2 space-y-2 border-l border-slate-700 pl-3">
+                  <ol className="mt-2 space-y-2 border-l border-slate-200 pl-3">
                     {d.auditEvents.map((e, i) => (
-                      <li key={`${e.at}-${i}`} className="relative text-[11px] text-slate-400">
-                        <span className="absolute -left-[17px] top-1.5 h-2 w-2 rounded-full bg-sky-600/80 ring-2 ring-slate-950" aria-hidden />
-                        <span className="font-mono text-[10px] text-slate-500">{e.at.slice(0, 19).replace("T", " ")}</span>
-                        <span className="text-slate-600"> · </span>
-                        <span className="text-slate-300">{e.actor}</span> ({e.stage})
+                      <li key={`${e.at}-${i}`} className="relative text-[11px] text-slate-600">
+                        <span className="absolute -left-[17px] top-1.5 h-2 w-2 rounded-full bg-sky-500 ring-2 ring-white" aria-hidden />
+                        <span className="font-mono text-[10px] text-slate-400">{e.at.slice(0, 19).replace("T", " ")}</span>
+                        <span className="text-slate-400"> · </span>
+                        <span className="text-slate-800">{e.actor}</span> ({e.stage})
                         <div className="text-slate-500">{e.note}</div>
                       </li>
                     ))}
                   </ol>
                 </div>
-                <div className="rounded-lg border border-slate-700/80 bg-black/20 p-3">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Verification checkpoints</div>
-                  <ul className="mt-2 list-inside list-disc text-[11px] text-slate-400">
+                  <ul className="mt-2 list-inside list-disc text-[11px] text-slate-600">
                     {d.checkpoints.map((c) => (
                       <li key={c}>{c}</li>
                     ))}
                   </ul>
                   <div className="mt-3 text-[11px] text-slate-500">
-                    Receiving officer: <span className="text-slate-300">{d.receivingOfficer}</span>
+                    Receiving officer: <span className="text-slate-800">{d.receivingOfficer}</span>
                   </div>
-                  <div className="mt-2 font-mono text-[10px] text-slate-600">{d.gpsPlaceholder}</div>
+                  <div className="mt-2 font-mono text-[10px] text-slate-400">{d.gpsPlaceholder}</div>
                 </div>
               </div>
               <div className="space-y-3">
-                <div className="rounded-lg border border-emerald-900/35 bg-emerald-950/15 p-3">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-500/80">AI corridor summary</div>
-                  <p className="mt-2 text-[11px] leading-relaxed text-slate-400">{d.aiSummary}</p>
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-700">AI corridor summary</div>
+                  <p className="mt-2 text-[11px] leading-relaxed text-slate-600">{d.aiSummary}</p>
                 </div>
-                <div className="rounded-lg border border-slate-700/80 bg-slate-950/60 p-3">
+                <div className="rounded-lg border border-slate-200 bg-white p-3">
                   <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Custody links</div>
                   <div className="mt-2 flex flex-col gap-2 text-[11px]">
-                    <Link className="text-emerald-400 hover:text-emerald-300" href={`/inventory/warehouse/${encodeURIComponent(t.fromMinistryCode)}`}>
+                    <Link className="text-emerald-700 hover:underline" href={`/inventory/warehouse/${encodeURIComponent(t.fromMinistryCode)}`}>
                       Source warehouse → {t.fromMinistryCode}
                     </Link>
-                    <Link className="text-emerald-400 hover:text-emerald-300" href={`/inventory/warehouse/${encodeURIComponent(t.toMinistryCode)}`}>
+                    <Link className="text-emerald-700 hover:underline" href={`/inventory/warehouse/${encodeURIComponent(t.toMinistryCode)}`}>
                       Destination warehouse → {t.toMinistryCode}
                     </Link>
-                    <Link className="text-emerald-400 hover:text-emerald-300" href={`/verification-queue?county=${encodeURIComponent(d.corridorCounty)}`}>
+                    <Link className="text-emerald-700 hover:underline" href={`/verification-queue?county=${encodeURIComponent(d.corridorCounty)}`}>
                       Linked verification queue ({d.corridorCounty})
                     </Link>
                   </div>
                 </div>
-                <div className="rounded-lg border border-slate-700/80 bg-black/30 p-3">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Workflow actions</div>
-                  <p className="mt-1 text-[10px] text-slate-600">
+                  <p className="mt-1 text-[10px] text-slate-400">
                     Warehouse → County → Ministry custody chain. Actions emit audit_log entries when authenticated.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-1.5">
@@ -434,7 +434,7 @@ export default function MinistryTransfersWorkspace() {
                       allowed={canPerform(actor, "transfer.approve", tctx)}
                       disabledReason={explainPermission(actor, "transfer.approve", tctx)}
                       onClick={() => void runWorkflow(t.id, "approve")}
-                      className="rounded-md border border-emerald-800/50 bg-emerald-950/40 px-2 py-1 text-[10px] text-emerald-100 hover:bg-emerald-950/60"
+                      className="rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] text-emerald-700 hover:bg-emerald-100"
                     >
                       Approve
                     </OperationalWorkflowButton>
@@ -442,7 +442,7 @@ export default function MinistryTransfersWorkspace() {
                       allowed={canPerform(actor, "transfer.dispatch", tctx)}
                       disabledReason={explainPermission(actor, "transfer.dispatch", tctx)}
                       onClick={() => void runWorkflow(t.id, "dispatch")}
-                      className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] text-slate-200 hover:bg-slate-800"
+                      className="rounded-md border border-slate-300 bg-white px-2 py-1 text-[10px] text-slate-700 hover:bg-slate-50"
                     >
                       Dispatch
                     </OperationalWorkflowButton>
@@ -450,7 +450,7 @@ export default function MinistryTransfersWorkspace() {
                       allowed={canPerform(actor, "transfer.mark_received", tctx)}
                       disabledReason={explainPermission(actor, "transfer.mark_received", tctx)}
                       onClick={() => void runWorkflow(t.id, "mark_received")}
-                      className="rounded-md border border-sky-900/40 bg-sky-950/25 px-2 py-1 text-[10px] text-sky-100 hover:bg-sky-950/40"
+                      className="rounded-md border border-sky-300 bg-sky-50 px-2 py-1 text-[10px] text-sky-700 hover:bg-sky-100"
                     >
                       Mark received
                     </OperationalWorkflowButton>
@@ -458,7 +458,7 @@ export default function MinistryTransfersWorkspace() {
                       allowed={canPerform(actor, "transfer.verify", tctx)}
                       disabledReason={explainPermission(actor, "transfer.verify", tctx)}
                       onClick={() => void runWorkflow(t.id, "verify")}
-                      className="rounded-md border border-emerald-900/35 bg-emerald-950/25 px-2 py-1 text-[10px] text-emerald-100 hover:bg-emerald-950/45"
+                      className="rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] text-emerald-700 hover:bg-emerald-100"
                     >
                       Verify reconcile
                     </OperationalWorkflowButton>
@@ -466,7 +466,7 @@ export default function MinistryTransfersWorkspace() {
                       allowed={canPerform(actor, "transfer.reject", tctx)}
                       disabledReason={explainPermission(actor, "transfer.reject", tctx)}
                       onClick={() => void runWorkflow(t.id, "reject")}
-                      className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] text-slate-200 hover:bg-slate-800"
+                      className="rounded-md border border-slate-300 bg-white px-2 py-1 text-[10px] text-slate-700 hover:bg-slate-50"
                     >
                       Reject
                     </OperationalWorkflowButton>
@@ -474,7 +474,7 @@ export default function MinistryTransfersWorkspace() {
                       allowed={canPerform(actor, "transfer.escalate", tctx)}
                       disabledReason={explainPermission(actor, "transfer.escalate", tctx)}
                       onClick={() => void runWorkflow(t.id, "escalate")}
-                      className="rounded-md border border-orange-900/45 bg-orange-950/25 px-2 py-1 text-[10px] text-orange-100 hover:bg-orange-950/40"
+                      className="rounded-md border border-orange-300 bg-orange-50 px-2 py-1 text-[10px] text-orange-700 hover:bg-orange-100"
                     >
                       Escalate
                     </OperationalWorkflowButton>
@@ -482,7 +482,7 @@ export default function MinistryTransfersWorkspace() {
                       allowed={canPerform(actor, "transfer.investigate", tctx)}
                       disabledReason={explainPermission(actor, "transfer.investigate", tctx)}
                       onClick={() => void runWorkflow(t.id, "investigate")}
-                      className="rounded-md border border-violet-900/40 bg-violet-950/25 px-2 py-1 text-[10px] text-violet-100 hover:bg-violet-950/40"
+                      className="rounded-md border border-violet-300 bg-violet-50 px-2 py-1 text-[10px] text-violet-700 hover:bg-violet-100"
                     >
                       Assign investigation
                     </OperationalWorkflowButton>

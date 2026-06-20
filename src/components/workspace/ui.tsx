@@ -25,11 +25,11 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={`cmd-surface overflow-hidden ${className}`}>
-      <div className="flex items-center justify-between gap-3 border-b border-[rgb(var(--ministry-panel-border))]/50 px-4 py-2.5">
+    <section className={`gov-card overflow-hidden ${className}`}>
+      <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
         <div className="min-w-0">
-          <div className="cmd-kicker">{title}</div>
-          {hint ? <div className="mt-1 text-[11px] text-emerald-100/45">{hint}</div> : null}
+          <div className="gov-kicker gov-kicker-gold">{title}</div>
+          {hint ? <div className="mt-1 text-[11px] text-slate-500">{hint}</div> : null}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
@@ -55,19 +55,19 @@ export function QueueRow({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition hover:bg-[rgb(var(--ministry-gold))]/[0.08]"
+      className="group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition hover:bg-slate-50"
     >
       <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${toneDot(tone)}`} aria-hidden />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[13px] font-medium text-white">{title}</span>
-        {meta ? <span className="block truncate text-[11px] text-emerald-100/45">{meta}</span> : null}
+        <span className="block truncate text-[13px] font-medium text-slate-900">{title}</span>
+        {meta ? <span className="block truncate text-[11px] text-slate-500">{meta}</span> : null}
       </span>
       {badge ? (
-        <span className="shrink-0 rounded-md border border-[rgb(var(--ministry-gold))]/30 bg-[rgb(var(--ministry-gold))]/[0.1] px-1.5 py-0.5 font-mono text-[10px] text-[rgb(var(--ministry-gold))]">
+        <span className="shrink-0 rounded-md border border-[rgb(var(--ministry-gold-strong))]/40 bg-[rgb(var(--ministry-gold))]/[0.14] px-1.5 py-0.5 font-mono text-[10px] text-[rgb(var(--ministry-gold-strong))]">
           {badge}
         </span>
       ) : null}
-      <span className="shrink-0 font-mono text-[13px] text-[rgb(var(--ministry-gold))]/70 transition group-hover:translate-x-0.5">
+      <span className="shrink-0 font-mono text-[13px] text-[rgb(var(--ministry-gold-strong))]/70 transition group-hover:translate-x-0.5">
         →
       </span>
     </Link>
@@ -92,13 +92,13 @@ export function BigAction({
       className={`flex min-h-[96px] flex-col justify-between rounded-xl px-4 py-3.5 transition ${
         primary
           ? "bg-gradient-to-br from-emerald-600 to-emerald-700 text-white ring-1 ring-[rgb(var(--ministry-gold))]/30 hover:from-emerald-500 hover:to-emerald-600 shadow-lg"
-          : "cmd-surface cmd-surface-hover text-emerald-50"
+          : "gov-card gov-card-hover"
       }`}
     >
-      <div className={`font-serif-display text-[18px] leading-tight ${primary ? "text-white" : "text-white"}`}>
+      <div className={`font-serif-display text-[18px] leading-tight ${primary ? "text-white" : "text-slate-900"}`}>
         {title}
       </div>
-      <div className={`text-[12px] ${primary ? "text-emerald-50/85" : "text-emerald-100/50"}`}>{subtitle}</div>
+      <div className={`text-[12px] ${primary ? "text-emerald-50/85" : "text-slate-500"}`}>{subtitle}</div>
     </Link>
   );
 }
@@ -116,10 +116,10 @@ export function StatTile({
   hint?: string;
 }) {
   return (
-    <Link href={href} className="group cmd-surface cmd-surface-hover px-3.5 py-3">
-      <div className="cmd-kicker">{label}</div>
-      <div className="mt-1.5 font-serif-display text-[19px] leading-none text-white">{value}</div>
-      {hint ? <div className="mt-1 text-[11px] text-emerald-100/45">{hint}</div> : null}
+    <Link href={href} className="group gov-card gov-card-hover px-4 py-3.5">
+      <div className="gov-kicker">{label}</div>
+      <div className="mt-2 font-serif-display text-[24px] leading-none text-slate-900">{value}</div>
+      {hint ? <div className="mt-1.5 text-[11px] text-slate-500">{hint}</div> : null}
     </Link>
   );
 }

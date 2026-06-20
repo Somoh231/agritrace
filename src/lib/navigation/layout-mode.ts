@@ -40,8 +40,20 @@ const TABLE_PREFIXES = [
   "/geo-registry",
 ];
 
+/**
+ * Map-first / geospatial routes that keep the dark, full-bleed canvas even
+ * though they render in a scrollable (table) mode. Everything else in
+ * command/table/admin modes now uses the light government workspace canvas.
+ */
+const DARK_CANVAS_PREFIXES = ["/map", "/national-heat-map", "/field/boundary-capture"];
+
 function matches(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(prefix + "/");
+}
+
+/** True when a non-map-mode route should still render on the dark canvas. */
+export function isDarkCanvasRoute(pathname: string): boolean {
+  return DARK_CANVAS_PREFIXES.some((p) => matches(pathname, p));
 }
 
 export function resolveLayoutMode(pathname: string): LayoutMode {

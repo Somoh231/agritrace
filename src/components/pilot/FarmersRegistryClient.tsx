@@ -141,10 +141,10 @@ export default function FarmersRegistryClient() {
         }
       >
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 mb-6">
-          <OpsMetric theme="dark" label="Verified (pipeline)" value={Intl.NumberFormat().format(p.verified)} tone="forest" />
-          <OpsMetric theme="dark" label="Pending verification" value={Intl.NumberFormat().format(p.pendingVerification)} tone="amber" />
-          <OpsMetric theme="dark" label="Geo completion" value={`${p.geoTaggedPct}%`} tone="navy" />
-          <OpsMetric theme="dark" label="Flagged" value={Intl.NumberFormat().format(p.flagged)} tone="rose" />
+          <OpsMetric label="Verified (pipeline)" value={Intl.NumberFormat().format(p.verified)} tone="forest" />
+          <OpsMetric label="Pending verification" value={Intl.NumberFormat().format(p.pendingVerification)} tone="amber" />
+          <OpsMetric label="Geo completion" value={`${p.geoTaggedPct}%`} tone="navy" />
+          <OpsMetric label="Flagged" value={Intl.NumberFormat().format(p.flagged)} tone="rose" />
         </div>
 
         <EnterpriseDataGrid<FarmerRegistryDemoRow>
@@ -159,28 +159,28 @@ export default function FarmersRegistryClient() {
             <div className="grid gap-3 md:grid-cols-2">
               <div>
                 <div className="font-mono text-[9px] uppercase tracking-wide text-slate-500">Custody chain</div>
-                <ul className="mt-1.5 space-y-1 font-mono text-[10px] text-slate-400">
+                <ul className="mt-1.5 space-y-1 font-mono text-[10px] text-slate-600">
                   <li>
-                    <span className="text-slate-600">Registered · </span>
+                    <span className="text-slate-400">Registered · </span>
                     {r.lastFieldVisit}
                   </li>
                   <li>
-                    <span className="text-slate-600">DAO · </span>
+                    <span className="text-slate-400">DAO · </span>
                     {r.daoOfficerCode ?? "Unassigned"}
                   </li>
                   <li>
-                    <span className="text-slate-600">Warehouse · </span>
+                    <span className="text-slate-400">Warehouse · </span>
                     {r.primaryWarehouseCode ?? "—"}
                   </li>
                   <li>
-                    <span className="text-slate-600">GPS · </span>
+                    <span className="text-slate-400">GPS · </span>
                     <span className="uppercase">{r.gpsStatus}</span>
                   </li>
                 </ul>
               </div>
               <div>
                 <div className="font-mono text-[9px] uppercase tracking-wide text-slate-500">Operational note</div>
-                <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">
+                <p className="mt-1.5 text-[11px] leading-relaxed text-slate-600">
                   {r.verification === "verified"
                     ? "Verification cleared — eligible movements align with subsidy and warehouse programmes."
                     : "District QA queue — monitor dormant rows beyond 14 days and escalate to county reconciliation."}

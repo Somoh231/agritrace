@@ -39,7 +39,7 @@ export default async function MinistryWorkspacePage() {
       actions={<SyncStatusIndicator />}
     >
       {/* National status strip — seeded pilot metrics */}
-      <div className="cmd-kicker">National status</div>
+      <div className="gov-kicker gov-kicker-gold">National status</div>
       <div className="mt-2 grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-4">
         <StatTile href="/farmers" label="Registered farmers" value={nf(hero.registeredFarmers)} hint={`${nf(pipeline.verified)} verified`} />
         <StatTile href="/national-heat-map" label="Counties reporting" value={`${hero.countiesReporting}/15`} hint="national coverage" />
@@ -52,55 +52,51 @@ export default async function MinistryWorkspacePage() {
       </div>
 
       {/* Command + county map */}
-      <div className="cmd-kicker mt-6">Map &amp; command</div>
+      <div className="gov-kicker gov-kicker-gold mt-6">Map &amp; command</div>
       <div className="mt-2 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Link
           href="/command-center"
-          className="group cmd-surface cmd-surface-hover flex flex-col justify-between p-5 lg:col-span-1"
+          className="group gov-card gov-card-hover flex flex-col justify-between p-5 lg:col-span-1"
         >
           <div>
-            <div className="cmd-kicker">National command center</div>
-            <div className="mt-2 font-serif-display text-[22px] leading-tight text-white">
+            <div className="gov-kicker gov-kicker-gold">National command center</div>
+            <div className="mt-2 font-serif-display text-[22px] leading-tight text-slate-900">
               National operational posture
             </div>
-            <p className="mt-2 text-[12px] leading-relaxed text-emerald-100/55">
+            <p className="mt-2 text-[12px] leading-relaxed text-slate-600">
               Live aggregation across programmes, counties, and the reporting pipeline.
             </p>
           </div>
-          <span className="mt-4 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[rgb(var(--ministry-gold))]">
+          <span className="mt-4 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[rgb(var(--ministry-gold-strong))]">
             Open command center <span className="transition group-hover:translate-x-0.5">→</span>
           </span>
         </Link>
 
-        {/* Map-first county status entry */}
+        {/* Map-first county status entry — emerald-accented light card */}
         <Link
           href="/national-heat-map"
-          className="group relative overflow-hidden rounded-xl border border-[rgb(var(--ministry-gold))]/20 lg:col-span-2"
-          style={{
-            background:
-              "radial-gradient(120% 120% at 20% 10%, rgba(52,211,153,0.18), transparent 55%), radial-gradient(120% 120% at 90% 90%, rgba(201,162,75,0.16), transparent 55%), rgb(var(--ministry-panel))",
-          }}
+          className="group relative overflow-hidden gov-card gov-card-hover lg:col-span-2"
         >
           <div
             aria-hidden
-            className="absolute inset-0 opacity-[0.18]"
+            className="absolute inset-0 opacity-[0.06]"
             style={{
               backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+                "linear-gradient(rgba(15,23,42,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,0.6) 1px, transparent 1px)",
               backgroundSize: "34px 34px",
             }}
           />
           <div className="relative flex h-full min-h-[180px] flex-col justify-between p-5">
             <div>
-              <div className="cmd-kicker">County map & status</div>
-              <div className="mt-2 font-serif-display text-[22px] leading-tight text-white">
+              <div className="gov-kicker gov-kicker-gold">County map & status</div>
+              <div className="mt-2 font-serif-display text-[24px] leading-tight text-slate-900">
                 National heat map
               </div>
-              <p className="mt-2 max-w-md text-[12px] leading-relaxed text-emerald-100/65">
+              <p className="mt-2 max-w-md text-[12px] leading-relaxed text-slate-600">
                 County-level intelligence and signals across the country.
               </p>
             </div>
-            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[rgb(var(--ministry-gold))]">
+            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-700">
               View county map <span className="transition group-hover:translate-x-0.5">→</span>
             </span>
           </div>
@@ -108,7 +104,7 @@ export default async function MinistryWorkspacePage() {
       </div>
 
       {/* Required action · risk · recent activity */}
-      <div className="cmd-kicker mt-6">Required action &amp; signals</div>
+      <div className="gov-kicker gov-kicker-gold mt-6">Required action &amp; signals</div>
       <div className="mt-2 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Panel title="Required action" hint="Queues awaiting a national decision">
           <div className="space-y-0.5">

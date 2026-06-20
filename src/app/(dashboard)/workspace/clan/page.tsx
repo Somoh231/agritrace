@@ -60,7 +60,7 @@ export default async function ClanWorkspacePage() {
           title="Recent submissions"
           hint="What you have captured recently"
           action={
-            <div className="cmd-surface px-2 py-1">
+            <div className="gov-card px-3 py-1.5">
               <SyncStatusIndicator />
             </div>
           }
@@ -71,10 +71,10 @@ export default async function ClanWorkspacePage() {
           </div>
         </Panel>
 
-        <div className="cmd-surface px-3.5 py-2.5 text-[11px] text-emerald-100/55">
-          <span className="cmd-kicker">Reporting chain</span>
+        <div className="gov-card px-3.5 py-2.5 text-[11px] text-slate-600">
+          <span className="gov-kicker gov-kicker-gold">Reporting chain</span>
           <span className="mt-1 block">
-            Your captures go to the <span className="text-white">District Agriculture Officer (DAO)</span> for review, then CAC county verification and Ministry aggregation.
+            Your captures go to the <span className="font-medium text-slate-900">District Agriculture Officer (DAO)</span> for review, then CAC county verification and Ministry aggregation.
           </span>
         </div>
       </div>

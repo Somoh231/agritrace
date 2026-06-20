@@ -46,24 +46,24 @@ export default function LiveQueueStat({
   }, []);
 
   const count = pending ?? 0;
-  const tone = count > 0 ? "text-amber-200" : "text-emerald-200";
+  const tone = count > 0 ? "text-amber-600" : "text-emerald-600";
 
   return (
-    <Link href={href} className="group cmd-surface cmd-surface-hover flex items-center justify-between gap-3 px-3.5 py-3">
+    <Link href={href} className="group gov-card gov-card-hover flex items-center justify-between gap-3 px-4 py-3.5">
       <div className="min-w-0">
-        <div className="cmd-kicker">{label}</div>
-        <div className={`mt-1 font-serif-display text-[22px] leading-none ${tone}`}>
+        <div className="gov-kicker">{label}</div>
+        <div className={`mt-1.5 font-serif-display text-[24px] leading-none ${tone}`}>
           {pending == null ? "—" : count}
         </div>
-        <div className="mt-1 text-[11px] text-emerald-100/45">
+        <div className="mt-1 text-[11px] text-slate-500">
           {count > 0 ? "records waiting to sync" : "all records synced"}
         </div>
       </div>
       <span
         className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-medium ${
           online
-            ? "border-emerald-800/50 bg-emerald-950/30 text-emerald-200"
-            : "border-amber-800/50 bg-amber-950/30 text-amber-100"
+            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+            : "border-amber-200 bg-amber-50 text-amber-700"
         }`}
       >
         <span className={`h-1.5 w-1.5 rounded-full ${online ? "bg-emerald-400" : "bg-amber-400"}`} aria-hidden />

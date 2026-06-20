@@ -30,7 +30,7 @@ export default async function DaoWorkspacePage() {
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <InstallAppButton label="Install App" />
-          <div className="cmd-surface px-2 py-1">
+          <div className="gov-card px-3 py-1.5">
             <SyncStatusIndicator />
           </div>
         </div>

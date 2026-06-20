@@ -28,17 +28,19 @@ export default function InventoryNationalWorkspace() {
           <button
             type="button"
             onClick={() => setDrawer(true)}
-            className="h-10 px-4 rounded-lg bg-emerald-700 text-[13px] font-medium text-white hover:bg-emerald-600"
+            className="btn-emerald h-10 px-4 rounded-lg text-[13px]"
           >
             Record receipt
           </button>
         }
       >
-        <LogisticsCommandCenter />
-        <InventoryWarehouseOverview />
-        <LogisticsMovementTimelineSection limit={72} />
-        <div className="rounded-xl border border-slate-700/60 bg-white/[0.03] p-1">
-          <InventoryOperationsClient />
+        <div className="space-y-6">
+          <LogisticsCommandCenter />
+          <InventoryWarehouseOverview />
+          <LogisticsMovementTimelineSection limit={72} />
+          <div className="gov-card p-1">
+            <InventoryOperationsClient />
+          </div>
         </div>
       </MinistryPageShell>
 

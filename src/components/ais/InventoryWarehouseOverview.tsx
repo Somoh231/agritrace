@@ -87,46 +87,46 @@ export default function InventoryWarehouseOverview() {
   return (
     <div className="mb-6 space-y-3">
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-      <div className="rounded-xl border border-slate-700/80 bg-slate-950/55 px-4 py-3">
+      <div className="gov-card px-4 py-3">
         <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Stock lines</div>
-        <div className="mt-1 font-display text-xl font-semibold text-white">{loading ? "—" : metrics.skuLines}</div>
+        <div className="mt-1 font-serif-display text-xl font-semibold text-slate-900">{loading ? "—" : metrics.skuLines}</div>
       </div>
-      <div className="rounded-xl border border-slate-700/80 bg-slate-950/55 px-4 py-3">
+      <div className="gov-card px-4 py-3">
         <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Quantity on hand</div>
-        <div className="mt-1 font-display text-xl font-semibold text-emerald-200 tabular-nums">
+        <div className="mt-1 font-serif-display text-xl font-semibold text-emerald-700 tabular-nums">
           {loading ? "—" : Intl.NumberFormat().format(Math.round(metrics.totalQty))}
         </div>
       </div>
-      <div className="rounded-xl border border-amber-900/40 bg-amber-950/20 px-4 py-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-200/70">Low stock SKUs</div>
-        <div className="mt-1 font-display text-xl font-semibold text-amber-100">{loading ? "—" : metrics.lowLines}</div>
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-700">Low stock SKUs</div>
+        <div className="mt-1 font-serif-display text-xl font-semibold text-amber-900">{loading ? "—" : metrics.lowLines}</div>
       </div>
-      <div className="rounded-xl border border-rose-900/35 bg-rose-950/25 px-4 py-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-rose-200/70">Expiry window (90d)</div>
-        <div className="mt-1 font-display text-xl font-semibold text-rose-100">{loading ? "—" : metrics.expiryRisk}</div>
+      <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
+        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-rose-700">Expiry window (90d)</div>
+        <div className="mt-1 font-serif-display text-xl font-semibold text-rose-900">{loading ? "—" : metrics.expiryRisk}</div>
       </div>
-      <div className="rounded-xl border border-slate-700/80 bg-slate-950/55 px-4 py-3 flex flex-col justify-center">
-        <div className="text-[12px] text-slate-400 leading-snug">
-          Live balances from <span className="font-mono text-slate-200">warehouse_stock</span>. Movement timelines reconcile via transfers and receipts.
+      <div className="gov-card px-4 py-3 flex flex-col justify-center">
+        <div className="text-[12px] text-slate-500 leading-snug">
+          Live balances from <span className="font-mono text-slate-700">warehouse_stock</span>. Movement timelines reconcile via transfers and receipts.
         </div>
       </div>
     </div>
     <div className="grid gap-3 sm:grid-cols-3">
-      <div className="rounded-xl border border-emerald-900/35 bg-emerald-950/20 px-4 py-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-200/70">Ministry-coded hubs</div>
-        <div className="mt-1 font-display text-lg font-semibold text-emerald-100 tabular-nums">
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-700">Ministry-coded hubs</div>
+        <div className="mt-1 font-serif-display text-lg font-semibold text-emerald-900 tabular-nums">
           {loading ? "—" : metrics.ministryHubs}
         </div>
       </div>
-      <div className="rounded-xl border border-slate-700/80 bg-slate-950/55 px-4 py-3">
+      <div className="gov-card px-4 py-3">
         <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Avg utilization (coded rows)</div>
-        <div className="mt-1 font-display text-lg font-semibold text-white tabular-nums">
+        <div className="mt-1 font-serif-display text-lg font-semibold text-slate-900 tabular-nums">
           {loading || metrics.avgUtilization == null ? "—" : `${metrics.avgUtilization}%`}
         </div>
       </div>
-      <div className="rounded-xl border border-amber-900/40 bg-amber-950/20 px-4 py-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-200/70">Donor resupply flagged</div>
-        <div className="mt-1 font-display text-lg font-semibold text-amber-100 tabular-nums">
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-700">Donor resupply flagged</div>
+        <div className="mt-1 font-serif-display text-lg font-semibold text-amber-900 tabular-nums">
           {loading ? "—" : metrics.donorHubs}
         </div>
       </div>
