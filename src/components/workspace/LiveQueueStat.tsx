@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 
+import { DashboardPanel, SectionHeader, StatusBadge } from "@/components/enterprise";
 import { getPendingCount } from "@/lib/offline/sync-queue";
 
 /**
@@ -46,29 +47,23 @@ export default function LiveQueueStat({
   }, []);
 
   const count = pending ?? 0;
-  const tone = count > 0 ? "text-amber-600" : "text-emerald-600";
 
   return (
-    <Link href={href} className="group gov-card gov-card-hover flex items-center justify-between gap-3 px-4 py-3.5">
-      <div className="min-w-0">
-        <div className="gov-kicker">{label}</div>
-        <div className={`mt-1.5 font-serif-display text-[24px] leading-none ${tone}`}>
+    <Link
+      href={href}
+      className="block rounded-2xl transition hover:opacity-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-600"
+    >
+      <DashboardPanel className={count > 0 ? "border-amber-200/80 bg-amber-50/20" : undefined}>
+        <SectionHeader
+          kicker="Sync intake"
+          title={label}
+          subtitle={count > 0 ? "Records waiting to sync" : "All records synced"}
+          action={<StatusBadge tone={online ? "success" : "warning"}>{online ? "Online" : "Offline"}</StatusBadge>}
+        />
+        <p className={`mt-3 font-display text-[2rem] font-semibold tabular-nums tracking-tight ${count > 0 ? "text-amber-700" : "text-emerald-700"}`}>
           {pending == null ? "—" : count}
-        </div>
-        <div className="mt-1 text-[11px] text-slate-500">
-          {count > 0 ? "records waiting to sync" : "all records synced"}
-        </div>
-      </div>
-      <span
-        className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-medium ${
-          online
-            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-            : "border-amber-200 bg-amber-50 text-amber-700"
-        }`}
-      >
-        <span className={`h-1.5 w-1.5 rounded-full ${online ? "bg-emerald-400" : "bg-amber-400"}`} aria-hidden />
-        {online ? "Online" : "Offline"}
-      </span>
+        </p>
+      </DashboardPanel>
     </Link>
   );
 }
