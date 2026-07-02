@@ -44,7 +44,8 @@ export default {
         },
       },
       fontFamily: {
-        display: ["Fraunces", "serif"],
+        display: ["var(--font-display)", "Inter Tight", "system-ui", "sans-serif"],
+        editorial: ["var(--font-editorial)", "Fraunces", "Georgia", "serif"],
         body: ["Inter", "system-ui", "sans-serif"],
         mono: ["DM Mono", "monospace"],
       },

@@ -1,6 +1,6 @@
-import MinistryCommandCenter from "@/components/ais/MinistryCommandCenter";
+import NationalOperationsIntelligence from "@/components/ais/NationalOperationsIntelligence";
 
-/** Canonical national operations surface — same intelligence core as command center, stable URL for ministry workflows. */
+/** Canonical national operations surface — operational intelligence layout (distinct from command center). */
 export default function NationalOperationsPage() {
-  return <MinistryCommandCenter />;
+  return <NationalOperationsIntelligence />;
 }

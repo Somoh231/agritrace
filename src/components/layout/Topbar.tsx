@@ -60,26 +60,26 @@ export default function Topbar({
   const scopeLabel = county || district ? [county, district].filter(Boolean).join(" · ") : null;
 
   return (
-    <header className="min-h-[56px] px-4 md:px-6 py-2 border-b border-[rgb(var(--ministry-gold))]/15 bg-[rgb(var(--ministry-workspace))]/95 backdrop-blur-sm flex flex-wrap items-center justify-between gap-3">
+    <header className="min-h-[56px] px-4 md:px-6 py-2 border-b border-[rgb(var(--enterprise-border))] bg-white/95 backdrop-blur-sm flex flex-wrap items-center justify-between gap-3 shadow-[0_1px_0_rgba(16,24,40,0.04)]">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         {onOpenMobileNav ? (
           <button
             type="button"
             onClick={onOpenMobileNav}
-            className="md:hidden h-9 w-9 rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-panel))]/60 text-emerald-50 inline-flex items-center justify-center shrink-0"
+            className="md:hidden h-9 w-9 rounded-lg border border-slate-200 bg-white text-slate-700 inline-flex items-center justify-center shrink-0"
             aria-label="Open navigation"
           >
             <Menu className="h-5 w-5" />
           </button>
         ) : null}
-        <div className="text-[12px] min-w-0 border-l-2 border-[rgb(var(--ministry-gold))]/60 pl-3">
-          <div className="cmd-kicker truncate">{kicker}</div>
-          <div className="mt-1 font-serif-display text-[15px] leading-none text-white truncate">{title}</div>
+        <div className="text-[12px] min-w-0 border-l-2 border-[rgb(var(--ministry-gold))]/50 pl-3">
+          <div className="gov-kicker gov-kicker-gold truncate">{kicker}</div>
+          <div className="mt-1 font-serif-display text-[15px] leading-none text-slate-900 truncate">{title}</div>
           {scopeLabel ? (
-            <div className="font-mono text-[9px] text-emerald-200/55 truncate mt-1">Jurisdiction · {scopeLabel}</div>
+            <div className="font-mono text-[9px] text-slate-500 truncate mt-1">Jurisdiction · {scopeLabel}</div>
           ) : null}
         </div>
-        <div className="hidden lg:flex items-center rounded-full border border-emerald-500/40 bg-emerald-500/[0.08] px-3 py-1.5 shrink-0">
+        <div className="hidden lg:flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 shrink-0">
           <SyncStatusIndicator />
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function Topbar({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search registry, warehouses, reports…"
-            className="h-9 w-[240px] lg:w-[280px] rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-panel))]/50 px-3 text-[12px] text-emerald-50 placeholder:text-emerald-200/40 outline-none focus:border-[rgb(var(--ministry-gold))]/60"
+            className="h-9 w-[240px] lg:w-[280px] rounded-lg border border-slate-200 bg-slate-50 px-3 text-[12px] text-ink-900 placeholder:text-slate-400 outline-none focus:border-forest-400 focus:ring-2 focus:ring-forest-100"
             aria-label="Global search"
           />
         </form>
@@ -106,7 +106,7 @@ export default function Topbar({
           <ClientErrorBoundary
             name="workspace-preview"
             fallback={
-              <div className="font-mono text-[9px] text-amber-200/80 max-w-[220px]">
+              <div className="font-mono text-[9px] text-amber-700 max-w-[220px]">
                 Workspace preview unavailable — continue with signed-in scope.
               </div>
             }
@@ -114,20 +114,24 @@ export default function Topbar({
             <WorkspaceRoleSwitcher effectiveRole={effectiveRole} authenticRole={authenticRole} />
           </ClientErrorBoundary>
         </div>
+        <div className="hidden lg:flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden />
+          <span className="font-mono text-[10px] text-emerald-800">System live</span>
+        </div>
         <div className="sm:hidden flex items-center pr-1">
           <SyncStatusIndicator />
         </div>
         <NotificationsMenu />
 
         <details className="relative group">
-          <summary className="list-none h-9 w-9 rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-panel))]/50 text-emerald-50/90 inline-flex items-center justify-center cursor-pointer hover:border-[rgb(var(--ministry-gold))]/40 [&::-webkit-details-marker]:hidden">
+          <summary className="list-none h-9 w-9 rounded-lg border border-slate-200 bg-white text-slate-700 inline-flex items-center justify-center cursor-pointer hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
             <span className="text-[16px] leading-none">⋯</span>
           </summary>
-          <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-[rgb(var(--ministry-gold))]/15 bg-[rgb(var(--ministry-panel))] p-1.5 shadow-2xl">
+          <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl">
             <div className="px-2 py-1.5">
               <InstallAppButton variant="toolbar" label="Install App" className="w-full justify-center" />
             </div>
-            <div className="my-1 h-px bg-[rgb(var(--ministry-panel-border))]/50" />
+            <div className="my-1 h-px bg-slate-100" />
             <ToolItem
               label="Print view"
               onClick={() => {
@@ -138,10 +142,7 @@ export default function Topbar({
               }}
             />
             <ToolItem label="Export PDF" onClick={onExportPdf} />
-            <ToolItem
-              label={`Action · ${primaryAction.label}`}
-              onClick={primaryAction.onClick}
-            />
+            <ToolItem label={`Action · ${primaryAction.label}`} onClick={primaryAction.onClick} />
           </div>
         </details>
 
@@ -170,6 +171,7 @@ export default function Topbar({
           role={effectiveRole}
           initials={initialsFromName(profile?.full_name || "User")}
         />
+
         <button
           type="button"
           onClick={primaryAction.onClick}
@@ -178,11 +180,11 @@ export default function Topbar({
           {primaryAction.label}
         </button>
       </div>
-      <div className="w-full xl:hidden border-t border-[rgb(var(--ministry-panel-border))]/40 pt-2 pb-1">
+      <div className="w-full xl:hidden border-t border-slate-100 pt-2 pb-1">
         <ClientErrorBoundary
           name="workspace-preview-mobile"
           fallback={
-            <div className="font-mono text-[9px] text-amber-200/80 px-1">
+            <div className="font-mono text-[9px] text-amber-700 px-1">
               Workspace preview unavailable.
             </div>
           }
@@ -199,7 +201,7 @@ function ToolItem({ label, onClick }: { label: string; onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full text-left rounded-lg px-2.5 py-2 text-[12px] text-emerald-50/90 hover:bg-[rgb(var(--ministry-gold))]/[0.12]"
+      className="w-full text-left rounded-lg px-2.5 py-2 text-[12px] text-slate-700 hover:bg-slate-50"
     >
       {label}
     </button>

@@ -38,25 +38,53 @@
   --ministry-sidebar: 7 33 20;
   --ministry-sidebar-fg: 236 253 245;
   --ministry-border: 255 255 255;
-  --ministry-workspace: 11 34 21; /* #0B2215 deep forest command surface */
-  --ministry-panel: 16 45 28; /* #102D1C raised panel */
-  --ministry-panel-border: 34 70 50; /* subtle green hairline */
-  --ministry-gold: 201 162 75; /* #C9A24B institutional gold accent */
-  --ministry-gold-strong: 176 132 45; /* deeper gold for text/borders on light */
-  --ministry-emerald: 52 211 153; /* operational accent */
-  --ministry-canvas: 244 245 241; /* #F4F5F1 light government workspace canvas */
+  --ministry-workspace: 11 34 21;
+  --ministry-panel: 16 45 28;
+  --ministry-panel-border: 34 70 50;
+  --ministry-gold: 201 162 75;
+  --ministry-gold-strong: 176 132 45;
+  --ministry-emerald: 52 211 153;
+  --ministry-canvas: 244 245 241;
+
+  /* Enterprise application canvas (light) — shared shell surfaces */
+  --enterprise-canvas: 247 248 249;
+  --enterprise-card: 255 255 255;
+  --enterprise-border: 226 232 240;
+  --enterprise-sidebar: 5 46 22;
+  --enterprise-sidebar-fg: 236 253 245;
+  --enterprise-muted: 100 116 139;
 
   --font-serif: var(--font-serif-display), Georgia, "Times New Roman", serif;
 }
 
 .ministry-shell-sidebar {
   box-shadow: inset -1px 0 0 rgb(0 0 0 / 0.25);
-  background: linear-gradient(
-    180deg,
-    rgb(8 42 26) 0%,
-    rgb(6 30 20) 48%,
-    rgb(8 26 18) 100%
-  );
+  background: linear-gradient(180deg, rgb(8 42 26) 0%, rgb(6 30 20) 48%, rgb(8 26 18) 100%);
+}
+
+.enterprise-canvas {
+  background: rgb(var(--enterprise-canvas));
+  color: rgb(var(--text));
+}
+
+.enterprise-card {
+  @apply rounded-2xl border border-[rgb(var(--enterprise-border))] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_4px_16px_rgba(16,24,40,0.06)];
+}
+
+.enterprise-table {
+  @apply w-full border-collapse text-left text-[13px];
+}
+
+.enterprise-table thead th {
+  @apply sticky top-0 z-[1] bg-slate-50 border-b border-[rgb(var(--enterprise-border))] px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500;
+}
+
+.enterprise-table tbody tr {
+  @apply border-b border-slate-100 transition hover:bg-slate-50/80;
+}
+
+.enterprise-table tbody td {
+  @apply px-3 py-2.5 text-slate-800;
 }
 
 /* Institutional command-center primitives */

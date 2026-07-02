@@ -229,7 +229,7 @@ export default function DashboardShell({
 
   return (
     <DashboardShellFatalBoundary>
-      <div className="bg-[rgb(var(--ministry-workspace))] overflow-x-hidden h-[100dvh]">
+      <div className="gov-canvas overflow-x-hidden h-[100dvh]">
         <div className="grid grid-cols-1 md:grid-cols-[232px_minmax(0,1fr)] h-full overflow-hidden">
           <div className="hidden md:block h-full border-r border-[rgb(var(--ministry-gold))]/10 overflow-hidden">
             <div className="h-full overflow-y-auto overscroll-contain">

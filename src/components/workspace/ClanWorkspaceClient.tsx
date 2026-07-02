@@ -1,0 +1,193 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import {
+  ClipboardList,
+  MapPin,
+  RefreshCw,
+  Satellite,
+  UserPlus,
+} from "lucide-react";
+
+import {
+  AlertCard,
+  DashboardPanel,
+  PageHeader,
+  QuickActionCard,
+  SectionHeader,
+  StatusBadge,
+  Timeline,
+} from "@/components/enterprise";
+import InstallAppButton from "@/components/pwa/InstallAppButton";
+import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
+import { fieldReports, offlineSyncQueue } from "@/lib/demo/agriculture-pilot-data";
+
+const TASKS = [
+  { id: "1", title: "Land boundary mapping — Parcel 882", meta: "Gbarnga · 09:15", tone: "warning" as const, badge: "In progress" },
+  { id: "2", title: "Farmer registration — Kollie family", meta: "Bong · 10:40", tone: "neutral" as const, badge: "Pending" },
+  { id: "3", title: "Inspection follow-up — WH-04", meta: "Completed · 08:02", tone: "success" as const, badge: "Verified" },
+];
+
+const RECENT = [
+  { id: "a", title: "Boundary polygon captured", meta: "4 corners · ~2.1 ha", time: "11:02" },
+  { id: "b", title: "Crop health photo attached", meta: "Rice plot · sector NW", time: "10:48" },
+  { id: "c", title: "Farmer ID verified offline", meta: "Queued for DAO review", time: "09:30" },
+];
+
+export default function ClanWorkspaceClient() {
+  const [gpsOk] = React.useState(true);
+  const pending = offlineSyncQueue.reduce((s, q) => s + q.records, 0);
+
+  return (
+    <div className="space-y-6 pb-8">
+      <PageHeader
+        kicker="Field operations"
+        title="CLAN field workspace"
+        description="Field capture, farm registration, GPS boundaries, and offline-first reporting. Submissions flow to the District Agriculture Officer (DAO) for district review."
+        actions={
+          <>
+            <InstallAppButton label="Install App" />
+            <SyncStatusIndicator />
+          </>
+        }
+      />
+
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-900 px-4 py-2.5 text-[12px] text-slate-200">
+        <span className="inline-flex items-center gap-1.5">
+          <Satellite className="h-3.5 w-3.5 text-emerald-400" aria-hidden />
+          GPS {gpsOk ? "± 3m (Good)" : "Waiting for signal"}
+        </span>
+        <span className="text-slate-600">|</span>
+        <span>Network · {typeof navigator !== "undefined" && navigator.onLine ? "Online" : "Offline — drafts saved"}</span>
+        <span className="text-slate-600">|</span>
+        <span>Session · FIELD-{String(Date.now()).slice(-4)}</span>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <QuickActionCard
+          href="/field/boundary-capture"
+          icon={MapPin}
+          title="Capture boundary"
+          description="Walk farm corners with GPS. Outline saves locally when offline."
+        />
+        <QuickActionCard
+          href="/farmers"
+          icon={UserPlus}
+          title="Register farmer"
+          description="National registry capture with district assignment and traceability."
+        />
+        <QuickActionCard
+          href="/field/mobile"
+          icon={ClipboardList}
+          title="Submit field report"
+          description="Daily logs, crop health, and operational notes for DAO consolidation."
+        />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+        <div className="space-y-6">
+          <DashboardPanel>
+            <SectionHeader kicker="Today&apos;s work" title="Assigned field tasks" />
+            <ul className="mt-4 space-y-2">
+              {TASKS.map((t) => (
+                <li
+                  key={t.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-medium text-ink-900">{t.title}</p>
+                    <p className="mt-0.5 text-[12px] text-slate-600">{t.meta}</p>
+                  </div>
+                  <StatusBadge
+                    tone={t.badge === "Verified" ? "success" : t.badge === "In progress" ? "syncing" : "warning"}
+                  >
+                    {t.badge}
+                  </StatusBadge>
+                </li>
+              ))}
+            </ul>
+            <Link href="/field/inspections" className="mt-4 inline-flex text-[13px] font-medium text-forest-700 hover:text-forest-600">
+              Open inspection queue →
+            </Link>
+          </DashboardPanel>
+
+          <DashboardPanel>
+            <SectionHeader kicker="Workflow" title="Active workflow progress" />
+            <div className="mt-4 space-y-4">
+              {[
+                { label: "Soil health analysis", pct: 78 },
+                { label: "Subsidy auditing", pct: 42 },
+                { label: "Warehouse validation", pct: 100 },
+              ].map((w) => (
+                <div key={w.label}>
+                  <div className="mb-1 flex justify-between text-[12px]">
+                    <span className="font-medium text-slate-800">{w.label}</span>
+                    <span className="font-mono text-slate-500">{w.pct === 100 ? "Done" : `${w.pct}%`}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full bg-forest-600 transition-all"
+                      style={{ width: `${w.pct}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </DashboardPanel>
+
+          <DashboardPanel>
+            <SectionHeader kicker="Activity" title="Recent field reports" />
+            <ul className="mt-3 space-y-2 text-[13px] text-slate-700">
+              {fieldReports.slice(0, 4).map((r) => (
+                <li key={r.id} className="flex justify-between gap-2 border-b border-slate-100 pb-2 last:border-0">
+                  <span className="line-clamp-2">{r.summary}</span>
+                  <span className="font-mono text-[11px] text-slate-500 shrink-0">{r.county}</span>
+                </li>
+              ))}
+            </ul>
+          </DashboardPanel>
+        </div>
+
+        <div className="space-y-6">
+          <DashboardPanel className="border-amber-200/80 bg-amber-50/30">
+            <SectionHeader
+              kicker="Offline queue"
+              title={`${pending} items pending`}
+              subtitle="Data safely stored on device until connectivity returns."
+            />
+            <div className="mt-3 flex flex-wrap gap-2">
+              <StatusBadge tone="warning">Sync required</StatusBadge>
+            </div>
+            <Link
+              href="/field/sync-queue"
+              className="mt-4 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-ink-900 px-4 text-[14px] font-medium text-white hover:bg-ink-800"
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden />
+              View offline queue
+            </Link>
+          </DashboardPanel>
+
+          <DashboardPanel>
+            <SectionHeader kicker="Captures" title="Recent captures" />
+            <Timeline items={RECENT} className="mt-3" />
+          </DashboardPanel>
+
+          <AlertCard tone="success" title="Field guidelines">
+            Maintain GPS accuracy under 10m before boundary capture. Drafts sync automatically when online. Use high-contrast mode in direct sunlight if needed.
+          </AlertCard>
+        </div>
+      </div>
+
+      <DashboardPanel className="bg-gradient-to-r from-forest-800 to-forest-900 border-forest-900 text-white">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-200/80">Offline field use</p>
+            <p className="mt-1 text-[15px] font-semibold">Install Agrivault Data for field reporting and GPS capture</p>
+          </div>
+          <InstallAppButton variant="primary" label="Install for offline use" className="!bg-amber-400 !text-ink-900 hover:!bg-amber-300" />
+        </div>
+      </DashboardPanel>
+    </div>
+  );
+}

@@ -99,7 +99,7 @@ export default function MinistrySidebar({
                       {active ? (
                         <span
                           aria-hidden="true"
-                          className="absolute left-0 top-1 bottom-1 w-[3px] bg-[rgb(var(--ministry-gold))] rounded-r"
+                          className="absolute left-1.5 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-[rgb(var(--ministry-gold))] shadow-[0_0_8px_rgba(201,162,75,0.55)]"
                         />
                       ) : null}
                       <span className="block truncate pl-1.5">{item.label}</span>
@@ -112,7 +112,17 @@ export default function MinistrySidebar({
         </div>
       </nav>
 
-      <div className="mt-auto border-t border-white/[0.06] p-3 bg-black/20">
+      <div className="mt-auto border-t border-white/[0.06] p-3 space-y-3 bg-black/15">
+        <div className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-200/55">Data integrity</span>
+            <span className="font-mono text-[11px] font-semibold text-emerald-100">98.4%</span>
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full w-[98.4%] rounded-full bg-gradient-to-r from-emerald-500 to-amber-300" />
+          </div>
+          <p className="mt-1.5 text-[10px] text-emerald-100/60">Verified by national data bureau</p>
+        </div>
         <div className="flex items-center gap-2.5">
           <div className="h-9 w-9 rounded-full bg-emerald-600/25 grid place-items-center ring-2 ring-[rgb(var(--ministry-gold))]/30">
             <span className="text-[11px] font-semibold text-emerald-50">{user.initials}</span>

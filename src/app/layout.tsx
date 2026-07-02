@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "@/styles/public-marketing.css";
-import { DM_Mono, DM_Serif_Display, Inter, Inter_Tight } from "next/font/google";
+import { DM_Mono, DM_Serif_Display, Fraunces, Inter, Inter_Tight } from "next/font/google";
 
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import ToastProvider from "@/components/shared/toast/ToastProvider";
@@ -32,6 +32,12 @@ const fontSerif = DM_Serif_Display({
   subsets: ["latin"],
   weight: ["400"],
   style: ["normal", "italic"],
+});
+
+const fontEditorial = Fraunces({
+  variable: "--font-editorial",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const agrivaultDisplay = Inter_Tight({
@@ -129,7 +135,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} ${fontSerif.variable} ${agrivaultDisplay.variable} ${agrivaultBody.variable} ${agrivaultMono.variable} h-full antialiased`}
+      className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} ${fontSerif.variable} ${fontEditorial.variable} ${agrivaultDisplay.variable} ${agrivaultBody.variable} ${agrivaultMono.variable} h-full antialiased`}
     >
       <body className="h-full bg-[rgb(var(--surface))] text-[rgb(var(--text))]">
         <AnalyticsProvider>

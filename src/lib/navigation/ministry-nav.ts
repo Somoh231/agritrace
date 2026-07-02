@@ -78,6 +78,15 @@ const DONOR_AUDITOR_DENY: UserRole[] = [...DONOR_VISIBILITY_ROLES, "auditor"];
 
 export const MINISTRY_NAV: MinistryNavSection[] = [
   {
+    id: "national-command",
+    label: "National command",
+    items: [
+      { label: "Command Center", href: "/command-center", rolesDeny: [...DONOR_AUDITOR_DENY] },
+      { label: "National Operations", href: "/national-operations", rolesDeny: [...DONOR_AUDITOR_DENY] },
+      { label: "National Heat Map", href: "/national-heat-map", rolesDeny: [...DONOR_AUDITOR_DENY] },
+    ],
+  },
+  {
     id: "operational-workspaces",
     label: "Workspaces",
     items: [
@@ -100,19 +109,10 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
     ],
   },
   {
-    id: "national-overview",
-    label: "National Command",
-    items: [
-      { label: "Command Center", href: "/command-center", rolesDeny: [...DONOR_AUDITOR_DENY] },
-      { label: "National Operations", href: "/national-operations", rolesDeny: [...DONOR_AUDITOR_DENY] },
-      { label: "National Heat Map", href: "/national-heat-map", rolesDeny: [...DONOR_AUDITOR_DENY] },
-    ],
-  },
-  {
     id: "reporting",
     label: "Reporting",
     items: [
-      { label: "DAO & CAC reports", href: "/reporting" },
+      { label: "DAO reports", href: "/reporting" },
       { label: "Pending Verifications", href: "/verification-queue", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Escalations", href: "/alerts", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Reporting Analytics", href: "/reports", rolesDeny: [...DONOR_AUDITOR_DENY] },
@@ -120,7 +120,7 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
   },
   {
     id: "county-operations",
-    label: "County Operations",
+    label: "County operations",
     items: [
       {
         label: "County Dashboard",
@@ -158,7 +158,7 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
   },
   {
     id: "warehouses-logistics",
-    label: "Warehouses & Logistics",
+    label: "Warehouse & logistics",
     items: [
       { label: "Warehouse Command", href: "/logistics", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Transfers", href: "/transfers", rolesDeny: [...DONOR_AUDITOR_DENY] },
@@ -167,10 +167,8 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
   },
   {
     id: "food-security",
-    label: "Food Security",
-    items: [
-      { label: "Food Security Dashboard", href: "/food-security", rolesDeny: [...DONOR_AUDITOR_DENY] },
-    ],
+    label: "Food security",
+    items: [{ label: "Food Security Dashboard", href: "/food-security", rolesDeny: [...DONOR_AUDITOR_DENY] }],
   },
   {
     id: "farmers",
@@ -188,7 +186,6 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
       { label: "Users & Roles", href: "/admin/users", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Compliance", href: "/compliance", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Audit Logs", href: "/compliance/audit-log", rolesDeny: [...DONOR_AUDITOR_DENY] },
-      // Low-use consoles (system, integrations, import, reports, settings, …) live under the hub.
       { label: "Administration hub", href: "/admin", rolesDeny: [...DONOR_AUDITOR_DENY] },
     ],
   },
@@ -206,8 +203,9 @@ export function ministryNavForRole(role: UserRole | null | undefined): MinistryN
 
 /** Longest href match wins */
 export function ministryBreadcrumb(pathname: string): { kicker: string; title: string } {
-  if (pathname === "/reporting") return { kicker: "Reporting", title: "DAO & CAC reports" };
-  if (pathname === "/reporting/workspace") return { kicker: "Reporting", title: "DAO & CAC reports" };
+  if (pathname === "/reporting") return { kicker: "Reporting", title: "DAO reports" };
+  if (pathname === "/reporting/workspace") return { kicker: "Reporting", title: "DAO reports" };
+  if (pathname === "/admin/settings") return { kicker: "Administration", title: "Administration hub" };
   if (pathname === "/logistics") return { kicker: "Warehouses & Logistics", title: "Warehouse command" };
   if (pathname === "/compliance") return { kicker: "Administration", title: "Compliance" };
   if (pathname === "/reports") return { kicker: "Reporting", title: "Ministry reports center" };
