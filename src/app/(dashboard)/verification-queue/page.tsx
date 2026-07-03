@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 
-import { EmptyState } from "@/components/enterprise";
 import VerificationQueueWorkspace from "@/components/operations/VerificationQueueWorkspace";
 
 export default function VerificationQueuePage() {
@@ -14,7 +13,11 @@ export default function VerificationQueuePage() {
               <div key={i} className="h-20 animate-pulse rounded-xl bg-slate-100" />
             ))}
           </div>
-          <EmptyState title="Loading verification queue…" description="Fetching unified verification ledger." />
+          <div className="space-y-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-10 animate-pulse rounded-lg bg-slate-100" />
+            ))}
+          </div>
         </div>
       }
     >

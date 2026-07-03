@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 
+import { EmptyState } from "@/components/enterprise";
 import type { DaoOversightRow } from "@/lib/ais/county-dao-demo";
 import { daoMarkersForCounty, pestAlertMarkers, riskHotspotsForCounty, warehouseMarkersForCounty, type CaoMapMarker } from "@/lib/cao/cao-map-markers";
 import { MINISTRY_COUNTY_METRICS } from "@/lib/data/ministry-canonical-data";
@@ -56,36 +57,41 @@ export default function CaoCountyOperationsMap({
 
   if (!token) {
     return (
-      <section className="rounded-xl border border-slate-700/85 bg-slate-950/45 p-4 sm:p-5">
-        <h2 className="font-display text-[15px] font-semibold text-white">County operations map</h2>
-        <p className="mt-2 text-[12px] text-slate-400">
-          Configure <span className="font-mono text-slate-300">NEXT_PUBLIC_MAPBOX_TOKEN</span> to enable interactive layers (DAO districts, warehouses, risk &
+      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <h2 className="text-[15px] font-semibold text-ink-900">County operations map</h2>
+        <p className="mt-2 text-[12px] text-slate-600">
+          Configure <span className="font-mono text-slate-800">NEXT_PUBLIC_MAPBOX_TOKEN</span> to enable interactive layers (DAO districts, warehouses, risk &
           pest cues). Below is the scoped marker manifest for your county.
         </p>
-        <ul className="mt-4 max-h-[280px] space-y-2 overflow-y-auto text-[12px] text-slate-300">
-          {markers.map((m) => (
-            <li key={m.id} className="flex flex-wrap items-baseline justify-between gap-2 rounded-lg border border-slate-800 bg-slate-900/40 px-3 py-2">
-              <span className="font-medium text-white">{m.label}</span>
-              <span className="font-mono text-[10px] text-slate-500">{m.kind}</span>
-              {m.meta ? <span className="w-full text-[11px] text-slate-500">{m.meta}</span> : null}
-            </li>
-          ))}
-        </ul>
+        {markers.length === 0 ? (
+          <div className="mt-4">
+            <EmptyState title="No markers in scope" description="County map markers appear when DAO and warehouse signals are available." />
+          </div>
+        ) : (
+          <ul className="mt-4 max-h-[280px] space-y-2 overflow-y-auto text-[12px] text-slate-700">
+            {markers.map((m) => (
+              <li key={m.id} className="flex flex-wrap items-baseline justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <span className="font-medium text-ink-900">{m.label}</span>
+                <span className="font-mono text-[10px] text-slate-500">{m.kind}</span>
+                {m.meta ? <span className="w-full text-[11px] text-slate-500">{m.meta}</span> : null}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     );
   }
 
   return (
-    <section className="rounded-xl border border-slate-700/85 bg-slate-950/45 p-4 sm:p-5">
+    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="font-display text-[15px] font-semibold text-white">County operations map</h2>
-          <p className="mt-1 max-w-xl text-[12px] text-slate-400">
-            Warehouses (sky), DAO anchors (emerald), sync-risk hotspots (rose), pest escalations (amber). Production heat follows DAO clusters — refine against{" "}
-            <span className="font-mono text-slate-300">pilot_county_metrics</span> when linked.
+          <h2 className="text-[15px] font-semibold text-ink-900">County operations map</h2>
+          <p className="mt-1 max-w-xl text-[12px] text-slate-600">
+            Warehouses (sky), DAO anchors (emerald), sync-risk hotspots (rose), pest escalations (amber).
           </p>
         </div>
-        <div className="flex flex-wrap gap-3 text-[10px] text-slate-500">
+        <div className="flex flex-wrap gap-3 text-[10px] text-slate-600">
           <span className="inline-flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-sky-400" /> Warehouse
           </span>
@@ -100,17 +106,17 @@ export default function CaoCountyOperationsMap({
           </span>
         </div>
       </div>
-      <div className="mt-4 h-[340px] overflow-hidden rounded-lg border border-slate-800">
+      <div className="mt-4 h-[340px] overflow-hidden rounded-lg border border-slate-200">
         <MapGL
           mapboxAccessToken={token}
           initialViewState={initialView}
-          mapStyle="mapbox://styles/mapbox/dark-v11"
+          mapStyle="mapbox://styles/mapbox/light-v11"
           style={{ width: "100%", height: "100%" }}
           attributionControl={false}
         >
           {markers.map((m) => (
             <Marker key={m.id} longitude={m.lng} latitude={m.lat} anchor="bottom">
-              <div title={m.meta ?? m.label} className="h-3 w-3 rounded-full ring-2 ring-slate-950" style={{ backgroundColor: markerColor(m.kind) }} />
+              <div title={m.meta ?? m.label} className="h-3 w-3 rounded-full ring-2 ring-white" style={{ backgroundColor: markerColor(m.kind) }} />
             </Marker>
           ))}
         </MapGL>

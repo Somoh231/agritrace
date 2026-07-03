@@ -60,8 +60,18 @@ class DashboardShellFatalBoundary extends React.Component<
   override render() {
     if (this.state.error) {
       return (
-        <div className="min-h-screen bg-slate-950 text-white p-10">
-          Dashboard loaded
+        <div className="min-h-screen enterprise-canvas flex items-center justify-center p-6">
+          <div className="max-w-md rounded-xl border border-rose-200 bg-rose-50 px-6 py-5 text-center">
+            <p className="text-[15px] font-semibold text-rose-900">Workspace failed to load</p>
+            <p className="mt-2 text-[13px] text-rose-800">Reload the page to restore your session. If the problem persists, contact ministry support.</p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-4 inline-flex h-10 items-center rounded-lg bg-forest-800 px-4 text-[13px] font-semibold text-white hover:bg-forest-700"
+            >
+              Reload workspace
+            </button>
+          </div>
         </div>
       );
     }

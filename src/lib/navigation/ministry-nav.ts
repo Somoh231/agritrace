@@ -113,6 +113,7 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
     label: "Reporting",
     items: [
       { label: "DAO reports", href: "/reporting" },
+      { label: "Reporting workspace", href: "/reporting/workspace" },
       { label: "Pending Verifications", href: "/verification-queue", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Escalations", href: "/alerts", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Reporting Analytics", href: "/reports", rolesDeny: [...DONOR_AUDITOR_DENY] },
@@ -126,6 +127,12 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
         label: "County Dashboard",
         href: "/county-dashboard",
         rolesAllow: [...CAC_COUNTY_ROLES, ...MINISTRY_NATIONAL_ROLES],
+        rolesDeny: [...DONOR_AUDITOR_DENY],
+      },
+      {
+        label: "District Dashboard",
+        href: "/district-dashboard",
+        rolesAllow: [...DAO_WORKSPACE_ROLES, ...CAC_COUNTY_ROLES, ...MINISTRY_NATIONAL_ROLES],
         rolesDeny: [...DONOR_AUDITOR_DENY],
       },
       { label: "DAO Monitoring", href: "/field-agents", rolesDeny: [...DAO_DENY, ...DONOR_AUDITOR_DENY] },
@@ -161,6 +168,7 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
     label: "Warehouse & logistics",
     items: [
       { label: "Warehouse Command", href: "/logistics", rolesDeny: [...DONOR_AUDITOR_DENY] },
+      { label: "Warehouses registry", href: "/operations/warehouses", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Transfers", href: "/transfers", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Inventory", href: "/inventory", rolesDeny: ["donor_partner", "donor_observer"] },
     ],
@@ -184,6 +192,8 @@ export const MINISTRY_NAV: MinistryNavSection[] = [
     label: "Administration",
     items: [
       { label: "Users & Roles", href: "/admin/users", rolesDeny: [...DONOR_AUDITOR_DENY] },
+      { label: "Organizations", href: "/admin/organizations", rolesDeny: [...DONOR_AUDITOR_DENY] },
+      { label: "Activity center", href: "/activity", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Compliance", href: "/compliance", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Audit Logs", href: "/compliance/audit-log", rolesDeny: [...DONOR_AUDITOR_DENY] },
       { label: "Administration hub", href: "/admin", rolesDeny: [...DONOR_AUDITOR_DENY] },
@@ -204,7 +214,7 @@ export function ministryNavForRole(role: UserRole | null | undefined): MinistryN
 /** Longest href match wins */
 export function ministryBreadcrumb(pathname: string): { kicker: string; title: string } {
   if (pathname === "/reporting") return { kicker: "Reporting", title: "DAO reports" };
-  if (pathname === "/reporting/workspace") return { kicker: "Reporting", title: "DAO reports" };
+  if (pathname === "/reporting/workspace") return { kicker: "Reporting", title: "Reporting operations center" };
   if (pathname === "/admin/settings") return { kicker: "Administration", title: "Administration hub" };
   if (pathname === "/logistics") return { kicker: "Warehouses & Logistics", title: "Warehouse command" };
   if (pathname === "/compliance") return { kicker: "Administration", title: "Compliance" };

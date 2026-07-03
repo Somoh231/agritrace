@@ -64,6 +64,7 @@ export default function FoodSecurityClient() {
       />
 
       <RegistryKpiStrip
+        className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6"
         items={[
           { label: "Indicative rice demand", value: `${nf(fi.riceDemandMt)} t`, hint: "National modeled demand" },
           { label: "Domestic production", value: `${nf(fi.domesticProductionMt)} t`, hint: "Estimated output", deltaTone: "up" },

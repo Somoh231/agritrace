@@ -177,7 +177,7 @@ export default function CountyHeatmap({
     const props = (f.properties ?? {}) as any;
     const county = (props.countyName ?? props.county ?? props.name ?? "") as string;
     if (county && county !== "Unknown") {
-      router.push(`/map?county=${encodeURIComponent(county)}`);
+      router.push(`/county-dashboard`);
     }
   };
 
@@ -192,6 +192,7 @@ export default function CountyHeatmap({
           mapboxAccessToken={mapboxToken()}
           initialViewState={{ ...LIBERIA_CENTER, zoom: LIBERIA_ZOOM }}
           mapStyle="mapbox://styles/mapbox/light-v11"
+          style={{ width: "100%", height: "100%" }}
           interactiveLayerIds={geojson?.features?.length ? ["counties-fill"] : []}
           onMouseMove={onMove}
           onMouseLeave={() => setHover(null)}

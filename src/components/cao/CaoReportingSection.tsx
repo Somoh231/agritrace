@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { AlertCard } from "@/components/enterprise";
 import type { DaoOversightRow } from "@/lib/ais/county-dao-demo";
 import type { CaoDistrictCard } from "@/lib/cao/cao-district-cards";
 import {
@@ -47,9 +48,9 @@ export default function CaoReportingSection({
     });
 
   return (
-    <section className="rounded-xl border border-slate-700/85 bg-slate-950/45 p-4 sm:p-5">
-      <h2 className="font-display text-[15px] font-semibold text-white">CAC reporting</h2>
-      <p className="mt-1 text-[12px] text-slate-400">
+    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <h2 className="text-[15px] font-semibold text-ink-900">CAC reporting</h2>
+      <p className="mt-1 text-[12px] text-slate-600">
         One-click exports compose live KPIs with canonical ministry fallbacks — suitable for county situational meetings and ministry routing packs.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
@@ -59,7 +60,7 @@ export default function CaoReportingSection({
             downloadTextFile(`cac-weekly-brief-${countyLabel.replace(/\s+/g, "-").toLowerCase()}.txt`, brief());
             setToast("Weekly briefing downloaded.");
           }}
-          className="rounded-lg bg-emerald-800 px-4 py-2 text-[12px] font-medium text-white hover:bg-emerald-700"
+          className="rounded-lg bg-forest-800 px-4 py-2 text-[12px] font-medium text-white hover:bg-forest-700"
         >
           Weekly county briefing
         </button>
@@ -69,7 +70,7 @@ export default function CaoReportingSection({
             downloadTextFile(`cac-dao-compliance-${countyLabel.replace(/\s+/g, "-").toLowerCase()}.csv`, buildDaoComplianceExport({ countyLabel, daoRows }));
             setToast("DAO compliance CSV exported.");
           }}
-          className="rounded-lg border border-slate-600 px-4 py-2 text-[12px] text-slate-100 hover:bg-slate-900"
+          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-[12px] text-slate-700 hover:bg-slate-50"
         >
           DAO compliance export
         </button>
@@ -79,7 +80,7 @@ export default function CaoReportingSection({
             downloadTextFile(`cac-subsidy-summary-${countyLabel.replace(/\s+/g, "-").toLowerCase()}.txt`, buildSubsidyUtilizationSummary(countyLabel, warehouses));
             setToast("Subsidy utilization summary downloaded.");
           }}
-          className="rounded-lg border border-slate-600 px-4 py-2 text-[12px] text-slate-100 hover:bg-slate-900"
+          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-[12px] text-slate-700 hover:bg-slate-50"
         >
           Subsidy utilization summary
         </button>
@@ -89,18 +90,17 @@ export default function CaoReportingSection({
             downloadTextFile(`cac-district-compare-${countyLabel.replace(/\s+/g, "-").toLowerCase()}.csv`, buildDistrictComparisonReport(countyLabel, districtCards));
             setToast("District comparison report exported.");
           }}
-          className="rounded-lg border border-slate-600 px-4 py-2 text-[12px] text-slate-100 hover:bg-slate-900"
+          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-[12px] text-slate-700 hover:bg-slate-50"
         >
           District comparison report
         </button>
       </div>
       {toast ? (
-        <p className="mt-3 rounded-lg border border-emerald-800/45 bg-emerald-950/25 px-3 py-2 text-[12px] text-emerald-100">
-          {toast}{" "}
-          <button type="button" className="ml-2 text-emerald-300 underline" onClick={() => setToast(null)}>
-            Dismiss
-          </button>
-        </p>
+        <div className="mt-3">
+          <AlertCard tone="success" title="Export complete" action={<button type="button" className="text-[12px] font-medium underline" onClick={() => setToast(null)}>Dismiss</button>}>
+            {toast}
+          </AlertCard>
+        </div>
       ) : null}
     </section>
   );

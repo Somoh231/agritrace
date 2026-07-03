@@ -142,6 +142,15 @@ export default function Topbar({
               }}
             />
             <ToolItem label="Export PDF" onClick={onExportPdf} />
+            <ToolItem
+              label="Briefing mode"
+              onClick={() => {
+                if (typeof window === "undefined") return;
+                const next = new URL(window.location.href);
+                const sp = nextUrlWithParam(next.searchParams, "present", "1");
+                router.push(next.pathname + "?" + sp.toString());
+              }}
+            />
             <ToolItem label={`Action · ${primaryAction.label}`} onClick={primaryAction.onClick} />
           </div>
         </details>
@@ -149,7 +158,7 @@ export default function Topbar({
         <button
           type="button"
           onClick={onExportPdf}
-          className="hidden md:inline-flex btn-gov-outline h-9 px-3 rounded-lg text-[12px]"
+          className="hidden xl:inline-flex btn-gov-outline h-9 px-3 rounded-lg text-[12px]"
         >
           Export PDF
         </button>
@@ -161,7 +170,7 @@ export default function Topbar({
             const sp = nextUrlWithParam(next.searchParams, "present", "1");
             router.push(next.pathname + "?" + sp.toString());
           }}
-          className="btn-gold h-9 px-3.5 rounded-lg text-[12px]"
+          className="hidden lg:inline-flex btn-gold h-9 px-3.5 rounded-lg text-[12px]"
         >
           Briefing mode
         </button>

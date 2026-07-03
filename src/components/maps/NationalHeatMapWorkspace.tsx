@@ -54,7 +54,35 @@ export default function NationalHeatMapWorkspace() {
       ) : null}
 
       <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_24px_rgba(16,24,40,0.08)]">
-        <div className="absolute left-4 top-4 z-10 max-w-[280px] rounded-xl border border-slate-200/90 bg-white/95 p-4 shadow-lg backdrop-blur-sm">
+        <div className="border-b border-slate-100 px-4 py-4 sm:hidden">
+          <SectionHeader kicker="Layers" title="Tactical controls" subtitle="Toggle intelligence overlays" />
+          <div className="mt-3 space-y-2 text-[12px] text-slate-700">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={showYield} onChange={(e) => setShowYield(e.target.checked)} className="rounded border-slate-300" />
+              Yield heatmap
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={showWarehouse} onChange={(e) => setShowWarehouse(e.target.checked)} className="rounded border-slate-300" />
+              Warehouse network (reference)
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={showPest} onChange={(e) => setShowPest(e.target.checked)} className="rounded border-slate-300" />
+              Pest risk index (reference)
+            </label>
+          </div>
+          <MapTokenBadge ready={tokenReady} />
+          <div className="mt-3">
+            <MapLayerLegend
+              items={[
+                { color: "#eaf7ec", label: "Low yield" },
+                { color: "#5bbf6e", label: "Moderate" },
+                { color: "#2d7a3e", label: "High yield" },
+              ]}
+            />
+          </div>
+        </div>
+
+        <div className="absolute left-4 top-4 z-10 hidden max-w-[280px] rounded-xl border border-slate-200/90 bg-white/95 p-4 shadow-lg backdrop-blur-sm sm:block">
           <SectionHeader kicker="Layers" title="Tactical controls" subtitle="Toggle intelligence overlays" />
           <div className="mt-3 space-y-2 text-[12px] text-slate-700">
             <label className="flex items-center gap-2">
@@ -85,7 +113,7 @@ export default function NationalHeatMapWorkspace() {
 
         <div className="min-h-[min(62vh,560px)] p-2">
           {showYield ? (
-            <CountyHeatmap embedded heightClass="min-h-[min(60vh,540px)]" />
+            <CountyHeatmap embedded heightClass="min-h-[min(60vh,540px)] h-[min(60vh,540px)]" />
           ) : (
             <div className="flex min-h-[min(60vh,540px)] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 text-center">
               <p className="text-[13px] text-slate-600">Yield layer hidden — enable the heatmap checkbox to restore the choropleth.</p>

@@ -38,6 +38,7 @@ const RECENT = [
 export default function ClanWorkspaceClient() {
   const [gpsOk] = React.useState(true);
   const pending = offlineSyncQueue.reduce((s, q) => s + q.records, 0);
+  const sessionId = React.useMemo(() => `FIELD-${String(Date.now()).slice(-4)}`, []);
 
   return (
     <div className="space-y-6 pb-8">
@@ -53,15 +54,15 @@ export default function ClanWorkspaceClient() {
         }
       />
 
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-900 px-4 py-2.5 text-[12px] text-slate-200">
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-[12px] text-slate-700">
         <span className="inline-flex items-center gap-1.5">
-          <Satellite className="h-3.5 w-3.5 text-emerald-400" aria-hidden />
+          <Satellite className="h-3.5 w-3.5 text-forest-700" aria-hidden />
           GPS {gpsOk ? "± 3m (Good)" : "Waiting for signal"}
         </span>
-        <span className="text-slate-600">|</span>
+        <span className="text-slate-300">|</span>
         <span>Network · {typeof navigator !== "undefined" && navigator.onLine ? "Online" : "Offline — drafts saved"}</span>
-        <span className="text-slate-600">|</span>
-        <span>Session · FIELD-{String(Date.now()).slice(-4)}</span>
+        <span className="text-slate-300">|</span>
+        <span>Session · {sessionId}</span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

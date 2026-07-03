@@ -131,6 +131,7 @@ export default function FarmPlotMap({
         mapboxAccessToken={mapboxToken()}
         initialViewState={{ ...LIBERIA_CENTER, zoom: LIBERIA_ZOOM }}
         mapStyle="mapbox://styles/mapbox/light-v11"
+        style={{ width: "100%", height: "100%" }}
         onClick={(e) => {
           const f = e.features?.[0];
           if (!f) return;

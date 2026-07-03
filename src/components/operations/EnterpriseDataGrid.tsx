@@ -308,7 +308,10 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
                           </td>
                         ) : null}
                         {columns.map((c) => (
-                          <td key={String(c.key)} className={`${cellPad} align-top whitespace-nowrap max-w-[280px] truncate`}>
+                          <td
+                            key={String(c.key)}
+                            className={`${cellPad} align-top ${c.render ? "whitespace-normal" : "whitespace-nowrap max-w-[280px] truncate"}`}
+                          >
                             {c.render ? c.render(row) : String(row[c.key as keyof T] ?? "—")}
                           </td>
                         ))}

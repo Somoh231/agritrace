@@ -30,7 +30,7 @@ export default function InventoryOperationsClient() {
   const lowStock = warehouses.filter((w) => w.stockRisk !== "healthy");
 
   return (
-    <div className="space-y-6 p-5 md:p-6">
+    <div className="space-y-6">
       <RegistryKpiStrip
         items={[
           { label: "Fertilizer distributed", value: `${inputDistributionProgress.fertilizerDistributedMt} t`, hint: "National programme" },

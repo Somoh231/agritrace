@@ -69,7 +69,7 @@ export default function BoundaryCaptureStandalone() {
   };
 
   return (
-    <div className="flex h-[100dvh] min-h-0 flex-col bg-[rgb(var(--ministry-workspace))]">
+    <div className="flex h-full min-h-0 flex-col bg-[rgb(var(--ministry-workspace))]">
       {/* Compact field command strip */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[rgb(var(--ministry-gold))]/15 px-3 py-2.5 md:px-4">
         <div className="min-w-0">

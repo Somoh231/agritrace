@@ -34,18 +34,18 @@ const TABLE_PREFIXES = [
   "/field/sync-queue",
   "/subsidies",
   "/search",
+  "/national-operations",
+  "/command-center",
+  "/workspace",
+  "/county-dashboard",
+  "/district-dashboard",
   // GIS/map pages that are scrollable stacks (not single full-height canvases)
   "/map",
   "/national-heat-map",
   "/geo-registry",
 ];
 
-/**
- * Map-first / geospatial routes that keep the dark, full-bleed canvas even
- * though they render in a scrollable (table) mode. Everything else in
- * command/table/admin modes now uses the light government workspace canvas.
- */
-const DARK_CANVAS_PREFIXES = ["/map", "/national-heat-map", "/field/boundary-capture"];
+const DARK_CANVAS_PREFIXES = ["/field/boundary-capture"];
 
 function matches(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(prefix + "/");

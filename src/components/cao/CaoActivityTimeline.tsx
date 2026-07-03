@@ -8,13 +8,13 @@ import { fetchOperationalFeedItems, normalizeCountyKey, type MinistryFeedItem } 
 function toneBorder(t: MinistryFeedItem["tone"]): string {
   switch (t) {
     case "emerald":
-      return "border-emerald-800/45 bg-emerald-950/20";
+      return "border-emerald-200 bg-emerald-50";
     case "amber":
-      return "border-amber-800/45 bg-amber-950/20";
+      return "border-amber-200 bg-amber-50";
     case "rose":
-      return "border-rose-800/45 bg-rose-950/20";
+      return "border-rose-200 bg-rose-50";
     default:
-      return "border-slate-800 bg-slate-900/40";
+      return "border-slate-200 bg-slate-50";
   }
 }
 
@@ -80,15 +80,15 @@ export default function CaoActivityTimeline({ county, daoRows }: { county: strin
   }, [synthetic, scopedFeed]);
 
   return (
-    <section className="rounded-xl border border-slate-700/85 bg-slate-950/45 p-4 sm:p-5">
-      <h2 className="font-display text-[15px] font-semibold text-white">Activity timeline</h2>
-      <p className="mt-1 text-[12px] text-slate-400">County-filtered operational feed blended with CAC rehearsal cadence statements.</p>
+    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <h2 className="text-[15px] font-semibold text-ink-900">Activity timeline</h2>
+      <p className="mt-1 text-[12px] text-slate-600">County-filtered operational feed blended with CAC rehearsal cadence statements.</p>
       <ul className="mt-4 space-y-3">
         {merged.map((item) => (
           <li key={item.id} className={`rounded-lg border px-4 py-3 ${toneBorder(item.tone)}`}>
             <div className="text-[11px] font-mono text-slate-500">{new Date(item.at).toLocaleString()}</div>
-            <div className="mt-1 text-[13px] font-medium text-white">{item.title}</div>
-            <div className="mt-1 text-[12px] leading-relaxed text-slate-400">{item.detail}</div>
+            <div className="mt-1 text-[13px] font-medium text-ink-900">{item.title}</div>
+            <div className="mt-1 text-[12px] leading-relaxed text-slate-600">{item.detail}</div>
           </li>
         ))}
       </ul>

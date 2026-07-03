@@ -160,41 +160,13 @@ export default function MapOperationalWorkspace() {
             </div>
           ) : (
             <>
-              {activeLayer === "county" && showCounty ? <CountyHeatmap embedded heightClass="min-h-[min(52vh,480px)]" /> : null}
-              {activeLayer === "plots" && showPlots ? <FarmPlotMap embedded heightClass="min-h-[min(52vh,480px)]" /> : null}
-              {activeLayer === "movement" && showMovement ? <MovementMap embedded heightClass="min-h-[min(52vh,480px)]" /> : null}
+              {activeLayer === "county" && showCounty ? <CountyHeatmap embedded heightClass="h-[min(52vh,480px)]" /> : null}
+              {activeLayer === "plots" && showPlots ? <FarmPlotMap embedded heightClass="h-[min(52vh,480px)]" /> : null}
+              {activeLayer === "movement" && showMovement ? <MovementMap embedded heightClass="h-[min(52vh,480px)]" /> : null}
             </>
           )}
         </div>
       </DashboardPanel>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        {showCounty ? (
-          <DashboardPanel padding="none" className="overflow-hidden">
-            <div className="border-b border-slate-100 px-4 py-3">
-              <SectionHeader title="County yield layer" subtitle="Stacked reference · click county for drill-down" />
-            </div>
-            <CountyHeatmap embedded compact heightClass="h-[360px]" />
-          </DashboardPanel>
-        ) : null}
-        {showPlots ? (
-          <DashboardPanel padding="none" className="overflow-hidden">
-            <div className="border-b border-slate-100 px-4 py-3">
-              <SectionHeader title="Farm plot layer" subtitle="Deforestation status choropleth" />
-            </div>
-            <FarmPlotMap embedded compact heightClass="h-[360px]" />
-          </DashboardPanel>
-        ) : null}
-      </div>
-
-      {showMovement ? (
-        <DashboardPanel padding="none" className="overflow-hidden">
-          <div className="border-b border-slate-100 px-4 py-3">
-            <SectionHeader title="Movement routes" subtitle="From → to location traces" />
-          </div>
-          <MovementMap embedded heightClass="h-[360px]" />
-        </DashboardPanel>
-      ) : null}
     </div>
   );
 }
