@@ -3,6 +3,7 @@ import React from "react";
 import { Document, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
 
 import { buildExecutiveBriefingSnapshot } from "@/lib/briefing/executive-intelligence";
+import { API_ERROR_UNAUTHORIZED } from "@/lib/http/api-security";
 import { createClient } from "@/lib/supabase/server";
 
 const styles = StyleSheet.create({
@@ -100,6 +101,14 @@ function BriefingPdf({ snap }: { snap: ReturnType<typeof buildExecutiveBriefingS
 }
 
 export async function GET() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: API_ERROR_UNAUTHORIZED }, { status: 401 });
+  }
+
   let live:
     | Partial<{
         farmersCount: number | null;
@@ -109,7 +118,6 @@ export async function GET() {
     | undefined;
 
   try {
-    const supabase = await createClient();
     const [fc, rice, fs] = await Promise.all([
       supabase.from("farmers").select("id", { count: "exact", head: true }),
       supabase.from("rice_production_records").select("actual_yield_kg"),

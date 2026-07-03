@@ -10,8 +10,8 @@ import { LAYOUT_CONTAINER_CLASS, isDarkCanvasRoute, resolveLayoutMode } from "@/
 import PilotBanner from "@/components/shared/PilotBanner";
 // import AiAssistant from "@/components/ai-assistant/AiAssistant";
 import { resolveOperationalActor } from "@/lib/ops/current-actor";
+import OperationalActorProvider from "@/lib/ops/operational-actor-context";
 import { normalizeMinistryNavRole } from "@/lib/navigation/ministry-nav";
-// import OperationalActorProvider from "@/lib/ops/operational-actor-context";
 import type { Profile, UserRole } from "@/lib/supabase/types";
 
 function initialsFromName(name: string) {
@@ -97,38 +97,6 @@ export default function DashboardShell({
   const showDemoRail = process.env.NEXT_PUBLIC_SHOW_DEMO_RAIL === "true";
   void showDemoRail;
 
-  React.useEffect(() => {
-    console.error("[dashboard] AI initialization skipped (crash isolation — AiAssistant commented out)");
-  }, []);
-
-  React.useEffect(() => {
-    try {
-      if (!profile) {
-        console.error("[dashboard] role resolution skipped — no profile");
-        return;
-      }
-      if (profile.role == null || profile.role === undefined) {
-        console.error("[dashboard] role resolution — profile.role missing, applying ministry fallback");
-      }
-      try {
-        const actor = resolveOperationalActor({
-          id: profile.id,
-          full_name: profile.full_name,
-          role: normalizeMinistryNavRole(profile.role),
-          county: profile.county,
-        });
-        console.error("[dashboard] actor resolution (OperationalActorProvider removed; preview only)", {
-          persona: actor.role,
-          county: actor.county,
-        });
-      } catch (e) {
-        console.error("[dashboard] actor resolution failed", e);
-      }
-    } catch (e) {
-      console.error("[dashboard] role resolution failed", e);
-    }
-  }, [profile, authenticRole]);
-
   const safeEffectiveRole = React.useMemo(
     () => normalizeMinistryNavRole(profile?.role),
     [profile?.role],
@@ -137,6 +105,16 @@ export default function DashboardShell({
     () => normalizeMinistryNavRole(authenticRole ?? profile?.role),
     [authenticRole, profile?.role],
   );
+
+  const operationalActor = React.useMemo(() => {
+    if (!profile?.id) return null;
+    return resolveOperationalActor({
+      id: profile.id,
+      full_name: profile.full_name,
+      role: safeEffectiveRole,
+      county: profile.county,
+    });
+  }, [profile?.id, profile?.full_name, profile?.county, safeEffectiveRole]);
 
   const user = React.useMemo(
     () => ({
@@ -154,15 +132,7 @@ export default function DashboardShell({
   // Map-first/geospatial routes stay dark; everything else uses the light canvas.
   const darkCanvas = React.useMemo(() => isDarkCanvasRoute(pathname), [pathname]);
 
-  const exportHref = React.useMemo(() => {
-    const county = profile?.county?.trim() ?? "";
-    const base = "/api/reports/briefing-snapshot";
-    if (pathname.startsWith("/command-center") || pathname.startsWith("/national-operations")) return `${base}?scope=command-center`;
-    if (pathname.startsWith("/county-dashboard")) return `${base}?scope=county-dashboard&county=${encodeURIComponent(county)}`;
-    if (pathname.startsWith("/food-security")) return `${base}?scope=food-security`;
-    if (pathname.startsWith("/reports")) return `${base}?scope=reports`;
-    return "/api/reports/executive-briefing";
-  }, [pathname, profile?.county]);
+  const exportHref = "/api/reports/executive-briefing";
 
   if (!profile?.id) {
     return (
@@ -176,27 +146,34 @@ export default function DashboardShell({
   }
 
   const primary = primaryActionForPath(pathname);
+  const actorShell = (node: React.ReactNode) =>
+    operationalActor ? (
+      <OperationalActorProvider actor={operationalActor}>{node}</OperationalActorProvider>
+    ) : (
+      node
+    );
 
   if (presentation) {
     return (
       <DashboardShellFatalBoundary>
-        <div className="min-h-screen bg-[rgb(var(--ministry-workspace))]">
-          <div className="fixed right-4 top-4 z-50 hidden md:flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                const next = new URL(window.location.href);
-                next.searchParams.delete("present");
-                router.push(next.pathname + next.search);
-              }}
-              className="h-9 px-3 rounded-md border border-slate-600 bg-slate-900 text-[12px] text-slate-200 hover:bg-slate-800 shadow-sm"
-            >
-              Exit presentation
-            </button>
-          </div>
-          <main className="min-h-screen p-4 md:p-8">{children}</main>
-          {/* {showDemoRail ? <DemoRail /> : null} */}
-        </div>
+        {actorShell(
+          <div className="min-h-screen bg-[rgb(var(--ministry-workspace))]">
+            <div className="fixed right-4 top-4 z-50 hidden md:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const next = new URL(window.location.href);
+                  next.searchParams.delete("present");
+                  router.push(next.pathname + next.search);
+                }}
+                className="h-9 px-3 rounded-md border border-slate-600 bg-slate-900 text-[12px] text-slate-200 hover:bg-slate-800 shadow-sm"
+              >
+                Exit presentation
+              </button>
+            </div>
+            <main className="min-h-screen p-4 md:p-8">{children}</main>
+          </div>,
+        )}
       </DashboardShellFatalBoundary>
     );
   }
@@ -204,42 +181,45 @@ export default function DashboardShell({
   if (printView) {
     return (
       <DashboardShellFatalBoundary>
-        <div className="min-h-screen bg-white">
-          <div className="fixed right-4 top-4 z-50 hidden print:hidden md:flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                const next = new URL(window.location.href);
-                next.searchParams.delete("print");
-                router.push(next.pathname + next.search);
-              }}
-              className="h-9 px-3 rounded-md border border-slate-300 bg-white text-[12px] text-slate-800 hover:bg-slate-50 shadow-sm"
-            >
-              Exit print view
-            </button>
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="h-9 px-3 rounded-md border border-slate-300 bg-white text-[12px] text-slate-800 hover:bg-slate-50 shadow-sm"
-            >
-              Print
-            </button>
-            <a
-              href={exportHref}
-              className="h-9 px-3 rounded-md border border-slate-300 bg-white text-[12px] text-slate-800 hover:bg-slate-50 shadow-sm inline-flex items-center"
-            >
-              Export PDF
-            </a>
-          </div>
-          <main className="briefing-print-root min-h-screen p-4 md:p-10">{children}</main>
-        </div>
+        {actorShell(
+          <div className="min-h-screen bg-white">
+            <div className="fixed right-4 top-4 z-50 hidden print:hidden md:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const next = new URL(window.location.href);
+                  next.searchParams.delete("print");
+                  router.push(next.pathname + next.search);
+                }}
+                className="h-9 px-3 rounded-md border border-slate-300 bg-white text-[12px] text-slate-800 hover:bg-slate-50 shadow-sm"
+              >
+                Exit print view
+              </button>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="h-9 px-3 rounded-md border border-slate-300 bg-white text-[12px] text-slate-800 hover:bg-slate-50 shadow-sm"
+              >
+                Print
+              </button>
+              <a
+                href={exportHref}
+                className="h-9 px-3 rounded-md border border-slate-300 bg-white text-[12px] text-slate-800 hover:bg-slate-50 shadow-sm inline-flex items-center"
+              >
+                Export PDF
+              </a>
+            </div>
+            <main className="briefing-print-root min-h-screen p-4 md:p-10">{children}</main>
+          </div>,
+        )}
       </DashboardShellFatalBoundary>
     );
   }
 
   return (
     <DashboardShellFatalBoundary>
-      <div className="gov-canvas overflow-x-hidden h-[100dvh]">
+      {actorShell(
+        <div className="gov-canvas overflow-x-hidden h-[100dvh]">
         <div className="grid grid-cols-1 md:grid-cols-[232px_minmax(0,1fr)] h-full overflow-hidden">
           <div className="hidden md:block h-full border-r border-[rgb(var(--ministry-gold))]/10 overflow-hidden">
             <div className="h-full overflow-y-auto overscroll-contain">
@@ -312,7 +292,8 @@ export default function DashboardShell({
 
         {/* {showDemoRail ? <DemoRail /> : null} */}
         {/* <AiAssistant profileId={profile.id} role={safeEffectiveRole} pathname={pathname} /> */}
-      </div>
+        </div>,
+      )}
     </DashboardShellFatalBoundary>
   );
 }

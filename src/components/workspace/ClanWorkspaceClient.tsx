@@ -38,7 +38,20 @@ const RECENT = [
 export default function ClanWorkspaceClient() {
   const [gpsOk] = React.useState(true);
   const pending = offlineSyncQueue.reduce((s, q) => s + q.records, 0);
-  const sessionId = React.useMemo(() => `FIELD-${String(Date.now()).slice(-4)}`, []);
+  const [sessionId, setSessionId] = React.useState<string | null>(null);
+  const [online, setOnline] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    setSessionId(`FIELD-${String(Date.now()).slice(-4)}`);
+    setOnline(navigator.onLine);
+    const syncOnline = () => setOnline(navigator.onLine);
+    window.addEventListener("online", syncOnline);
+    window.addEventListener("offline", syncOnline);
+    return () => {
+      window.removeEventListener("online", syncOnline);
+      window.removeEventListener("offline", syncOnline);
+    };
+  }, []);
 
   return (
     <div className="space-y-6 pb-8">
@@ -60,9 +73,11 @@ export default function ClanWorkspaceClient() {
           GPS {gpsOk ? "± 3m (Good)" : "Waiting for signal"}
         </span>
         <span className="text-slate-300">|</span>
-        <span>Network · {typeof navigator !== "undefined" && navigator.onLine ? "Online" : "Offline — drafts saved"}</span>
+        <span>
+          Network · {online === null ? "Checking…" : online ? "Online" : "Offline — drafts saved"}
+        </span>
         <span className="text-slate-300">|</span>
-        <span>Session · {sessionId}</span>
+        <span>Session · {sessionId ?? "—"}</span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
