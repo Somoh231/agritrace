@@ -40,7 +40,17 @@ import {
   type OperationalWorkflowAction,
 } from "@/lib/ops/permissions";
 import { postVerificationWorkflow } from "@/lib/ops/workflow-api-client";
+import { postWorkflowAction } from "@/lib/workflow/client";
+import type { WorkflowAction } from "@/lib/workflow/status-model";
 import { operationalQueryKeys } from "@/platform/query-keys";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function verificationActionToWorkflow(action: "approve" | "reject" | "escalate" | "revision" | "investigate"): WorkflowAction {
+  if (action === "revision") return "request_corrections";
+  if (action === "investigate") return "assign_reviewer";
+  return action;
+}
 
 export default function VerificationQueueWorkspace() {
   const searchParams = useSearchParams();
@@ -140,6 +150,22 @@ export default function VerificationQueueWorkspace() {
         status: nextStatus!,
         auditTimeline: [...d.auditTimeline, { at: iso, actor: reviewer, stage: "workflow", note: auditNote }],
       }));
+
+      const liveSubmissionId = row._detail.submissionId;
+      if (liveSubmissionId && UUID_RE.test(liveSubmissionId)) {
+        const wf = await postWorkflowAction({
+          action: verificationActionToWorkflow(action),
+          submissionId: liveSubmissionId,
+          note: note?.trim() || auditNote,
+        });
+        if (!wf.ok) {
+          if (prev) queryClient.setQueryData(key, prev);
+          setWorkflowErr(`Workflow denied (${wf.code}) — ${wf.message}`);
+          return;
+        }
+        await queryClient.invalidateQueries({ queryKey: key });
+        return;
+      }
 
       const result = await postVerificationWorkflow({
         verificationId: id,

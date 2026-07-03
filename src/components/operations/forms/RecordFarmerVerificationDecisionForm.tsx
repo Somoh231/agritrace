@@ -3,6 +3,9 @@
 import * as React from "react";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { fetchOperationalSubmissions, postWorkflowAction } from "@/lib/workflow/client";
+import { OPERATIONAL_SUBMISSION_TYPES } from "@/lib/workflow/submission-types";
+import type { OperationalSubmission } from "@/lib/workflow/types";
 
 export default function RecordFarmerVerificationDecisionForm({
   onSuccess,
@@ -51,6 +54,23 @@ export default function RecordFarmerVerificationDecisionForm({
         record_id: farmerId.trim(),
         new_values: { verification, subsidyEligible },
       } as any);
+
+      const live = await fetchOperationalSubmissions({ type: OPERATIONAL_SUBMISSION_TYPES.farmerRegistration });
+      if (live.ok) {
+        const match = live.submissions.find((s: OperationalSubmission) => {
+          const refs = (s.metadata?.entity_refs ?? {}) as Record<string, string>;
+          return refs.farmer_id === farmerId.trim() && s.status === "submitted";
+        });
+        if (match) {
+          const wfAction = verification === "verified" ? "approve" : verification === "rejected" ? "reject" : "comment";
+          await postWorkflowAction({
+            action: wfAction,
+            submissionId: match.id,
+            note: `Farmer verification decision: ${verification}`,
+          });
+        }
+      }
+
       onSuccess();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed");

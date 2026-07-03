@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureOperationalSubmission } from "@/lib/workflow/submission-bridge";
 import type { Farmer, Plot, RiceProductionRecord } from "@/lib/supabase/types";
 
 import { getDB } from "./db";
@@ -160,6 +161,24 @@ export async function processSyncQueue(): Promise<{ synced: number; failed: numb
       if (plotsOk) {
         for (const r of plots.filter((r) => (r.sync_attempts ?? 0) < 5)) {
           await db.put("pending_plots", { ...r, synced: true } as any);
+          const plotData = r.data as Record<string, unknown>;
+          const farmerId = String(plotData.farmer_id ?? "").trim();
+          if (farmerId) {
+            await ensureOperationalSubmission({
+              kind: "farm_boundary_capture",
+              payload: plotData,
+              entityRefs: {
+                farmer_id: farmerId,
+                plot_client_id: String(r.client_id),
+                captured_at: String(
+                  (plotData.polygon_geojson as Record<string, unknown> | undefined)?.properties &&
+                    typeof (plotData.polygon_geojson as Record<string, unknown>).properties === "object"
+                    ? ((plotData.polygon_geojson as Record<string, unknown>).properties as Record<string, unknown>).captured_at
+                    : new Date().toISOString(),
+                ),
+              },
+            });
+          }
         }
         synced += batchPlots.length;
       } else {

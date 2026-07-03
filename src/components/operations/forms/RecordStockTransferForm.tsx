@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureOperationalSubmission } from "@/lib/workflow/submission-bridge";
 
 type Opt = { id: string; label: string };
 
@@ -67,15 +68,19 @@ export default function RecordStockTransferForm({
         data: { user },
       } = await supabase.auth.getUser();
 
-      const { error: movErr } = await supabase.from("inventory_movements").insert({
-        inventory_item_id: itemId,
-        warehouse_from: fromId,
-        warehouse_to: toId,
-        quantity: q,
-        movement_type: "transfer",
-        reference: reference.trim() || null,
-        created_by: user?.id ?? null,
-      } as any);
+      const { data: movement, error: movErr } = await supabase
+        .from("inventory_movements")
+        .insert({
+          inventory_item_id: itemId,
+          warehouse_from: fromId,
+          warehouse_to: toId,
+          quantity: q,
+          movement_type: "transfer",
+          reference: reference.trim() || null,
+          created_by: user?.id ?? null,
+        } as any)
+        .select("id")
+        .single();
       if (movErr) throw movErr;
 
       const pull = async (wh: string) => {
@@ -112,6 +117,14 @@ export default function RecordStockTransferForm({
         table_name: "inventory_movements",
         new_values: { from: fromId, to: toId, quantity: q },
       } as any);
+
+      if (movement?.id) {
+        await ensureOperationalSubmission({
+          kind: "warehouse_transfer",
+          payload: { reference, quantity: q, warehouse_from: fromId, warehouse_to: toId },
+          entityRefs: { movement_id: String(movement.id) },
+        });
+      }
 
       onSuccess();
     } catch (err) {

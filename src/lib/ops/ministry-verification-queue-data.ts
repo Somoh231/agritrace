@@ -48,6 +48,8 @@ export type VerificationQueueDetail = {
   aiSummary: string;
   routingCaption: string;
   chips: OperationalChipVariant[];
+  /** When set, workflow decisions persist through `/api/ops/workflows/submission`. */
+  submissionId?: string;
 };
 
 const REVIEWERS = [

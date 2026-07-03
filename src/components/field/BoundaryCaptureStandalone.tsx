@@ -10,6 +10,7 @@ import { polygonCentroidLngLat } from "@/lib/gis/operational-boundary-math";
 import type { OperationalFarmBoundary } from "@/lib/gis/operational-boundary-types";
 import { queuePlot } from "@/lib/offline/sync-queue";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureOperationalSubmission } from "@/lib/workflow/submission-bridge";
 
 export default function BoundaryCaptureStandalone() {
   const searchParams = useSearchParams();
@@ -50,7 +51,7 @@ export default function BoundaryCaptureStandalone() {
         },
         geometry: boundary.geometry,
       } as Record<string, unknown>;
-      await queuePlot({
+      const clientId = await queuePlot({
         farmer_id: farmerId,
         commodity: "rice",
         area_hectares: boundary.areaHectares,
@@ -59,6 +60,15 @@ export default function BoundaryCaptureStandalone() {
         center_longitude: centroid?.lng ?? null,
         registered_by: user?.id ?? null,
       } as any);
+      await ensureOperationalSubmission({
+        kind: "farm_boundary_capture",
+        payload: { farmer_id: farmerId, operational_boundary: boundary },
+        entityRefs: {
+          farmer_id: farmerId,
+          plot_client_id: clientId,
+          captured_at: boundary.capturedAt,
+        },
+      });
       toast.success("Queued for sync", "Plot boundary is stored locally until the device is online.");
       setBoundary(null);
     } catch (e) {

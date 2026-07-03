@@ -9,6 +9,8 @@ import assert from "node:assert/strict";
 
 import { checkWorkflowPermission, workflowStageForRole } from "../roles";
 import { allowedActionsFor, computeSubmissionTransition } from "../status-model";
+import { buildWorkflowDedupeKey } from "../submission-bridge";
+import { OPERATIONAL_SUBMISSION_TYPES } from "../submission-types";
 
 let passed = 0;
 function check(name: string, fn: () => void) {
@@ -145,6 +147,40 @@ check("Ministry is not county-bound", () => {
 check("author can comment on own out-of-county submission", () => {
   const r = checkWorkflowPermission({ stage: "clan", action: "comment", actorCounty: "Bong", submissionCounty: "Lofa", isAuthor: true });
   assert.equal(r.ok, true);
+});
+
+console.log("workflow submission bridge — dedupe keys");
+
+check("farmer registration dedupe uses farmer_id", () => {
+  const k = buildWorkflowDedupeKey({
+    kind: "register_farmer",
+    payload: {},
+    entityRefs: { farmer_id: "abc-123" },
+  });
+  assert.equal(k, `${OPERATIONAL_SUBMISSION_TYPES.farmerRegistration}:abc-123`);
+});
+
+check("harvest report dedupe uses production_record_id", () => {
+  const k = buildWorkflowDedupeKey({
+    kind: "production_estimate",
+    payload: {},
+    entityRefs: { production_record_id: "rec-9" },
+  });
+  assert.equal(k, `${OPERATIONAL_SUBMISSION_TYPES.harvestReport}:rec-9`);
+});
+
+check("farm boundary dedupe uses plot client id when present", () => {
+  const k = buildWorkflowDedupeKey({
+    kind: "farm_boundary_capture",
+    payload: {},
+    entityRefs: { plot_client_id: "plot-local-1", farmer_id: "f1" },
+  });
+  assert.equal(k, `${OPERATIONAL_SUBMISSION_TYPES.farmBoundary}:plot:plot-local-1`);
+});
+
+check("missing entity refs yield null dedupe key", () => {
+  const k = buildWorkflowDedupeKey({ kind: "register_farmer", payload: {} });
+  assert.equal(k, null);
 });
 
 console.log(`\nAll ${passed} workflow checks passed.`);

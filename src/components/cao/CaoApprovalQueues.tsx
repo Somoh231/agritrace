@@ -5,7 +5,8 @@ import * as React from "react";
 import type { CaoApprovalItem, CaoApprovalQueueKind, CaoApprovalStatus } from "@/lib/cao/cao-approval-seed";
 import { seedCaoApprovalItems } from "@/lib/cao/cao-approval-seed";
 import { EmptyState, StatusBadge } from "@/components/enterprise";
-import { postWorkflowAction } from "@/lib/workflow/client";
+import { fetchOperationalSubmissions, postWorkflowAction } from "@/lib/workflow/client";
+import { submissionsToCaoApprovalItems } from "@/lib/workflow/operational-submission-queue";
 import type { WorkflowAction } from "@/lib/workflow/status-model";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -43,7 +44,20 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    setItems(seedCaoApprovalItems(county));
+    let cancelled = false;
+    void (async () => {
+      const seeds = seedCaoApprovalItems(county);
+      const live = await fetchOperationalSubmissions();
+      if (cancelled) return;
+      if (live.ok && live.submissions.length) {
+        setItems([...submissionsToCaoApprovalItems(live.submissions), ...seeds]);
+      } else {
+        setItems(seeds);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [county]);
 
   /**

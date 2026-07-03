@@ -82,7 +82,7 @@ export default function NotificationsMenu() {
         setIsLoading(true);
 
         // Pull operational sources (latest 20 max combined). RLS governs visibility.
-        const [events, dao, stock, donor, dist] = await Promise.all([
+        const [events, dao, stock, donor, dist, wfNotifs] = await Promise.all([
           supabase
             .from("pilot_operational_events")
             .select("event_code,occurred_at,severity,county,event_type,message,status")
@@ -107,9 +107,36 @@ export default function NotificationsMenu() {
             .select("distributed_at,channel,quantity")
             .order("distributed_at", { ascending: false })
             .limit(8),
+          userId
+            ? supabase
+                .from("workflow_notifications")
+                .select("id,title,body,kind,created_at,submission_id,read_at")
+                .eq("recipient_id", userId)
+                .order("created_at", { ascending: false })
+                .limit(15)
+            : Promise.resolve({ data: [] as Record<string, unknown>[] }),
         ]);
 
         const next: NotificationItem[] = [];
+
+        // Workflow engine notifications (assignments, corrections, decisions)
+        for (const n of (wfNotifs.data as Record<string, unknown>[]) ?? []) {
+          const tone =
+            String(n.kind ?? "") === "correction_request" || String(n.kind ?? "") === "escalation"
+              ? "warning"
+              : String(n.kind ?? "") === "decision"
+                ? "info"
+                : "info";
+          next.push({
+            id: `wf:${String(n.id)}`,
+            title: String(n.title ?? "Workflow update"),
+            detail: String(n.body ?? "—"),
+            href: n.submission_id ? `/verification-queue?submission=${String(n.submission_id)}` : "/verification-queue",
+            tone,
+            createdAt: String(n.created_at ?? new Date().toISOString()),
+            unread: !n.read_at,
+          });
+        }
 
         // Events
         for (const r of (events.data as any[]) ?? []) {
@@ -205,7 +232,10 @@ export default function NotificationsMenu() {
         const merged = next
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 20)
-          .map((n) => ({ ...n, unread: userId ? !read.has(n.id) : false }));
+          .map((n) => ({
+            ...n,
+            unread: userId ? (n.unread === false ? false : !read.has(n.id)) : false,
+          }));
 
         const unread = merged.filter((x) => x.unread).length;
         if (!cancelled) {

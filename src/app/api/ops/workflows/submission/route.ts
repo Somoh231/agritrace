@@ -132,6 +132,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, code: "forbidden", message: perm.reason }, { status: 403 });
     }
 
+    const dedupeKey =
+      typeof c.metadata?.dedupe_key === "string" && c.metadata.dedupe_key.trim() ? c.metadata.dedupe_key.trim() : "";
+    if (dedupeKey) {
+      const { data: existing } = await supabase
+        .from("operational_submissions")
+        .select(SELECT_SUBMISSION)
+        .contains("metadata", { dedupe_key: dedupeKey })
+        .neq("status", "archived")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (existing) {
+        return NextResponse.json({
+          ok: true,
+          submission: mapSubmission(existing),
+          persisted: false,
+          deduplicated: true,
+        });
+      }
+    }
+
     const insertRow = {
       reference_code: refCode(),
       submission_type: c.submissionType.trim(),
