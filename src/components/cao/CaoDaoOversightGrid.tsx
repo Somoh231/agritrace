@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import type { DaoOversightRow } from "@/lib/ais/county-dao-demo";
+import { StatusBadge } from "@/components/enterprise";
 import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
 
 const cols: GridColumn<DaoOversightRow>[] = [
@@ -14,7 +15,7 @@ const cols: GridColumn<DaoOversightRow>[] = [
   {
     key: "overdueReports",
     header: "Overdue reports",
-    render: (r) => <span className={r.overdueReports > 0 ? "font-semibold text-rose-300 tabular-nums" : "tabular-nums"}>{r.overdueReports}</span>,
+    render: (r) => <span className={r.overdueReports > 0 ? "font-semibold text-rose-700 tabular-nums" : "tabular-nums text-slate-700"}>{r.overdueReports}</span>,
   },
   { key: "farmVisits", header: "Farm visits" },
   { key: "subsidyVerifications", header: "Subsidy verifications" },
@@ -27,17 +28,9 @@ const cols: GridColumn<DaoOversightRow>[] = [
     key: "syncStatus",
     header: "Sync status",
     render: (r) => (
-      <span
-        className={
-          r.syncStatus === "at_risk"
-            ? "text-rose-300"
-            : r.syncStatus === "pending"
-              ? "text-amber-300"
-              : "text-emerald-300"
-        }
-      >
+      <StatusBadge tone={r.syncStatus === "at_risk" ? "danger" : r.syncStatus === "pending" ? "warning" : "success"}>
         {r.syncStatus.replace(/_/g, " ")}
-      </span>
+      </StatusBadge>
     ),
   },
   { key: "lastActivity", header: "Last activity" },
@@ -45,9 +38,9 @@ const cols: GridColumn<DaoOversightRow>[] = [
     key: "riskStatus",
     header: "Risk status",
     render: (r) => (
-      <span className={r.riskStatus === "high" ? "text-rose-300" : r.riskStatus === "medium" ? "text-amber-300" : "text-emerald-300"}>
+      <StatusBadge tone={r.riskStatus === "high" ? "danger" : r.riskStatus === "medium" ? "warning" : "success"}>
         {r.riskStatus}
-      </span>
+      </StatusBadge>
     ),
   },
   {
@@ -57,7 +50,7 @@ const cols: GridColumn<DaoOversightRow>[] = [
       <div className="flex flex-wrap gap-1">
         <button
           type="button"
-          className="rounded border border-slate-600 px-2 py-0.5 text-[10px] text-slate-200 hover:bg-slate-800"
+          className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-700 hover:bg-slate-50"
           onClick={(e) => {
             e.stopPropagation();
             window.dispatchEvent(new CustomEvent("agritrace-cac-dao-review", { detail: r.daoId }));
@@ -67,7 +60,7 @@ const cols: GridColumn<DaoOversightRow>[] = [
         </button>
         <button
           type="button"
-          className="rounded border border-slate-600 px-2 py-0.5 text-[10px] text-slate-200 hover:bg-slate-800"
+          className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-700 hover:bg-slate-50"
           onClick={(e) => {
             e.stopPropagation();
             window.dispatchEvent(new CustomEvent("agritrace-cac-correction", { detail: r.daoId }));
@@ -77,7 +70,7 @@ const cols: GridColumn<DaoOversightRow>[] = [
         </button>
         <button
           type="button"
-          className="rounded border border-rose-800/60 px-2 py-0.5 text-[10px] text-rose-200 hover:bg-rose-950/40"
+          className="rounded border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] text-rose-800 hover:bg-rose-100"
           onClick={(e) => {
             e.stopPropagation();
             window.dispatchEvent(new CustomEvent("agritrace-cac-escalate", { detail: r.daoId }));
@@ -117,12 +110,12 @@ export default function CaoDaoOversightGrid({
 
   const toolbar = (
     <div className="flex flex-wrap items-center gap-2">
-      <label className="flex items-center gap-1 text-[11px] text-slate-400">
+      <label className="flex items-center gap-1 text-[11px] text-slate-600">
         District
         <select
           value={districtFilter}
           onChange={(e) => onDistrictFilterChange(e.target.value)}
-          className="h-9 rounded-lg border border-slate-600 bg-slate-950 px-2 text-[12px] text-slate-100 outline-none focus:border-emerald-600"
+          className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[12px] text-slate-800 outline-none focus:border-forest-400"
         >
           {districts.map((d) => (
             <option key={d} value={d}>
@@ -131,12 +124,12 @@ export default function CaoDaoOversightGrid({
           ))}
         </select>
       </label>
-      <label className="flex items-center gap-1 text-[11px] text-slate-400">
+      <label className="flex items-center gap-1 text-[11px] text-slate-600">
         Sync risk
         <select
           value={syncFilter}
           onChange={(e) => onSyncFilterChange(e.target.value)}
-          className="h-9 rounded-lg border border-slate-600 bg-slate-950 px-2 text-[12px] text-slate-100 outline-none focus:border-emerald-600"
+          className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[12px] text-slate-800 outline-none focus:border-forest-400"
         >
           <option value="all">All</option>
           <option value="synced">Synced</option>
@@ -149,16 +142,16 @@ export default function CaoDaoOversightGrid({
 
   return (
     <EnterpriseDataGrid<DaoOversightRow>
-      title="DAO oversight grid · county scope"
       rows={filtered}
       columns={cols}
       filename="cac-dao-oversight.csv"
       pageSize={12}
+      theme="light"
       toolbar={toolbar}
       rowClassName={(row) => {
         const parts: string[] = [];
-        if (row.overdueReports > 0) parts.push("bg-rose-950/15 border-l-2 border-l-rose-600/70");
-        if (row.syncStatus === "at_risk") parts.push("ring-1 ring-inset ring-amber-600/35");
+        if (row.overdueReports > 0) parts.push("bg-rose-50/80 border-l-2 border-l-rose-400");
+        if (row.syncStatus === "at_risk") parts.push("ring-1 ring-inset ring-amber-300/60");
         return parts.join(" ");
       }}
     />

@@ -5,6 +5,14 @@ import Link from "next/link";
 
 import DaoOfflineQueuePanel from "@/components/dao/DaoOfflineQueuePanel";
 import DaoTodaysTasksPanel from "@/components/dao/DaoTodaysTasksPanel";
+import {
+  AlertCard,
+  DashboardPanel,
+  PageHeader,
+  SectionHeader,
+  StatusBadge,
+} from "@/components/enterprise";
+import { RegistryKpiStrip } from "@/components/registry";
 import DaoGpsEvidenceForm from "@/components/operations/forms/DaoGpsEvidenceForm";
 import DaoPestDiseaseReportForm from "@/components/operations/forms/DaoPestDiseaseReportForm";
 import DaoProductionEstimateForm from "@/components/operations/forms/DaoProductionEstimateForm";
@@ -12,7 +20,6 @@ import DaoSubsidyDistributionForm from "@/components/operations/forms/DaoSubsidy
 import OperationDrawer from "@/components/operations/OperationDrawer";
 import RecordFieldInspectionForm from "@/components/operations/forms/RecordFieldInspectionForm";
 import RegisterFarmerForm from "@/components/operations/forms/RegisterFarmerForm";
-import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import MoaOperationalSurveyForm, { titleForMoaOperationalSurveyKind } from "@/components/reporting/MoaOperationalSurveyForm";
 import WorkflowReviewPanel from "@/components/workflow/WorkflowReviewPanel";
 import { workflowStageForRole } from "@/lib/workflow/roles";
@@ -101,97 +108,109 @@ export default function DistrictOfficerDashboard({
   }) => {
     const ring =
       accent === "emerald"
-        ? "border-emerald-800/50 from-emerald-950/80 hover:border-emerald-600/50"
+        ? "border-forest-200 bg-forest-50/80 hover:border-forest-300"
         : accent === "amber"
-          ? "border-amber-900/40 from-amber-950/25 hover:border-amber-700/50"
+          ? "border-amber-200 bg-amber-50/80 hover:border-amber-300"
           : accent === "rose"
-            ? "border-rose-900/40 from-rose-950/25 hover:border-rose-700/50"
+            ? "border-rose-200 bg-rose-50/80 hover:border-rose-300"
             : accent === "sky"
-              ? "border-sky-900/40 from-sky-950/25 hover:border-sky-700/50"
-              : "border-slate-700 hover:border-slate-500";
+              ? "border-sky-200 bg-sky-50/80 hover:border-sky-300"
+              : "border-slate-200 bg-white hover:border-slate-300";
     const kickerCls =
       accent === "emerald"
-        ? "text-emerald-200/70"
+        ? "text-forest-700"
         : accent === "amber"
-          ? "text-amber-200/70"
+          ? "text-amber-800"
           : accent === "rose"
-            ? "text-rose-200/75"
+            ? "text-rose-700"
             : accent === "sky"
-              ? "text-sky-200/75"
-              : "text-slate-400";
-    const bodyCls =
-      accent === "emerald" ? "text-emerald-100/75" : accent === "amber" ? "text-amber-100/75" : accent === "sky" ? "text-sky-100/75" : "text-slate-400";
+              ? "text-sky-700"
+              : "text-slate-500";
 
     return (
       <button
         type="button"
         onClick={onClick}
-        className={`min-h-[112px] rounded-xl border bg-gradient-to-br to-slate-950 px-4 py-4 text-left shadow-lg transition sm:min-h-[120px] ${ring}`}
+        className={`min-h-[112px] rounded-xl border px-4 py-4 text-left shadow-sm transition sm:min-h-[120px] ${ring}`}
       >
         <div className={`font-mono text-[10px] uppercase tracking-[0.2em] ${kickerCls}`}>{kicker}</div>
-        <div className="mt-2 font-display text-[15px] font-semibold leading-snug text-white sm:text-[16px]">{title}</div>
-        <div className={`mt-1 text-[12px] leading-relaxed ${bodyCls}`}>{body}</div>
+        <div className="mt-2 text-[15px] font-semibold leading-snug text-ink-900 sm:text-[16px]">{title}</div>
+        <div className="mt-1 text-[12px] leading-relaxed text-slate-600">{body}</div>
       </button>
     );
   };
 
   return (
     <>
-      <MinistryPageShell
-        title="District operations hub"
-        description={`CLAN → DAO operational hub · ${fullName}${county ? ` · ${county}` : ""}${district ? ` · ${district}` : ""}. Field reporting syncs to Supabase when online; otherwise submissions stay in the operational reporting queue on this device.`}
-        actions={
-          <Link href="#dao-offline-queue" className="h-10 inline-flex items-center rounded-lg border border-slate-600 px-4 text-[13px] text-slate-100 hover:bg-slate-800">
-            Jump to offline queue
-          </Link>
-        }
-      >
-        <div className="space-y-6 pb-10">
-          {readOnly ? (
-            <div className="rounded-xl border border-sky-500/35 bg-sky-950/30 px-4 py-3 text-[13px] text-sky-50">
-              Oversight mode — DAO captures are read-only. DAO officers use this hub for registrations, inspections, programme verification, and evidence capture.
-            </div>
-          ) : null}
+      <div className="space-y-6 pb-10">
+        <PageHeader
+          kicker="District operations · CLAN → DAO"
+          title="District operations hub"
+          description={`Field command for ${fullName}${county ? ` · ${county}` : ""}${district ? ` · ${district}` : ""}. Field reporting syncs to Supabase when online; otherwise submissions stay in the operational reporting queue on this device.`}
+          actions={
+            <Link href="#dao-offline-queue" className="btn-gov-outline inline-flex h-10 items-center rounded-lg px-4 text-[12px]">
+              Jump to offline queue
+            </Link>
+          }
+        />
 
-          <div className="sticky top-0 z-10 flex flex-col gap-3 rounded-xl border border-slate-700/80 bg-slate-950/90 px-4 py-3 backdrop-blur-md sm:flex-row sm:flex-wrap sm:items-center">
-            <span
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-[11px] ${
-                online ? "border-emerald-500/40 bg-emerald-950/40 text-emerald-100" : "border-amber-500/40 bg-amber-950/35 text-amber-50"
-              }`}
-            >
-              <span className={`h-2 w-2 rounded-full ${online ? "bg-emerald-400" : "bg-amber-400 animate-pulse"}`} />
-              {online ? "Online" : "Offline"}
-            </span>
-            <div className="flex flex-wrap gap-2 text-[11px] text-slate-400">
-              <span className="rounded-md border border-slate-700 px-2 py-0.5 font-mono text-slate-200">
-                Draft · <span className="text-white">{wf.counts.draft}</span>
+        {readOnly ? (
+          <AlertCard tone="info" title="Oversight mode">
+            DAO captures are read-only. DAO officers use this hub for registrations, inspections, programme verification, and evidence capture.
+          </AlertCard>
+        ) : null}
+
+        <RegistryKpiStrip
+          items={[
+            { label: "Connectivity", value: online ? "Online" : "Offline", hint: "Device posture", deltaTone: online ? "up" : "down" },
+            { label: "Drafts", value: String(wf.counts.draft), hint: "Local saves" },
+            { label: "Pending sync", value: String(wf.counts.pending_sync), hint: "Queue backlog", deltaTone: wf.counts.pending_sync > 0 ? "down" : "up" },
+            { label: "Submitted", value: String(wf.counts.submitted), hint: "Synced records", deltaTone: "up" },
+          ]}
+        />
+
+        <DashboardPanel>
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <StatusBadge tone={online ? "success" : "warning"}>{online ? "Online" : "Offline"}</StatusBadge>
+            <div className="flex flex-wrap gap-2 text-[11px] text-slate-600">
+              <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono">
+                Draft · <span className="font-semibold text-ink-900">{wf.counts.draft}</span>
               </span>
-              <span className="rounded-md border border-amber-800/50 px-2 py-0.5 font-mono text-amber-100/95">
-                Pending Sync · <span className="text-white">{wf.counts.pending_sync}</span>
+              <span className="rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 font-mono text-amber-900">
+                Pending sync · <span className="font-semibold">{wf.counts.pending_sync}</span>
               </span>
-              <span className="rounded-md border border-emerald-800/45 px-2 py-0.5 font-mono text-emerald-100/90">
-                Submitted · <span className="text-white">{wf.counts.submitted}</span>
+              <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-emerald-900">
+                Submitted · <span className="font-semibold">{wf.counts.submitted}</span>
               </span>
-              <span className="rounded-md border border-rose-800/45 px-2 py-0.5 font-mono text-rose-100/90">
-                Sync Failed · <span className="text-white">{wf.counts.failed}</span>
+              <span className="rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 font-mono text-rose-900">
+                Sync failed · <span className="font-semibold">{wf.counts.failed}</span>
               </span>
             </div>
             {!online && queuedPending ? (
-              <span className="text-[11px] text-amber-200/90">
-                Operational reporting queue holds {queuedPending} item(s) until connectivity returns — open the queue below to retry sync.
-              </span>
+              <p className="text-[12px] text-amber-800">
+                Operational reporting queue holds {queuedPending} item(s) until connectivity returns.
+              </p>
             ) : null}
           </div>
+        </DashboardPanel>
 
-          <DaoTodaysTasksPanel county={county} district={district} />
+        <DaoTodaysTasksPanel county={county} district={district} />
 
-          <WorkflowReviewPanel
-            stage={workflowStageForRole(role)}
-            readOnly={readOnly}
-            canCreate={!readOnly}
-            title="District review workflow (persistent)"
-          />
+        <DashboardPanel padding="none">
+          <div className="border-b border-slate-100 px-5 py-4">
+            <SectionHeader kicker="Queue" title="District review workflow" subtitle="Persistent approval engine" />
+          </div>
+          <div className="p-4">
+            <WorkflowReviewPanel
+              stage={workflowStageForRole(role)}
+              readOnly={readOnly}
+              canCreate={!readOnly}
+              title="District review workflow (persistent)"
+            />
+          </div>
+        </DashboardPanel>
 
+        <div id="dao-offline-queue">
           <DaoOfflineQueuePanel
             items={wf.items}
             counts={wf.counts}
@@ -200,71 +219,32 @@ export default function DistrictOfficerDashboard({
             onRetryOne={(row) => void wf.retryOne(row)}
             onRemove={(id) => void wf.remove(id)}
           />
-
-          <div>
-            <h2 className="mb-3 font-display text-[14px] font-semibold text-white">DAO field workflows</h2>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              <Tile kicker="Registry" title="Register farmer" body="Household ID · cooperative · GPS · ministry registry" accent="emerald" onClick={() => setFarmerOpen(true)} />
-              <Tile kicker="Visit" title="Farm inspection" body="Condition · inputs · verification outcome · DAO notes" accent="slate" onClick={() => setInspectOpen(true)} />
-              <Tile kicker="Alerts" title="Pest / disease report" body="County alert · severity · evidence refs · field_reports" accent="rose" onClick={() => setPestOpen(true)} />
-              <Tile kicker="Season" title="Production estimate" body="Farmer · season · expected yield · rice records" accent="sky" onClick={() => setProductionOpen(true)} />
-              <Tile kicker="Programmes" title="Verify subsidy delivery" body="Warehouse · SKU · quantities · distribution_logs" accent="amber" onClick={() => setSubsidyOpen(true)} />
-              <Tile kicker="Evidence" title="GPS point / field evidence" body="Plot checkpoint · accuracy · geo_locations" accent="emerald" onClick={() => setGpsOpen(true)} />
-            </div>
-          </div>
-
-          <div>
-            <h2 className="mb-1 font-display text-[14px] font-semibold text-white">MoA operational surveys</h2>
-            <p className="mb-3 text-[12px] leading-relaxed text-slate-400">
-              Structured enumerator and DAO desk reports aligned to ministry registry and warehouse codes. Drafts save locally; submissions queue offline when needed.
-            </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              <Tile
-                kicker="CLAN"
-                title="Crop monitoring"
-                body="Growth stage · stress · GPS/photo evidence · farmer registry ID"
-                accent="emerald"
-                onClick={() => setMoaKind("clan_crop_monitoring")}
-              />
-              <Tile
-                kicker="CLAN"
-                title="Field activity report"
-                body="Activities · inputs · operational notes · traceability envelope"
-                accent="slate"
-                onClick={() => setMoaKind("clan_field_activity_report")}
-              />
-              <Tile
-                kicker="DAO desk"
-                title="District summary"
-                body="District operational rollup · county/district scope"
-                accent="sky"
-                onClick={() => setMoaKind("dao_district_summary")}
-              />
-              <Tile
-                kicker="DAO desk"
-                title="Operational review"
-                body="Monitoring narrative · DAO verification pathway"
-                accent="sky"
-                onClick={() => setMoaKind("dao_operational_review")}
-              />
-              <Tile
-                kicker="DAO desk"
-                title="Verification review"
-                body="Evidence checks · escalation hooks"
-                accent="amber"
-                onClick={() => setMoaKind("dao_verification_review")}
-              />
-              <Tile
-                kicker="DAO desk"
-                title="District escalation"
-                body="Risk signal · CAC handoff · operational notes"
-                accent="rose"
-                onClick={() => setMoaKind("dao_district_escalation")}
-              />
-            </div>
-          </div>
         </div>
-      </MinistryPageShell>
+
+        <DashboardPanel>
+          <SectionHeader kicker="Required action" title="DAO field workflows" subtitle="Registry, inspections, programmes, and GPS evidence" />
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <Tile kicker="Registry" title="Register farmer" body="Household ID · cooperative · GPS · ministry registry" accent="emerald" onClick={() => setFarmerOpen(true)} />
+            <Tile kicker="Visit" title="Farm inspection" body="Condition · inputs · verification outcome · DAO notes" accent="slate" onClick={() => setInspectOpen(true)} />
+            <Tile kicker="Alerts" title="Pest / disease report" body="County alert · severity · evidence refs · field_reports" accent="rose" onClick={() => setPestOpen(true)} />
+            <Tile kicker="Season" title="Production estimate" body="Farmer · season · expected yield · rice records" accent="sky" onClick={() => setProductionOpen(true)} />
+            <Tile kicker="Programmes" title="Verify subsidy delivery" body="Warehouse · SKU · quantities · distribution_logs" accent="amber" onClick={() => setSubsidyOpen(true)} />
+            <Tile kicker="Evidence" title="GPS point / field evidence" body="Plot checkpoint · accuracy · geo_locations" accent="emerald" onClick={() => setGpsOpen(true)} />
+          </div>
+        </DashboardPanel>
+
+        <DashboardPanel>
+          <SectionHeader kicker="Reporting" title="MoA operational surveys" subtitle="Structured enumerator and DAO desk reports aligned to ministry codes" />
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <Tile kicker="CLAN" title="Crop monitoring" body="Growth stage · stress · GPS/photo evidence · farmer registry ID" accent="emerald" onClick={() => setMoaKind("clan_crop_monitoring")} />
+            <Tile kicker="CLAN" title="Field activity report" body="Activities · inputs · operational notes · traceability envelope" accent="slate" onClick={() => setMoaKind("clan_field_activity_report")} />
+            <Tile kicker="DAO desk" title="District summary" body="District operational rollup · county/district scope" accent="sky" onClick={() => setMoaKind("dao_district_summary")} />
+            <Tile kicker="DAO desk" title="Operational review" body="Monitoring narrative · DAO verification pathway" accent="sky" onClick={() => setMoaKind("dao_operational_review")} />
+            <Tile kicker="DAO desk" title="Verification review" body="Evidence checks · escalation hooks" accent="amber" onClick={() => setMoaKind("dao_verification_review")} />
+            <Tile kicker="DAO desk" title="District escalation" body="Risk signal · CAC handoff · operational notes" accent="rose" onClick={() => setMoaKind("dao_district_escalation")} />
+          </div>
+        </DashboardPanel>
+      </div>
 
       <OperationDrawer open={farmerOpen} onClose={() => setFarmerOpen(false)} title="Register farmer" widthClassName="max-w-3xl w-full">
         <RegisterFarmerForm

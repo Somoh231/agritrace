@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { ClipboardCheck, MapPin, Users, Warehouse } from "lucide-react";
 
 import CaoActivityTimeline from "@/components/cao/CaoActivityTimeline";
 import CaoApprovalQueues from "@/components/cao/CaoApprovalQueues";
@@ -10,9 +11,15 @@ import CaoDaoOversightGrid from "@/components/cao/CaoDaoOversightGrid";
 import CaoDistrictPerformance from "@/components/cao/CaoDistrictPerformance";
 import CaoKpiStrip from "@/components/cao/CaoKpiStrip";
 import CaoReportingSection from "@/components/cao/CaoReportingSection";
+import {
+  AlertCard,
+  DashboardPanel,
+  PageHeader,
+  QuickActionCard,
+  SectionHeader,
+} from "@/components/enterprise";
 import WorkflowReviewPanel from "@/components/workflow/WorkflowReviewPanel";
 import { workflowStageForRole } from "@/lib/workflow/roles";
-import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import OperationDrawer from "@/components/operations/OperationDrawer";
 import MoaOperationalSurveyForm, { titleForMoaOperationalSurveyKind } from "@/components/reporting/MoaOperationalSurveyForm";
 import { useDaoWorkflowQueue } from "@/hooks/useDaoWorkflowQueue";
@@ -179,49 +186,46 @@ export default function CountyOfficerDashboard({
 
   return (
     <>
-      <MinistryPageShell
-        title={assignmentGap ? "County workspace" : `${county ?? "County"} · CAC command center`}
-        description={
-          assignmentGap
-            ? "Your profile has no county assignment. Contact the ministry administrator to bind jurisdiction."
-            : `County Agriculture Coordinator (CAC) oversight for ${fullName}. CLAN → DAO → CAC → Ministry reporting chain; scope below is ${county ?? "your county"}. National ministry roles retain read-through without expanding edit authority.`
-        }
-        actions={
-        <div className="flex flex-wrap gap-2">
-          <Link href="/district-dashboard" className="h-10 inline-flex items-center rounded-lg border border-slate-600 px-4 text-[13px] text-slate-100 hover:bg-slate-800">
-            DAO operational workspace
-          </Link>
-          <Link href="/farmers" className="h-10 inline-flex items-center rounded-lg bg-emerald-700 px-4 text-[13px] font-medium text-white hover:bg-emerald-600">
-            Farmer registry
-          </Link>
-          <Link href="/inventory/transfers" className="h-10 inline-flex items-center rounded-lg border border-slate-600 px-4 text-[13px] text-slate-100 hover:bg-slate-800">
-            Warehouse transfers
-          </Link>
-        </div>
-      }
-    >
-      <div className="space-y-8 pb-12">
+      <div className="space-y-6 pb-12">
+        <PageHeader
+          kicker="County Agriculture Coordinator · CAC command"
+          title={assignmentGap ? "County workspace" : `${county ?? "County"} command center`}
+          description={
+            assignmentGap
+              ? "Your profile has no county assignment. Contact the ministry administrator to bind jurisdiction."
+              : `County Agriculture Coordinator (CAC) oversight for ${fullName}. CLAN → DAO → CAC → Ministry reporting chain; scope below is ${county ?? "your county"}. National ministry roles retain read-through without expanding edit authority.`
+          }
+          actions={
+            <div className="flex flex-wrap gap-2">
+              <Link href="/district-dashboard" className="btn-gov-outline inline-flex h-10 items-center rounded-lg px-4 text-[12px]">
+                DAO operations hub
+              </Link>
+              <Link href="/farmers" className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[12px] font-semibold">
+                Farmer registry
+              </Link>
+              <Link href="/inventory/transfers" className="btn-gov-outline inline-flex h-10 items-center rounded-lg px-4 text-[12px]">
+                Warehouse transfers
+              </Link>
+            </div>
+          }
+        />
+
         {assignmentGap ? (
-          <div className="rounded-xl border border-amber-500/35 bg-amber-950/25 px-4 py-3 text-[13px] text-amber-50">
+          <AlertCard tone="warning" title="County assignment required">
             County scope is required for KPI filtering and DAO grids. National analytics remain available from the ministry command center.
-          </div>
+          </AlertCard>
         ) : null}
 
         {!assignmentGap && county ? (
-          <p className="rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-[12px] text-slate-400">
-            <span className="font-semibold text-slate-200">Scope lock:</span> county ={" "}
-            <span className="font-mono text-emerald-300/90">{county}</span> · districts and DAO rows derive from{" "}
-            <span className="font-mono text-slate-300">pilot_dao_officers</span> / canonical fallback · warehouses filtered by county allocation signals.
-          </p>
+          <AlertCard tone="info" title="Scope lock">
+            County = <span className="font-mono font-medium">{county}</span> · districts and DAO rows derive from pilot_dao_officers / canonical fallback · warehouses filtered by county allocation signals.
+          </AlertCard>
         ) : null}
 
         {actionBanner ? (
-          <div className="rounded-xl border border-sky-700/45 bg-sky-950/25 px-4 py-3 text-[13px] text-sky-50">
-            {actionBanner}{" "}
-            <button type="button" className="ml-2 text-sky-300 underline" onClick={() => setActionBanner(null)}>
-              Clear
-            </button>
-          </div>
+          <AlertCard tone="info" title="CAC action logged" action={<button type="button" className="text-[12px] font-medium underline" onClick={() => setActionBanner(null)}>Clear</button>}>
+            {actionBanner}
+          </AlertCard>
         ) : null}
 
         {!assignmentGap ? (
@@ -238,81 +242,95 @@ export default function CountyOfficerDashboard({
         ) : null}
 
         {!assignmentGap ? (
-          <div className="rounded-xl border border-slate-800/80 bg-slate-950/40 p-4">
-            <h2 className="mb-1 font-display text-[14px] font-semibold text-white">CAC operational reporting</h2>
-            <p className="mb-3 text-[12px] leading-relaxed text-slate-400">
-              County-level MoA survey templates: operational summary, verification, escalation, and reporting compliance. Drafts persist on this device; pending
-              work uses the same operational reporting queue pattern as the district hub when connectivity drops.
-            </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => setMoaKind("cac_county_operational_summary")}
-                className="min-h-[100px] rounded-xl border border-emerald-900/40 bg-gradient-to-br from-emerald-950/40 to-slate-950 px-4 py-3 text-left shadow-md transition hover:border-emerald-600/45"
-              >
-                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-200/70">CAC desk</div>
-                <div className="mt-2 font-display text-[15px] font-semibold text-white">County operational summary</div>
-                <div className="mt-1 text-[12px] text-emerald-100/75">Roll-up signals · DAO alignment · traceability notes</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMoaKind("cac_county_verification")}
-                className="min-h-[100px] rounded-xl border border-sky-900/40 bg-gradient-to-br from-sky-950/35 to-slate-950 px-4 py-3 text-left shadow-md transition hover:border-sky-600/45"
-              >
-                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-sky-200/70">CAC desk</div>
-                <div className="mt-2 font-display text-[15px] font-semibold text-white">County verification</div>
-                <div className="mt-1 text-[12px] text-sky-100/75">Evidence status · hierarchical review · registry cross-check</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMoaKind("cac_county_escalation")}
-                className="min-h-[100px] rounded-xl border border-rose-900/40 bg-gradient-to-br from-rose-950/30 to-slate-950 px-4 py-3 text-left shadow-md transition hover:border-rose-600/45"
-              >
-                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-rose-200/70">CAC desk</div>
-                <div className="mt-2 font-display text-[15px] font-semibold text-white">County escalation</div>
-                <div className="mt-1 text-[12px] text-rose-100/75">Risk routing · ministry handoff · operational notes</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMoaKind("cac_reporting_compliance")}
-                className="min-h-[100px] rounded-xl border border-amber-900/40 bg-gradient-to-br from-amber-950/25 to-slate-950 px-4 py-3 text-left shadow-md transition hover:border-amber-600/45"
-              >
-                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-amber-200/70">CAC desk</div>
-                <div className="mt-2 font-display text-[15px] font-semibold text-white">Reporting compliance</div>
-                <div className="mt-1 text-[12px] text-amber-100/75">Enumerator coverage · submission hygiene · audit trail</div>
-              </button>
-            </div>
-            {moaDeskReadOnly ? (
-              <p className="mt-3 text-[11px] text-amber-200/85">This profile cannot queue CAC submissions — open forms in read-only review mode.</p>
-            ) : null}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <QuickActionCard href="/verification-queue" icon={ClipboardCheck} title="Verification desk" description="Approve, reject, and escalate county submissions." />
+            <QuickActionCard href="/map" icon={MapPin} title="County map" description="Operational GIS for production and warehouse posture." />
+            <QuickActionCard href="/farmers" icon={Users} title="Farmer registry" description="County-scoped identity and traceability records." />
+            <QuickActionCard href="/operations/warehouses" icon={Warehouse} title="Warehouse oversight" description="Custody posture and replenishment signals." />
           </div>
         ) : null}
 
         {!assignmentGap ? (
+          <DashboardPanel>
+            <SectionHeader kicker="Required action" title="CAC operational reporting" subtitle="County-level MoA survey templates — drafts persist on device; pending work uses the operational reporting queue when offline." />
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setMoaKind("cac_county_operational_summary")}
+                className="min-h-[100px] rounded-xl border border-forest-200 bg-forest-50/80 px-4 py-3 text-left transition hover:border-forest-300 hover:shadow-sm"
+              >
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-forest-700">CAC desk</div>
+                <div className="mt-2 text-[15px] font-semibold text-ink-900">County operational summary</div>
+                <div className="mt-1 text-[12px] text-slate-600">Roll-up signals · DAO alignment · traceability notes</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMoaKind("cac_county_verification")}
+                className="min-h-[100px] rounded-xl border border-sky-200 bg-sky-50/80 px-4 py-3 text-left transition hover:border-sky-300 hover:shadow-sm"
+              >
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-sky-700">CAC desk</div>
+                <div className="mt-2 text-[15px] font-semibold text-ink-900">County verification</div>
+                <div className="mt-1 text-[12px] text-slate-600">Evidence status · hierarchical review · registry cross-check</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMoaKind("cac_county_escalation")}
+                className="min-h-[100px] rounded-xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-left transition hover:border-rose-300 hover:shadow-sm"
+              >
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-rose-700">CAC desk</div>
+                <div className="mt-2 text-[15px] font-semibold text-ink-900">County escalation</div>
+                <div className="mt-1 text-[12px] text-slate-600">Risk routing · ministry handoff · operational notes</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMoaKind("cac_reporting_compliance")}
+                className="min-h-[100px] rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-left transition hover:border-amber-300 hover:shadow-sm"
+              >
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-amber-800">CAC desk</div>
+                <div className="mt-2 text-[15px] font-semibold text-ink-900">Reporting compliance</div>
+                <div className="mt-1 text-[12px] text-slate-600">Enumerator coverage · submission hygiene · audit trail</div>
+              </button>
+            </div>
+            {moaDeskReadOnly ? (
+              <p className="mt-3 text-[12px] text-amber-800">This profile cannot queue CAC submissions — open forms in read-only review mode.</p>
+            ) : null}
+          </DashboardPanel>
+        ) : null}
+
+        {!assignmentGap ? (
           <>
-            <WorkflowReviewPanel
-              stage={workflowStageForRole(role)}
-              readOnly={!approvalsInteractive}
-              canCreate={approvalsInteractive}
-              title="County approval workflow (persistent)"
-            />
+            <DashboardPanel padding="none">
+              <div className="border-b border-slate-100 px-5 py-4">
+                <SectionHeader kicker="Queue" title="County approval workflow" subtitle="Persistent workflow engine · audited decisions" />
+              </div>
+              <div className="p-4">
+                <WorkflowReviewPanel
+                  stage={workflowStageForRole(role)}
+                  readOnly={!approvalsInteractive}
+                  canCreate={approvalsInteractive}
+                  title="County approval workflow (persistent)"
+                />
+              </div>
+            </DashboardPanel>
 
             <CaoApprovalQueues county={county} readOnly={!approvalsInteractive} />
 
-            <CaoDaoOversightGrid
-              rows={daoRows}
-              districtFilter={districtFilter}
-              syncFilter={syncFilter}
-              onDistrictFilterChange={setDistrictFilter}
-              onSyncFilterChange={setSyncFilter}
-            />
+            <DashboardPanel padding="none">
+              <div className="border-b border-slate-100 px-5 py-4">
+                <SectionHeader kicker="Review desk" title="DAO oversight grid" subtitle="County-scoped district officers · sync and risk posture" />
+              </div>
+              <CaoDaoOversightGrid
+                rows={daoRows}
+                districtFilter={districtFilter}
+                syncFilter={syncFilter}
+                onDistrictFilterChange={setDistrictFilter}
+                onSyncFilterChange={setSyncFilter}
+              />
+            </DashboardPanel>
 
-            <details className="group rounded-xl border border-slate-800/80 bg-slate-950/30 open:border-slate-700/90">
-              <summary className="cursor-pointer list-none px-4 py-3 font-display text-[13px] font-semibold text-white marker:content-none [&::-webkit-details-marker]:hidden">
-                <span className="mr-2 inline-block text-slate-500 transition group-open:rotate-90">▸</span>
-                District maps, performance, and reporting archives
-              </summary>
-              <div className="space-y-8 border-t border-slate-800/60 px-4 py-5">
+            <DashboardPanel>
+              <SectionHeader kicker="GIS" title="District maps, performance, and reporting archives" />
+              <div className="mt-4 space-y-8">
                 <CaoDistrictPerformance cards={districtCards} />
                 <CaoCountyOperationsMap county={county} daoRows={daoRows} />
                 <div className="grid gap-8 xl:grid-cols-2">
@@ -329,11 +347,10 @@ export default function CountyOfficerDashboard({
                   <CaoActivityTimeline county={county} daoRows={daoRows} />
                 </div>
               </div>
-            </details>
+            </DashboardPanel>
           </>
         ) : null}
       </div>
-    </MinistryPageShell>
 
       <OperationDrawer
         open={moaKind !== null}

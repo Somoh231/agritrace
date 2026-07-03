@@ -4,6 +4,7 @@ import * as React from "react";
 
 import type { CaoApprovalItem, CaoApprovalQueueKind, CaoApprovalStatus } from "@/lib/cao/cao-approval-seed";
 import { seedCaoApprovalItems } from "@/lib/cao/cao-approval-seed";
+import { EmptyState, StatusBadge } from "@/components/enterprise";
 import { postWorkflowAction } from "@/lib/workflow/client";
 import type { WorkflowAction } from "@/lib/workflow/status-model";
 
@@ -18,20 +19,20 @@ const QUEUE_LABELS: Record<CaoApprovalQueueKind, string> = {
   warehouse_replenishment: "Warehouse replenishment",
 };
 
-function statusClasses(s: CaoApprovalStatus): string {
+function statusTone(s: CaoApprovalStatus): "success" | "warning" | "danger" | "info" | "neutral" {
   switch (s) {
     case "pending":
-      return "border-slate-600 bg-slate-900/80 text-slate-200";
+      return "neutral";
     case "under_review":
-      return "border-sky-600/50 bg-sky-950/35 text-sky-50";
+      return "info";
     case "approved":
-      return "border-emerald-700/45 bg-emerald-950/25 text-emerald-50";
+      return "success";
     case "rejected":
-      return "border-rose-700/50 bg-rose-950/30 text-rose-50";
+      return "danger";
     case "escalated":
-      return "border-amber-700/50 bg-amber-950/35 text-amber-50";
+      return "warning";
     default:
-      return "border-slate-700 text-slate-200";
+      return "neutral";
   }
 }
 
@@ -77,21 +78,21 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
   );
 
   return (
-    <section className="rounded-xl border border-slate-700/85 bg-slate-950/45 p-4 sm:p-5">
+    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-display text-[15px] font-semibold text-white">CAC approval queues</h2>
-          <p className="mt-1 text-[12px] text-slate-400">
+          <h2 className="text-[15px] font-semibold text-ink-900">CAC approval queues</h2>
+          <p className="mt-1 text-[12px] text-slate-600">
             County-scoped supervisory actions — statuses mirror ministry routing. Decisions on rows backed by a real submission persist via the audited
             workflow engine; demo seed rows update locally as temporary UI state.
           </p>
         </div>
-        <label className="flex items-center gap-2 text-[11px] text-slate-400">
+        <label className="flex items-center gap-2 text-[11px] text-slate-600">
           Status filter
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as CaoApprovalStatus | "all")}
-            className="h-9 rounded-lg border border-slate-600 bg-slate-950 px-2 text-[12px] text-slate-100 outline-none focus:border-emerald-600"
+            className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-[12px] text-slate-800 outline-none focus:border-forest-400"
           >
             <option value="all">All</option>
             <option value="pending">Pending</option>
@@ -112,18 +113,18 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
               type="button"
               onClick={() => setTab(k)}
               className={`shrink-0 rounded-lg border px-3 py-2 text-left text-[11px] transition ${
-                tab === k ? "border-emerald-600/55 bg-emerald-950/35 text-emerald-50" : "border-slate-800 bg-slate-900/50 text-slate-300 hover:border-slate-600"
+                tab === k ? "border-forest-300 bg-forest-50 text-forest-900 font-medium" : "border-slate-200 bg-white text-slate-600 hover:border-forest-200"
               }`}
             >
               <div className="font-semibold">{QUEUE_LABELS[k]}</div>
-              {n ? <div className="mt-0.5 font-mono text-[10px] text-amber-200/90">{n} pending</div> : null}
+              {n ? <div className="mt-0.5 font-mono text-[10px] text-amber-700">{n} pending</div> : null}
             </button>
           );
         })}
       </div>
 
       {error ? (
-        <div className="mt-3 rounded-lg border border-rose-800/50 bg-rose-950/30 px-3 py-2 text-[12px] text-rose-100">
+        <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[12px] text-rose-900">
           {error}{" "}
           <button type="button" className="ml-1 underline" onClick={() => setError(null)}>
             Dismiss
@@ -131,44 +132,46 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
         </div>
       ) : null}
 
-      <ul className="mt-4 divide-y divide-slate-800/90">
+      <ul className="mt-4 divide-y divide-slate-100">
         {visible.length === 0 ? (
-          <li className="py-10 text-center text-[12px] text-slate-500">No items in this queue for the current filters.</li>
+          <li className="py-6">
+            <EmptyState title="No items in this queue" description="Adjust status filters or return when new DAO submissions arrive." />
+          </li>
         ) : (
           visible.map((row) => (
             <li key={row.id} className="flex flex-col gap-3 py-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase ${statusClasses(row.status)}`}>{row.status.replace(/_/g, " ")}</span>
-                  <span className="text-[13px] font-medium text-white">{row.title}</span>
+                  <StatusBadge tone={statusTone(row.status)}>{row.status.replace(/_/g, " ")}</StatusBadge>
+                  <span className="text-[13px] font-medium text-ink-900">{row.title}</span>
                 </div>
                 <div className="text-[11px] text-slate-500">
                   {row.district} · {row.submittedBy} · {new Date(row.submittedAt).toLocaleString()}
                 </div>
-                <p className="text-[12px] leading-relaxed text-slate-400">{row.detail}</p>
+                <p className="text-[12px] leading-relaxed text-slate-600">{row.detail}</p>
               </div>
               {!readOnly ? (
                 <div className="flex shrink-0 flex-wrap gap-2">
-                  <button type="button" onClick={() => void decide(row, "approve", "approved")} className="rounded-lg bg-emerald-800 px-3 py-1.5 text-[11px] text-white hover:bg-emerald-700">
+                  <button type="button" onClick={() => void decide(row, "approve", "approved")} className="rounded-lg bg-forest-800 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-forest-700">
                     Approve
                   </button>
-                  <button type="button" onClick={() => void decide(row, "reject", "rejected", "CAC rejected")} className="rounded-lg border border-rose-700/60 px-3 py-1.5 text-[11px] text-rose-100 hover:bg-rose-950/35">
+                  <button type="button" onClick={() => void decide(row, "reject", "rejected", "CAC rejected")} className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-[11px] text-rose-800 hover:bg-rose-100">
                     Reject
                   </button>
                   <button
                     type="button"
                     onClick={() => void decide(row, "request_corrections", "under_review", `CAC requested corrections ${new Date().toISOString().slice(0, 10)}`)}
-                    className="rounded-lg border border-slate-600 px-3 py-1.5 text-[11px] text-slate-200 hover:bg-slate-900"
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] text-slate-700 hover:bg-slate-50"
                   >
                     Request corrections
                   </button>
-                  <button type="button" onClick={() => void decide(row, "escalate", "escalated", "Escalated to ministry")} className="rounded-lg border border-amber-700/55 px-3 py-1.5 text-[11px] text-amber-100 hover:bg-amber-950/30">
+                  <button type="button" onClick={() => void decide(row, "escalate", "escalated", "Escalated to ministry")} className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] text-amber-900 hover:bg-amber-100">
                     Escalate to ministry
                   </button>
                   <button
                     type="button"
                     onClick={() => void decide(row, "comment", "under_review", "Investigation assigned")}
-                    className="rounded-lg border border-sky-700/50 px-3 py-1.5 text-[11px] text-sky-100 hover:bg-sky-950/30"
+                    className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-1.5 text-[11px] text-sky-800 hover:bg-sky-100"
                   >
                     Assign investigation
                   </button>
@@ -190,7 +193,7 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
                           },
                         ])
                       }
-                      className="rounded-lg border border-emerald-800/50 px-3 py-1.5 text-[11px] text-emerald-100 hover:bg-emerald-950/25"
+                      className="rounded-lg border border-forest-200 bg-forest-50 px-3 py-1.5 text-[11px] text-forest-800 hover:bg-forest-100"
                     >
                       Trigger warehouse request
                     </button>

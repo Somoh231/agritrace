@@ -54,7 +54,15 @@ const lineLayer = {
   },
 };
 
-export default function CountyHeatmap() {
+export default function CountyHeatmap({
+  embedded = false,
+  compact = false,
+  heightClass = "h-[420px]",
+}: {
+  embedded?: boolean;
+  compact?: boolean;
+  heightClass?: string;
+}) {
   const router = useRouter();
   const [geojson, setGeojson] = React.useState<any>(null);
   const [boundaryMissing, setBoundaryMissing] = React.useState(false);
@@ -68,11 +76,14 @@ export default function CountyHeatmap() {
     x: number;
     y: number;
   } | null>(null);
-  const [season] = React.useState(seasonLabel());
+  const [loading, setLoading] = React.useState(true);
   const metricPoints = React.useMemo(() => buildCountyMetricPointsGeoJSON(), []);
+
+  const [season] = React.useState(seasonLabel());
 
   React.useEffect(() => {
     async function load() {
+      setLoading(true);
       const raw = await fetchLiberiaCountiesGeoJSON();
       setBoundaryMissing(!raw?.features?.length);
 
@@ -137,6 +148,7 @@ export default function CountyHeatmap() {
       };
 
       setGeojson(withProps);
+      setLoading(false);
     }
     load();
   }, [season, metricPoints]);
@@ -169,14 +181,14 @@ export default function CountyHeatmap() {
     }
   };
 
-  return (
-    <div className="rounded-xl border border-white/10 bg-slate-950/40 overflow-hidden">
-      <div className="p-4 border-b border-white/10">
-        <div className="font-display text-[16px] text-white">County heatmap</div>
-        <div className="text-[12px] text-slate-400">Rice production choropleth · Season {season}</div>
-      </div>
-      <div className="relative h-[420px]">
-        <MapGL
+  const mapBody = (
+    <div className={`relative ${heightClass}`}>
+      {loading ? (
+        <div className="absolute inset-0 z-[6] flex items-center justify-center rounded-xl bg-slate-50/90">
+          <p className="font-mono text-[11px] text-slate-500">Loading county choropleth…</p>
+        </div>
+      ) : null}
+      <MapGL
           mapboxAccessToken={mapboxToken()}
           initialViewState={{ ...LIBERIA_CENTER, zoom: LIBERIA_ZOOM }}
           mapStyle="mapbox://styles/mapbox/light-v11"
@@ -224,6 +236,23 @@ export default function CountyHeatmap() {
           </div>
         ) : null}
       </div>
+  );
+
+  if (embedded) {
+    return (
+      <div className={`overflow-hidden rounded-xl ${compact ? "border-0" : "border border-slate-200 bg-white shadow-sm"}`}>
+        {mapBody}
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-100 p-4">
+        <div className="font-display text-[16px] font-semibold text-ink-900">County heatmap</div>
+        <div className="text-[12px] text-slate-600">Rice production choropleth · Season {season}</div>
+      </div>
+      {mapBody}
     </div>
   );
 }
