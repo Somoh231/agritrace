@@ -133,7 +133,8 @@ Minister briefings, cabinet memos, procurement, county rollout, legal framework.
 | [DAO_GUIDE.md](./DAO_GUIDE.md) | DAO Officer |
 | [CAC_GUIDE.md](./CAC_GUIDE.md) | CAC Coordinator |
 | [MINISTRY_GUIDE.md](./MINISTRY_GUIDE.md) | Ministry Officer |
-| [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) | Live demonstration |
+| [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) | Live demonstration (45–60 min) |
+| [LIVE_DEMO_RUNBOOK.md](./LIVE_DEMO_RUNBOOK.md) | Live demo operator script (30–45 min) |
 | [PILOT_CHECKLIST.md](./PILOT_CHECKLIST.md) | Launch checklist |
 
 ---
