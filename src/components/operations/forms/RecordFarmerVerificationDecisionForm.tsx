@@ -7,15 +7,21 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 export default function RecordFarmerVerificationDecisionForm({
   onSuccess,
   onCancel,
+  initialFarmerId = "",
 }: {
   onSuccess: () => void;
   onCancel: () => void;
+  initialFarmerId?: string;
 }) {
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [farmerId, setFarmerId] = React.useState("");
+  const [farmerId, setFarmerId] = React.useState(initialFarmerId);
   const [verification, setVerification] = React.useState("verified");
   const [subsidyEligible, setSubsidyEligible] = React.useState(true);
+
+  React.useEffect(() => {
+    setFarmerId(initialFarmerId);
+  }, [initialFarmerId]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
