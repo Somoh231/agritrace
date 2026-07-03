@@ -1,6 +1,8 @@
 import type { PilotStatus } from "@/lib/demo/agriculture-pilot-data";
 import { PILOT_DATA_LABEL } from "@/lib/demo/agriculture-pilot-data";
 
+import StatusBadge from "@/components/enterprise/StatusBadge";
+
 export function PilotDatasetNotice({ variant = "default" }: { variant?: "default" | "compact" }) {
   return (
     <div
@@ -18,18 +20,24 @@ export function PilotDatasetNotice({ variant = "default" }: { variant?: "default
   );
 }
 
+const PILOT_STATUS_TONE: Record<PilotStatus, "success" | "warning" | "danger"> = {
+  healthy: "success",
+  warning: "warning",
+  critical: "danger",
+};
+
+const PILOT_STATUS_LABEL: Record<PilotStatus, string> = {
+  healthy: "Healthy",
+  warning: "Watch",
+  critical: "Critical",
+};
+
+/** @deprecated Use `StatusBadge` from `@/components/enterprise` instead. */
 export function OpsStatusBadge({ status }: { status: PilotStatus }) {
-  const cfg =
-    status === "healthy"
-      ? "bg-emerald-50 text-emerald-900 border-emerald-200"
-      : status === "warning"
-        ? "bg-amber-50 text-amber-950 border-amber-200"
-        : "bg-red-50 text-red-950 border-red-200";
-  const label = status === "healthy" ? "Healthy" : status === "warning" ? "Watch" : "Critical";
   return (
-    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide ${cfg}`}>
-      {label}
-    </span>
+    <StatusBadge tone={PILOT_STATUS_TONE[status]} uppercase className="font-mono text-[10px] tracking-wide">
+      {PILOT_STATUS_LABEL[status]}
+    </StatusBadge>
   );
 }
 
@@ -53,6 +61,7 @@ export function OpsSectionTitle({
   );
 }
 
+/** @deprecated Use `DashboardPanel` from `@/components/enterprise` instead. */
 export function OpsCard({
   children,
   className = "",
@@ -71,6 +80,7 @@ export function OpsCard({
   return <div className={`${base} ${dense ? "p-3.5" : "p-4"} ${className}`}>{children}</div>;
 }
 
+/** @deprecated Use `KpiCard` from `@/components/enterprise` instead. */
 export function OpsMetric({
   label,
   value,

@@ -4,10 +4,8 @@ import type { ReactNode } from "react";
 export const ADMIN_CARD = "rounded-xl border border-gray-200 bg-white shadow-sm";
 
 /**
- * Consistent admin console page frame: a full-width light canvas, a single
- * standardized header (kicker / title / description / actions), and even spacing.
- * Replaces the ad-hoc white "header cards" + narrow max-width wrappers that made
- * admin pages float as small cards inside the dark dashboard shell.
+ * @deprecated Use `PageHeader` + `DashboardPanel` from `@/components/enterprise` instead.
+ * Admin console page frame — preserved for gray admin typography during migration.
  */
 export default function AdminPageShell({
   kicker = "Administration",

@@ -16,7 +16,7 @@ import {
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import WorkspaceQueuePanel from "@/components/workspace/WorkspaceQueuePanel";
-import WorkspaceQueueRow, { WorkspacePrimaryLink } from "@/components/workspace/WorkspaceQueueRow";
+import { QueueRow, QueuePrimaryLink } from "@/components/enterprise";
 import WorkflowReviewPanel from "@/components/workflow/WorkflowReviewPanel";
 import { workflowStageForRole } from "@/lib/workflow/roles";
 import type { UserRole } from "@/lib/supabase/types";
@@ -75,20 +75,20 @@ export default function CacWorkspaceClient({ role }: { role: UserRole }) {
             kicker="Primary queue"
             title="County approval queue"
             subtitle="DAO submissions awaiting county verification"
-            action={<WorkspacePrimaryLink href="/verification-queue">Open queue</WorkspacePrimaryLink>}
+            action={<QueuePrimaryLink href="/verification-queue">Open queue</QueuePrimaryLink>}
           >
-            <WorkspaceQueueRow
+            <QueueRow
               href="/verification-queue"
               title="Pending county approvals"
               meta="Approve, reject, escalate, or return"
               tone="escalation"
             />
-            <WorkspaceQueueRow
+            <QueueRow
               href="/registration-approvals"
               title="Registration sign-off"
               meta="Supervisory review for the county"
             />
-            <WorkspaceQueueRow href="/compliance" title="Compliance reviews" meta="Audits and anomaly tooling" />
+            <QueueRow href="/compliance" title="Compliance reviews" meta="Audits and anomaly tooling" />
           </WorkspaceQueuePanel>
 
           <WorkspaceQueuePanel
@@ -96,17 +96,17 @@ export default function CacWorkspaceClient({ role }: { role: UserRole }) {
             title="DAO submissions"
             subtitle="District consolidation feeding the county"
           >
-            <WorkspaceQueueRow
+            <QueueRow
               href="/reporting/workspace?tab=cac"
               title="CAC reporting hub"
               meta="County consolidation & ministry handoff"
             />
-            <WorkspaceQueueRow
+            <QueueRow
               href="/county-dashboard"
               title="County command center"
               meta="District posture, maps, and exports"
             />
-            <WorkspaceQueueRow
+            <QueueRow
               href="/executive-briefing"
               title="Executive briefing"
               meta="Cross-cutting county summaries"
@@ -122,13 +122,13 @@ export default function CacWorkspaceClient({ role }: { role: UserRole }) {
             title="District performance"
             subtitle="How districts are tracking within the county"
           >
-            <WorkspaceQueueRow
+            <QueueRow
               href="/county-dashboard"
               title="District scorecards"
               meta="Cadence and coverage by district"
               tone="ok"
             />
-            <WorkspaceQueueRow href="/food-security" title="County food security" meta="Early-warning signals" />
+            <QueueRow href="/food-security" title="County food security" meta="Early-warning signals" />
           </WorkspaceQueuePanel>
 
           <WorkspaceQueuePanel
@@ -136,7 +136,7 @@ export default function CacWorkspaceClient({ role }: { role: UserRole }) {
             title="Ministry routing"
             subtitle="Incidents requiring national oversight"
           >
-            <WorkspaceQueueRow
+            <QueueRow
               href="/alerts"
               title="County escalations"
               meta="Incidents and anomaly routing"
@@ -144,7 +144,7 @@ export default function CacWorkspaceClient({ role }: { role: UserRole }) {
             />
           </WorkspaceQueuePanel>
 
-          <AlertCard tone="warning" title="Escalation guidance" action={<WorkspacePrimaryLink href="/alerts">View escalations</WorkspacePrimaryLink>}>
+          <AlertCard tone="warning" title="Escalation guidance" action={<QueuePrimaryLink href="/alerts">View escalations</QueuePrimaryLink>}>
             <span className="inline-flex items-center gap-1.5">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden />
               Route unresolved county-level risks to Ministry before cabinet reporting cycles.

@@ -5,7 +5,14 @@ export { default as SectionHeader } from "@/components/enterprise/SectionHeader"
 export { default as KpiCard } from "@/components/enterprise/KpiCard";
 export { default as DashboardPanel } from "@/components/enterprise/DashboardPanel";
 export { default as StatusBadge } from "@/components/enterprise/StatusBadge";
+export type { StatusBadgeTone } from "@/components/enterprise/StatusBadge";
 export { default as QuickActionCard } from "@/components/enterprise/QuickActionCard";
 export { default as Timeline } from "@/components/enterprise/Timeline";
 export { default as AlertCard } from "@/components/enterprise/AlertCard";
 export { default as EmptyState } from "@/components/enterprise/EmptyState";
+export { default as StatusPipeline } from "@/components/enterprise/StatusPipeline";
+export type { StatusPipelineStage } from "@/components/enterprise/StatusPipeline";
+export { default as QueueRow, QueuePrimaryLink } from "@/components/enterprise/QueueRow";
+export type { QueueRowTone } from "@/components/enterprise/QueueRow";
+export { default as EnterpriseDataGrid } from "@/components/enterprise/EnterpriseDataGrid";
+export type { GridColumn } from "@/components/enterprise/EnterpriseDataGrid";

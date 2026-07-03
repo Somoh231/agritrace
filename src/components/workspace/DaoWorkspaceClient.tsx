@@ -17,7 +17,7 @@ import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import LiveQueueStat from "@/components/workspace/LiveQueueStat";
 import WorkspaceQueuePanel from "@/components/workspace/WorkspaceQueuePanel";
-import WorkspaceQueueRow, { WorkspacePrimaryLink } from "@/components/workspace/WorkspaceQueueRow";
+import { QueueRow, QueuePrimaryLink } from "@/components/enterprise";
 import WorkflowReviewPanel from "@/components/workflow/WorkflowReviewPanel";
 import { workflowStageForRole } from "@/lib/workflow/roles";
 import type { UserRole } from "@/lib/supabase/types";
@@ -76,20 +76,20 @@ export default function DaoWorkspaceClient({ role }: { role: UserRole }) {
             kicker="Primary queue"
             title="Pending DAO review"
             subtitle="CLAN submissions awaiting your district decision"
-            action={<WorkspacePrimaryLink href="/verification-queue">Open queue</WorkspacePrimaryLink>}
+            action={<QueuePrimaryLink href="/verification-queue">Open queue</QueuePrimaryLink>}
           >
-            <WorkspaceQueueRow
+            <QueueRow
               href="/verification-queue"
               title="Field captures to verify"
               meta="Approve, reject, or request corrections"
               tone="escalation"
             />
-            <WorkspaceQueueRow
+            <QueueRow
               href="/field/inspections"
               title="Inspection follow-ups"
               meta="Visits needing district outcome"
             />
-            <WorkspaceQueueRow
+            <QueueRow
               href="/registration-approvals"
               title="Registration approvals"
               meta="Flagged registrations needing sign-off"
@@ -101,18 +101,18 @@ export default function DaoWorkspaceClient({ role }: { role: UserRole }) {
             title="Submitted reports"
             subtitle="Recently consolidated district reporting"
           >
-            <WorkspaceQueueRow
+            <QueueRow
               href="/reporting/workspace?tab=dao"
               title="DAO reporting hub"
               meta="District summaries and capture surfaces"
             />
-            <WorkspaceQueueRow
+            <QueueRow
               href="/reporting/workspace?tab=submitted"
               title="Recently submitted"
               meta="Artefacts sent up the chain"
               tone="ok"
             />
-            <WorkspaceQueueRow href="/district-dashboard" title="District command" meta="Registry, inspections, and operational view" />
+            <QueueRow href="/district-dashboard" title="District command" meta="Registry, inspections, and operational view" />
           </WorkspaceQueuePanel>
 
           <WorkflowReviewPanel stage={stage} canCreate title="District review workflow" />
@@ -126,8 +126,8 @@ export default function DaoWorkspaceClient({ role }: { role: UserRole }) {
             title="CLAN & warehouse coordination"
             subtitle="Capture cadence and custody posture in the district"
           >
-            <WorkspaceQueueRow href="/field-agents" title="CLAN / field monitoring" meta="Who is active and where" />
-            <WorkspaceQueueRow
+            <QueueRow href="/field-agents" title="CLAN / field monitoring" meta="Who is active and where" />
+            <QueueRow
               href="/operations/warehouses"
               title="Warehouse coordination"
               meta="Custody posture in the district"
@@ -139,13 +139,13 @@ export default function DaoWorkspaceClient({ role }: { role: UserRole }) {
             title="Escalations & anomalies"
             subtitle="Items needing district attention"
           >
-            <WorkspaceQueueRow
+            <QueueRow
               href="/alerts"
               title="Open escalations"
               meta="Anomalies routed for resolution"
               tone="alert"
             />
-            <WorkspaceQueueRow
+            <QueueRow
               href="/compliance/anomalies"
               title="Compliance anomalies"
               meta="Distribution & data checks"
@@ -153,7 +153,7 @@ export default function DaoWorkspaceClient({ role }: { role: UserRole }) {
             />
           </WorkspaceQueuePanel>
 
-          <AlertCard tone="warning" title="Corrections workflow" action={<WorkspacePrimaryLink href="/verification-queue">Review queue</WorkspacePrimaryLink>}>
+          <AlertCard tone="warning" title="Corrections workflow" action={<QueuePrimaryLink href="/verification-queue">Review queue</QueuePrimaryLink>}>
             <span className="inline-flex items-center gap-1.5">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden />
               Return incomplete submissions to CLAN with clear correction notes before county handoff.

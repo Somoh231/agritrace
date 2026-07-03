@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
+import { EnterpriseDataGrid, type GridColumn } from "@/components/enterprise";
 import LiveQueryGrid from "@/components/operations/LiveQueryGrid";
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
 

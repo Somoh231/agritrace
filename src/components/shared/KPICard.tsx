@@ -17,6 +17,10 @@ const DELTA: Record<DeltaDirection, string> = {
   neutral: "text-gray-500",
 };
 
+/**
+ * @deprecated Use `KpiCard` from `@/components/enterprise` instead.
+ * Legacy rice/cocoa KPI tile — preserved for visual compatibility during migration.
+ */
 export default function KPICard({
   label,
   value,
@@ -46,4 +50,3 @@ export default function KPICard({
     </div>
   );
 }
-

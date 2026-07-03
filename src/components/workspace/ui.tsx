@@ -1,14 +1,9 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
-type Tone = "default" | "alert" | "escalation" | "ok";
-
-function toneDot(tone: Tone): string {
-  if (tone === "alert") return "bg-rose-400";
-  if (tone === "escalation") return "bg-amber-400";
-  if (tone === "ok") return "bg-emerald-400";
-  return "bg-[rgb(var(--ministry-gold))]";
-}
+/** @deprecated Re-export — use `QueueRow` from `@/components/enterprise`. */
+export { default as QueueRow } from "@/components/enterprise/QueueRow";
+export type { QueueRowTone } from "@/components/enterprise/QueueRow";
 
 /** A titled operational panel built on the command surface. */
 export function Panel({
@@ -35,42 +30,6 @@ export function Panel({
       </div>
       <div className="p-3">{children}</div>
     </section>
-  );
-}
-
-/** A queue/list row — the core operational unit for review and approval surfaces. */
-export function QueueRow({
-  href,
-  title,
-  meta,
-  tone = "default",
-  badge,
-}: {
-  href: string;
-  title: string;
-  meta?: string;
-  tone?: Tone;
-  badge?: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition hover:bg-slate-50"
-    >
-      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${toneDot(tone)}`} aria-hidden />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-[13px] font-medium text-slate-900">{title}</span>
-        {meta ? <span className="block truncate text-[11px] text-slate-500">{meta}</span> : null}
-      </span>
-      {badge ? (
-        <span className="shrink-0 rounded-md border border-[rgb(var(--ministry-gold-strong))]/40 bg-[rgb(var(--ministry-gold))]/[0.14] px-1.5 py-0.5 font-mono text-[10px] text-[rgb(var(--ministry-gold-strong))]">
-          {badge}
-        </span>
-      ) : null}
-      <span className="shrink-0 font-mono text-[13px] text-[rgb(var(--ministry-gold-strong))]/70 transition group-hover:translate-x-0.5">
-        →
-      </span>
-    </Link>
   );
 }
 
@@ -103,7 +62,10 @@ export function BigAction({
   );
 }
 
-/** A compact KPI/metric tile that links into a real operational surface. */
+/**
+ * @deprecated Use `QuickActionCard` or linked `KpiCard` from `@/components/enterprise` instead.
+ * Legacy linked KPI tile with gov-card styling.
+ */
 export function StatTile({
   href,
   label,

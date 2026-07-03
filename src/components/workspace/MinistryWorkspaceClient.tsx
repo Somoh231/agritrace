@@ -21,7 +21,7 @@ import {
 } from "@/components/enterprise";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import WorkspaceQueuePanel from "@/components/workspace/WorkspaceQueuePanel";
-import WorkspaceQueueRow, { WorkspacePrimaryLink } from "@/components/workspace/WorkspaceQueueRow";
+import { QueueRow, QueuePrimaryLink } from "@/components/enterprise";
 
 export type MinistryWorkspaceMetrics = {
   registeredFarmers: number;
@@ -113,22 +113,22 @@ export default function MinistryWorkspaceClient({ metrics }: { metrics: Ministry
           kicker="Required action"
           title="CAC-approved queues"
           subtitle="Queues awaiting a national decision"
-          action={<WorkspacePrimaryLink href="/verification-queue">Open queue</WorkspacePrimaryLink>}
+          action={<QueuePrimaryLink href="/verification-queue">Open queue</QueuePrimaryLink>}
         >
-          <WorkspaceQueueRow
+          <QueueRow
             href="/verification-queue"
             title="Verification queue"
             meta={`${nf(metrics.pendingVerification)} pending CAC review`}
             tone="alert"
             badge="Act"
           />
-          <WorkspaceQueueRow
+          <QueueRow
             href="/registration-approvals"
             title="Registration approvals"
             meta={`${nf(metrics.flaggedRegistrations)} flagged registrations`}
             tone="escalation"
           />
-          <WorkspaceQueueRow
+          <QueueRow
             href="/field/sync-queue"
             title="Offline reconcile"
             meta={`${metrics.offlinePendingSync} records awaiting sync`}
@@ -136,19 +136,19 @@ export default function MinistryWorkspaceClient({ metrics }: { metrics: Ministry
         </WorkspaceQueuePanel>
 
         <WorkspaceQueuePanel kicker="Risk signals" title="Operational alerts" subtitle="What needs national attention">
-          <WorkspaceQueueRow
+          <QueueRow
             href="/alerts"
             title="Escalations & incidents"
             meta="Unresolved anomalies requiring oversight"
             tone="alert"
           />
-          <WorkspaceQueueRow
+          <QueueRow
             href="/food-security"
             title="Food security"
             meta={`Risk index ${metrics.nationalRiskScore} · early-warning`}
             tone="escalation"
           />
-          <WorkspaceQueueRow
+          <QueueRow
             href="/compliance/anomalies"
             title="Compliance anomalies"
             meta="Distribution and data integrity"
@@ -161,14 +161,14 @@ export default function MinistryWorkspaceClient({ metrics }: { metrics: Ministry
           title="Cabinet-ready summaries"
           subtitle="Pipeline, analytics, and oversight"
         >
-          <WorkspaceQueueRow href="/reports" title="Reporting & analytics" meta="Ministry reporting center and exports" tone="ok" />
-          <WorkspaceQueueRow
+          <QueueRow href="/reports" title="Reporting & analytics" meta="Ministry reporting center and exports" tone="ok" />
+          <QueueRow
             href="/reporting/workspace"
             title="Reporting operations center"
             meta="DAO & CAC consolidation surfaces"
           />
-          <WorkspaceQueueRow href="/activity" title="Audit & activity center" meta="Recent system actions timeline" />
-          <WorkspaceQueueRow href="/compliance/audit-log" title="Audit log" meta="Immutable trail for oversight" />
+          <QueueRow href="/activity" title="Audit & activity center" meta="Recent system actions timeline" />
+          <QueueRow href="/compliance/audit-log" title="Audit log" meta="Immutable trail for oversight" />
         </WorkspaceQueuePanel>
       </div>
 
@@ -208,7 +208,7 @@ export default function MinistryWorkspaceClient({ metrics }: { metrics: Ministry
         </DashboardPanel>
       </div>
 
-      <AlertCard tone="warning" title="National escalation posture" action={<WorkspacePrimaryLink href="/alerts">Review escalations</WorkspacePrimaryLink>}>
+      <AlertCard tone="warning" title="National escalation posture" action={<QueuePrimaryLink href="/alerts">Review escalations</QueuePrimaryLink>}>
         <span className="inline-flex items-center gap-1.5">
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden />
           <ClipboardList className="h-3.5 w-3.5 shrink-0" aria-hidden />

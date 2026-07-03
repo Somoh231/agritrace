@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
 
+/**
+ * @deprecated Use `PageHeader` + `DashboardPanel` from `@/components/enterprise` instead.
+ * Legacy ministry page chrome with gov-kicker / serif title styling.
+ */
 export default function MinistryPageShell({
   title,
   description,
