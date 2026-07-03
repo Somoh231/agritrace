@@ -4,6 +4,7 @@ import Link from "next/link";
 import * as React from "react";
 
 import LanguageSwitcher from "@/components/agrivault/site/LanguageSwitcher";
+import MinistryBrandLogo from "@/components/brand/MinistryBrandLogo";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import { track } from "@/lib/analytics/client";
 
@@ -13,17 +14,6 @@ const NAV_LINKS = [
   { href: "/governance", label: "Security" },
   { href: "/offline", label: "Offline Operations" },
 ] as const;
-
-function LogoMark() {
-  return (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-800">
-      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" aria-hidden>
-        <path d="M12 2C8 2 5 6 5 10c0 4 3 7 7 9 4-2 7-5 7-9 0-4-3-8-7-8z" />
-        <path d="M12 2v18M8 8c1.5 1 2.5 2.5 4 4 1.5-1.5 2.5-3 4-4" />
-      </svg>
-    </span>
-  );
-}
 
 export default function PublicNav() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -42,7 +32,7 @@ export default function PublicNav() {
     <header className="sticky top-0 z-[100] border-b border-white/10 bg-slate-950/95 text-slate-200 shadow-[0_1px_0_rgba(0,0,0,0.35)] backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-[90rem] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex min-w-0 items-center gap-2.5 no-underline" onClick={() => setMobileOpen(false)}>
-          <LogoMark />
+          <MinistryBrandLogo variant="seal" size="sm" />
           <span className="min-w-0 leading-tight">
             <span className="block text-[15px] font-semibold tracking-tight text-white">Agrivault Data</span>
             <span className="hidden text-[9px] font-medium uppercase tracking-[0.14em] text-slate-500 sm:block">

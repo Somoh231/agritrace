@@ -1,7 +1,8 @@
 /**
- * Generates solid-color PNGs for PWA manifest (Chrome installability).
- * Run: node scripts/generate-pwa-icons.mjs
+ * Generates PWA manifest icons from the official MOA seal asset.
+ * Falls back to solid brand color when sips is unavailable (non-macOS CI).
  */
+import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import zlib from "zlib";
@@ -10,6 +11,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
 const outDir = path.join(root, "public", "icons");
+const sealSrc = path.join(root, "public", "logos", "moa-seal.jpeg");
 
 function crc32(buf) {
   let c = 0xffffffff;
@@ -35,8 +37,8 @@ function encodePng(width, height, rgba) {
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(width, 0);
   ihdr.writeUInt32BE(height, 4);
-  ihdr[8] = 8; // bit depth
-  ihdr[9] = 6; // RGBA
+  ihdr[8] = 8;
+  ihdr[9] = 6;
   ihdr[10] = 0;
   ihdr[11] = 0;
   ihdr[12] = 0;
@@ -44,7 +46,7 @@ function encodePng(width, height, rgba) {
   const raw = Buffer.alloc(rawLen);
   let o = 0;
   for (let y = 0; y < height; y++) {
-    raw[o++] = 0; // filter None
+    raw[o++] = 0;
     for (let x = 0; x < width; x++) {
       raw[o++] = rgba[0];
       raw[o++] = rgba[1];
@@ -56,10 +58,37 @@ function encodePng(width, height, rgba) {
   return Buffer.concat([signature, chunk("IHDR", ihdr), chunk("IDAT", idat), chunk("IEND", Buffer.alloc(0))]);
 }
 
+function writeSolidFallback(size, filename) {
+  const brand = [11, 34, 21, 255]; // ministry forest
+  fs.writeFileSync(path.join(outDir, filename), encodePng(size, size, brand));
+}
+
+function writeFromSeal(size, filename) {
+  const out = path.join(outDir, filename);
+  execSync(`sips -s format png -z ${size} ${size} "${sealSrc}" --out "${out}"`, { stdio: "pipe" });
+}
+
 fs.mkdirSync(outDir, { recursive: true });
-// Brand-ish: deep slate + emerald accent safe area for maskable (solid ok for pilot)
-const brand = [15, 23, 42, 255]; // #0f172a
-fs.writeFileSync(path.join(outDir, "pwa-192.png"), encodePng(192, 192, brand));
-fs.writeFileSync(path.join(outDir, "pwa-512.png"), encodePng(512, 512, brand));
-fs.writeFileSync(path.join(outDir, "pwa-512-maskable.png"), encodePng(512, 512, brand));
+
+const canUseSeal = process.platform === "darwin" && fs.existsSync(sealSrc);
+
+try {
+  if (canUseSeal) {
+    writeFromSeal(192, "pwa-192.png");
+    writeFromSeal(512, "pwa-512.png");
+    writeFromSeal(512, "pwa-512-maskable.png");
+    console.log("Wrote PWA icons from public/logos/moa-seal.jpeg");
+  } else {
+    writeSolidFallback(192, "pwa-192.png");
+    writeSolidFallback(512, "pwa-512.png");
+    writeSolidFallback(512, "pwa-512-maskable.png");
+    console.log("Wrote solid-color PWA icons (MOA seal asset or sips unavailable)");
+  }
+} catch (e) {
+  console.warn("[generate-pwa-icons] seal resize failed, using fallback:", e);
+  writeSolidFallback(192, "pwa-192.png");
+  writeSolidFallback(512, "pwa-512.png");
+  writeSolidFallback(512, "pwa-512-maskable.png");
+}
+
 console.log("Wrote public/icons/pwa-192.png, pwa-512.png, pwa-512-maskable.png");

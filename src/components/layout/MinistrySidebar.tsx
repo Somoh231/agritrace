@@ -3,20 +3,10 @@
 import * as React from "react";
 
 import { formatRoleLabel } from "@/lib/display/role-labels";
+import MinistryBrandLogo from "@/components/brand/MinistryBrandLogo";
 import { navIconForHref } from "@/lib/navigation/ministry-nav-icons";
 import { ministryNavForRole, normalizeMinistryNavRole } from "@/lib/navigation/ministry-nav";
 import type { UserRole } from "@/lib/supabase/types";
-
-function MoMark() {
-  return (
-    <div className="relative h-9 w-9 shrink-0 rounded-lg bg-gradient-to-br from-[#0c4a21] to-[#052e16] grid place-items-center ring-1 ring-[rgb(var(--ministry-gold))]/40 shadow-md">
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="rgb(var(--ministry-gold))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-        <path d="M12 2C8 2 5 6 5 10c0 4 3 7 7 9 4-2 7-5 7-9 0-4-3-8-7-8z" />
-        <path d="M12 2v18" />
-      </svg>
-    </div>
-  );
-}
 
 function matchesHref(pathname: string, href: string) {
   if (pathname === href) return true;
@@ -60,7 +50,7 @@ export default function MinistrySidebar({
     <aside className="ministry-shell-sidebar h-full w-full shrink-0 flex flex-col text-[rgb(var(--ministry-sidebar-fg))]">
       <div className="px-4 py-4 border-b border-white/[0.08]">
         <div className="flex items-center gap-3">
-          <MoMark />
+          <MinistryBrandLogo variant="seal" size="md" priority />
           <div className="min-w-0">
             <div className="ent-editorial text-[17px] leading-tight font-medium text-white">
               AgriVault <span className="text-[rgb(var(--ministry-gold))]">Data</span>

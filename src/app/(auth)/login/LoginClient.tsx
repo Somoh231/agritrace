@@ -4,23 +4,13 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import AlertBanner from "@/components/shared/AlertBanner";
+import MinistryBrandLogo from "@/components/brand/MinistryBrandLogo";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import { postLoginHomeForRole } from "@/lib/auth/post-login-home";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { describeAuthFetchFailure } from "@/lib/supabase/env";
 import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
 import { track } from "@/lib/analytics/client";
-
-function LogoMark() {
-  return (
-    <div className="relative h-11 w-11 rounded-xl bg-gradient-to-br from-[#0c4a21] to-[#052e16] grid place-items-center shadow-md ring-1 ring-[rgb(var(--ministry-gold))]/40">
-      <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none" stroke="rgb(var(--ministry-gold))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M12 2C8 2 5 6 5 10c0 4 3 7 7 9 4-2 7-5 7-9 0-4-3-8-7-8z" />
-        <path d="M12 2v18" />
-      </svg>
-    </div>
-  );
-}
 
 export default function LoginClient() {
   const router = useRouter();
@@ -80,6 +70,9 @@ export default function LoginClient() {
       />
       <div className="relative w-full max-w-[400px]">
         <div className="text-center mb-5">
+          <div className="mx-auto mb-4 flex justify-center">
+            <MinistryBrandLogo variant="brand" className="mx-auto" priority />
+          </div>
           <div className="cmd-kicker">Ministry of Agriculture · Liberia</div>
           <div className="mt-2 font-serif-display text-[30px] leading-none text-white">
             AgriVault <span className="text-[rgb(var(--ministry-gold))]">Data</span>
@@ -91,7 +84,7 @@ export default function LoginClient() {
 
         <div className="rounded-2xl border border-[rgb(var(--ministry-gold))]/15 bg-[rgb(var(--ministry-panel))]/55 backdrop-blur-sm p-6 sm:p-7 shadow-2xl">
           <div className="flex items-center gap-3">
-            <LogoMark />
+            <MinistryBrandLogo variant="seal" size="lg" />
             <div className="min-w-0">
               <div className="font-serif-display text-[17px] text-white leading-tight">Operator sign-in</div>
               <div className="text-[11px] text-emerald-100/55">

@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Agrivault Data",
     short_name: "Agrivault",
     description:
-      "Ministry operational reporting and traceability platform (offline-capable).",
+      "Ministry of Agriculture operational reporting and traceability platform (offline-capable).",
     start_url: "/",
     scope: "/",
     display: "standalone",
