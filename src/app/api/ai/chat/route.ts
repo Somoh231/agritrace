@@ -1,15 +1,23 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
+import {
+  API_ERROR_GENERIC,
+  API_ERROR_INVALID_JSON,
+  API_ERROR_UNAUTHORIZED,
+  requestBodyTooLarge,
+} from "@/lib/http/api-security";
+import { rateLimitPolicyHeaders } from "@/lib/http/rate-limit";
 import { createClient } from "@/lib/supabase/server";
-import type { UserRole } from "@/lib/supabase/types";
+import type { Profile, UserRole } from "@/lib/supabase/types";
+import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 /** Override via ANTHROPIC_MODEL; default is broadly available on Anthropic accounts. */
 const ANTHROPIC_MODEL = (process.env.ANTHROPIC_MODEL ?? "claude-3-haiku-20240307").trim();
 
-if (typeof console !== "undefined" && console.info) {
+if (process.env.NODE_ENV !== "production") {
   console.info("[ai/chat] Anthropic operational assistant model:", ANTHROPIC_MODEL);
 }
 
@@ -219,24 +227,41 @@ function describeAnthropicStreamError(e: unknown): { logLine: string; streamNoti
 }
 
 export async function POST(req: Request) {
+  if (requestBodyTooLarge(req, 256_000)) {
+    return NextResponse.json({ error: "Payload too large." }, { status: 413 });
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: API_ERROR_UNAUTHORIZED }, { status: 401 });
+  }
+
+  const { data: profileRow } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>();
+  const profile = profileRow ?? buildDemoProfileForAuthUser(user);
+  const serverRole = profile.role;
+
   try {
     const body = (await req.json()) as ReqBody;
     const latestUser = [...(body.messages ?? [])].reverse().find((m) => m.role === "user")?.content ?? "";
+    if (!latestUser.trim()) {
+      return NextResponse.json({ error: "A user message is required." }, { status: 400 });
+    }
     const intent = classifyIntent(latestUser);
 
-    const context = await fetchOperationalContext({ intent, role: body.role });
+    const context = await fetchOperationalContext({ intent, role: serverRole });
 
     const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
     if (!apiKey) {
-      return NextResponse.json(
-        { error: "Missing ANTHROPIC_API_KEY on server." },
-        { status: 500 },
-      );
+      console.error("[ai/chat] Missing ANTHROPIC_API_KEY on server.");
+      return NextResponse.json({ error: API_ERROR_GENERIC }, { status: 503 });
     }
 
     const client = new Anthropic({ apiKey });
 
-    const system = systemPromptForRole(body.role);
+    const system = systemPromptForRole(serverRole);
     const userContext = [
       "Operational context (JSON):",
       JSON.stringify(context),
@@ -286,13 +311,11 @@ export async function POST(req: Request) {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "no-store",
+        ...rateLimitPolicyHeaders({ windowMs: 60_000, max: 20 }),
       },
     });
-  } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Unknown error" },
-      { status: 400 },
-    );
+  } catch {
+    return NextResponse.json({ error: API_ERROR_INVALID_JSON }, { status: 400 });
   }
 }
 

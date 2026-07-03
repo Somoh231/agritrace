@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
 
+import {
+  clampStr,
+  isEmail,
+  logApiError,
+  requestBodyTooLarge,
+} from "@/lib/http/api-security";
+import { rateLimitPolicyHeaders } from "@/lib/http/rate-limit";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
-function clampStr(v: unknown, max: number) {
-  const s = String(v ?? "").trim();
-  if (!s) return "";
-  return s.length > max ? s.slice(0, max) : s;
-}
-
-function isEmail(s: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
-}
+const MAX_BODY_BYTES = 32_768;
 
 export async function POST(request: Request) {
+  if (requestBodyTooLarge(request, MAX_BODY_BYTES)) {
+    return NextResponse.json({ error: "Payload too large." }, { status: 413 });
+  }
+
   try {
     const body = (await request.json()) as {
       full_name?: string;
@@ -64,11 +67,11 @@ export async function POST(request: Request) {
           { status: 503 },
         );
       }
-      console.error("demo_inquiries insert", error);
+      logApiError("api/demo-inquiry", error);
       return NextResponse.json({ error: "Could not save your request. Try again later." }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }, { headers: rateLimitPolicyHeaders({ windowMs: 60_000, max: 10 }) });
   } catch {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }

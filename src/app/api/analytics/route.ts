@@ -1,15 +1,20 @@
 import { NextResponse } from "next/server";
 
+import {
+  API_ERROR_INVALID_JSON,
+  clampStr,
+  jsonPayloadTooLarge,
+  logApiError,
+  requestBodyTooLarge,
+} from "@/lib/http/api-security";
+import { rateLimitPolicyHeaders } from "@/lib/http/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 type Body = { event?: string; payload?: Record<string, unknown> };
 
-function safeStr(v: unknown, max: number) {
-  const s = String(v ?? "").trim();
-  if (!s) return "";
-  return s.length > max ? s.slice(0, max) : s;
-}
+const MAX_BODY_BYTES = 16_384;
+const MAX_PAYLOAD_BYTES = 8_192;
 
 function moduleFromPath(pathname: string) {
   if (pathname.startsWith("/rice")) return "rice";
@@ -20,9 +25,19 @@ function moduleFromPath(pathname: string) {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as Body;
-  const event = safeStr(body.event, 64);
+  if (requestBodyTooLarge(request, MAX_BODY_BYTES)) {
+    return NextResponse.json({ error: "Payload too large." }, { status: 413 });
+  }
+
+  const body = (await request.json().catch(() => null)) as Body | null;
+  if (!body) return NextResponse.json({ error: API_ERROR_INVALID_JSON }, { status: 400 });
+
+  const event = clampStr(body.event, 64);
   if (!event) return NextResponse.json({ error: "event required" }, { status: 400 });
+
+  if (jsonPayloadTooLarge(body.payload, MAX_PAYLOAD_BYTES)) {
+    return NextResponse.json({ error: "payload too large" }, { status: 400 });
+  }
 
   // Best-effort auth context (not required).
   let userId: string | null = null;
@@ -41,11 +56,11 @@ export async function POST(request: Request) {
   try {
     admin = getSupabaseAdminClient();
   } catch {
-    return new NextResponse(null, { status: 204 });
+    return new NextResponse(null, { status: 204, headers: rateLimitPolicyHeaders() });
   }
 
   const url = new URL(request.url);
-  const path = safeStr(url.searchParams.get("path") ?? "", 2000) || null;
+  const path = clampStr(url.searchParams.get("path") ?? "", 2000) || null;
   const derivedModule = path ? moduleFromPath(path) : null;
 
   const { error } = await admin.from("analytics_events").insert({
@@ -57,10 +72,9 @@ export async function POST(request: Request) {
   } as any);
 
   if (error) {
-    // Do not surface analytics failures to clients
-    return new NextResponse(null, { status: 204 });
+    logApiError("api/analytics", error);
+    return new NextResponse(null, { status: 204, headers: rateLimitPolicyHeaders() });
   }
 
-  return new NextResponse(null, { status: 204 });
+  return new NextResponse(null, { status: 204, headers: rateLimitPolicyHeaders() });
 }
-
