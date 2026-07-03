@@ -17,3 +17,4 @@ export type { QueueRowTone } from "@/components/enterprise/QueueRow";
 export { default as DataSourceBadge, DataSourceNotice } from "@/components/enterprise/DataSourceBadge";
 export { default as EnterpriseDataGrid } from "@/components/enterprise/EnterpriseDataGrid";
 export type { GridColumn } from "@/components/enterprise/EnterpriseDataGrid";
+export * from "@/components/enterprise/analytics";

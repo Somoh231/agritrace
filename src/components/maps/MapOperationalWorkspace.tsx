@@ -3,13 +3,11 @@
 import * as React from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Layers, MapPin, Route, Wheat } from "lucide-react";
 
 import {
   AlertCard,
   DashboardPanel,
   PageHeader,
-  QuickActionCard,
   SectionHeader,
 } from "@/components/enterprise";
 import { RegistryKpiStrip } from "@/components/registry";
@@ -80,93 +78,100 @@ export default function MapOperationalWorkspace() {
         </AlertCard>
       ) : null}
 
-      <div className="grid gap-3 lg:grid-cols-3">
-        <QuickActionCard href="/county-dashboard" icon={MapPin} title="CAC county command" description="County verification queues, DAO oversight, and district performance." />
-        <QuickActionCard href="/district-dashboard" icon={Wheat} title="DAO field operations" description="Registrations, inspections, offline queue, and GPS evidence capture." />
-        <QuickActionCard href="/gis-intelligence" icon={Layers} title="GIS intelligence" description="Advanced ministry GIS workspace with enriched intelligence layers." />
-      </div>
-
-      <DashboardPanel padding="none" className="overflow-hidden">
-        <div className="border-b border-slate-100 px-5 py-4">
-          <SectionHeader kicker="Layers" title="Tactical map controls" subtitle="Select active layer and toggle visibility" />
-          <div className="mt-4 flex flex-wrap gap-2">
-            {LAYERS.map((layer) => {
-              const active = activeLayer === layer.id;
-              return (
-                <button
-                  key={layer.id}
-                  type="button"
-                  onClick={() => setActiveLayer(layer.id)}
-                  className={[
-                    "inline-flex h-9 items-center rounded-lg border px-3 text-[12px] transition",
-                    active ? "border-forest-300 bg-forest-50 font-medium text-forest-900" : "border-slate-200 bg-white text-slate-600 hover:border-forest-200",
-                  ].join(" ")}
-                >
-                  {layer.label}
-                </button>
-              );
-            })}
-          </div>
-          <div className="mt-3 flex flex-wrap gap-4 text-[12px] text-slate-700">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={showCounty} onChange={(e) => setShowCounty(e.target.checked)} className="rounded border-slate-300" />
-              County yield heatmap
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={showPlots} onChange={(e) => setShowPlots(e.target.checked)} className="rounded border-slate-300" />
-              Farm plot polygons
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={showMovement} onChange={(e) => setShowMovement(e.target.checked)} className="rounded border-slate-300" />
-              Movement routes
-            </label>
-          </div>
-          <MapTokenBadge ready={tokenReady} />
-        </div>
-
-        <div className="relative min-h-[min(58vh,520px)] bg-slate-50 p-2">
-          <div className="absolute left-4 top-4 z-10 hidden sm:block">
-            {activeLayer === "county" ? (
-              <MapLayerLegend
-                items={[
-                  { color: "#eaf7ec", label: "Low yield" },
-                  { color: "#5bbf6e", label: "Moderate" },
-                  { color: "#2d7a3e", label: "High yield" },
-                ]}
-              />
-            ) : null}
-            {activeLayer === "plots" ? (
-              <MapLayerLegend
-                items={[
-                  { color: "#5bbf6e", label: "Clear" },
-                  { color: "#ef4444", label: "Flagged" },
-                  { color: "#9ca3af", label: "Pending" },
-                ]}
-              />
-            ) : null}
-            {activeLayer === "movement" ? (
-              <MapLayerLegend items={[{ color: "#1a4422", label: "Lot corridor trace" }]} />
-            ) : null}
-          </div>
-
-          <div className="absolute right-4 top-4 z-10 max-w-[220px] rounded-xl border border-slate-200/90 bg-white/95 px-3 py-2 text-[11px] text-slate-600 shadow-lg backdrop-blur-sm">
-            <Route className="mb-1 h-4 w-4 text-forest-700" aria-hidden />
-            {LAYERS.find((l) => l.id === activeLayer)?.description}
-          </div>
-
-          {!layerVisible ? (
-            <div className="flex min-h-[min(52vh,480px)] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/80 px-6 text-center">
-              <p className="text-[13px] text-slate-600">Layer hidden — enable the checkbox above to restore the {activeLayer} surface.</p>
+      <div className="relative -mx-4 md:-mx-6">
+        <DashboardPanel padding="none" className="overflow-hidden rounded-none border-x-0 md:rounded-2xl md:border-x">
+          <div className="relative min-h-[min(72vh,640px)] bg-slate-100">
+            <div className="absolute left-4 top-4 z-20 flex flex-col gap-2">
+              <div className="rounded-xl border border-slate-200/90 bg-white/95 px-3 py-2.5 shadow-lg backdrop-blur-sm">
+                <p className="ent-label mb-2">Active layer</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {LAYERS.map((layer) => {
+                    const active = activeLayer === layer.id;
+                    return (
+                      <button
+                        key={layer.id}
+                        type="button"
+                        onClick={() => setActiveLayer(layer.id)}
+                        className={[
+                          "inline-flex h-8 items-center rounded-md border px-2.5 text-[11px] transition",
+                          active ? "border-forest-300 bg-forest-50 font-medium text-forest-900" : "border-slate-200 bg-white text-slate-600 hover:border-forest-200",
+                        ].join(" ")}
+                      >
+                        {layer.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="hidden sm:block rounded-xl border border-slate-200/90 bg-white/95 shadow-lg backdrop-blur-sm">
+                {activeLayer === "county" ? (
+                  <MapLayerLegend
+                    items={[
+                      { color: "#eaf7ec", label: "Low yield" },
+                      { color: "#5bbf6e", label: "Moderate" },
+                      { color: "#2d7a3e", label: "High yield" },
+                    ]}
+                  />
+                ) : null}
+                {activeLayer === "plots" ? (
+                  <MapLayerLegend
+                    items={[
+                      { color: "#5bbf6e", label: "Clear" },
+                      { color: "#ef4444", label: "Flagged" },
+                      { color: "#9ca3af", label: "Pending" },
+                    ]}
+                  />
+                ) : null}
+                {activeLayer === "movement" ? (
+                  <MapLayerLegend items={[{ color: "#1a4422", label: "Lot corridor trace" }]} />
+                ) : null}
+              </div>
             </div>
-          ) : (
-            <>
-              {activeLayer === "county" && showCounty ? <CountyHeatmap embedded heightClass="h-[min(52vh,480px)]" /> : null}
-              {activeLayer === "plots" && showPlots ? <FarmPlotMap embedded heightClass="h-[min(52vh,480px)]" /> : null}
-              {activeLayer === "movement" && showMovement ? <MovementMap embedded heightClass="h-[min(52vh,480px)]" /> : null}
-            </>
-          )}
-        </div>
-      </DashboardPanel>
+
+            <div className="absolute right-4 top-4 z-20 w-[min(100%,240px)] rounded-xl border border-slate-200/90 bg-white/95 px-3 py-3 shadow-lg backdrop-blur-sm">
+              <SectionHeader kicker="GIS" title="Layer filters" subtitle={LAYERS.find((l) => l.id === activeLayer)?.description} />
+              <div className="mt-3 space-y-2 text-[12px] text-slate-700">
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={showCounty} onChange={(e) => setShowCounty(e.target.checked)} className="rounded border-slate-300" />
+                  County yield heatmap
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={showPlots} onChange={(e) => setShowPlots(e.target.checked)} className="rounded border-slate-300" />
+                  Farm plot polygons
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={showMovement} onChange={(e) => setShowMovement(e.target.checked)} className="rounded border-slate-300" />
+                  Movement routes
+                </label>
+              </div>
+              <MapTokenBadge ready={tokenReady} />
+            </div>
+
+            <div className="absolute bottom-4 left-4 right-4 z-20 flex flex-wrap gap-2 sm:right-auto">
+              <div className="rounded-lg border border-slate-200/90 bg-white/95 px-3 py-2 text-[11px] text-slate-700 shadow backdrop-blur-sm">
+                <span className="font-mono font-semibold text-forest-800">{PILOT_COUNTIES_ACTIVE.length}</span> pilot counties
+              </div>
+              <div className="rounded-lg border border-slate-200/90 bg-white/95 px-3 py-2 text-[11px] text-slate-700 shadow backdrop-blur-sm">
+                Engine · <span className="font-medium">{tokenReady ? "Mapbox LIVE" : "Fallback"}</span>
+              </div>
+            </div>
+
+            <div className="absolute inset-0 p-1">
+              {!layerVisible ? (
+                <div className="flex h-full min-h-[min(68vh,600px)] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/80 px-6 text-center">
+                  <p className="text-[13px] text-slate-600">Layer hidden — enable the checkbox above to restore the {activeLayer} surface.</p>
+                </div>
+              ) : (
+                <>
+                  {activeLayer === "county" && showCounty ? <CountyHeatmap embedded heightClass="h-[min(68vh,600px)]" /> : null}
+                  {activeLayer === "plots" && showPlots ? <FarmPlotMap embedded heightClass="h-[min(68vh,600px)]" /> : null}
+                  {activeLayer === "movement" && showMovement ? <MovementMap embedded heightClass="h-[min(68vh,600px)]" /> : null}
+                </>
+              )}
+            </div>
+          </div>
+        </DashboardPanel>
+      </div>
     </div>
   );
 }

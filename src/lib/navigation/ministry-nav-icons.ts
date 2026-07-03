@@ -1,0 +1,61 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  BarChart3,
+  Building2,
+  ClipboardCheck,
+  FileBarChart,
+  FileText,
+  Globe2,
+  LayoutDashboard,
+  Map,
+  MapPin,
+  Package,
+  Shield,
+  Truck,
+  Users,
+  Warehouse,
+  Wheat,
+} from "lucide-react";
+
+/** Icon map for ministry navigation — keyed by route href */
+export const MINISTRY_NAV_ICONS: Record<string, LucideIcon> = {
+  "/command-center": LayoutDashboard,
+  "/national-operations": Activity,
+  "/national-heat-map": Globe2,
+  "/workspace/clan": Users,
+  "/workspace/dao": ClipboardCheck,
+  "/workspace/cac": Building2,
+  "/workspace/ministry": Shield,
+  "/reporting": FileText,
+  "/reporting/workspace": FileBarChart,
+  "/verification-queue": ClipboardCheck,
+  "/alerts": AlertTriangle,
+  "/reports": BarChart3,
+  "/county-dashboard": Building2,
+  "/district-dashboard": MapPin,
+  "/field-agents": Users,
+  "/field/inspections": ClipboardCheck,
+  "/field/boundary-capture": MapPin,
+  "/geo-registry": Map,
+  "/map": Globe2,
+  "/logistics": Warehouse,
+  "/operations/warehouses": Warehouse,
+  "/transfers": Truck,
+  "/inventory": Package,
+  "/food-security": Wheat,
+  "/farmers": Users,
+  "/cooperatives": Building2,
+  "/farm-profiles": MapPin,
+  "/admin/users": Users,
+  "/admin/organizations": Building2,
+  "/activity": Activity,
+  "/compliance": Shield,
+  "/compliance/audit-log": FileText,
+  "/admin": Shield,
+};
+
+export function navIconForHref(href: string): LucideIcon {
+  return MINISTRY_NAV_ICONS[href] ?? FileText;
+}

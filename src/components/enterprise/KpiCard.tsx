@@ -29,9 +29,9 @@ export default function KpiCard({
         className,
       )}
     >
-      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">{label}</p>
-      <div className="mt-2 flex items-baseline gap-2">
-        <span className="font-display text-[1.65rem] font-semibold tabular-nums tracking-tight text-ink-900">{value}</span>
+      <p className="ent-label">{label}</p>
+      <div className="mt-2.5 flex items-baseline gap-2">
+        <span className="ent-metric">{value}</span>
         {delta ? <span className={cn("text-[12px] font-medium tabular-nums", deltaClass)}>{delta}</span> : null}
       </div>
       {hint ? <p className="mt-1.5 text-[12px] text-slate-500 leading-snug">{hint}</p> : null}

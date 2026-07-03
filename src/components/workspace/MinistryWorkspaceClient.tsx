@@ -21,6 +21,7 @@ import {
 } from "@/components/enterprise";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import WorkspaceQueuePanel from "@/components/workspace/WorkspaceQueuePanel";
+import MinistryExecutiveAnalytics from "@/components/intelligence/MinistryExecutiveAnalytics";
 import { QueueRow, QueuePrimaryLink } from "@/components/enterprise";
 
 export type MinistryWorkspaceMetrics = {
@@ -90,6 +91,8 @@ export default function MinistryWorkspaceClient({ metrics }: { metrics: Ministry
           <KpiCard label="Offline pending" value={nf(metrics.offlinePendingSync)} hint="Awaiting reconcile" />
         </Link>
       </div>
+
+      <MinistryExecutiveAnalytics metrics={metrics} />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <QuickActionCard

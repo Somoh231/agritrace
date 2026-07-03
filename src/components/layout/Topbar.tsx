@@ -72,11 +72,11 @@ export default function Topbar({
             <Menu className="h-5 w-5" />
           </button>
         ) : null}
-        <div className="text-[12px] min-w-0 border-l-2 border-[rgb(var(--ministry-gold))]/50 pl-3">
-          <div className="gov-kicker gov-kicker-gold truncate">{kicker}</div>
-          <div className="mt-1 font-serif-display text-[15px] leading-none text-slate-900 truncate">{title}</div>
+        <div className="text-[12px] min-w-0 border-l-[3px] border-[rgb(var(--ministry-gold))]/60 pl-3.5">
+          <div className="ent-label gov-kicker-gold truncate">{kicker}</div>
+          <div className="mt-1.5 ent-editorial text-[16px] leading-tight text-slate-900 truncate">{title}</div>
           {scopeLabel ? (
-            <div className="font-mono text-[9px] text-slate-500 truncate mt-1">Jurisdiction · {scopeLabel}</div>
+            <div className="font-mono text-[9px] tracking-wide text-slate-500 truncate mt-1.5">Jurisdiction · {scopeLabel}</div>
           ) : null}
         </div>
         <div className="hidden lg:flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 shrink-0">

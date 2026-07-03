@@ -22,6 +22,7 @@ import {
   StatusBadge,
   Timeline,
 } from "@/components/enterprise";
+import FoodSecurityAnalyticsPanels from "@/components/intelligence/FoodSecurityAnalyticsPanels";
 import { RegistryKpiStrip } from "@/components/registry";
 import { demoSource } from "@/lib/data/data-source";
 import {
@@ -83,6 +84,8 @@ export default function FoodSecurityClient() {
           Composite risk index at {fi.nationalRiskScore} — monitor county loss hotspots and verification backlog for supply anomalies.
         </AlertCard>
       ) : null}
+
+      <FoodSecurityAnalyticsPanels />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <DashboardPanel>

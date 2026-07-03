@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import DaoOfflineQueuePanel from "@/components/dao/DaoOfflineQueuePanel";
 import DaoTodaysTasksPanel from "@/components/dao/DaoTodaysTasksPanel";
+import DistrictCommandAnalytics from "@/components/intelligence/DistrictCommandAnalytics";
 import {
   AlertCard,
   DashboardPanel,
@@ -193,6 +194,8 @@ export default function DistrictOfficerDashboard({
             ) : null}
           </div>
         </DashboardPanel>
+
+        <DistrictCommandAnalytics online={online} />
 
         <DaoTodaysTasksPanel county={county} district={district} />
 

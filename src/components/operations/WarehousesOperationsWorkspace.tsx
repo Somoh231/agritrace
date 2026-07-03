@@ -13,6 +13,7 @@ import {
   StatusBadge,
 } from "@/components/enterprise";
 import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
+import WarehouseCommandAnalytics from "@/components/intelligence/WarehouseCommandAnalytics";
 import OperationDrawer from "@/components/operations/OperationDrawer";
 import RecordWarehouseForm from "@/components/operations/forms/RecordWarehouseForm";
 import { RegistryFilterBar, RegistryKpiStrip } from "@/components/registry";
@@ -163,6 +164,8 @@ export default function WarehousesOperationsWorkspace() {
           { label: "In view", value: String(filteredRows.length), hint: "Filtered rows" },
         ]}
       />
+
+      <WarehouseCommandAnalytics warehouseRows={rows} />
 
       <RegistryFilterBar
         search={search}

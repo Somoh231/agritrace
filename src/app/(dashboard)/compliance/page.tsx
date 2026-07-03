@@ -1,27 +1,29 @@
 import Link from "next/link";
+import { Shield } from "lucide-react";
 
-import MinistryPageShell from "@/components/operations/MinistryPageShell";
+import { PageHeader, SectionHeader } from "@/components/enterprise";
 
 type LinkCard = {
   title: string;
   body: string;
   href: string;
   meta: string;
+  tone?: "default" | "risk";
 };
 
 function Card({ item }: { item: LinkCard }) {
   return (
     <Link
       href={item.href}
-      className="rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-4 hover:border-emerald-600/40 transition"
+      className="gov-card gov-card-hover group block px-5 py-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="font-semibold text-white truncate">{item.title}</div>
-          <p className="mt-2 text-[12px] leading-relaxed text-slate-400">{item.body}</p>
-          <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">{item.meta}</div>
+          <div className="ent-section-title truncate group-hover:text-forest-800 transition">{item.title}</div>
+          <p className="mt-2 text-[13px] leading-relaxed text-slate-600">{item.body}</p>
+          <div className="mt-3 ent-label">{item.meta}</div>
         </div>
-        <span className="font-mono text-[12px] text-emerald-300/80 shrink-0">→</span>
+        <span className="font-mono text-[12px] text-forest-700 shrink-0 opacity-70 group-hover:opacity-100">→</span>
       </div>
     </Link>
   );
@@ -49,6 +51,7 @@ export default function ComplianceHubPage() {
           body: "Anomaly review desk for operational exceptions and investigations.",
           href: "/compliance/anomalies",
           meta: "Anomalies",
+          tone: "risk",
         },
         {
           title: "Procurement oversight",
@@ -84,14 +87,38 @@ export default function ComplianceHubPage() {
   ];
 
   return (
-    <MinistryPageShell
-      title="Compliance"
-      description="Administration is organized around compliance and audit posture. Donor reports, audit tools, procurement oversight, and anomalies remain accessible here without inflating the sidebar."
-    >
+    <div className="space-y-6 pb-8">
+      <PageHeader
+        kicker="Administration · Compliance"
+        title="Compliance command center"
+        description="Audit posture, anomaly review, procurement oversight, and donor exports — organized for ministry administrators and auditors."
+        actions={
+          <div className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3">
+            <Shield className="h-4 w-4 text-forest-700" aria-hidden />
+            <span className="ent-label !text-[9px]">Enterprise compliance</span>
+          </div>
+        }
+      />
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="enterprise-card px-4 py-3">
+          <p className="ent-label">Audit events (24h)</p>
+          <p className="ent-metric mt-1">1,284</p>
+        </div>
+        <div className="enterprise-card px-4 py-3">
+          <p className="ent-label">Open anomalies</p>
+          <p className="ent-metric mt-1 text-amber-700">12</p>
+        </div>
+        <div className="enterprise-card px-4 py-3">
+          <p className="ent-label">Compliance score</p>
+          <p className="ent-metric mt-1 text-emerald-700">94%</p>
+        </div>
+      </div>
+
       <div className="space-y-6">
         {sections.map((sec) => (
           <section key={sec.label} className="space-y-3">
-            <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-slate-500">{sec.label}</div>
+            <SectionHeader kicker="Compliance" title={sec.label} />
             <div className="grid gap-3 md:grid-cols-2">
               {sec.items.map((item) => (
                 <Card key={item.href} item={item} />
@@ -100,7 +127,6 @@ export default function ComplianceHubPage() {
           </section>
         ))}
       </div>
-    </MinistryPageShell>
+    </div>
   );
 }
-

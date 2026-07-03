@@ -13,6 +13,7 @@ import {
   SectionHeader,
 } from "@/components/enterprise";
 import LogisticsNetworkMap from "@/components/logistics/LogisticsNetworkMap";
+import WarehouseCommandAnalytics from "@/components/intelligence/WarehouseCommandAnalytics";
 import { RegistryKpiStrip } from "@/components/registry";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import { liveSource, pilotSource, resolveDisplaySource } from "@/lib/data/data-source";
@@ -146,6 +147,8 @@ export default function LogisticsCommandCenter() {
           { label: "Expiry watch (90d)", value: String(expiryRisk), hint: "SKU lots in window", deltaTone: expiryRisk ? "down" : "up" },
         ]}
       />
+
+      <WarehouseCommandAnalytics transfers={transfers} />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <DashboardPanel className="lg:col-span-2">

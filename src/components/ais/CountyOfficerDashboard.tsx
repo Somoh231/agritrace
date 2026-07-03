@@ -11,6 +11,7 @@ import CaoDaoOversightGrid from "@/components/cao/CaoDaoOversightGrid";
 import CaoDistrictPerformance from "@/components/cao/CaoDistrictPerformance";
 import CaoKpiStrip from "@/components/cao/CaoKpiStrip";
 import CaoReportingSection from "@/components/cao/CaoReportingSection";
+import CountyIntelligenceAnalytics from "@/components/intelligence/CountyIntelligenceAnalytics";
 import {
   AlertCard,
   DashboardPanel,
@@ -261,6 +262,8 @@ export default function CountyOfficerDashboard({
             <QuickActionCard href="/operations/warehouses" icon={Warehouse} title="Warehouse oversight" description="Custody posture and replenishment signals." />
           </div>
         ) : null}
+
+        {!assignmentGap ? <CountyIntelligenceAnalytics county={county} /> : null}
 
         {!assignmentGap ? (
           <DashboardPanel>

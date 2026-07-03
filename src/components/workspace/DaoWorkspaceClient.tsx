@@ -16,6 +16,7 @@ import {
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import LiveQueueStat from "@/components/workspace/LiveQueueStat";
+import DaoMonitoringAnalytics from "@/components/intelligence/DaoMonitoringAnalytics";
 import WorkspaceQueuePanel from "@/components/workspace/WorkspaceQueuePanel";
 import { QueueRow, QueuePrimaryLink } from "@/components/enterprise";
 import WorkflowReviewPanel from "@/components/workflow/WorkflowReviewPanel";
@@ -65,6 +66,8 @@ export default function DaoWorkspaceClient({ role }: { role: UserRole }) {
           description="CLAN capture cadence, coverage, and active officers."
         />
       </div>
+
+      <DaoMonitoringAnalytics />
 
       <AlertCard tone="info" title="District review posture">
         Prioritize pending CLAN captures and inspection outcomes. Request corrections when evidence is incomplete — consolidated reports flow to the County Agriculture Coordinator (CAC) for verification.

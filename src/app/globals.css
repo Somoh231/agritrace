@@ -55,6 +55,13 @@
   --enterprise-muted: 100 116 139;
 
   --font-serif: var(--font-serif-display), Georgia, "Times New Roman", serif;
+  --font-editorial: var(--font-editorial), Fraunces, Georgia, serif;
+
+  /* Enterprise typography rhythm */
+  --ent-tracking-tight: -0.02em;
+  --ent-tracking-label: 0.14em;
+  --ent-leading-body: 1.6;
+  --ent-leading-heading: 1.25;
 }
 
 .ministry-shell-sidebar {
@@ -84,7 +91,53 @@
 }
 
 .enterprise-table tbody td {
-  @apply px-3 py-2.5 text-slate-800;
+  @apply px-3 py-2.5 text-slate-800 leading-relaxed;
+}
+
+/* Premium enterprise typography primitives */
+.ent-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: var(--ent-tracking-label);
+  color: rgb(100 116 139);
+}
+.ent-metric {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: var(--ent-tracking-tight);
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--text));
+  line-height: 1.1;
+}
+.ent-section-title {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: var(--ent-leading-heading);
+  color: rgb(var(--text));
+}
+.ent-editorial {
+  font-family: var(--font-editorial);
+  letter-spacing: -0.02em;
+}
+.ent-nav-section {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: rgb(var(--ministry-gold) / 0.85);
+  font-weight: 500;
+}
+.ent-nav-item {
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
 }
 
 /* Institutional command-center primitives */
@@ -205,7 +258,11 @@ body {
   color: rgb(var(--text-muted));
   background: rgb(var(--surface));
   font-family: var(--font-body);
-  letter-spacing: -0.01em;
+  font-size: 14px;
+  line-height: var(--ent-leading-body);
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
