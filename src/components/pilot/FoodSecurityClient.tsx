@@ -2,14 +2,31 @@
 
 import * as React from "react";
 import Link from "next/link";
+import {
+  AlertTriangle,
+  Bell,
+  ClipboardCheck,
+  Map,
+  ShieldAlert,
+  TrendingDown,
+  Wheat,
+} from "lucide-react";
 
 import {
+  AlertCard,
+  DashboardPanel,
+  PageHeader,
+  QuickActionCard,
+  SectionHeader,
+  StatusBadge,
+  Timeline,
+} from "@/components/enterprise";
+import { RegistryKpiStrip } from "@/components/registry";
+import {
+  countyProductionPerformance,
   foodSecurityIndicators,
   postHarvestLossAlerts,
-  countyProductionPerformance,
 } from "@/lib/demo/agriculture-pilot-data";
-
-import { OpsCard, OpsMetric } from "@/components/pilot/pilot-ui";
 
 export default function FoodSecurityClient() {
   const fi = foodSecurityIndicators;
@@ -22,134 +39,168 @@ export default function FoodSecurityClient() {
       ).toFixed(1)
     : "0";
   const countiesAtRisk = postHarvestLossAlerts.length;
+  const nf = (n: number) => Intl.NumberFormat().format(n);
+
+  const riskTone = (lossPct: number) => (lossPct >= 15 ? "danger" : lossPct >= 10 ? "warning" : "info");
 
   return (
-    <div className="space-y-6">
-      <header className="mb-2 border-b border-slate-200 pb-4">
-        <div className="gov-kicker gov-kicker-gold">National intelligence</div>
-        <h1 className="mt-2 font-serif-display text-[28px] md:text-[32px] font-semibold tracking-tight text-slate-900">
-          Food security command layer
-        </h1>
-        <p className="mt-2 max-w-[840px] text-[13px] text-slate-600 leading-relaxed">
-          Demand modeling, county vulnerability, seasonal deltas, and operational loss posture — unified for ministry executives.
-        </p>
-      </header>
+    <div className="space-y-6 pb-8">
+      <PageHeader
+        kicker="National intelligence · Early warning"
+        title="Food security command layer"
+        description="Demand modeling, county vulnerability, seasonal deltas, and operational loss posture — unified for ministry executives and county early-warning desks."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Link href="/national-heat-map" className="btn-gov-outline inline-flex h-10 items-center gap-2 rounded-lg px-4 text-[12px]">
+              <Map className="h-4 w-4" aria-hidden />
+              County heat map
+            </Link>
+            <Link href="/alerts" className="inline-flex h-10 items-center gap-2 rounded-lg btn-emerald px-4 text-[12px] font-semibold">
+              <Bell className="h-4 w-4" aria-hidden />
+              Escalations desk
+            </Link>
+          </div>
+        }
+      />
 
-      <div className="gov-kicker">National status</div>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
-        <OpsMetric label="Indicative rice demand" value={`${Intl.NumberFormat().format(fi.riceDemandMt)} t`} tone="navy" />
-        <OpsMetric label="Domestic production (est.)" value={`${Intl.NumberFormat().format(fi.domesticProductionMt)} t`} tone="forest" />
-        <OpsMetric label="Supply coverage (modeled)" value={`${coveragePct}%`} tone="amber" />
-        <OpsMetric label="National risk index" value={String(fi.nationalRiskScore)} tone="rose" />
-        <OpsMetric label="Avg post-harvest loss" value={`${avgLoss}%`} tone="amber" />
-        <OpsMetric label="Counties at risk" value={String(countiesAtRisk)} tone="rose" />
+      <RegistryKpiStrip
+        items={[
+          { label: "Indicative rice demand", value: `${nf(fi.riceDemandMt)} t`, hint: "National modeled demand" },
+          { label: "Domestic production", value: `${nf(fi.domesticProductionMt)} t`, hint: "Estimated output", deltaTone: "up" },
+          { label: "Supply coverage", value: `${coveragePct}%`, hint: "Modeled domestic share", deltaTone: Number(coveragePct) < 80 ? "down" : "up" },
+          { label: "National risk index", value: String(fi.nationalRiskScore), hint: "Composite early-warning score", deltaTone: fi.nationalRiskScore > 60 ? "down" : "neutral" },
+          { label: "Avg post-harvest loss", value: `${avgLoss}%`, hint: "Pilot county average", deltaTone: Number(avgLoss) > 10 ? "down" : "up" },
+          { label: "Counties at risk", value: String(countiesAtRisk), hint: "Loss threshold breach", href: "/national-heat-map", deltaTone: countiesAtRisk > 0 ? "down" : "up" },
+        ]}
+      />
+
+      {fi.nationalRiskScore > 55 ? (
+        <AlertCard tone="warning" title="Elevated national risk posture" action={<Link href="/alerts" className="text-[12px] font-medium text-amber-900 hover:underline">Review escalations →</Link>}>
+          Composite risk index at {fi.nationalRiskScore} — monitor county loss hotspots and verification backlog for supply anomalies.
+        </AlertCard>
+      ) : null}
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <DashboardPanel>
+          <SectionHeader kicker="Status" title="Import dependency modeling" subtitle="Domestic deficit scenarios benchmark against trade corridors" />
+          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+            <p className="font-mono text-[11px] text-slate-600">
+              Trend vector · <span className="font-medium text-amber-800">{fi.importDependencyTrend}</span>
+            </p>
+          </div>
+          <p className="mt-3 text-[13px] leading-relaxed text-slate-600">
+            Coefficients remain configurable by ministry statute. Trade corridor overlays publish when integrations are enabled.
+          </p>
+        </DashboardPanel>
+
+        <DashboardPanel>
+          <SectionHeader kicker="Status" title="Production gap analysis" subtitle="DAO reporting cadence reconciled with warehouse releases" />
+          <AlertCard tone="success" title="Seasonal comparison">
+            {fi.countyForecastNote}
+          </AlertCard>
+          <p className="mt-3 text-[13px] leading-relaxed text-slate-600">
+            Gap diagnostics reconcile DAO reporting cadence with warehouse releases and seasonal planting telemetry.
+          </p>
+        </DashboardPanel>
       </div>
 
-      <OpsCard>
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div>
-            <div className="font-serif-display text-[16px] font-semibold text-slate-900">Import dependency modeling</div>
-            <p className="mt-2 text-[12px] text-slate-600 leading-relaxed">
-              Domestic deficit scenarios benchmark against trade corridors and strategic reserves. Coefficients remain configurable by ministry statute.
-            </p>
-            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-[12px] text-slate-700">
-              Trend vector · <span className="text-amber-700 font-medium">{fi.importDependencyTrend}</span>
-            </div>
-          </div>
-          <div>
-            <div className="font-serif-display text-[16px] font-semibold text-slate-900">Production gap analysis</div>
-            <p className="mt-3 text-[12px] text-slate-600 leading-relaxed">
-              Gap diagnostics reconcile DAO reporting cadence with warehouse releases and seasonal planting telemetry.
-            </p>
-            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-              <div className="text-[11px] text-emerald-700 uppercase tracking-wide font-mono">Seasonal comparison</div>
-              <div className="mt-2 text-[13px] text-emerald-900">{fi.countyForecastNote}</div>
-            </div>
-          </div>
-        </div>
-      </OpsCard>
-
-      <div className="gov-kicker">Risk &amp; hotspots</div>
-      <OpsCard>
-        <div className="font-serif-display text-[16px] font-semibold text-slate-900">County vulnerability heat · loss-adjusted</div>
+      <DashboardPanel>
+        <SectionHeader
+          kicker="Risk"
+          title="County vulnerability heat"
+          subtitle="Loss-adjusted production posture across pilot counties"
+        />
         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
           {heat.map((c) => (
             <div
               key={c.county}
-              className="rounded-lg border border-slate-200 bg-white px-2 py-2 text-center font-mono text-[11px]"
+              className="rounded-xl border border-slate-200 bg-white px-2 py-3 text-center shadow-sm"
               style={{
-                boxShadow: `inset 0 0 0 2px rgba(244,63,94,${Math.min(0.06 + c.lossPct / 200, 0.3)})`,
+                boxShadow: `inset 0 0 0 2px rgba(244,63,94,${Math.min(0.04 + c.lossPct / 200, 0.25)})`,
               }}
             >
-              <div className="font-semibold text-slate-900">{c.county}</div>
-              <div className="text-slate-500">{c.lossPct}% loss</div>
+              <div className="text-[12px] font-semibold text-ink-900">{c.county}</div>
+              <div className="mt-1">
+                <StatusBadge tone={riskTone(c.lossPct)}>{c.lossPct}% loss</StatusBadge>
+              </div>
             </div>
           ))}
         </div>
-        <Link href="/map" className="mt-4 inline-block text-[12px] font-medium text-emerald-700 hover:underline">
+        <Link href="/map" className="mt-4 inline-flex text-[12px] font-medium text-forest-700 hover:underline">
           Geospatial workspace →
         </Link>
-      </OpsCard>
+      </DashboardPanel>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <OpsCard>
-          <div className="font-serif-display text-[16px] font-semibold text-slate-900">Yield forecasting & rainfall correlation</div>
-          <p className="mt-2 text-[12px] text-slate-600 leading-relaxed">
-            Forecast ensembles ingest agronomic surveys and meteorological feeds when integrations are enabled. Correlation matrices publish alongside DAO verification batches.
-          </p>
-          <div className="mt-4 rounded-lg border border-dashed border-slate-300 px-3 py-3 text-[11px] text-slate-500 font-mono">
-            Precipitation anomaly overlays ship with Phase 2 meteorological connectors.
+        <DashboardPanel>
+          <SectionHeader kicker="Risk" title="Yield forecasting & rainfall correlation" subtitle="Forecast ensembles when meteorological connectors are enabled" />
+          <div className="mt-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/80 px-4 py-3 text-[12px] text-slate-600">
+            Precipitation anomaly overlays ship with Phase 2 meteorological connectors. Correlation matrices publish alongside DAO verification batches.
           </div>
-        </OpsCard>
-        <OpsCard>
-          <div className="font-serif-display text-[16px] font-semibold text-slate-900">Emergency escalation hotspots</div>
-          <div className="mt-3 grid gap-2">
-            {postHarvestLossAlerts.map((a) => (
-              <div key={a.id} className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
-                <div className="text-[12px] font-semibold text-amber-900">{a.county}</div>
-                <div className="text-[11px] text-amber-700">
-                  {a.lossPct}% · {a.driver}
-                </div>
-              </div>
-            ))}
+        </DashboardPanel>
+
+        <DashboardPanel>
+          <SectionHeader kicker="Risk" title="Emergency escalation hotspots" subtitle="Counties breaching post-harvest loss thresholds" />
+          <div className="mt-4 space-y-2">
+            {postHarvestLossAlerts.length === 0 ? (
+              <p className="text-[13px] text-slate-600">No active loss hotspots in pilot scope.</p>
+            ) : (
+              postHarvestLossAlerts.map((a) => (
+                <AlertCard key={a.id} tone="warning" title={a.county}>
+                  <span className="flex items-center gap-1.5">
+                    <TrendingDown className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    {a.lossPct}% · {a.driver}
+                  </span>
+                </AlertCard>
+              ))
+            )}
           </div>
-        </OpsCard>
+        </DashboardPanel>
       </div>
 
-      <div className="gov-kicker">Required action</div>
-      <OpsCard>
-        <div className="grid gap-3 md:grid-cols-3">
-          <Link
+      <DashboardPanel>
+        <SectionHeader kicker="Required action" title="Operational routing" subtitle="Route early-warning signals to county and ministry desks" />
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <QuickActionCard
             href="/alerts"
-            className="group rounded-xl border border-rose-200 bg-rose-50 px-4 py-3.5 transition hover:bg-rose-100/70"
-          >
-            <div className="font-serif-display text-[15px] font-semibold text-rose-900">Escalations & incidents</div>
-            <p className="mt-1.5 text-[12px] text-rose-700 leading-relaxed">Route unresolved early-warning signals to county and ministry desks.</p>
-            <span className="mt-2 inline-flex text-[12px] font-medium text-rose-700 transition group-hover:translate-x-0.5">Open alerts →</span>
-          </Link>
-          <Link
+            icon={AlertTriangle}
+            title="Escalations & incidents"
+            description="Route unresolved early-warning signals to county and ministry desks."
+          />
+          <QuickActionCard
             href="/verification-queue"
-            className="group rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 transition hover:bg-amber-100/70"
-          >
-            <div className="font-serif-display text-[15px] font-semibold text-amber-900">Verification queue</div>
-            <p className="mt-1.5 text-[12px] text-amber-700 leading-relaxed">Clear DAO/CAC verification items tied to loss and supply anomalies.</p>
-            <span className="mt-2 inline-flex text-[12px] font-medium text-amber-700 transition group-hover:translate-x-0.5">Open queue →</span>
-          </Link>
-          <Link
+            icon={ClipboardCheck}
+            title="Verification queue"
+            description="Clear DAO/CAC verification items tied to loss and supply anomalies."
+          />
+          <QuickActionCard
             href="/national-heat-map"
-            className="group rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 transition hover:bg-emerald-100/70"
-          >
-            <div className="font-serif-display text-[15px] font-semibold text-emerald-900">County heat map</div>
-            <p className="mt-1.5 text-[12px] text-emerald-700 leading-relaxed">Inspect county-level vulnerability and production signals on the map.</p>
-            <span className="mt-2 inline-flex text-[12px] font-medium text-emerald-700 transition group-hover:translate-x-0.5">View map →</span>
-          </Link>
+            icon={ShieldAlert}
+            title="County heat map"
+            description="Inspect county-level vulnerability and production signals on the map."
+          />
         </div>
-      </OpsCard>
+      </DashboardPanel>
 
-      <OpsCard dense>
-        <div className="font-medium text-slate-900">Market intelligence brief</div>
-        <p className="mt-2 text-[12px] text-slate-600">{fi.marketPriceWatch}</p>
-      </OpsCard>
+      <DashboardPanel>
+        <SectionHeader kicker="Recent activity" title="Market intelligence brief" subtitle="Illustrative pilot price watch band" />
+        <div className="mt-4 flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-700 ring-1 ring-forest-100">
+            <Wheat className="h-5 w-5" aria-hidden />
+          </div>
+          <p className="text-[13px] leading-relaxed text-slate-700">{fi.marketPriceWatch}</p>
+        </div>
+        <Timeline
+          className="mt-4"
+          items={postHarvestLossAlerts.map((a, i) => ({
+            id: a.id,
+            title: `${a.county} loss signal`,
+            meta: a.driver,
+            time: `T-${i + 1}d`,
+            tone: a.lossPct > 12 ? "danger" : "warning",
+          }))}
+        />
+      </DashboardPanel>
     </div>
   );
 }

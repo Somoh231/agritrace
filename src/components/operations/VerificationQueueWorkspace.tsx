@@ -4,11 +4,29 @@ import * as React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { ClipboardList, Map } from "lucide-react";
 
+import {
+  AlertCard,
+  DashboardPanel,
+  EmptyState,
+  PageHeader,
+  SectionHeader,
+  StatusBadge,
+} from "@/components/enterprise";
 import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
-import MinistryPageShell from "@/components/operations/MinistryPageShell";
 import OperationalWorkflowButton from "@/components/operations/OperationalWorkflowButton";
 import { OperationalRiskChipRow } from "@/components/operations/OperationalRiskChip";
+import { RegistryKpiStrip } from "@/components/registry";
+import VerificationReviewPanel from "@/components/verification/VerificationReviewPanel";
+import VerificationStatusPipeline from "@/components/verification/VerificationStatusPipeline";
+import {
+  buildVerificationStatusCounts,
+  fmtVerificationStatus,
+  verificationOperationalContext,
+  verificationPriorityTone,
+  verificationStatusTone,
+} from "@/components/verification/verification-workspace-utils";
 import { useVerificationQueue } from "@/features/verification/hooks/use-verification-queue";
 import type {
   VerificationGridRow,
@@ -19,44 +37,10 @@ import { useOperationalActor } from "@/lib/ops/operational-actor-context";
 import {
   canPerform,
   explainPermission,
-  type OperationalPermissionContext,
   type OperationalWorkflowAction,
 } from "@/lib/ops/permissions";
 import { postVerificationWorkflow } from "@/lib/ops/workflow-api-client";
 import { operationalQueryKeys } from "@/platform/query-keys";
-
-function fmtStatus(s: VerificationQueueStatus): string {
-  return s.replace(/_/g, " ");
-}
-
-function AuditTimelineStrip({ events }: { events: VerificationQueueDetail["auditTimeline"] }) {
-  return (
-    <div className="rounded-lg border border-slate-700/80 bg-black/25 p-3">
-      <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Audit timeline</div>
-      <ol className="mt-2 space-y-2 border-l border-slate-700 pl-3">
-        {events.map((e, i) => (
-          <li key={`${e.at}-${i}`} className="relative text-[11px] text-slate-400">
-            <span className="absolute -left-[17px] top-1.5 h-2 w-2 rounded-full bg-emerald-600/80 ring-2 ring-slate-950" aria-hidden />
-            <span className="font-mono text-[10px] text-slate-500">{new Date(e.at).toISOString().slice(0, 16).replace("T", " ")}</span>
-            <span className="text-slate-600"> · </span>
-            <span className="text-slate-300">{e.actor}</span>
-            <span className="text-slate-600"> ({e.stage})</span>
-            <div className="mt-0.5 text-slate-500">{e.note}</div>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
-function verificationContext(row: VerificationGridRow): OperationalPermissionContext {
-  return {
-    rowCounty: String(row.county),
-    verificationSubmissionType: row._detail.submissionType,
-    verificationStatus: row._detail.status,
-    relatedWarehouseMinistryCode: row._detail.relatedWarehouse,
-  };
-}
 
 export default function VerificationQueueWorkspace() {
   const searchParams = useSearchParams();
@@ -73,6 +57,11 @@ export default function VerificationQueueWorkspace() {
     [rows, countyFilter],
   );
 
+  const statusCounts = React.useMemo(() => buildVerificationStatusCounts(rows), [rows]);
+  const pendingReview = rows.filter((r) => r._detail.status === "pending" || r._detail.status === "under_review").length;
+  const escalated = rows.filter((r) => r._detail.status === "escalated").length;
+  const critical = rows.filter((r) => r._detail.priority === "critical").length;
+
   const patchDetail = React.useCallback(
     (id: string, fn: (d: VerificationQueueDetail) => VerificationQueueDetail) => {
       queryClient.setQueryData<VerificationGridRow[]>(operationalQueryKeys.verification.queue(), (prev) =>
@@ -81,7 +70,7 @@ export default function VerificationQueueWorkspace() {
           const d = fn({ ...r._detail });
           return {
             ...r,
-            status: fmtStatus(d.status),
+            status: fmtVerificationStatus(d.status),
             verificationAge: r.verificationAge,
             posture: d.chips.map((c) => c.replace(/_/g, " ")).join(" · ") || "—",
             _detail: d,
@@ -101,7 +90,7 @@ export default function VerificationQueueWorkspace() {
     ) => {
       const row = rows.find((r) => r.id === id);
       if (!row) return;
-      const vctx = verificationContext(row);
+      const vctx = verificationOperationalContext(row);
       const permByUi: Record<typeof action, OperationalWorkflowAction> = {
         approve: "verification.approve",
         reject: "verification.reject",
@@ -181,13 +170,25 @@ export default function VerificationQueueWorkspace() {
       key: "timestamp",
       header: "Timestamp",
       render: (row) => (
-        <span className="font-mono text-[10px] text-slate-300">{String(row.timestamp).replace("T", " ").slice(0, 19)}</span>
+        <span className="font-mono text-[10px] text-slate-600">{String(row.timestamp).replace("T", " ").slice(0, 19)}</span>
       ),
     },
-    { key: "priority", header: "Priority" },
-    { key: "status", header: "Status" },
-    { key: "verificationAge", header: "Verification age" },
-    { key: "assignedReviewer", header: "Assigned reviewer" },
+    {
+      key: "priority",
+      header: "Priority",
+      render: (row) => (
+        <StatusBadge tone={verificationPriorityTone(String(row.priority))}>{String(row.priority)}</StatusBadge>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (row) => (
+        <StatusBadge tone={verificationStatusTone(row._detail.status)}>{String(row.status)}</StatusBadge>
+      ),
+    },
+    { key: "verificationAge", header: "Age" },
+    { key: "assignedReviewer", header: "Reviewer" },
     {
       key: "posture",
       header: "Risk / posture",
@@ -215,191 +216,122 @@ export default function VerificationQueueWorkspace() {
   const exportAllowed = canPerform(actor, "donor.export_audit_bundle");
 
   return (
-    <MinistryPageShell
-      title="Verification queue"
-      description="National coordination queue — farmer registry, DAO inspections, subsidy attestations, warehouse transfer confirmations, donor manifests, and GPS reconciliation. Expand rows for audit posture, workflow routing, and reviewer actions."
-      actions={
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/map"
-            className="h-9 rounded-lg border border-slate-600 bg-slate-950 px-3 text-[12px] text-slate-200 hover:bg-slate-900 inline-flex items-center"
-          >
-            Operational map
-          </Link>
-          <OperationalWorkflowButton
-            allowed={exportAllowed}
-            disabledReason={explainPermission(actor, "donor.export_audit_bundle")}
-            onClick={exportAuditBundle}
-            className="h-9 rounded-lg border border-slate-600 bg-slate-950 px-3 text-[12px] text-slate-200 hover:bg-slate-900"
-          >
-            Export audit JSON
-          </OperationalWorkflowButton>
-        </div>
-      }
-    >
-      {actor.role === "donor_observer" ?
-        <div className="rounded-lg border border-slate-700 bg-slate-950/70 px-4 py-2 text-[11px] text-slate-400">
-          Donor observer posture — queue visibility read-only; workflow mutations require ministry or county custody roles.
-        </div>
-      : null}
+    <div className="space-y-6 pb-8">
+      <PageHeader
+        kicker="Operational review · National coordination"
+        title="Verification queue"
+        description="National coordination queue — farmer registry, DAO inspections, subsidy attestations, warehouse transfer confirmations, donor manifests, and GPS reconciliation. Expand rows for audit posture, workflow routing, and reviewer actions."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Link href="/map" className="btn-gov-outline inline-flex h-10 items-center gap-2 rounded-lg px-4 text-[12px]">
+              <Map className="h-4 w-4" aria-hidden />
+              Operational map
+            </Link>
+            <OperationalWorkflowButton
+              allowed={exportAllowed}
+              disabledReason={explainPermission(actor, "donor.export_audit_bundle")}
+              onClick={exportAuditBundle}
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-[12px] font-medium text-slate-700 hover:bg-slate-50"
+            >
+              <ClipboardList className="h-4 w-4" aria-hidden />
+              Export audit JSON
+            </OperationalWorkflowButton>
+          </div>
+        }
+      />
 
-      {workflowErr ?
-        <div className="rounded-lg border border-rose-900/45 bg-rose-950/25 px-4 py-2 text-[11px] text-rose-100">
-          {workflowErr}
-        </div>
-      : null}
-
-      {countyFilter ? (
-        <div className="rounded-lg border border-slate-700 bg-slate-950/60 px-4 py-2 font-mono text-[11px] text-slate-400">
-          County scope: <span className="text-emerald-300">{countyFilter}</span> ·{" "}
-          <Link href="/verification-queue" className="text-emerald-400 hover:text-emerald-300">
-            Clear filter
-          </Link>
-        </div>
+      {actor.role === "donor_observer" ? (
+        <AlertCard tone="info" title="Donor observer posture">
+          Queue visibility is read-only; workflow mutations require ministry or county custody roles.
+        </AlertCard>
       ) : null}
 
-      {isError ?
-        <div className="rounded-lg border border-rose-900/40 bg-rose-950/20 px-4 py-3 text-[12px] text-rose-100">
-          Verification ledger unavailable — {error instanceof Error ? error.message : "unknown error"}.
-        </div>
-      : null}
-      {isPending ?
-        <div className="rounded-lg border border-slate-700 bg-slate-950/60 px-4 py-2 font-mono text-[11px] text-slate-500">
-          Loading unified verification ledger…
-        </div>
-      : null}
+      {workflowErr ? <AlertCard tone="danger" title="Workflow error">{workflowErr}</AlertCard> : null}
 
-      <EnterpriseDataGrid<VerificationGridRow>
-        title="Unified verification ledger"
-        rows={filteredRows}
-        columns={columns}
-        filename="verification-queue.csv"
-        dense
-        stickyHeader
-        groupHeaderKey="county"
-        groupHeaderTitle="County"
-        getRowKey={(row) => String(row.id)}
-        toolbar={
-          <span className="text-[11px] text-slate-500">
-            {filteredRows.length} artefacts in scope · grouped by county · institutional dense mode
-          </span>
-        }
-        renderExpanded={(row) => {
-          const d = row._detail;
-          const reviewer = String(row.assignedReviewer ?? "Reviewer");
-          const vctx = verificationContext(row);
+      {countyFilter ? (
+        <AlertCard tone="info" title="County scope filter">
+          Showing artefacts for <strong>{countyFilter}</strong>.{" "}
+          <Link href="/verification-queue" className="font-medium text-forest-700 hover:underline">
+            Clear filter
+          </Link>
+        </AlertCard>
+      ) : null}
 
-          return (
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-              <div className="space-y-3">
-                <div>
-                  <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">Operational narrative</div>
-                  <p className="mt-1 text-[12px] leading-relaxed text-slate-300">{d.narrativeSummary}</p>
-                  <p className="mt-2 font-mono text-[10px] text-slate-500">{d.routingCaption}</p>
-                </div>
-                <AuditTimelineStrip events={d.auditTimeline} />
-                <div className="rounded-lg border border-slate-700/80 bg-black/20 p-3">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Submission metadata</div>
-                  <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11px] text-slate-400">
-                    {Object.entries(d.metadata).map(([k, v]) => (
-                      <React.Fragment key={k}>
-                        <dt className="text-slate-600">{k}</dt>
-                        <dd className="text-slate-300">{v}</dd>
-                      </React.Fragment>
-                    ))}
-                  </dl>
-                </div>
-                <div className="rounded-lg border border-slate-700/80 bg-black/20 p-3">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Attachments (placeholders)</div>
-                  <ul className="mt-2 list-inside list-disc text-[11px] text-slate-500">
-                    {d.attachmentPlaceholders.map((a) => (
-                      <li key={a} className="font-mono">
-                        {a}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="rounded-lg border border-emerald-900/40 bg-emerald-950/15 p-3">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-500/80">AI operational summary</div>
-                  <p className="mt-2 text-[11px] leading-relaxed text-slate-400">{d.aiSummary}</p>
-                </div>
-                <div className="rounded-lg border border-slate-700/80 bg-black/25 p-3">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Custody & linkage</div>
-                  <div className="mt-2 text-[11px] text-slate-400">
-                    Related warehouse:{" "}
-                    {d.relatedWarehouse ? (
-                      <Link href={`/inventory/warehouse/${encodeURIComponent(d.relatedWarehouse)}`} className="font-mono text-emerald-400 hover:text-emerald-300">
-                        {d.relatedWarehouse}
-                      </Link>
-                    ) : (
-                      "—"
-                    )}
-                  </div>
-                  <div className="mt-2 text-[11px] text-slate-400">
-                    Linked farmers:{" "}
-                    <span className="font-mono text-slate-300">{d.linkedFarmers.length ? d.linkedFarmers.join(", ") : "—"}</span>
-                  </div>
-                  <ul className="mt-2 space-y-1 text-[11px] text-slate-500">
-                    {d.operationalNotes.map((n) => (
-                      <li key={n}>• {n}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="rounded-lg border border-slate-700/80 bg-slate-950/60 p-3">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Workflow actions</div>
-                  <p className="mt-1 text-[10px] text-slate-600">
-                    DAO → CAC → Ministry patterns enforced via reviewer attribution and audit_log inserts (best-effort).
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    <OperationalWorkflowButton
-                      allowed={canPerform(actor, "verification.approve", vctx)}
-                      disabledReason={explainPermission(actor, "verification.approve", vctx)}
-                      onClick={() => void runAction(String(row.id), "approve", reviewer)}
-                      className="rounded-md border border-emerald-800/50 bg-emerald-950/40 px-2 py-1 text-[10px] text-emerald-100 hover:bg-emerald-950/60"
-                    >
-                      Approve
-                    </OperationalWorkflowButton>
-                    <OperationalWorkflowButton
-                      allowed={canPerform(actor, "verification.reject", vctx)}
-                      disabledReason={explainPermission(actor, "verification.reject", vctx)}
-                      onClick={() => void runAction(String(row.id), "reject", reviewer)}
-                      className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] text-slate-200 hover:bg-slate-800"
-                    >
-                      Reject
-                    </OperationalWorkflowButton>
-                    <OperationalWorkflowButton
-                      allowed={canPerform(actor, "verification.escalate", vctx)}
-                      disabledReason={explainPermission(actor, "verification.escalate", vctx)}
-                      onClick={() => void runAction(String(row.id), "escalate", reviewer)}
-                      className="rounded-md border border-orange-900/45 bg-orange-950/25 px-2 py-1 text-[10px] text-orange-100 hover:bg-orange-950/40"
-                    >
-                      Escalate
-                    </OperationalWorkflowButton>
-                    <OperationalWorkflowButton
-                      allowed={canPerform(actor, "verification.request_revision", vctx)}
-                      disabledReason={explainPermission(actor, "verification.request_revision", vctx)}
-                      onClick={() => void runAction(String(row.id), "revision", reviewer)}
-                      className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] text-slate-200 hover:bg-slate-800"
-                    >
-                      Request revision
-                    </OperationalWorkflowButton>
-                    <OperationalWorkflowButton
-                      allowed={canPerform(actor, "verification.assign_investigation", vctx)}
-                      disabledReason={explainPermission(actor, "verification.assign_investigation", vctx)}
-                      onClick={() => void runAction(String(row.id), "investigate", reviewer)}
-                      className="rounded-md border border-violet-900/40 bg-violet-950/25 px-2 py-1 text-[10px] text-violet-100 hover:bg-violet-950/40"
-                    >
-                      Assign investigation
-                    </OperationalWorkflowButton>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        }}
+      {isError ? (
+        <AlertCard tone="danger" title="Verification ledger unavailable">
+          {error instanceof Error ? error.message : "Unknown error loading verification queue."}
+        </AlertCard>
+      ) : null}
+
+      <RegistryKpiStrip
+        items={[
+          { label: "Artefacts in scope", value: String(filteredRows.length), hint: "Current filter" },
+          { label: "Pending review", value: String(pendingReview), hint: "Pending + under review", deltaTone: pendingReview > 0 ? "down" : "up" },
+          { label: "Escalated", value: String(escalated), hint: "Ministry oversight", deltaTone: escalated > 0 ? "down" : "neutral" },
+          { label: "Critical priority", value: String(critical), hint: "Requires immediate action", deltaTone: critical > 0 ? "down" : "up" },
+        ]}
       />
-    </MinistryPageShell>
+
+      <DashboardPanel>
+        <SectionHeader kicker="Queue" title="Verification status pipeline" subtitle="National workflow posture across all submission types" />
+        {isPending ? (
+          <div className="mt-4 h-20 animate-pulse rounded-xl bg-slate-100" />
+        ) : (
+          <div className="mt-4">
+            <VerificationStatusPipeline counts={statusCounts} />
+          </div>
+        )}
+      </DashboardPanel>
+
+      <DashboardPanel padding="none">
+        <div className="border-b border-slate-100 px-5 py-4">
+          <SectionHeader
+            kicker="Review desk"
+            title="Unified verification ledger"
+            subtitle={`${filteredRows.length} artefacts · grouped by county`}
+          />
+        </div>
+
+        {isPending ? (
+          <div className="space-y-2 p-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-10 animate-pulse rounded-lg bg-slate-100" />
+            ))}
+          </div>
+        ) : filteredRows.length === 0 ? (
+          <div className="p-6">
+            <EmptyState
+              title="No verification artefacts in scope"
+              description="Adjust county filters or return when new DAO submissions arrive from field capture."
+              action={
+                <Link href="/reporting/workspace?tab=review" className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
+                  Reporting workspace
+                </Link>
+              }
+            />
+          </div>
+        ) : (
+          <EnterpriseDataGrid<VerificationGridRow>
+            rows={filteredRows}
+            columns={columns}
+            filename="verification-queue.csv"
+            dense
+            theme="light"
+            stickyHeader
+            groupHeaderKey="county"
+            groupHeaderTitle="County"
+            getRowKey={(row) => String(row.id)}
+            toolbar={
+              <span className="text-[11px] text-slate-500">
+                {filteredRows.length} artefacts in scope · grouped by county
+              </span>
+            }
+            renderExpanded={(row) => (
+              <VerificationReviewPanel row={row} actor={actor} onAction={(id, action, reviewer) => void runAction(id, action, reviewer)} />
+            )}
+          />
+        )}
+      </DashboardPanel>
+    </div>
   );
 }
