@@ -2,20 +2,28 @@
 
 import * as React from "react";
 
+import { EmptyState, SectionHeader } from "@/components/enterprise";
 import { fetchNationalMovementTimeline } from "@/lib/logistics/movement-timeline";
 import type { MovementTimelineRow } from "@/lib/logistics/types";
 
 export default function LogisticsMovementTimelineSection({ limit = 60 }: { limit?: number }) {
   const [rows, setRows] = React.useState<MovementTimelineRow[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     let c = false;
     void (async () => {
-      const data = await fetchNationalMovementTimeline(limit);
-      if (!c) {
-        setRows(data);
-        setLoading(false);
+      try {
+        const data = await fetchNationalMovementTimeline(limit);
+        if (!c) {
+          setRows(data);
+          setError(null);
+        }
+      } catch (e) {
+        if (!c) setError(e instanceof Error ? e.message : "Failed to load movements");
+      } finally {
+        if (!c) setLoading(false);
       }
     })();
     return () => {
@@ -24,55 +32,59 @@ export default function LogisticsMovementTimelineSection({ limit = 60 }: { limit
   }, [limit]);
 
   return (
-    <section id="logistics-movements" className="scroll-mt-24 gov-card p-4 sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Inventory movement timeline</div>
-          <h2 className="font-serif-display text-[15px] font-semibold text-slate-900">National logistics ledger</h2>
-          <p className="mt-1 max-w-2xl text-[12px] text-slate-500">
-            Timestamped movements from <span className="font-mono text-slate-700">inventory_movements</span> with operator attribution; canonical fixtures
-            appear when the ledger is empty.
-          </p>
+    <section id="logistics-movements" className="scroll-mt-24 p-5 sm:p-6">
+      <SectionHeader
+        kicker="Inventory movement timeline"
+        title="National logistics ledger"
+        subtitle="Timestamped movements from inventory_movements with operator attribution; canonical fixtures appear when the ledger is empty."
+      />
+
+      {loading ? (
+        <div className="mt-4 space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-9 animate-pulse rounded-lg bg-slate-100" />
+          ))}
         </div>
-      </div>
-      <div className="mt-4 overflow-x-auto">
-        <table className="min-w-[960px] w-full text-left text-[12px]">
-          <thead className="border-b border-slate-200 font-mono text-[10px] uppercase tracking-wide text-slate-500">
-            <tr>
-              <th className="px-3 py-2">Timestamp</th>
-              <th className="px-3 py-2">Type</th>
-              <th className="px-3 py-2">Source</th>
-              <th className="px-3 py-2">Destination</th>
-              <th className="px-3 py-2">Qty</th>
-              <th className="px-3 py-2">Operator</th>
-              <th className="px-3 py-2">Status</th>
-              <th className="px-3 py-2">Reference</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 text-slate-700">
-            {loading ? (
+      ) : error ? (
+        <div className="mt-4">
+          <EmptyState title="Movement ledger unavailable" description={error} />
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="mt-4">
+          <EmptyState title="No movements recorded" description="Receipts, transfers, and distributions will appear here as they are posted." />
+        </div>
+      ) : (
+        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+          <table className="enterprise-table min-w-[960px]">
+            <thead>
               <tr>
-                <td colSpan={8} className="px-3 py-8 text-slate-500">
-                  Loading movements…
-                </td>
+                <th>Timestamp</th>
+                <th>Type</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>Qty</th>
+                <th>Operator</th>
+                <th>Status</th>
+                <th>Reference</th>
               </tr>
-            ) : (
-              rows.map((r) => (
-                <tr key={r.id} className="hover:bg-slate-50">
-                  <td className="px-3 py-2 whitespace-nowrap text-slate-500">{new Date(r.at).toLocaleString()}</td>
-                  <td className="px-3 py-2 capitalize">{r.movementType}</td>
-                  <td className="px-3 py-2 font-mono text-[11px]">{r.source}</td>
-                  <td className="px-3 py-2 font-mono text-[11px]">{r.destination}</td>
-                  <td className="px-3 py-2 tabular-nums">{r.quantity}</td>
-                  <td className="px-3 py-2 font-mono text-[10px] text-slate-500">{r.operator}</td>
-                  <td className="px-3 py-2 text-emerald-700">{r.status}</td>
-                  <td className="px-3 py-2 font-mono text-[11px] text-slate-500">{r.reference}</td>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id}>
+                  <td className="whitespace-nowrap font-mono text-[11px]">{r.at ? new Date(r.at).toLocaleString() : "—"}</td>
+                  <td className="capitalize">{r.movementType}</td>
+                  <td className="font-mono text-[11px]">{r.source}</td>
+                  <td className="font-mono text-[11px]">{r.destination}</td>
+                  <td className="tabular-nums">{r.quantity}</td>
+                  <td>{r.operator}</td>
+                  <td>{r.status}</td>
+                  <td className="font-mono text-[11px] text-forest-700">{r.reference}</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }

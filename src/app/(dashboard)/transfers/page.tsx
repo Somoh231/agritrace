@@ -5,7 +5,11 @@ import MinistryTransfersWorkspace from "@/components/operations/MinistryTransfer
 export default function NationalTransfersPage() {
   return (
     <Suspense
-      fallback={<div className="rounded-xl border border-slate-800 bg-slate-950/80 px-6 py-10 text-center text-[13px] text-slate-500">Loading national transfer trace…</div>}
+      fallback={
+        <div className="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center">
+          <p className="text-[14px] font-medium text-ink-900">Loading national transfer trace…</p>
+        </div>
+      }
     >
       <MinistryTransfersWorkspace />
     </Suspense>

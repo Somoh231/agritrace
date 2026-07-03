@@ -2,13 +2,17 @@
 
 import * as React from "react";
 
+import {
+  AlertCard,
+  DashboardPanel,
+  PageHeader,
+} from "@/components/enterprise";
 import InventoryWarehouseOverview from "@/components/ais/InventoryWarehouseOverview";
 import LogisticsCommandCenter from "@/components/logistics/LogisticsCommandCenter";
 import LogisticsMovementTimelineSection from "@/components/logistics/LogisticsMovementTimelineSection";
 import InventoryOperationsClient from "@/components/pilot/InventoryOperationsClient";
 import OperationDrawer from "@/components/operations/OperationDrawer";
 import RecordInventoryReceiptForm from "@/components/operations/forms/RecordInventoryReceiptForm";
-import MinistryPageShell from "@/components/operations/MinistryPageShell";
 
 export default function InventoryNationalWorkspace() {
   const [drawer, setDrawer] = React.useState(false);
@@ -21,28 +25,33 @@ export default function InventoryNationalWorkspace() {
 
   return (
     <>
-      <MinistryPageShell
-        title="Warehouse & logistics command"
-        description="National hub oversight, TRF transfer workflows, corridor maps, donor flows, and immutable inventory movements — Agrivault AIS logistics platform."
-        actions={
-          <button
-            type="button"
-            onClick={() => setDrawer(true)}
-            className="btn-emerald h-10 px-4 rounded-lg text-[13px]"
-          >
-            Record receipt
-          </button>
-        }
-      >
-        <div className="space-y-6">
-          <LogisticsCommandCenter />
-          <InventoryWarehouseOverview />
+      <div className="space-y-6 pb-8">
+        <PageHeader
+          kicker="National logistics · Warehouse command"
+          title="Warehouse & logistics command"
+          description="National hub oversight, TRF transfer workflows, corridor maps, donor flows, and immutable inventory movements — Agrivault AIS logistics platform."
+          actions={
+            <button type="button" onClick={() => setDrawer(true)} className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
+              Record receipt
+            </button>
+          }
+        />
+
+        <LogisticsCommandCenter />
+        <InventoryWarehouseOverview />
+
+        <DashboardPanel padding="none">
           <LogisticsMovementTimelineSection limit={72} />
-          <div className="gov-card p-1">
-            <InventoryOperationsClient />
-          </div>
-        </div>
-      </MinistryPageShell>
+        </DashboardPanel>
+
+        <AlertCard tone="info" title="Distribution & allocation">
+          County allocation progress, warehouse risk posture, and illustrative donor inventory — paired with live stock when Supabase is connected.
+        </AlertCard>
+
+        <DashboardPanel padding="none">
+          <InventoryOperationsClient />
+        </DashboardPanel>
+      </div>
 
       <OperationDrawer
         open={drawer}

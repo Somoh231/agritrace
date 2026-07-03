@@ -4,174 +4,34 @@ import * as React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { Map, Package } from "lucide-react";
 
-import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
-import MinistryPageShell from "@/components/operations/MinistryPageShell";
-import OperationalWorkflowButton from "@/components/operations/OperationalWorkflowButton";
-import { OperationalRiskChipRow } from "@/components/operations/OperationalRiskChip";
-import type { OperationalChipVariant } from "@/lib/ops/operational-chip-types";
-import { useTransferOrders } from "@/features/transfers/hooks/use-transfer-orders";
-import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
-import type { TransferOrderView, TransferWorkflowStatus } from "@/lib/logistics/types";
-import { useOperationalActor } from "@/lib/ops/operational-actor-context";
 import {
-  canPerform,
-  explainPermission,
-  type OperationalPermissionContext,
-  type OperationalWorkflowAction,
-} from "@/lib/ops/permissions";
+  AlertCard,
+  DashboardPanel,
+  EmptyState,
+  PageHeader,
+  SectionHeader,
+  StatusBadge,
+} from "@/components/enterprise";
+import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
+import { OperationalRiskChipRow } from "@/components/operations/OperationalRiskChip";
+import TransferCustodyPanel from "@/components/logistics/TransferCustodyPanel";
+import TransferStatusPipeline, { buildTransferStatusCounts } from "@/components/logistics/TransferStatusPipeline";
+import {
+  toTransferGridRow,
+  transferActionToPermission,
+  transferOperationalContext,
+  transferStatusTone,
+  type TransferGridRow,
+} from "@/components/logistics/transfer-workspace-utils";
+import { RegistryKpiStrip } from "@/components/registry";
+import { useTransferOrders } from "@/features/transfers/hooks/use-transfer-orders";
+import { useOperationalActor } from "@/lib/ops/operational-actor-context";
+import { canPerform } from "@/lib/ops/permissions";
 import { postTransferWorkflow } from "@/lib/ops/workflow-api-client";
+import type { TransferOrderView, TransferWorkflowStatus } from "@/lib/logistics/types";
 import { operationalQueryKeys } from "@/platform/query-keys";
-
-type TransferAuditEvt = { at: string; actor: string; stage: string; note: string };
-
-export type TransferDetail = {
-  raw: TransferOrderView;
-  displayStatus: string;
-  category: string;
-  corridorCounty: string;
-  manifestLines: string[];
-  checkpoints: string[];
-  receivingOfficer: string;
-  gpsPlaceholder: string;
-  auditEvents: TransferAuditEvt[];
-  aiSummary: string;
-  chips: OperationalChipVariant[];
-};
-
-export type TransferGridRow = Record<string, unknown> & { id: string; _detail: TransferDetail };
-
-function countyForCode(code: string): string {
-  return MINISTRY_WAREHOUSES.find((w) => w.ministryCode === code)?.county ?? "—";
-}
-
-function transferOperationalContext(order: TransferOrderView): OperationalPermissionContext {
-  const corridorCounty = countyForCode(order.fromMinistryCode);
-  return {
-    rowCounty: corridorCounty,
-    transfer: {
-      fromMinistryCode: order.fromMinistryCode,
-      toMinistryCode: order.toMinistryCode,
-      status: order.status,
-      corridorCounty,
-    },
-  };
-}
-
-function transferActionToPermission(
-  action: "approve" | "reject" | "escalate" | "dispatch" | "mark_received" | "verify" | "investigate",
-): OperationalWorkflowAction {
-  const m = {
-    approve: "transfer.approve",
-    reject: "transfer.reject",
-    escalate: "transfer.escalate",
-    dispatch: "transfer.dispatch",
-    mark_received: "transfer.mark_received",
-    verify: "transfer.verify",
-    investigate: "transfer.investigate",
-  } as const;
-  return m[action];
-}
-
-function categoryForSku(sku: string): string {
-  if (sku.includes("FERT")) return "Fertilizer transfer";
-  if (sku.includes("SEED") || sku.includes("RICE")) return "Seed allocation";
-  if (sku.includes("TOOL")) return "Equipment redistribution";
-  return "County redistribution";
-}
-
-/** Ministry-facing labels (delivered → received, completed → verified). */
-function displayStatus(st: TransferWorkflowStatus): string {
-  switch (st) {
-    case "delivered":
-      return "received";
-    case "completed":
-      return "verified";
-    default:
-      return st.replace(/_/g, " ");
-  }
-}
-
-function seedTimeline(t: TransferOrderView): TransferAuditEvt[] {
-  const ev: TransferAuditEvt[] = [
-    {
-      at: t.requestedAt,
-      actor: t.operatorLabel ?? "Corridor operator",
-      stage: "requested",
-      note: "Transfer request opened — custody chain initiated.",
-    },
-  ];
-  if (t.approvedAt)
-    ev.push({ at: t.approvedAt, actor: "County logistics", stage: "approved", note: "County sign-off recorded." });
-  if (t.dispatchedAt)
-    ev.push({ at: t.dispatchedAt, actor: "Warehouse dispatch", stage: "dispatched", note: "Seal applied — manifest locked." });
-  if (t.deliveredAt)
-    ev.push({ at: t.deliveredAt, actor: "Receiving bay", stage: "received", note: "Offload observed — variance check pending." });
-  if (t.completedAt)
-    ev.push({ at: t.completedAt, actor: "National reconcile", stage: "verified", note: "Ledger reconciled — dispute window closed." });
-  return ev;
-}
-
-function checkpointsFor(t: TransferOrderView): string[] {
-  return [
-    `${t.fromMinistryCode} · dispatch weighbridge`,
-    "County corridor attest",
-    `${t.toMinistryCode} · receiving QA`,
-    "Ministry manifest reconcile",
-  ];
-}
-
-function chipsFor(t: TransferOrderView): OperationalChipVariant[] {
-  const out: OperationalChipVariant[] = [];
-  if (t.status === "disputed") out.push("high_risk");
-  if (t.status === "requested" || t.status === "approved") out.push("awaiting_verification");
-  if (t.status === "in_transit" || t.status === "dispatched") out.push("inventory_risk");
-  if (t.status === "disputed") out.push("compliance_delay");
-  return [...new Set(out)];
-}
-
-function aiLine(t: TransferOrderView): string {
-  if (t.status === "disputed") return "Disputed custody leg — receiver sign-off missing; ministry investigation recommended.";
-  if (t.status === "in_transit") return "In-transit fertilizer/inputs posture elevates corridor variance risk until seal verified.";
-  if (t.status === "requested") return "Approval backlog detected — county logistics queue should close before national inputs window.";
-  return "Corridor stable — maintain verification checkpoints and GPS stub linkage when field tablets sync.";
-}
-
-function toGridRow(t: TransferOrderView): TransferGridRow {
-  const category = categoryForSku(t.sku);
-  const corridorCounty = countyForCode(t.fromMinistryCode);
-  const detail: TransferDetail = {
-    raw: t,
-    displayStatus: displayStatus(t.status),
-    category,
-    corridorCounty,
-    manifestLines: [
-      `${t.sku} · qty ${t.quantity} · batch ministry ledger`,
-      `Operator: ${t.operatorLabel ?? "—"}`,
-      t.notes ? `Notes: ${t.notes}` : "Notes: —",
-    ],
-    checkpoints: checkpointsFor(t),
-    receivingOfficer: "Receiving officer · pending biometric attestation (stub)",
-    gpsPlaceholder: "GPS route polyline placeholder — uplink pending from field logistics tablet.",
-    auditEvents: seedTimeline(t),
-    aiSummary: aiLine(t),
-    chips: chipsFor(t),
-  };
-  return {
-    id: t.id,
-    transferCode: t.transferCode,
-    category,
-    corridorCounty,
-    origin: t.fromMinistryCode,
-    destination: t.toMinistryCode,
-    sku: t.sku,
-    quantity: String(t.quantity),
-    status: detail.displayStatus,
-    requestedAt: t.requestedAt,
-    posture: detail.chips.map((c) => c.replace(/_/g, " ")).join(" · ") || "—",
-    _detail: detail,
-  };
-}
 
 export default function MinistryTransfersWorkspace() {
   const searchParams = useSearchParams();
@@ -181,13 +41,15 @@ export default function MinistryTransfersWorkspace() {
   const [workflowErr, setWorkflowErr] = React.useState<string | null>(null);
   const { data: orders = [], isPending, isError, error } = useTransferOrders();
 
-  const rows = React.useMemo(() => orders.map(toGridRow), [orders]);
+  const rows = React.useMemo(() => orders.map(toTransferGridRow), [orders]);
 
   const filteredRows = React.useMemo(
     () =>
       codeFilter ? rows.filter((r) => String(r.transferCode).toUpperCase().includes(codeFilter)) : rows,
     [rows, codeFilter],
   );
+
+  const statusCounts = React.useMemo(() => buildTransferStatusCounts(orders), [orders]);
 
   const patchOrder = React.useCallback(
     (id: string, next: TransferWorkflowStatus, note: string) => {
@@ -283,7 +145,11 @@ export default function MinistryTransfersWorkspace() {
     { key: "destination", header: "Destination WH" },
     { key: "sku", header: "SKU" },
     { key: "quantity", header: "Qty" },
-    { key: "status", header: "Status" },
+    {
+      key: "status",
+      header: "Status",
+      render: (row) => <StatusBadge tone={transferStatusTone(String(row.status))}>{String(row.status)}</StatusBadge>,
+    },
     {
       key: "requestedAt",
       header: "Requested",
@@ -296,203 +162,116 @@ export default function MinistryTransfersWorkspace() {
     },
   ];
 
+  const disputed = orders.filter((o) => o.status === "disputed").length;
+  const inTransit = orders.filter((o) => o.status === "in_transit" || o.status === "dispatched").length;
+
   return (
-    <MinistryPageShell
-      title="National transfer trace"
-      description="Ministry-grade fertilizer, seed, donor inventory, and redistribution custody — TRF-*-*-* identifiers, verification checkpoints, receiving attestations, and audit-grade workflow actions."
-      actions={
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/map"
-            className="btn-gov-outline h-9 rounded-lg px-3 text-[12px]"
-          >
-            Map corridors
-          </Link>
-          <Link
-            href="/inventory/transfers"
-            className="btn-gov-outline h-9 rounded-lg px-3 text-[12px]"
-          >
-            Stock movement UI
-          </Link>
-        </div>
-      }
-    >
-      {isError ?
-        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-[12px] text-rose-800">
-          Could not load transfers — {error instanceof Error ? error.message : "unknown error"}.
-        </div>
-      : null}
-      {isPending ?
-        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 font-mono text-[11px] text-slate-500">
-          Loading corridor ledger…
-        </div>
-      : null}
-      {codeFilter ? (
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-2 font-mono text-[11px] text-slate-600">
-          Filter: <span className="text-emerald-700">{codeFilter}</span> ·{" "}
-          <Link href="/transfers" className="text-emerald-700 hover:underline">
-            Clear
-          </Link>
-        </div>
+    <div className="space-y-6 pb-8">
+      <PageHeader
+        kicker="Chain of custody · National logistics"
+        title="National transfer trace"
+        description="Ministry-grade fertilizer, seed, donor inventory, and redistribution custody — TRF identifiers, verification checkpoints, receiving attestations, and audit-grade workflow actions."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Link href="/map" className="inline-flex h-10 items-center gap-2 rounded-lg btn-gov-outline px-4 text-[12px]">
+              <Map className="h-4 w-4" aria-hidden />
+              Map corridors
+            </Link>
+            <Link href="/inventory" className="inline-flex h-10 items-center gap-2 rounded-lg btn-emerald px-4 text-[12px] font-semibold">
+              <Package className="h-4 w-4" aria-hidden />
+              Warehouse command
+            </Link>
+          </div>
+        }
+      />
+
+      {actor.role === "donor_observer" ? (
+        <AlertCard tone="info" title="Donor observer posture">
+          Corridor ledger is read-only. Custody mutations require logistics or county ministry roles.
+        </AlertCard>
       ) : null}
 
-      {actor.role === "donor_observer" ?
-        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-[11px] text-slate-600">
-          Donor observer posture — corridor ledger read-only; custody mutations require logistics or county ministry roles.
-        </div>
-      : null}
+      {workflowErr ? <AlertCard tone="danger" title="Workflow error">{workflowErr}</AlertCard> : null}
 
-      {workflowErr ?
-        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-[11px] text-rose-800">
-          {workflowErr}
-        </div>
-      : null}
+      {isError ? (
+        <AlertCard tone="danger" title="Transfer ledger unavailable">
+          {error instanceof Error ? error.message : "Unknown error loading transfers."}
+        </AlertCard>
+      ) : null}
 
-      <EnterpriseDataGrid<TransferGridRow>
-        title="TRF ledger · grouped by workflow status"
-        rows={filteredRows}
-        columns={columns}
-        filename="national-transfers.csv"
-        dense
-        stickyHeader
-        groupHeaderKey="status"
-        groupHeaderTitle="Status"
-        getRowKey={(row) => String(row.id)}
-        toolbar={
-          <span className="text-[11px] text-slate-500">
-            DAO → CAC → Ministry and Warehouse → County → Ministry routing patterns · {filteredRows.length} legs in scope
-          </span>
-        }
-        renderExpanded={(row) => {
-          const d = row._detail;
-          const t = d.raw;
-          const tctx = transferOperationalContext(t);
-          return (
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-              <div className="space-y-3">
-                <div>
-                  <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">Transfer manifest</div>
-                  <ul className="mt-2 space-y-1 font-mono text-[11px] text-slate-700">
-                    {d.manifestLines.map((l) => (
-                      <li key={l}>{l}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Shipment timeline</div>
-                  <ol className="mt-2 space-y-2 border-l border-slate-200 pl-3">
-                    {d.auditEvents.map((e, i) => (
-                      <li key={`${e.at}-${i}`} className="relative text-[11px] text-slate-600">
-                        <span className="absolute -left-[17px] top-1.5 h-2 w-2 rounded-full bg-sky-500 ring-2 ring-white" aria-hidden />
-                        <span className="font-mono text-[10px] text-slate-400">{e.at.slice(0, 19).replace("T", " ")}</span>
-                        <span className="text-slate-400"> · </span>
-                        <span className="text-slate-800">{e.actor}</span> ({e.stage})
-                        <div className="text-slate-500">{e.note}</div>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Verification checkpoints</div>
-                  <ul className="mt-2 list-inside list-disc text-[11px] text-slate-600">
-                    {d.checkpoints.map((c) => (
-                      <li key={c}>{c}</li>
-                    ))}
-                  </ul>
-                  <div className="mt-3 text-[11px] text-slate-500">
-                    Receiving officer: <span className="text-slate-800">{d.receivingOfficer}</span>
-                  </div>
-                  <div className="mt-2 font-mono text-[10px] text-slate-400">{d.gpsPlaceholder}</div>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-700">AI corridor summary</div>
-                  <p className="mt-2 text-[11px] leading-relaxed text-slate-600">{d.aiSummary}</p>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-white p-3">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Custody links</div>
-                  <div className="mt-2 flex flex-col gap-2 text-[11px]">
-                    <Link className="text-emerald-700 hover:underline" href={`/inventory/warehouse/${encodeURIComponent(t.fromMinistryCode)}`}>
-                      Source warehouse → {t.fromMinistryCode}
-                    </Link>
-                    <Link className="text-emerald-700 hover:underline" href={`/inventory/warehouse/${encodeURIComponent(t.toMinistryCode)}`}>
-                      Destination warehouse → {t.toMinistryCode}
-                    </Link>
-                    <Link className="text-emerald-700 hover:underline" href={`/verification-queue?county=${encodeURIComponent(d.corridorCounty)}`}>
-                      Linked verification queue ({d.corridorCounty})
-                    </Link>
-                  </div>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Workflow actions</div>
-                  <p className="mt-1 text-[10px] text-slate-400">
-                    Warehouse → County → Ministry custody chain. Actions emit audit_log entries when authenticated.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    <OperationalWorkflowButton
-                      allowed={canPerform(actor, "transfer.approve", tctx)}
-                      disabledReason={explainPermission(actor, "transfer.approve", tctx)}
-                      onClick={() => void runWorkflow(t.id, "approve")}
-                      className="rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] text-emerald-700 hover:bg-emerald-100"
-                    >
-                      Approve
-                    </OperationalWorkflowButton>
-                    <OperationalWorkflowButton
-                      allowed={canPerform(actor, "transfer.dispatch", tctx)}
-                      disabledReason={explainPermission(actor, "transfer.dispatch", tctx)}
-                      onClick={() => void runWorkflow(t.id, "dispatch")}
-                      className="rounded-md border border-slate-300 bg-white px-2 py-1 text-[10px] text-slate-700 hover:bg-slate-50"
-                    >
-                      Dispatch
-                    </OperationalWorkflowButton>
-                    <OperationalWorkflowButton
-                      allowed={canPerform(actor, "transfer.mark_received", tctx)}
-                      disabledReason={explainPermission(actor, "transfer.mark_received", tctx)}
-                      onClick={() => void runWorkflow(t.id, "mark_received")}
-                      className="rounded-md border border-sky-300 bg-sky-50 px-2 py-1 text-[10px] text-sky-700 hover:bg-sky-100"
-                    >
-                      Mark received
-                    </OperationalWorkflowButton>
-                    <OperationalWorkflowButton
-                      allowed={canPerform(actor, "transfer.verify", tctx)}
-                      disabledReason={explainPermission(actor, "transfer.verify", tctx)}
-                      onClick={() => void runWorkflow(t.id, "verify")}
-                      className="rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] text-emerald-700 hover:bg-emerald-100"
-                    >
-                      Verify reconcile
-                    </OperationalWorkflowButton>
-                    <OperationalWorkflowButton
-                      allowed={canPerform(actor, "transfer.reject", tctx)}
-                      disabledReason={explainPermission(actor, "transfer.reject", tctx)}
-                      onClick={() => void runWorkflow(t.id, "reject")}
-                      className="rounded-md border border-slate-300 bg-white px-2 py-1 text-[10px] text-slate-700 hover:bg-slate-50"
-                    >
-                      Reject
-                    </OperationalWorkflowButton>
-                    <OperationalWorkflowButton
-                      allowed={canPerform(actor, "transfer.escalate", tctx)}
-                      disabledReason={explainPermission(actor, "transfer.escalate", tctx)}
-                      onClick={() => void runWorkflow(t.id, "escalate")}
-                      className="rounded-md border border-orange-300 bg-orange-50 px-2 py-1 text-[10px] text-orange-700 hover:bg-orange-100"
-                    >
-                      Escalate
-                    </OperationalWorkflowButton>
-                    <OperationalWorkflowButton
-                      allowed={canPerform(actor, "transfer.investigate", tctx)}
-                      disabledReason={explainPermission(actor, "transfer.investigate", tctx)}
-                      onClick={() => void runWorkflow(t.id, "investigate")}
-                      className="rounded-md border border-violet-300 bg-violet-50 px-2 py-1 text-[10px] text-violet-700 hover:bg-violet-100"
-                    >
-                      Assign investigation
-                    </OperationalWorkflowButton>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        }}
+      {codeFilter ? (
+        <AlertCard tone="info" title="Active filter">
+          Showing transfers matching <strong>{codeFilter}</strong>.{" "}
+          <Link href="/transfers" className="font-medium text-forest-700 hover:underline">
+            Clear filter
+          </Link>
+        </AlertCard>
+      ) : null}
+
+      <RegistryKpiStrip
+        items={[
+          { label: "Legs in scope", value: String(filteredRows.length), hint: "Current filter" },
+          { label: "In transit", value: String(inTransit), hint: "Dispatched or corridor", deltaTone: "neutral" },
+          { label: "Disputed", value: String(disputed), hint: "Investigation queue", deltaTone: disputed ? "down" : "up" },
+          { label: "Verified", value: String(statusCounts.completed ?? 0), hint: "Reconciled custody", deltaTone: "up" },
+        ]}
       />
-    </MinistryPageShell>
+
+      <DashboardPanel>
+        <SectionHeader kicker="Custody pipeline" title="Transfer status pipeline" subtitle="National workflow posture across all TRF legs" />
+        {isPending ? (
+          <div className="mt-4 h-20 animate-pulse rounded-xl bg-slate-100" />
+        ) : (
+          <div className="mt-4">
+            <TransferStatusPipeline counts={statusCounts} />
+          </div>
+        )}
+      </DashboardPanel>
+
+      <DashboardPanel padding="none">
+        <div className="border-b border-slate-100 px-5 py-4">
+          <SectionHeader
+            kicker="TRF ledger"
+            title="Chain-of-custody transfers"
+            subtitle={`${filteredRows.length} legs · grouped by workflow status`}
+          />
+        </div>
+
+        {isPending ? (
+          <div className="p-8 space-y-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-10 animate-pulse rounded-lg bg-slate-100" />
+            ))}
+          </div>
+        ) : filteredRows.length === 0 ? (
+          <div className="p-6">
+            <EmptyState
+              title="No transfers in scope"
+              description="Adjust corridor filters or open the warehouse command center to initiate a new TRF leg."
+              action={
+                <Link href="/inventory" className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
+                  Warehouse command
+                </Link>
+              }
+            />
+          </div>
+        ) : (
+          <EnterpriseDataGrid<TransferGridRow>
+            rows={filteredRows}
+            columns={columns}
+            filename="national-transfers.csv"
+            dense
+            theme="light"
+            stickyHeader
+            groupHeaderKey="status"
+            groupHeaderTitle="Status"
+            getRowKey={(row) => String(row.id)}
+            renderExpanded={(row) => (
+              <TransferCustodyPanel detail={row._detail} actor={actor} onWorkflow={(id, action) => void runWorkflow(id, action)} />
+            )}
+          />
+        )}
+      </DashboardPanel>
+    </div>
   );
 }

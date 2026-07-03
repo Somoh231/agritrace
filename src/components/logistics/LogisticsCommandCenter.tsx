@@ -2,9 +2,16 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { ArrowRightLeft, Map, Package } from "lucide-react";
 
+import {
+  AlertCard,
+  DashboardPanel,
+  QuickActionCard,
+  SectionHeader,
+} from "@/components/enterprise";
 import LogisticsNetworkMap from "@/components/logistics/LogisticsNetworkMap";
-import { OpsMetric } from "@/components/pilot/pilot-ui";
+import { RegistryKpiStrip } from "@/components/registry";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import { buildLogisticsAlerts } from "@/lib/logistics/logistics-alerts";
 import {
@@ -61,7 +68,7 @@ export default function LogisticsCommandCenter() {
     [transfers, lowSku, expiryRisk],
   );
 
-  const inTransit = transfers.filter((t) => t.status === "in_transit").length;
+  const inTransit = transfers.filter((t) => t.status === "in_transit" || t.status === "dispatched").length;
   const pendingApproval = transfers.filter((t) => t.status === "requested").length;
 
   const exportDonor = async () => {
@@ -99,68 +106,49 @@ export default function LogisticsCommandCenter() {
 
   return (
     <div className="space-y-6">
-      <div className="gov-card px-5 py-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="gov-kicker gov-kicker-gold">Warehouse command</div>
-            <h2 className="mt-1 font-serif-display text-[clamp(1.25rem,2vw,1.65rem)] font-semibold text-slate-900">National logistics platform</h2>
-            <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-slate-600">
-              Unified ministry view for hubs, corridors, donor flows, and bottleneck surveillance — paired with transfer workflow TRF routing and immutable movement ledger.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/inventory/transfers" className="btn-emerald h-10 rounded-lg px-4 text-[12px]">
-              Transfer operations
-            </Link>
-            <a href="#logistics-movements" className="btn-gov-outline h-10 rounded-lg px-4 text-[12px]">
-              Movement timeline
-            </a>
-          </div>
-        </div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <OpsMetric label="Coded hubs" value={String(MINISTRY_WAREHOUSES.length)} tone="navy" />
-          <OpsMetric label="In transit (workflow)" value={String(inTransit)} tone="forest" />
-          <OpsMetric label="Pending approvals" value={String(pendingApproval)} tone="amber" />
-          <OpsMetric label="Expiry watch (90d)" value={String(expiryRisk)} tone="rose" />
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <QuickActionCard href="/transfers" icon={ArrowRightLeft} title="Transfer trace" description="National TRF chain-of-custody workflow and corridor approvals." />
+        <QuickActionCard href="/operations/warehouses" icon={Package} title="Warehouse registry" description="National warehouse footprint, thresholds, and geo anchors." />
+        <QuickActionCard href="/map" icon={Map} title="Corridor map" description="Operational map view for logistics routing and hub posture." />
       </div>
 
+      <RegistryKpiStrip
+        items={[
+          { label: "Coded hubs", value: String(MINISTRY_WAREHOUSES.length), hint: "Ministry warehouse network" },
+          { label: "In transit", value: String(inTransit), hint: "Active TRF legs" },
+          { label: "Pending approvals", value: String(pendingApproval), hint: "Awaiting county sign-off", deltaTone: pendingApproval ? "down" : "neutral" },
+          { label: "Expiry watch (90d)", value: String(expiryRisk), hint: "SKU lots in window", deltaTone: expiryRisk ? "down" : "up" },
+        ]}
+      />
+
       <div className="grid gap-4 lg:grid-cols-3">
-        <section className="gov-card p-4 lg:col-span-2">
-          <div className="font-serif-display text-[15px] font-semibold text-slate-900">Operational alerts</div>
-          <p className="mt-1 text-[11px] text-slate-500">Low stock, expiry, corridor delays, capacity pressure, missing confirmations.</p>
-          <ul className="mt-3 space-y-2">
+        <DashboardPanel className="lg:col-span-2">
+          <SectionHeader kicker="Risk signals" title="Operational alerts" subtitle="Low stock, expiry, corridor delays, capacity pressure, missing confirmations." />
+          <ul className="mt-4 space-y-2">
             {alerts.length === 0 ? (
-              <li className="text-[12px] text-slate-500">No headline alerts from current signals.</li>
+              <li className="text-[13px] text-slate-500">No headline alerts from current signals.</li>
             ) : (
               alerts.map((a) => (
-                <li
-                  key={a.id}
-                  className={`rounded-lg border px-3 py-2 text-[12px] ${
-                    a.severity === "critical"
-                      ? "border-rose-200 bg-rose-50 text-rose-800"
-                      : a.severity === "warning"
-                        ? "border-amber-200 bg-amber-50 text-amber-800"
-                        : "border-slate-200 bg-slate-50 text-slate-600"
-                  }`}
-                >
-                  <div className="font-medium text-slate-900">{a.title}</div>
-                  <div className="mt-1 text-[11px] opacity-90">{a.detail}</div>
+                <li key={a.id}>
+                  <AlertCard tone={a.severity === "critical" ? "danger" : a.severity === "warning" ? "warning" : "info"} title={a.title}>
+                    {a.detail}
+                  </AlertCard>
                 </li>
               ))
             )}
           </ul>
-        </section>
-        <section className="gov-card p-4">
-          <div className="font-serif-display text-[15px] font-semibold text-slate-900">Reporting</div>
-          <div className="mt-3 flex flex-col gap-2">
-            <button type="button" onClick={() => exportWarehouseUtilization()} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-[12px] text-slate-700 hover:bg-slate-50">
+        </DashboardPanel>
+
+        <DashboardPanel>
+          <SectionHeader kicker="Exports" title="Reporting" />
+          <div className="mt-4 flex flex-col gap-2">
+            <button type="button" onClick={() => exportWarehouseUtilization()} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-[12px] text-slate-700 hover:bg-slate-50">
               Warehouse utilization export
             </button>
-            <button type="button" onClick={() => exportMinistryAllocationReport(transfers)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-[12px] text-slate-700 hover:bg-slate-50">
+            <button type="button" onClick={() => exportMinistryAllocationReport(transfers)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-[12px] text-slate-700 hover:bg-slate-50">
               Ministry allocation (TRF manifest)
             </button>
-            <button type="button" onClick={() => void exportDonor()} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-[12px] text-slate-700 hover:bg-slate-50">
+            <button type="button" onClick={() => void exportDonor()} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-[12px] text-slate-700 hover:bg-slate-50">
               Donor shipment tracker CSV
             </button>
             <button
@@ -174,35 +162,32 @@ export default function LogisticsCommandCenter() {
                 a.click();
                 URL.revokeObjectURL(url);
               }}
-              className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-left text-[12px] text-emerald-700 hover:bg-emerald-100"
+              className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-left text-[12px] text-emerald-800 hover:bg-emerald-100"
             >
               Stockout forecasting note
             </button>
           </div>
-        </section>
+        </DashboardPanel>
       </div>
 
-      <section className="gov-card p-4">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <div className="font-serif-display text-[15px] font-semibold text-slate-900">Warehouse grid</div>
-          <span className="text-[11px] text-slate-500">County allocation flow · click hub detail</span>
-        </div>
-        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+      <DashboardPanel>
+        <SectionHeader kicker="Hub network" title="Warehouse grid" subtitle="County allocation flow — open hub command profile" />
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
           {MINISTRY_WAREHOUSES.map((w) => (
             <Link
               key={w.ministryCode}
               href={`/inventory/warehouse/${encodeURIComponent(w.ministryCode)}`}
-              className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 hover:border-emerald-400 hover:bg-white"
+              className="rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-3 transition hover:border-forest-300 hover:bg-white hover:shadow-sm"
             >
-              <div className="font-mono text-[11px] text-emerald-700">{w.ministryCode}</div>
-              <div className="text-[13px] font-medium text-slate-900">{w.name}</div>
-              <div className="mt-1 text-[11px] text-slate-500">
+              <p className="font-mono text-[11px] text-forest-700">{w.ministryCode}</p>
+              <p className="mt-0.5 text-[14px] font-semibold text-ink-900">{w.name}</p>
+              <p className="mt-1 text-[12px] text-slate-500">
                 {w.county} · {w.utilizationPct}% util
-              </div>
+              </p>
             </Link>
           ))}
         </div>
-      </section>
+      </DashboardPanel>
 
       <LogisticsNetworkMap />
     </div>

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { RegistryKpiStrip } from "@/components/registry";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type StockRow = {
@@ -18,6 +19,8 @@ type StockRow = {
   } | null;
   inventory_items: { name: string; sku: string } | null;
 };
+
+const nf = (n: number) => Intl.NumberFormat().format(n);
 
 export default function InventoryWarehouseOverview() {
   const [rows, setRows] = React.useState<StockRow[]>([]);
@@ -84,53 +87,27 @@ export default function InventoryWarehouseOverview() {
     return { totalQty, lowLines, expiryRisk, skuLines: rows.length, ministryHubs, donorHubs, avgUtilization };
   }, [rows]);
 
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-24 animate-pulse rounded-2xl bg-slate-100" />
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className="mb-6 space-y-3">
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-      <div className="gov-card px-4 py-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Stock lines</div>
-        <div className="mt-1 font-serif-display text-xl font-semibold text-slate-900">{loading ? "—" : metrics.skuLines}</div>
-      </div>
-      <div className="gov-card px-4 py-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Quantity on hand</div>
-        <div className="mt-1 font-serif-display text-xl font-semibold text-emerald-700 tabular-nums">
-          {loading ? "—" : Intl.NumberFormat().format(Math.round(metrics.totalQty))}
-        </div>
-      </div>
-      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-700">Low stock SKUs</div>
-        <div className="mt-1 font-serif-display text-xl font-semibold text-amber-900">{loading ? "—" : metrics.lowLines}</div>
-      </div>
-      <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-rose-700">Expiry window (90d)</div>
-        <div className="mt-1 font-serif-display text-xl font-semibold text-rose-900">{loading ? "—" : metrics.expiryRisk}</div>
-      </div>
-      <div className="gov-card px-4 py-3 flex flex-col justify-center">
-        <div className="text-[12px] text-slate-500 leading-snug">
-          Live balances from <span className="font-mono text-slate-700">warehouse_stock</span>. Movement timelines reconcile via transfers and receipts.
-        </div>
-      </div>
-    </div>
-    <div className="grid gap-3 sm:grid-cols-3">
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-700">Ministry-coded hubs</div>
-        <div className="mt-1 font-serif-display text-lg font-semibold text-emerald-900 tabular-nums">
-          {loading ? "—" : metrics.ministryHubs}
-        </div>
-      </div>
-      <div className="gov-card px-4 py-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Avg utilization (coded rows)</div>
-        <div className="mt-1 font-serif-display text-lg font-semibold text-slate-900 tabular-nums">
-          {loading || metrics.avgUtilization == null ? "—" : `${metrics.avgUtilization}%`}
-        </div>
-      </div>
-      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-700">Donor resupply flagged</div>
-        <div className="mt-1 font-serif-display text-lg font-semibold text-amber-900 tabular-nums">
-          {loading ? "—" : metrics.donorHubs}
-        </div>
-      </div>
-    </div>
-    </div>
+    <RegistryKpiStrip
+      items={[
+        { label: "Stock lines", value: nf(metrics.skuLines), hint: "warehouse_stock rows" },
+        { label: "Quantity on hand", value: nf(Math.round(metrics.totalQty)), hint: "Units across hubs", deltaTone: "up" },
+        { label: "Low stock SKUs", value: nf(metrics.lowLines), hint: "Below threshold", deltaTone: metrics.lowLines ? "down" : "up" },
+        { label: "Expiry window (90d)", value: nf(metrics.expiryRisk), hint: "Disposition risk", deltaTone: metrics.expiryRisk ? "down" : "up" },
+        { label: "Ministry-coded hubs", value: nf(metrics.ministryHubs), hint: "Active custody nodes" },
+        { label: "Avg utilization", value: metrics.avgUtilization == null ? "—" : `${metrics.avgUtilization}%`, hint: "Coded warehouse rows" },
+        { label: "Donor resupply flagged", value: nf(metrics.donorHubs), hint: "Programme corridors" },
+      ]}
+    />
   );
 }

@@ -3,7 +3,15 @@
 import * as React from "react";
 import Link from "next/link";
 
-import { OpsStatusBadge } from "@/components/pilot/pilot-ui";
+import {
+  AlertCard,
+  DashboardPanel,
+  PageHeader,
+  SectionHeader,
+  StatusBadge,
+  Timeline,
+} from "@/components/enterprise";
+import { RegistryKpiStrip } from "@/components/registry";
 import {
   MINISTRY_FARMERS,
   MINISTRY_INVENTORY_LINES,
@@ -73,12 +81,18 @@ function qtyTone(qty: number): "ok" | "low" | "critical" {
 
 function StockBar({ value, max }: { value: number; max: number }) {
   const pct = max > 0 ? clamp01(value / max) : 0;
-  const tone = pct < 0.15 ? "bg-rose-500/80" : pct < 0.35 ? "bg-amber-400/80" : "bg-emerald-400/80";
+  const tone = pct < 0.15 ? "bg-rose-500" : pct < 0.35 ? "bg-amber-400" : "bg-emerald-500";
   return (
-    <div className="h-2 w-[140px] rounded-full bg-white/[0.06] overflow-hidden">
+    <div className="h-2 w-[140px] rounded-full bg-slate-200 overflow-hidden">
       <div className={`h-full ${tone}`} style={{ width: `${Math.round(pct * 100)}%` }} />
     </div>
   );
+}
+
+function riskTone(status: string): "success" | "warning" | "danger" {
+  if (status === "healthy") return "success";
+  if (status === "warning") return "warning";
+  return "danger";
 }
 
 function Chip({
@@ -88,17 +102,14 @@ function Chip({
   label: string;
   tone: "neutral" | "emerald" | "amber" | "rose" | "slate";
 }) {
-  const cls =
-    tone === "emerald"
-      ? "border-emerald-400/35 bg-emerald-500/10 text-emerald-100"
-      : tone === "amber"
-        ? "border-amber-400/35 bg-amber-500/10 text-amber-100"
-        : tone === "rose"
-          ? "border-rose-500/35 bg-rose-500/10 text-rose-100"
-          : tone === "slate"
-            ? "border-slate-700 bg-slate-900/50 text-slate-200"
-            : "border-white/10 bg-white/[0.03] text-slate-200";
-  return <span className={`inline-flex items-center rounded-full border px-2.5 py-1 font-mono text-[10px] ${cls}`}>{label}</span>;
+  const map = {
+    neutral: "neutral",
+    emerald: "success",
+    amber: "warning",
+    rose: "danger",
+    slate: "info",
+  } as const;
+  return <StatusBadge tone={map[tone]}>{label}</StatusBadge>;
 }
 
 export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
@@ -367,160 +378,117 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
   const narrative = React.useMemo(() => buildWarehouseOperationalBrief(code), [code]);
 
   return (
-    <div className="space-y-8 text-slate-100 pb-12">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <Link href="/inventory" className="font-mono text-[11px] text-emerald-400 hover:text-emerald-300">
-            ← Logistics command center
-          </Link>
-          <div className="mt-2 font-mono text-[11px] uppercase tracking-[0.2em] text-emerald-200/70">{code}</div>
-          <h1 className="mt-1 font-display text-[clamp(1.35rem,2.5vw,1.95rem)] font-semibold text-white">{name}</h1>
-          <p className="mt-2 max-w-[760px] text-[13px] leading-relaxed text-slate-400">
-            Hub profile · SKU custody · donor corridors · transfer workflows (<span className="font-mono text-emerald-300/80">TRF-*-*-*</span>) · distributions · movement
-            timeline scoped to this ministry code.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <OpsStatusBadge status={signalRisk} />
-          {donor ? (
-            <span className="rounded-full border border-amber-400/35 bg-amber-500/10 px-3 py-1 font-mono text-[10px] text-amber-100">Donor resupply corridor</span>
-          ) : null}
-          {utilization >= 92 ? (
-            <span className="rounded-full border border-rose-500/35 bg-rose-500/10 px-3 py-1 font-mono text-[10px] text-rose-100">Near capacity</span>
-          ) : null}
-        </div>
-      </div>
+    <div className="space-y-6 pb-10">
+      <PageHeader
+        kicker={`Hub command · ${code}`}
+        title={name}
+        description="Hub profile · SKU custody · donor corridors · transfer workflows (TRF) · distributions · movement timeline scoped to this ministry code."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <StatusBadge tone={riskTone(signalRisk)}>{signalRisk}</StatusBadge>
+            {donor ? <StatusBadge tone="warning">Donor resupply</StatusBadge> : null}
+            {utilization >= 92 ? <StatusBadge tone="danger">Near capacity</StatusBadge> : null}
+          </div>
+        }
+      />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
-        {[
+      <p className="-mt-2">
+        <Link href="/inventory" className="text-[13px] font-medium text-forest-700 hover:text-forest-600">
+          ← Logistics command center
+        </Link>
+      </p>
+
+      <RegistryKpiStrip
+        items={[
           { label: "County", value: county },
           { label: "Operational status", value: opStatus },
           { label: "Utilization", value: `${utilization.toFixed(1)}%`, hint: "Capacity pressure" },
           { label: "Stock / capacity", value: `${currentStock.toFixed(1)} / ${capacity.toFixed(1)} MT` },
           { label: "SKU lines", value: String(stockLines.length) },
           { label: "Custody manager", value: manager },
-        ].map((m) => (
-          <div key={m.label} className="rounded-xl border border-slate-700 bg-slate-950/55 px-4 py-3">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">{m.label}</div>
-            <div className="mt-1 font-display text-[15px] font-semibold leading-snug text-white">{m.value}</div>
-            {"hint" in m ? <div className="mt-2 text-[11px] text-slate-500">{(m as any).hint}</div> : null}
-          </div>
-        ))}
-      </div>
+        ]}
+      />
 
       {narrative ? (
-        <section className="rounded-2xl border border-slate-700/90 bg-slate-950/55 px-5 py-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-500">Operational narrative strip</div>
-              <p className="mt-2 text-[13px] leading-relaxed text-slate-200">{narrative.headline}</p>
-              <div className="mt-3 grid gap-2 text-[11px] text-slate-500 md:grid-cols-2">
-                <p>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">Stock pressure · </span>
-                  {narrative.stockPressure}
-                </p>
-                <p>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">Donor shipments · </span>
-                  {narrative.donorOverview}
-                </p>
-                <p>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">County allocation · </span>
-                  {narrative.countyAllocation}
-                </p>
-                <p>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">Utilization · </span>
-                  {narrative.utilizationCommentary}
-                </p>
-                <p className="md:col-span-2">
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">Low stock reasoning · </span>
-                  {narrative.lowStockReasoning}
-                </p>
-                <p className="md:col-span-2">
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">Expiry risk · </span>
-                  {narrative.expiryRisk}
-                </p>
-              </div>
-            </div>
+        <DashboardPanel>
+          <SectionHeader kicker="Operational narrative" title={narrative.headline} />
+          <div className="mt-3 grid gap-2 text-[12px] text-slate-600 md:grid-cols-2">
+            <p><span className="font-mono text-[10px] uppercase text-slate-500">Stock pressure · </span>{narrative.stockPressure}</p>
+            <p><span className="font-mono text-[10px] uppercase text-slate-500">Donor shipments · </span>{narrative.donorOverview}</p>
+            <p><span className="font-mono text-[10px] uppercase text-slate-500">County allocation · </span>{narrative.countyAllocation}</p>
+            <p><span className="font-mono text-[10px] uppercase text-slate-500">Utilization · </span>{narrative.utilizationCommentary}</p>
+            <p className="md:col-span-2"><span className="font-mono text-[10px] uppercase text-slate-500">Low stock · </span>{narrative.lowStockReasoning}</p>
+            <p className="md:col-span-2"><span className="font-mono text-[10px] uppercase text-slate-500">Expiry risk · </span>{narrative.expiryRisk}</p>
           </div>
-          <div className="mt-4 border-t border-white/[0.06] pt-3">
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Recent movement timeline (canonical)</div>
-            <ul className="mt-2 space-y-1 font-mono text-[10px] text-slate-400">
-              {narrative.movementSummary.map((m) => (
-                <li key={m}>{m}</li>
-              ))}
-            </ul>
-          </div>
-        </section>
+          <Timeline
+            className="mt-4"
+            items={narrative.movementSummary.map((m, i) => ({ id: `mv-${i}`, title: m, time: "Recent", tone: "default" as const }))}
+          />
+        </DashboardPanel>
       ) : null}
 
-      <section className="rounded-2xl border border-slate-700 bg-slate-950/40 px-5 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Operational posture</div>
-            <div className="mt-1 font-display text-[15px] font-semibold text-white">Utilization · expiry · low stock</div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {lowStockCount ? <Chip tone="amber" label={`${lowStockCount} low stock lines`} /> : <Chip tone="emerald" label="Stock levels stable" />}
-            {expiryAlerts.length ? <Chip tone="rose" label={`${expiryAlerts.length} expiry risks ≤90d`} /> : <Chip tone="slate" label="No expiry risks in window" />}
-          </div>
-        </div>
-        <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px] items-center">
-          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-            <div className="flex items-center justify-between">
-              <div className="text-[12px] text-slate-300">Capacity utilization</div>
-              <div className="font-mono text-[12px] text-slate-200 tabular-nums">{utilization.toFixed(1)}%</div>
+      <DashboardPanel>
+        <SectionHeader
+          kicker="Posture"
+          title="Utilization · expiry · low stock"
+          action={
+            <div className="flex flex-wrap gap-2">
+              {lowStockCount ? <Chip tone="amber" label={`${lowStockCount} low stock`} /> : <Chip tone="emerald" label="Stock stable" />}
+              {expiryAlerts.length ? <Chip tone="rose" label={`${expiryAlerts.length} expiry risks`} /> : <Chip tone="slate" label="No expiry risks" />}
             </div>
-            <div className="mt-2 h-3 rounded-full bg-white/[0.06] overflow-hidden">
+          }
+        />
+        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px] items-center">
+          <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
+            <div className="flex items-center justify-between text-[13px]">
+              <span className="text-slate-600">Capacity utilization</span>
+              <span className="font-mono tabular-nums text-ink-900">{utilization.toFixed(1)}%</span>
+            </div>
+            <div className="mt-2 h-3 rounded-full bg-slate-200 overflow-hidden">
               <div
-                className={`${utilization >= 92 ? "bg-rose-500/80" : utilization >= 80 ? "bg-amber-400/80" : "bg-emerald-400/80"} h-full`}
+                className={`${utilization >= 92 ? "bg-rose-500" : utilization >= 80 ? "bg-amber-400" : "bg-emerald-500"} h-full`}
                 style={{ width: `${Math.round(clamp01(utilization / 100) * 100)}%` }}
               />
             </div>
-            <div className="mt-2 text-[11px] text-slate-500">
+            <p className="mt-2 text-[12px] text-slate-500">
               {capacity > 0 ? `${currentStock.toFixed(1)} MT in custody · ${capacity.toFixed(1)} MT capacity` : "Capacity not configured"}
-            </div>
+            </p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-            <div className="text-[12px] text-slate-300">Disposition watch</div>
-            <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-slate-400">
-              <div className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Inbound TRF</div>
-                <div className="mt-1 font-display text-[15px] font-semibold text-white tabular-nums">{incomingTransfers.length}</div>
-              </div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Outbound TRF</div>
-                <div className="mt-1 font-display text-[15px] font-semibold text-white tabular-nums">{outgoingTransfers.length}</div>
-              </div>
+          <div className="grid grid-cols-2 gap-2 text-center">
+            <div className="rounded-xl border border-slate-100 bg-white p-3">
+              <p className="font-mono text-[10px] uppercase text-slate-500">Inbound TRF</p>
+              <p className="mt-1 text-xl font-semibold tabular-nums text-ink-900">{incomingTransfers.length}</p>
+            </div>
+            <div className="rounded-xl border border-slate-100 bg-white p-3">
+              <p className="font-mono text-[10px] uppercase text-slate-500">Outbound TRF</p>
+              <p className="mt-1 text-xl font-semibold tabular-nums text-ink-900">{outgoingTransfers.length}</p>
             </div>
           </div>
         </div>
-      </section>
+      </DashboardPanel>
 
       {assignedDistricts.length ? (
-        <section className="rounded-2xl border border-slate-700 bg-slate-950/45 px-5 py-4">
-          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Assigned districts</div>
-          <p className="mt-2 text-[12px] text-slate-400">Farmers with primary warehouse linkage to {code} (canonical registry).</p>
+        <DashboardPanel>
+          <SectionHeader kicker="Coverage" title="Assigned districts" subtitle={`Farmers with primary warehouse linkage to ${code}`} />
           <div className="mt-3 flex flex-wrap gap-2">
             {assignedDistricts.map((d) => (
-              <span key={d} className="rounded-full border border-slate-700 bg-slate-900/60 px-3 py-1 text-[12px] text-slate-200">
-                {d}
-              </span>
+              <StatusBadge key={d} tone="neutral">{d}</StatusBadge>
             ))}
           </div>
-        </section>
+        </DashboardPanel>
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-slate-700 bg-slate-950/40 overflow-hidden">
-          <div className="border-b border-slate-800 px-5 py-3">
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Incoming shipments</div>
-            <div className="font-display text-[15px] font-semibold text-white">Transfer workflow · inbound</div>
+        <DashboardPanel padding="none">
+          <div className="border-b border-slate-100 px-5 py-3">
+            <SectionHeader kicker="Inbound" title="Transfer workflow · inbound" />
           </div>
-          <ul className="divide-y divide-slate-800 px-5 py-2 text-[12px]">
+          <ul className="divide-y divide-slate-100 px-5 py-2 text-[12px]">
             {incomingTransfers.length ? (
               incomingTransfers.map((t) => (
-                <li key={t.transferCode} className="py-2">
-                  <span className="font-mono text-emerald-300/90">{t.transferCode}</span> · {t.sku} · {t.quantity} ·{" "}
+                <li key={t.transferCode} className="py-2.5">
+                  <Link href="/transfers" className="font-mono font-medium text-forest-700">{t.transferCode}</Link>
+                  <span className="text-slate-600"> · {t.sku} · {t.quantity} · </span>
                   <span className="capitalize">{t.status.replace(/_/g, " ")}</span>
                 </li>
               ))
@@ -528,74 +496,68 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
               <li className="py-4 text-slate-500">No inbound TRF rows for this hub.</li>
             )}
           </ul>
-        </section>
-        <section className="rounded-2xl border border-slate-700 bg-slate-950/40 overflow-hidden">
-          <div className="border-b border-slate-800 px-5 py-3">
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Outgoing distributions</div>
-            <div className="font-display text-[15px] font-semibold text-white">Farmer-facing ledger</div>
+        </DashboardPanel>
+
+        <DashboardPanel padding="none">
+          <div className="border-b border-slate-100 px-5 py-3">
+            <SectionHeader kicker="Outbound" title="Farmer-facing distributions" />
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[480px] text-left text-[12px]">
-              <thead className="font-mono text-[10px] uppercase text-slate-500 border-b border-slate-800">
+            <table className="enterprise-table min-w-[480px]">
+              <thead>
                 <tr>
-                  <th className="px-5 py-2">When</th>
-                  <th className="px-5 py-2">Farmer</th>
-                  <th className="px-5 py-2">Qty</th>
-                  <th className="px-5 py-2">Channel</th>
+                  <th>When</th>
+                  <th>Farmer</th>
+                  <th>Qty</th>
+                  <th>Channel</th>
                 </tr>
               </thead>
-              <tbody className="text-slate-300">
+              <tbody>
                 {distributions.length ? (
                   distributions.map((d) => (
-                    <tr key={d.id} className="border-b border-slate-800/90">
-                      <td className="px-5 py-2 whitespace-nowrap">{new Date(d.at).toLocaleString()}</td>
-                      <td className="px-5 py-2">{d.farmer}</td>
-                      <td className="px-5 py-2 tabular-nums">{d.qty}</td>
-                      <td className="px-5 py-2 font-mono text-[11px]">{d.channel}</td>
+                    <tr key={d.id}>
+                      <td className="whitespace-nowrap">{new Date(d.at).toLocaleString()}</td>
+                      <td>{d.farmer}</td>
+                      <td className="tabular-nums">{d.qty}</td>
+                      <td className="font-mono text-[11px]">{d.channel}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td className="px-5 py-6 text-slate-500" colSpan={4}>
-                      No distribution_logs rows for this warehouse (live DB empty).
-                    </td>
+                    <td colSpan={4} className="py-6 text-slate-500">No distribution_logs rows for this warehouse.</td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
-        </section>
+        </DashboardPanel>
       </div>
 
-      <section className="rounded-2xl border border-slate-700 bg-slate-950/40 overflow-hidden">
-        <div className="border-b border-slate-800 px-5 py-3 flex flex-wrap justify-between gap-2">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Inventory by SKU</div>
-            <div className="font-display text-[15px] font-semibold text-white">warehouse_stock · canonical fallback</div>
-          </div>
-          <Link href="/inventory/transfers" className="text-[12px] text-emerald-400 hover:text-emerald-300">
+      <DashboardPanel padding="none">
+        <div className="border-b border-slate-100 px-5 py-3 flex flex-wrap justify-between gap-2">
+          <SectionHeader kicker="Custody" title="Inventory by SKU" subtitle="warehouse_stock · canonical fallback" />
+          <Link href="/transfers" className="text-[12px] font-medium text-forest-700 hover:text-forest-600 self-center">
             Open transfer workflow →
           </Link>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] text-left text-[13px]">
-            <thead className="font-mono text-[10px] uppercase tracking-wider text-slate-500 border-b border-slate-800">
+        <div className="overflow-x-auto p-2">
+          <table className="enterprise-table min-w-[980px]">
+            <thead>
               <tr>
-                <th className="px-5 py-2">SKU</th>
-                <th className="px-5 py-2">Item</th>
-                <th className="px-5 py-2">Category</th>
-                <th className="px-5 py-2">Stock level</th>
-                <th className="px-5 py-2">Expiry risk</th>
-                <th className="px-5 py-2">Donor</th>
-                <th className="px-5 py-2">Flags</th>
+                <th>SKU</th>
+                <th>Item</th>
+                <th>Stock level</th>
+                <th>Expiry risk</th>
+                <th>Donor</th>
+                <th>Flags</th>
               </tr>
             </thead>
-            <tbody className="text-slate-200">
+            <tbody>
               {stockLines.length ? (
                 stockByCategory.flatMap((g) => {
                   const header = (
-                    <tr key={`cat-${g.category}`} className="bg-black/20">
-                      <td colSpan={7} className="px-5 py-2">
+                    <tr key={`cat-${g.category}`} className="bg-slate-50">
+                      <td colSpan={6} className="px-3 py-2">
                         <div className="flex items-center justify-between gap-3">
                           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">{g.category}</div>
                           <div className="text-[11px] text-slate-500">{g.lines.length} lines</div>
@@ -609,27 +571,23 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
                     const eTone = expiryTone(days);
                     const qTone = qtyTone(s.quantity);
                     const rowCls =
-                      qTone === "critical"
-                        ? "bg-rose-500/5"
-                        : qTone === "low"
-                          ? "bg-amber-500/5"
-                          : "";
+                      qTone === "critical" ? "bg-rose-50" : qTone === "low" ? "bg-amber-50/50" : "";
                     return (
-                      <tr key={s.sku + (s.batch ?? "")} className={`border-b border-slate-800/90 ${rowCls}`}>
-                        <td className="px-5 py-2 font-mono text-[11px] text-emerald-200/90">{s.sku}</td>
-                        <td className="px-5 py-2 min-w-[260px]">{s.name}</td>
-                        <td className="px-5 py-2">
+                      <tr key={s.sku + (s.batch ?? "")} className={rowCls}>
+                        <td className="font-mono text-[11px] text-forest-700">{s.sku}</td>
+                        <td className="min-w-[200px]">{s.name}</td>
+                        <td>
                           <div className="flex items-center gap-3">
-                            <div className="tabular-nums font-mono text-[12px] text-slate-100 w-[88px] text-right">
+                            <div className="tabular-nums font-mono text-[12px] w-[88px] text-right">
                               {Intl.NumberFormat().format(s.quantity)}
                             </div>
                             <StockBar value={s.quantity} max={Math.max(1, maxQty)} />
                             {qTone === "critical" ? <Chip tone="rose" label="LOW" /> : qTone === "low" ? <Chip tone="amber" label="WATCH" /> : <Chip tone="emerald" label="OK" />}
                           </div>
                         </td>
-                        <td className="px-5 py-2">
+                        <td>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-[11px] text-slate-400">{fmtDate(s.expiry)}</span>
+                            <span className="font-mono text-[11px] text-slate-500">{fmtDate(s.expiry)}</span>
                             {eTone === "critical" ? (
                               <Chip tone="rose" label={days != null ? `${days}d` : "RISK"} />
                             ) : eTone === "soon" ? (
@@ -641,10 +599,8 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
                             )}
                           </div>
                         </td>
-                        <td className="px-5 py-2">{s.donor ? <Chip tone="amber" label="Donor" /> : <span className="text-slate-500">—</span>}</td>
-                        <td className="px-5 py-2">
-                          {s.damaged ? <Chip tone="rose" label="Loss/Theft" /> : <span className="text-slate-500">—</span>}
-                        </td>
+                        <td>{s.donor ? <Chip tone="amber" label="Donor" /> : <span className="text-slate-400">—</span>}</td>
+                        <td>{s.damaged ? <Chip tone="rose" label="Loss/Theft" /> : <span className="text-slate-400">—</span>}</td>
                       </tr>
                     );
                   });
@@ -653,7 +609,7 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
                 })
               ) : (
                 <tr>
-                  <td className="px-5 py-6 text-slate-500" colSpan={7}>
+                  <td className="py-6 text-slate-500" colSpan={6}>
                     No SKU custody rows.
                   </td>
                 </tr>
@@ -661,129 +617,119 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
             </tbody>
           </table>
         </div>
-      </section>
+      </DashboardPanel>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-rose-900/35 bg-rose-950/15 px-5 py-4">
-          <div className="font-display text-[14px] font-semibold text-white">Expiry alerts (90d)</div>
-          <ul className="mt-3 space-y-2 text-[12px] text-rose-100/90">
-            {expiryAlerts.length ? (
-              expiryAlerts.map((s) => (
-                <li key={s.sku}>
-                  {s.sku} · {s.name} · expires {s.expiry}
-                </li>
-              ))
-            ) : (
-              <li className="text-slate-500">No tracked lots inside the 90-day disposition window.</li>
-            )}
-          </ul>
-        </section>
-        <section className="rounded-2xl border border-slate-700 bg-slate-950/40 px-5 py-4">
-          <div className="font-display text-[14px] font-semibold text-white">Damaged / flagged inventory</div>
-          <ul className="mt-3 space-y-2 text-[12px] text-slate-300">
+        <AlertCard tone="danger" title="Expiry alerts (90d)">
+          {expiryAlerts.length ? (
+            <ul className="space-y-1">
+              {expiryAlerts.map((s) => (
+                <li key={s.sku}>{s.sku} · {s.name} · expires {s.expiry}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>No tracked lots inside the 90-day disposition window.</p>
+          )}
+        </AlertCard>
+        <DashboardPanel>
+          <SectionHeader title="Damaged / flagged inventory" />
+          <ul className="mt-3 space-y-2 text-[12px] text-slate-700">
             {damagedLines.length ? (
               damagedLines.map((s) => (
-                <li key={`dmg-${s.sku}`}>
-                  {s.sku} · batch {s.batch ?? "—"}
-                </li>
+                <li key={`dmg-${s.sku}`}>{s.sku} · batch {s.batch ?? "—"}</li>
               ))
             ) : (
               <li className="text-slate-500">No loss / theft flags on live rows.</li>
             )}
           </ul>
-        </section>
+        </DashboardPanel>
       </div>
 
-      <section className="rounded-2xl border border-slate-700 bg-slate-950/40 overflow-hidden">
-        <div className="border-b border-slate-800 px-5 py-3">
-          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Donor shipments</div>
-          <div className="font-display text-[15px] font-semibold text-white">Programme inbounds</div>
+      <DashboardPanel padding="none">
+        <div className="border-b border-slate-100 px-5 py-3">
+          <SectionHeader kicker="Programmes" title="Donor shipments" />
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-left text-[13px]">
-            <thead className="font-mono text-[10px] uppercase text-slate-500 border-b border-slate-800">
+        <div className="overflow-x-auto p-2">
+          <table className="enterprise-table min-w-[560px]">
+            <thead>
               <tr>
-                <th className="px-5 py-2">Donor</th>
-                <th className="px-5 py-2">SKU</th>
-                <th className="px-5 py-2">Qty</th>
-                <th className="px-5 py-2">Received</th>
+                <th>Donor</th>
+                <th>SKU</th>
+                <th>Qty</th>
+                <th>Received</th>
               </tr>
             </thead>
-            <tbody className="text-slate-200">
+            <tbody>
               {donors.length ? (
                 donors.map((d) => (
-                  <tr key={d.id} className="border-b border-slate-800/90">
-                    <td className="px-5 py-2">{d.donor}</td>
-                    <td className="px-5 py-2 font-mono text-[11px]">{d.sku}</td>
-                    <td className="px-5 py-2 tabular-nums">{d.qty}</td>
-                    <td className="px-5 py-2">{d.received}</td>
+                  <tr key={d.id}>
+                    <td>{d.donor}</td>
+                    <td className="font-mono text-[11px]">{d.sku}</td>
+                    <td className="tabular-nums">{d.qty}</td>
+                    <td>{d.received}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td className="px-5 py-6 text-slate-500" colSpan={4}>
-                    No donor_shipments linked to this warehouse id — programme CSV exports still available nationally.
+                  <td colSpan={4} className="py-6 text-slate-500">
+                    No donor_shipments linked to this warehouse id.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-      </section>
+      </DashboardPanel>
 
-      <section className="rounded-2xl border border-slate-700 bg-slate-950/40 overflow-hidden">
-        <div className="border-b border-slate-800 px-5 py-3 flex flex-wrap justify-between gap-2">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Inventory movement timeline</div>
-            <div className="font-display text-[15px] font-semibold text-white">Transfers · receipts · distributions</div>
-          </div>
-          <span className="font-mono text-[10px] text-slate-500">{warehouseUuid ? "Scoped to hub UUID" : "Fixture scope"}</span>
+      <DashboardPanel padding="none">
+        <div className="border-b border-slate-100 px-5 py-3 flex flex-wrap justify-between gap-2">
+          <SectionHeader kicker="Ledger" title="Inventory movement timeline" subtitle="Transfers · receipts · distributions" />
+          <span className="font-mono text-[10px] text-slate-500 self-center">{warehouseUuid ? "Scoped to hub UUID" : "Fixture scope"}</span>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[800px] text-left text-[13px]">
-            <thead className="font-mono text-[10px] uppercase tracking-wider text-slate-500 border-b border-slate-800">
+        <div className="overflow-x-auto p-2">
+          <table className="enterprise-table min-w-[800px]">
+            <thead>
               <tr>
-                <th className="px-5 py-2">Reference</th>
-                <th className="px-5 py-2">SKU</th>
-                <th className="px-5 py-2">Qty</th>
-                <th className="px-5 py-2">From</th>
-                <th className="px-5 py-2">To</th>
-                <th className="px-5 py-2">Type</th>
-                <th className="px-5 py-2">Occurred</th>
+                <th>Reference</th>
+                <th>SKU</th>
+                <th>Qty</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Type</th>
+                <th>Occurred</th>
               </tr>
             </thead>
-            <tbody className="text-slate-200">
+            <tbody>
               {movements.length ? (
                 movements.map((m) => (
-                  <tr key={m.id} className="border-b border-slate-800/90">
-                    <td className="px-5 py-2 font-mono text-[11px] text-emerald-200/90">{m.ref}</td>
-                    <td className="px-5 py-2 font-mono text-[11px]">{m.sku}</td>
-                    <td className="px-5 py-2 tabular-nums">{m.qty}</td>
-                    <td className="px-5 py-2 font-mono text-[11px]">{m.from}</td>
-                    <td className="px-5 py-2 font-mono text-[11px]">{m.to}</td>
-                    <td className="px-5 py-2 capitalize">{m.type}</td>
-                    <td className="px-5 py-2 text-slate-400">{m.at ? new Date(m.at).toLocaleString() : "—"}</td>
+                  <tr key={m.id}>
+                    <td className="font-mono text-[11px] text-forest-700">{m.ref}</td>
+                    <td className="font-mono text-[11px]">{m.sku}</td>
+                    <td className="tabular-nums">{m.qty}</td>
+                    <td className="font-mono text-[11px]">{m.from}</td>
+                    <td className="font-mono text-[11px]">{m.to}</td>
+                    <td className="capitalize">{m.type}</td>
+                    <td className="text-slate-500">{m.at ? new Date(m.at).toLocaleString() : "—"}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td className="px-5 py-6 text-slate-500" colSpan={7}>
-                    No movements yet for this warehouse code.
-                  </td>
+                  <td colSpan={7} className="py-6 text-slate-500">No movements yet for this warehouse code.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-      </section>
+      </DashboardPanel>
 
-      <section className="rounded-2xl border border-slate-700 bg-slate-950/35 px-5 py-4">
-        <div className="font-display text-[14px] font-semibold text-white">Outgoing transfer spotlight</div>
-        <ul className="mt-3 space-y-2 text-[12px] text-slate-300">
+      <DashboardPanel>
+        <SectionHeader title="Outgoing transfer spotlight" />
+        <ul className="mt-3 space-y-2 text-[12px] text-slate-700">
           {outgoingTransfers.length ? (
             outgoingTransfers.map((t) => (
               <li key={`out-${t.transferCode}`}>
-                <span className="font-mono text-emerald-300/90">{t.transferCode}</span> → {t.toMinistryCode} · {t.status.replace(/_/g, " ")}
+                <Link href="/transfers" className="font-mono font-medium text-forest-700">{t.transferCode}</Link>
+                <span> → {t.toMinistryCode} · {t.status.replace(/_/g, " ")}</span>
               </li>
             ))
           ) : (
@@ -791,17 +737,17 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
           )}
         </ul>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Link href="/inventory/transfers" className="rounded-lg border border-emerald-500/35 bg-emerald-950/35 px-4 py-2 text-[12px] font-medium text-emerald-50 hover:bg-emerald-950/55">
+          <Link href="/transfers" className="inline-flex h-9 items-center rounded-lg btn-emerald px-4 text-[12px] font-semibold">
             Transfer command desk
           </Link>
-          <Link href="/inventory/donor-shipments" className="rounded-lg border border-white/10 px-4 py-2 text-[12px] text-emerald-100 hover:bg-white/[0.05]">
+          <Link href="/inventory/donor-shipments" className="inline-flex h-9 items-center rounded-lg btn-gov-outline px-4 text-[12px]">
             Donor shipments
           </Link>
-          <Link href="/inventory/expiry" className="rounded-lg border border-white/10 px-4 py-2 text-[12px] text-emerald-100 hover:bg-white/[0.05]">
+          <Link href="/inventory/expiry" className="inline-flex h-9 items-center rounded-lg btn-gov-outline px-4 text-[12px]">
             Expiry monitoring
           </Link>
         </div>
-      </section>
+      </DashboardPanel>
     </div>
   );
 }
