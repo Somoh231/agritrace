@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { apiHeaders } from "@/lib/http/api-response";
+import { guardAdminApiRequest } from "@/lib/http/admin-api-guard";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { requireAdminConsole } from "@/lib/supabase/require-admin-console";
 
-export async function GET() {
-  const guard = await requireAdminConsole();
-  if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.status });
+export async function GET(request: Request) {
+  const gate = await guardAdminApiRequest(request, "read");
+  if (!gate.ok) return gate.response;
 
   try {
     const admin = getSupabaseAdminClient();
@@ -16,7 +17,7 @@ export async function GET() {
       .limit(1)
       .maybeSingle();
     if (error) throw error;
-    return NextResponse.json({ settings: data });
+    return NextResponse.json({ settings: data }, { headers: apiHeaders(gate.ctx) });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to load settings.";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -24,8 +25,8 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const guard = await requireAdminConsole();
-  if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.status });
+  const gate = await guardAdminApiRequest(request, "mutation");
+  if (!gate.ok) return gate.response;
 
   try {
     const body = (await request.json()) as any;
@@ -55,14 +56,14 @@ export async function PATCH(request: Request) {
     if (error) throw error;
 
     await admin.from("audit_log").insert({
-      user_id: guard.userId,
+      user_id: gate.userId,
       action: "ADMIN_UPDATE_SETTINGS",
       table_name: "app_settings",
       record_id: current.id,
       new_values: patch,
     } as any);
 
-    return NextResponse.json({ settings: data });
+    return NextResponse.json({ settings: data }, { headers: apiHeaders(gate.ctx) });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to update settings.";
     return NextResponse.json({ error: message }, { status: 500 });

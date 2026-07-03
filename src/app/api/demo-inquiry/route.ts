@@ -7,16 +7,16 @@ import {
 import {
   apiError,
   apiJson,
-  beginApiRequest,
+  beginApiRequestAsync,
   rejectIfRateLimited,
 } from "@/lib/http/api-response";
+import { PUBLIC_POLICY } from "@/lib/http/rate-limit-policies";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const MAX_BODY_BYTES = 32_768;
-const PUBLIC_POLICY = { windowMs: 60_000, max: 10 };
 
 export async function POST(request: Request) {
-  const ctx = beginApiRequest(request, PUBLIC_POLICY);
+  const ctx = await beginApiRequestAsync(request, PUBLIC_POLICY);
   const blocked = rejectIfRateLimited(ctx);
   if (blocked) return blocked;
 

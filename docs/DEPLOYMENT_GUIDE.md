@@ -55,6 +55,10 @@ Create `agritrace/.env.local` for local development. Set all variables in Vercel
 | `NEXT_PUBLIC_APP_URL` | Client | Canonical app URL for metadata and OG tags |
 | `ANTHROPIC_API_KEY` | Server | Required for `/api/ai/chat` |
 | `ANTHROPIC_MODEL` | Server | Default: `claude-3-haiku-20240307` |
+| `NEXT_PUBLIC_SENTRY_DSN` | Client + build | Sentry public DSN — enables error monitoring |
+| `SENTRY_ENVIRONMENT` | Server + client | e.g. `production`, `preview`, `development` |
+| `UPSTASH_REDIS_REST_URL` | Server | Distributed rate limiting (Upstash Redis REST) |
+| `UPSTASH_REDIS_REST_TOKEN` | Server | Upstash REST token — server only |
 
 ### Optional
 
@@ -63,6 +67,14 @@ Create `agritrace/.env.local` for local development. Set all variables in Vercel
 | `NEXT_PUBLIC_ENABLE_HOMEPAGE_EXPERIMENT` | enabled | Set `"false"` to disable A/B cookie on `/` |
 | `NEXT_PUBLIC_SHOW_DEMO_RAIL` | off | Set `"true"` to show demo rail in dashboard shell |
 | `VERCEL_PROJECT_PRODUCTION_URL` | auto | Vercel auto-set; used in metadata fallback |
+| `SENTRY_DSN` | — | Server Sentry DSN if different from public DSN |
+| `SENTRY_AUTH_TOKEN` | — | Build-time token for source map upload (CI/Vercel only) |
+| `SENTRY_ORG` | — | Sentry organization slug (source maps) |
+| `SENTRY_PROJECT` | — | Sentry project slug (source maps) |
+| `SENTRY_RELEASE` | `VERCEL_GIT_COMMIT_SHA` | Release tag in Sentry |
+| `SENTRY_TRACES_SAMPLE_RATE` | `0.1` prod | Performance trace sampling `0.0`–`1.0` |
+| `KV_REST_API_URL` | — | Vercel KV REST URL (alternative to Upstash) |
+| `KV_REST_API_TOKEN` | — | Vercel KV REST token |
 
 ### Example `.env.local`
 
@@ -80,6 +92,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 | Surface | Path | Checks |
 |---------|------|--------|
 | Health page | `/health` | Env var presence |
+| Health API | `/api/health` | App + Supabase + Mapbox config (JSON, no secrets) |
 | Setup page | `/setup` | First-run bootstrap instructions |
 | Admin launch readiness | `/admin/launch-readiness` | Env + table presence matrix |
 | Admin system | `/admin/system` | Runtime configuration display |

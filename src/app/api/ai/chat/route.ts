@@ -4,15 +4,16 @@ import {
   API_ERROR_GENERIC,
   API_ERROR_INVALID_JSON,
   API_ERROR_UNAUTHORIZED,
+  logApiError,
   requestBodyTooLarge,
 } from "@/lib/http/api-security";
 import {
   apiError,
   apiHeaders,
-  beginApiRequest,
+  beginApiRequestAsync,
   rejectIfRateLimited,
 } from "@/lib/http/api-response";
-import { logApiFailure } from "@/lib/http/structured-log";
+import { AI_CHAT_POLICY } from "@/lib/http/rate-limit-policies";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, UserRole } from "@/lib/supabase/types";
 import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
@@ -231,10 +232,8 @@ function describeAnthropicStreamError(e: unknown): { logLine: string; streamNoti
   };
 }
 
-const AI_CHAT_POLICY = { windowMs: 60_000, max: 20 };
-
 export async function POST(req: Request) {
-  const ctx = beginApiRequest(req, AI_CHAT_POLICY);
+  const ctx = await beginApiRequestAsync(req, AI_CHAT_POLICY);
   const blocked = rejectIfRateLimited(ctx);
   if (blocked) return blocked;
 
@@ -266,7 +265,7 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
     if (!apiKey) {
-      logApiFailure("ai/chat", new Error("Missing ANTHROPIC_API_KEY"), ctx.requestId);
+      logApiError("ai/chat", new Error("Missing ANTHROPIC_API_KEY"), ctx.requestId);
       return apiError(ctx, API_ERROR_GENERIC, 503, { policy: AI_CHAT_POLICY, userId: user.id });
     }
 

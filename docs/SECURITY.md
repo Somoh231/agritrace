@@ -239,21 +239,35 @@ Do not enable HSTS preload on `*.vercel.app` preview URLs.
 
 ## Rate limiting
 
-**File:** `src/lib/http/rate-limit.ts`
+**Files:** `src/lib/http/rate-limit.ts`, `rate-limit-store.ts`, `rate-limit-policies.ts`
 
-In-process sliding window keyed by `clientRateLimitKey()`:
+Distributed sliding window when Upstash Redis or Vercel KV REST credentials are configured. **Fail-open:** Redis errors fall back to per-instance in-memory store (documented — prefer Redis in production).
+
+Keyed by `clientRateLimitKey()`:
 - Authenticated: `user:<userId>`
 - Anonymous: `ip:<x-forwarded-for>`
 
-### Enforced routes
+### Policies
 
-| Route | Limit | Window |
-|-------|-------|--------|
-| `GET /api/farmers` | 120 requests | 60 seconds |
-| `GET /api/registrations` | 120 requests | 60 seconds |
-| `GET /api/production` | 120 requests | 60 seconds |
-| `POST /api/demo-inquiry` | 10 requests | 60 seconds |
-| `POST /api/ai/chat` | 20 requests | 60 seconds |
+| Policy | Limit | Window | Routes |
+|--------|-------|--------|--------|
+| `READ_POLICY` | 120 | 60s | Farmers, registrations, production, reports index, workspace demo role |
+| `PUBLIC_POLICY` | 10 | 60s | Demo inquiry |
+| `AI_CHAT_POLICY` | 20 | 60s | AI chat |
+| `EXPORT_POLICY` | 15 | 60s | All PDF/CSV report exports |
+| `WORKFLOW_MUTATION_POLICY` | 60 | 60s | Workflow submission, transfer, verification |
+| `ANALYTICS_POLICY` | 120 | 60s | Analytics ingestion |
+| `ADMIN_MUTATION_POLICY` | 40 | 60s | Admin console writes |
+| Admin reads | 120 | 60s | Admin console GET APIs |
+
+### Environment variables
+
+| Variable | Purpose |
+|----------|---------|
+| `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` | Preferred distributed store |
+| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | Vercel KV alternative |
+
+Without Redis/KV, limits are enforced per server instance only (acceptable for local dev).
 
 ### Response headers
 
@@ -262,6 +276,7 @@ X-RateLimit-Limit: 120
 X-RateLimit-Remaining: 119
 X-RateLimit-Reset: 1750000060
 X-RateLimit-Policy: 120;w=60
+x-request-id: <uuid>
 ```
 
 **429 response:**
@@ -270,9 +285,7 @@ X-RateLimit-Policy: 120;w=60
 { "error": "Too many requests. Please retry shortly." }
 ```
 
-### Scale limitation
-
-In-memory `Map` store resets on cold starts and is not shared across Vercel instances. Replace with Vercel KV / Upstash Redis before GA. See [TECHNICAL_DEBT.md#td-002](./TECHNICAL_DEBT.md).
+See [OBSERVABILITY.md](./OBSERVABILITY.md) for monitoring 429 spikes.
 
 ---
 
@@ -346,31 +359,58 @@ The Supabase service role key (`SUPABASE_SERVICE_ROLE_KEY`) bypasses RLS. It is 
 
 ---
 
+## Observability (Sentry)
+
+**Files:** `sentry.client.config.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, `src/instrumentation.ts`, `src/app/global-error.tsx`
+
+When `NEXT_PUBLIC_SENTRY_DSN` is set:
+
+- Client, server, edge, and API errors captured
+- Performance traces (sample rate via `SENTRY_TRACES_SAMPLE_RATE`)
+- Release/environment metadata from `SENTRY_ENVIRONMENT` and git SHA
+- Source maps uploaded at build when `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` are set
+- CSP `connect-src` allows Sentry ingest endpoints only (not broad third-party loosening)
+
+Full setup: [OBSERVABILITY.md](./OBSERVABILITY.md).
+
+---
+
+## Report export authentication
+
+**File:** `src/lib/http/require-api-session.ts`
+
+All PDF/CSV export routes require Supabase session + `profiles` row. Role gates via `canExportReport()`:
+
+| Route | Kind | Roles (summary) |
+|-------|------|-----------------|
+| `/api/reports/compliance-oversight` | compliance | Compliance-capable roles (not donor-only) |
+| `/api/reports/rice` | rice | Compliance-capable roles |
+| `/api/reports/donor-programme` | donor | Donor, ministry national, auditor |
+| `/api/reports/dds` | dds | Exporter, cooperative manager, ministry, admin |
+| `/api/reports/executive-briefing` | executive | Ministry national, auditor |
+
+Unauthorized → generic `401` / `403` with `x-request-id`. No stack traces or Supabase internals in responses.
+
+---
+
 ## Known gaps
 
 Documented in [KNOWN_LIMITATIONS.md](./KNOWN_LIMITATIONS.md) and [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md):
 
 | Gap | Risk | Priority |
 |-----|------|----------|
-| 4 PDF routes without auth | Unauthenticated PDF generation | P0 |
-| Partial rate limiting | Abuse on unprotected routes | P0 |
-| In-memory rate limit store | Per-instance bypass | P1 |
+| Rate limit without Redis/KV | Per-instance bypass at scale | P1 — configure Upstash/KV in prod |
 | No CAPTCHA on demo-inquiry | Spam submissions | P1 |
-| `'unsafe-inline'` in CSP | XSS if injection occurs | P1 |
-| No `global-error.tsx` | Poor UX on root errors | P2 |
-| `/reports/*` no role gate | URL direct access | P1 |
+| `'unsafe-inline'` in CSP | XSS if injection occurs | P1 (required for Next hydration) |
+| `/api/ministry-pilot/summary` public | Canonical demo data only — intentional | Documented |
 | Supabase-unset auth bypass | Open access in dev | Dev only |
 
-### Unauthenticated PDF routes
+### Resolved (pilot hardening)
 
-| Route | Method |
-|-------|--------|
-| `/api/reports/compliance-oversight` | GET |
-| `/api/reports/donor-programme` | GET |
-| `/api/reports/rice` | POST |
-| `/api/reports/dds` | POST |
-
-Do not expose these URLs publicly until auth is added. `/api/reports/executive-briefing` **is** authenticated.
+- PDF export routes now require auth + RBAC
+- Distributed rate limit adapter with Redis/KV support
+- Sentry + `/api/health` + global error boundary
+- Admin APIs rate limited via `guardAdminApiRequest`
 
 ---
 
@@ -385,7 +425,9 @@ Do not expose these URLs publicly until auth is added. `/api/reports/executive-b
 - [ ] CSP verified — no console violations on login, maps, auth
 - [ ] HSTS confirmed on custom domain via `curl -I`
 - [ ] Rate limit smoke: 11th demo-inquiry within 1 min → 429
-- [ ] Executive briefing PDF requires auth (401 without session)
+- [ ] PDF exports require auth (401 without session) and RBAC (403 wrong role)
+- [ ] `GET /api/health` returns 200 without leaking secrets
+- [ ] Sentry receiving events when DSN configured
 - [ ] Admin routes redirect non-admin users
 - [ ] CLAN user cannot access `/verification-queue` (redirect)
 

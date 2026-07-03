@@ -1,7 +1,13 @@
-import { NextResponse } from "next/server";
 import React from "react";
 import { Document, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
 
+import {
+  binaryResponse,
+  beginApiRequestAsync,
+  rejectIfRateLimited,
+} from "@/lib/http/api-response";
+import { EXPORT_POLICY } from "@/lib/http/rate-limit-policies";
+import { forbidReportExport, requireApiSession } from "@/lib/http/require-api-session";
 import { createClient } from "@/lib/supabase/server";
 import {
   MINISTRY_COUNTY_METRICS,
@@ -76,7 +82,16 @@ function buildDonorDoc({
   );
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const auth = await requireApiSession(request);
+  if (!auth.ok) return auth.response;
+  const forbidden = forbidReportExport(auth.session, "donor");
+  if (forbidden) return forbidden;
+
+  const ctx = await beginApiRequestAsync(request, EXPORT_POLICY, auth.session.userId);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
+
   const generatedAt = new Date().toISOString();
 
   let distributionCount: number | null = null;
@@ -97,12 +112,9 @@ export async function GET() {
   const blob = await instance.toBlob();
   const ab = await blob.arrayBuffer();
 
-  return new NextResponse(ab, {
-    status: 200,
-    headers: {
-      "content-type": "application/pdf",
-      "content-disposition": `attachment; filename="Agrivault-Donor-Programme-${generatedAt.slice(0, 10)}.pdf"`,
-    },
-  });
+  return binaryResponse(ctx, ab, {
+    "content-type": "application/pdf",
+    "content-disposition": `attachment; filename="Agrivault-Donor-Programme-${generatedAt.slice(0, 10)}.pdf"`,
+  }, EXPORT_POLICY);
 }
 

@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 
+import { apiHeaders } from "@/lib/http/api-response";
+import { guardAdminApiRequest } from "@/lib/http/admin-api-guard";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { requireAdminConsole } from "@/lib/supabase/require-admin-console";
 import type { UserRole } from "@/lib/supabase/types";
 
 export async function GET(request: Request) {
-  const guard = await requireAdminConsole();
-  if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.status });
+  const gate = await guardAdminApiRequest(request, "read");
+  if (!gate.ok) return gate.response;
 
   const url = new URL(request.url);
   const q = (url.searchParams.get("q") ?? "").trim().toLowerCase();
@@ -69,7 +70,7 @@ export async function GET(request: Request) {
       return true;
     });
 
-    return NextResponse.json({ users: filtered });
+    return NextResponse.json({ users: filtered }, { headers: apiHeaders(gate.ctx) });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to load users.";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -77,8 +78,8 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const guard = await requireAdminConsole();
-  if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.status });
+  const gate = await guardAdminApiRequest(request, "mutation");
+  if (!gate.ok) return gate.response;
 
   try {
     const body = (await request.json()) as {
@@ -117,14 +118,14 @@ export async function PATCH(request: Request) {
     if (error) throw error;
 
     await admin.from("audit_log").insert({
-      user_id: guard.userId,
+      user_id: gate.userId,
       action: "ADMIN_UPDATE_USER",
       table_name: "profiles",
       record_id: body.userId,
       new_values: patch,
     } as any);
 
-    return NextResponse.json({ profile: data });
+    return NextResponse.json({ profile: data }, { headers: apiHeaders(gate.ctx) });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to update user.";
     return NextResponse.json({ error: message }, { status: 500 });

@@ -1,6 +1,6 @@
 /**
- * In-process sliding-window rate limiter.
- * Suitable for single-node / low-traffic pilots; swap store for Redis/KV at scale.
+ * In-process sliding-window rate limiter (memory store).
+ * Production routes should use checkRateLimitDistributed via beginApiRequestAsync.
  */
 
 export type RateLimitResult = {
@@ -17,43 +17,18 @@ export type RateLimitPolicy = {
   max: number;
 };
 
-const DEFAULT_POLICY: RateLimitPolicy = {
+export const DEFAULT_POLICY: RateLimitPolicy = {
   windowMs: 60_000,
   max: 60,
 };
 
-type Bucket = { count: number; resetAt: number };
+export { checkRateLimitDistributed, checkRateLimitMemory, activeRateLimitStoreKind } from "@/lib/http/rate-limit-store";
 
-const store = new Map<string, Bucket>();
-const MAX_KEYS = 10_000;
+import { checkRateLimitMemory } from "@/lib/http/rate-limit-store";
 
-function prune(now: number): void {
-  if (store.size <= MAX_KEYS) return;
-  for (const [key, bucket] of store) {
-    if (now >= bucket.resetAt) store.delete(key);
-    if (store.size <= MAX_KEYS * 0.8) break;
-  }
-}
-
-/** Enforce rate limit for a namespaced key (IP, user id, route composite). */
+/** @deprecated Prefer checkRateLimitDistributed in route handlers. */
 export function checkRateLimit(key: string, policy: RateLimitPolicy = DEFAULT_POLICY): RateLimitResult {
-  const now = Date.now();
-  prune(now);
-
-  let bucket = store.get(key);
-  if (!bucket || now >= bucket.resetAt) {
-    bucket = { count: 0, resetAt: now + policy.windowMs };
-    store.set(key, bucket);
-  }
-
-  bucket.count += 1;
-  const allowed = bucket.count <= policy.max;
-  return {
-    allowed,
-    limit: policy.max,
-    remaining: Math.max(0, policy.max - bucket.count),
-    resetAt: bucket.resetAt,
-  };
+  return checkRateLimitMemory(key, policy);
 }
 
 /** Response headers describing policy intent (always sent). */

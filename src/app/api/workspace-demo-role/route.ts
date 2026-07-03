@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { API_ERROR_UNAUTHORIZED } from "@/lib/http/api-security";
-import { rateLimitPolicyHeaders } from "@/lib/http/rate-limit";
+import { apiHeaders, beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-response";
+import { READ_POLICY } from "@/lib/http/rate-limit-policies";
 import {
   parseWorkspaceDemoRole,
   WORKSPACE_DEMO_ROLE_COOKIE,
@@ -32,44 +33,56 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: API_ERROR_UNAUTHORIZED }, { status: 401 });
   }
 
+  const ctx = await beginApiRequestAsync(request, READ_POLICY, user.id);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
+
   const body = (await request.json().catch(() => ({}))) as { role?: UserRole | "" | null };
   const raw = body.role;
   if (raw === "" || raw === null || raw === undefined) {
-    const res = NextResponse.json({ ok: true, role: null }, { headers: rateLimitPolicyHeaders() });
+    const res = NextResponse.json({ ok: true, role: null }, { headers: apiHeaders(ctx) });
     res.cookies.delete(WORKSPACE_DEMO_ROLE_COOKIE);
     return res;
   }
   const parsed = parseWorkspaceDemoRole(String(raw));
   if (!parsed) {
-    return NextResponse.json({ ok: false, error: "invalid role" }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "invalid role" }, { status: 400, headers: apiHeaders(ctx) });
   }
-  const res = NextResponse.json({ ok: true, role: parsed }, { headers: rateLimitPolicyHeaders() });
+  const res = NextResponse.json({ ok: true, role: parsed }, { headers: apiHeaders(ctx) });
   res.cookies.set(WORKSPACE_DEMO_ROLE_COOKIE, parsed, cookieOpts);
   return res;
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
   const user = await requireSession();
   if (!user) {
     return NextResponse.json({ ok: false, error: API_ERROR_UNAUTHORIZED }, { status: 401 });
   }
 
-  const res = NextResponse.json({ ok: true }, { headers: rateLimitPolicyHeaders() });
+  const ctx = await beginApiRequestAsync(request, READ_POLICY, user.id);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
+
+  const res = NextResponse.json({ ok: true }, { headers: apiHeaders(ctx) });
   res.cookies.delete(WORKSPACE_DEMO_ROLE_COOKIE);
   return res;
 }
 
 /** Server introspection for debugging — authenticated only. */
-export async function GET() {
+export async function GET(request: Request) {
   const user = await requireSession();
   if (!user) {
     return NextResponse.json({ error: API_ERROR_UNAUTHORIZED }, { status: 401 });
   }
 
+  const ctx = await beginApiRequestAsync(request, READ_POLICY, user.id);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
+
   return NextResponse.json(
     {
       allowed: WORKSPACE_PREVIEW_ROLES,
     },
-    { headers: rateLimitPolicyHeaders() },
+    { headers: apiHeaders(ctx) },
   );
 }

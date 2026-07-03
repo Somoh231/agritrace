@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { guardAdminApiRequest } from "@/lib/http/admin-api-guard";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { requireAdminConsole } from "@/lib/supabase/require-admin-console";
 
 type ImportType = "farmers" | "rice" | "lots_movements";
 
@@ -25,8 +25,8 @@ function asDate(v: unknown, field: string) {
 }
 
 export async function POST(request: Request) {
-  const guard = await requireAdminConsole();
-  if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.status });
+  const gate = await guardAdminApiRequest(request, "mutation");
+  if (!gate.ok) return gate.response;
 
   try {
     const body = (await request.json()) as {
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
       if (error) throw error;
 
       await admin.from("audit_log").insert({
-        user_id: guard.userId,
+        user_id: gate.userId,
         action: "ADMIN_IMPORT_FARMERS",
         table_name: "farmers",
         new_values: { count: inserts.length },
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
             water_source: String(r.water_source ?? r["water_source"] ?? "").trim() || null,
             years_farming_plot: r.years_farming_plot ? asNum(r.years_farming_plot, "years_farming_plot") : null,
             notes: String(r.notes ?? r["notes"] ?? "").trim() || null,
-            recorded_by: guard.userId,
+            recorded_by: gate.userId,
           });
         } catch (e) {
           errors.push({ row: idx + 1, message: e instanceof Error ? e.message : "Invalid row." });
@@ -119,7 +119,7 @@ export async function POST(request: Request) {
       if (error) throw error;
 
       await admin.from("audit_log").insert({
-        user_id: guard.userId,
+        user_id: gate.userId,
         action: "ADMIN_IMPORT_RICE",
         table_name: "rice_production_records",
         new_values: { count: inserts.length },
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
             season: String(r.season ?? r["season"] ?? "").trim() || null,
             compliance_status: String(r.compliance_status ?? r["compliance_status"] ?? "unchecked"),
             notes: String(r.notes ?? r["notes"] ?? "").trim() || null,
-            created_by: guard.userId,
+            created_by: gate.userId,
           });
         } catch (e) {
           errors.push({ row: idx + 1, message: e instanceof Error ? e.message : "Invalid row." });
@@ -162,7 +162,7 @@ export async function POST(request: Request) {
       if (error) throw error;
 
       await admin.from("audit_log").insert({
-        user_id: guard.userId,
+        user_id: gate.userId,
         action: "ADMIN_IMPORT_LOTS",
         table_name: "lots",
         new_values: { count: inserts.length },

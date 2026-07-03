@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
 
 import {
-  API_ERROR_INVALID_JSON,
   clampStr,
   jsonPayloadTooLarge,
   logApiError,
   requestBodyTooLarge,
+  API_ERROR_INVALID_JSON,
 } from "@/lib/http/api-security";
-import { rateLimitPolicyHeaders } from "@/lib/http/rate-limit";
+import {
+  apiError,
+  apiHeaders,
+  beginApiRequestAsync,
+  rejectIfRateLimited,
+} from "@/lib/http/api-response";
+import { ANALYTICS_POLICY } from "@/lib/http/rate-limit-policies";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -25,18 +31,22 @@ function moduleFromPath(pathname: string) {
 }
 
 export async function POST(request: Request) {
+  const ctx = await beginApiRequestAsync(request, ANALYTICS_POLICY);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
+
   if (requestBodyTooLarge(request, MAX_BODY_BYTES)) {
-    return NextResponse.json({ error: "Payload too large." }, { status: 413 });
+    return apiError(ctx, "Payload too large.", 413, { policy: ANALYTICS_POLICY });
   }
 
   const body = (await request.json().catch(() => null)) as Body | null;
-  if (!body) return NextResponse.json({ error: API_ERROR_INVALID_JSON }, { status: 400 });
+  if (!body) return apiError(ctx, API_ERROR_INVALID_JSON, 400, { policy: ANALYTICS_POLICY });
 
   const event = clampStr(body.event, 64);
-  if (!event) return NextResponse.json({ error: "event required" }, { status: 400 });
+  if (!event) return apiError(ctx, "event required", 400, { policy: ANALYTICS_POLICY });
 
   if (jsonPayloadTooLarge(body.payload, MAX_PAYLOAD_BYTES)) {
-    return NextResponse.json({ error: "payload too large" }, { status: 400 });
+    return apiError(ctx, "payload too large", 400, { policy: ANALYTICS_POLICY });
   }
 
   // Best-effort auth context (not required).
@@ -56,7 +66,7 @@ export async function POST(request: Request) {
   try {
     admin = getSupabaseAdminClient();
   } catch {
-    return new NextResponse(null, { status: 204, headers: rateLimitPolicyHeaders() });
+    return new NextResponse(null, { status: 204, headers: apiHeaders(ctx, ANALYTICS_POLICY) });
   }
 
   const url = new URL(request.url);
@@ -72,9 +82,9 @@ export async function POST(request: Request) {
   } as any);
 
   if (error) {
-    logApiError("api/analytics", error);
-    return new NextResponse(null, { status: 204, headers: rateLimitPolicyHeaders() });
+    logApiError("api/analytics", error, ctx.requestId);
+    return new NextResponse(null, { status: 204, headers: apiHeaders(ctx, ANALYTICS_POLICY) });
   }
 
-  return new NextResponse(null, { status: 204, headers: rateLimitPolicyHeaders() });
+  return new NextResponse(null, { status: 204, headers: apiHeaders(ctx, ANALYTICS_POLICY) });
 }

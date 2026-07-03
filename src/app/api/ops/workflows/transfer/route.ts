@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-response";
+import { WORKFLOW_MUTATION_POLICY } from "@/lib/http/rate-limit-policies";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import { findTransferOrderServer } from "@/lib/logistics/transfer-repository-server";
 import {
@@ -41,6 +43,10 @@ export async function POST(req: Request) {
       { status: principal.status },
     );
   }
+
+  const ctx = await beginApiRequestAsync(req, WORKFLOW_MUTATION_POLICY, principal.userId);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
 
   const scopeDenied = workflowScopeFailure(principal.actor);
   if (scopeDenied) {

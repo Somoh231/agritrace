@@ -1,9 +1,14 @@
-import { NextResponse } from "next/server";
 import React from "react";
 import { Document, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
 
 import { buildExecutiveBriefingSnapshot } from "@/lib/briefing/executive-intelligence";
-import { API_ERROR_UNAUTHORIZED } from "@/lib/http/api-security";
+import {
+  binaryResponse,
+  beginApiRequestAsync,
+  rejectIfRateLimited,
+} from "@/lib/http/api-response";
+import { EXPORT_POLICY } from "@/lib/http/rate-limit-policies";
+import { forbidReportExport, requireApiSession } from "@/lib/http/require-api-session";
 import { createClient } from "@/lib/supabase/server";
 
 const styles = StyleSheet.create({
@@ -100,14 +105,17 @@ function BriefingPdf({ snap }: { snap: ReturnType<typeof buildExecutiveBriefingS
   );
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const auth = await requireApiSession(request);
+  if (!auth.ok) return auth.response;
+  const forbidden = forbidReportExport(auth.session, "executive");
+  if (forbidden) return forbidden;
+
+  const ctx = await beginApiRequestAsync(request, EXPORT_POLICY, auth.session.userId);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
+
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: API_ERROR_UNAUTHORIZED }, { status: 401 });
-  }
 
   let live:
     | Partial<{
@@ -141,11 +149,8 @@ export async function GET() {
   const blob = await instance.toBlob();
   const ab = await blob.arrayBuffer();
 
-  return new NextResponse(ab, {
-    status: 200,
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": 'attachment; filename="agrivault-executive-briefing.pdf"',
-    },
-  });
+  return binaryResponse(ctx, ab, {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": 'attachment; filename="agrivault-executive-briefing.pdf"',
+  }, EXPORT_POLICY);
 }

@@ -8,15 +8,14 @@ import {
   apiError,
   apiInternalError,
   apiJson,
-  beginApiRequest,
+  beginApiRequestAsync,
   rejectIfRateLimited,
 } from "@/lib/http/api-response";
+import { READ_POLICY } from "@/lib/http/rate-limit-policies";
 import { createClient } from "@/lib/supabase/server";
 
-const READ_POLICY = { windowMs: 60_000, max: 120 };
-
 export async function GET(request: Request) {
-  const ctx = beginApiRequest(request, READ_POLICY);
+  const ctx = await beginApiRequestAsync(request, READ_POLICY);
   const blocked = rejectIfRateLimited(ctx);
   if (blocked) return blocked;
 

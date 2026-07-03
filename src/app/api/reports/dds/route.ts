@@ -1,5 +1,16 @@
-import { NextResponse } from "next/server";
-
+import {
+  API_ERROR_INVALID_JSON,
+  logApiError,
+} from "@/lib/http/api-security";
+import {
+  apiError,
+  apiInternalError,
+  beginApiRequestAsync,
+  binaryResponse,
+  rejectIfRateLimited,
+} from "@/lib/http/api-response";
+import { EXPORT_POLICY } from "@/lib/http/rate-limit-policies";
+import { forbidReportExport, requireApiSession } from "@/lib/http/require-api-session";
 import { createClient } from "@/lib/supabase/server";
 
 // IMPORTANT: @react-pdf/renderer must only be imported server-side.
@@ -196,17 +207,29 @@ function buildDDSDoc({
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as ReqBody;
-  if (!body?.lotId) return NextResponse.json({ error: "lotId required" }, { status: 400 });
+  const auth = await requireApiSession(request);
+  if (!auth.ok) return auth.response;
+  const forbidden = forbidReportExport(auth.session, "dds");
+  if (forbidden) return forbidden;
+
+  const ctx = await beginApiRequestAsync(request, EXPORT_POLICY, auth.session.userId);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
+
+  let body: ReqBody;
+  try {
+    body = (await request.json()) as ReqBody;
+  } catch {
+    return apiError(ctx, API_ERROR_INVALID_JSON, 400, { policy: EXPORT_POLICY });
+  }
+  if (!body?.lotId) return apiError(ctx, "lotId required", 400, { policy: EXPORT_POLICY });
 
   let supabase: Awaited<ReturnType<typeof createClient>>;
   try {
     supabase = await createClient();
   } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Supabase not configured." },
-      { status: 503 },
-    );
+    logApiError("api/reports/dds", e, ctx.requestId);
+    return apiInternalError(ctx);
   }
 
   const { data: lot, error: lotErr } = await supabase
@@ -214,7 +237,7 @@ export async function POST(request: Request) {
     .select("*")
     .eq("id", body.lotId)
     .single();
-  if (lotErr || !lot) return NextResponse.json({ error: "Lot not found" }, { status: 404 });
+  if (lotErr || !lot) return apiError(ctx, "Lot not found", 404, { policy: EXPORT_POLICY });
 
   const { data: org } = lot.organization_id
     ? await supabase.from("organizations").select("*").eq("id", lot.organization_id).single()
@@ -248,12 +271,9 @@ export async function POST(request: Request) {
   const buf = (await instance.toBuffer()) as unknown as Uint8Array;
   const ab = new ArrayBuffer(buf.byteLength);
   new Uint8Array(ab).set(buf);
-  return new NextResponse(ab, {
-    status: 200,
-    headers: {
-      "content-type": "application/pdf",
-      "content-disposition": `attachment; filename="Agrivault-${lot.lot_code}-DDS-${generatedAt.slice(0, 10)}.pdf"`,
-    },
-  });
+  return binaryResponse(ctx, ab, {
+    "content-type": "application/pdf",
+    "content-disposition": `attachment; filename="Agrivault-${lot.lot_code}-DDS-${generatedAt.slice(0, 10)}.pdf"`,
+  }, EXPORT_POLICY);
 }
 

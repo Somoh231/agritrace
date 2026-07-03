@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { applyVerificationWorkflowMutation, type VerificationWorkflowMutation } from "@/features/verification/utils/workflow-mutations";
+import { beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-response";
+import { WORKFLOW_MUTATION_POLICY } from "@/lib/http/rate-limit-policies";
 import { buildUnifiedVerificationQueue } from "@/lib/ops/ministry-verification-queue-data";
 import { canPerform, explainPermission, type OperationalWorkflowAction } from "@/lib/ops/permissions";
 import { requireWorkflowPrincipal, workflowScopeFailure } from "@/lib/ops/server-permissions";
@@ -34,6 +36,10 @@ export async function POST(req: Request) {
       { status: principal.status },
     );
   }
+
+  const apiCtx = await beginApiRequestAsync(req, WORKFLOW_MUTATION_POLICY, principal.userId);
+  const blocked = rejectIfRateLimited(apiCtx);
+  if (blocked) return blocked;
 
   const scopeDenied = workflowScopeFailure(principal.actor);
   if (scopeDenied) {

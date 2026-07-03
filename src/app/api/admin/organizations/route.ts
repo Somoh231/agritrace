@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { apiHeaders } from "@/lib/http/api-response";
+import { guardAdminApiRequest } from "@/lib/http/admin-api-guard";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { requireAdminConsole } from "@/lib/supabase/require-admin-console";
 
-export async function GET() {
-  const guard = await requireAdminConsole();
-  if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.status });
+export async function GET(request: Request) {
+  const gate = await guardAdminApiRequest(request, "read");
+  if (!gate.ok) return gate.response;
 
   try {
     const admin = getSupabaseAdminClient();
@@ -14,7 +15,7 @@ export async function GET() {
       .select("id,name,type,country,county,contact_name,contact_phone,license_number,created_at")
       .order("name");
     if (error) throw error;
-    return NextResponse.json({ organizations: data ?? [] });
+    return NextResponse.json({ organizations: data ?? [] }, { headers: apiHeaders(gate.ctx) });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to load organizations.";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -22,8 +23,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const guard = await requireAdminConsole();
-  if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.status });
+  const gate = await guardAdminApiRequest(request, "mutation");
+  if (!gate.ok) return gate.response;
 
   try {
     const body = (await request.json()) as any;
@@ -49,14 +50,14 @@ export async function POST(request: Request) {
     if (error) throw error;
 
     await admin.from("audit_log").insert({
-      user_id: guard.userId,
+      user_id: gate.userId,
       action: "ADMIN_CREATE_ORG",
       table_name: "organizations",
       record_id: data.id,
       new_values: { name: data.name, type: data.type, county: data.county },
     } as any);
 
-    return NextResponse.json({ organization: data });
+    return NextResponse.json({ organization: data }, { headers: apiHeaders(gate.ctx) });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to create organization.";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -64,8 +65,8 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const guard = await requireAdminConsole();
-  if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.status });
+  const gate = await guardAdminApiRequest(request, "mutation");
+  if (!gate.ok) return gate.response;
 
   try {
     const body = (await request.json()) as any;
@@ -94,14 +95,14 @@ export async function PATCH(request: Request) {
     if (error) throw error;
 
     await admin.from("audit_log").insert({
-      user_id: guard.userId,
+      user_id: gate.userId,
       action: "ADMIN_UPDATE_ORG",
       table_name: "organizations",
       record_id: body.id,
       new_values: patch,
     } as any);
 
-    return NextResponse.json({ organization: data });
+    return NextResponse.json({ organization: data }, { headers: apiHeaders(gate.ctx) });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to update organization.";
     return NextResponse.json({ error: message }, { status: 500 });

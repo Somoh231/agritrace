@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-response";
+import { WORKFLOW_MUTATION_POLICY } from "@/lib/http/rate-limit-policies";
 import { requireWorkflowPrincipal } from "@/lib/ops/server-permissions";
 import { persistWorkflowAuditLog } from "@/lib/ops/server-workflow-io";
 import { checkWorkflowPermission, workflowStageForRole } from "@/lib/workflow/roles";
@@ -99,6 +101,11 @@ export async function POST(req: Request) {
   if (!principal.ok) {
     return NextResponse.json({ ok: false, code: principal.code, message: principal.message }, { status: principal.status });
   }
+
+  const ctx = await beginApiRequestAsync(req, WORKFLOW_MUTATION_POLICY, principal.userId);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
+
   const { supabase, userId, profile } = principal;
   const stage = workflowStageForRole(profile.role);
 

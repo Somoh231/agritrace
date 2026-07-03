@@ -1,5 +1,16 @@
-import { NextResponse } from "next/server";
-
+import {
+  API_ERROR_INVALID_JSON,
+  logApiError,
+} from "@/lib/http/api-security";
+import {
+  apiError,
+  apiInternalError,
+  beginApiRequestAsync,
+  binaryResponse,
+  rejectIfRateLimited,
+} from "@/lib/http/api-response";
+import { EXPORT_POLICY } from "@/lib/http/rate-limit-policies";
+import { forbidReportExport, requireApiSession } from "@/lib/http/require-api-session";
 import { createClient } from "@/lib/supabase/server";
 
 import React from "react";
@@ -105,17 +116,29 @@ function buildRiceReportDoc({
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as ReqBody;
-  if (!body?.format) return NextResponse.json({ error: "format required" }, { status: 400 });
+  const auth = await requireApiSession(request);
+  if (!auth.ok) return auth.response;
+  const forbidden = forbidReportExport(auth.session, "rice");
+  if (forbidden) return forbidden;
+
+  const ctx = await beginApiRequestAsync(request, EXPORT_POLICY, auth.session.userId);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
+
+  let body: ReqBody;
+  try {
+    body = (await request.json()) as ReqBody;
+  } catch {
+    return apiError(ctx, API_ERROR_INVALID_JSON, 400, { policy: EXPORT_POLICY });
+  }
+  if (!body?.format) return apiError(ctx, "format required", 400, { policy: EXPORT_POLICY });
 
   let supabase: Awaited<ReturnType<typeof createClient>>;
   try {
     supabase = await createClient();
   } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Supabase not configured." },
-      { status: 503 },
-    );
+    logApiError("api/reports/rice", e, ctx.requestId);
+    return apiInternalError(ctx);
   }
 
   let q = supabase
@@ -153,13 +176,15 @@ export async function POST(request: Request) {
         [r.county, Math.round(r.expected), Math.round(r.actual), Math.round(r.loss)].map(csvCell).join(","),
       ),
     ].join("\n");
-    return new NextResponse(csv, {
-      status: 200,
-      headers: {
+    return binaryResponse(
+      ctx,
+      new TextEncoder().encode(csv),
+      {
         "content-type": "text/csv; charset=utf-8",
         "content-disposition": `attachment; filename="Agrivault-Rice-Report-${generatedAt.slice(0, 10)}.csv"`,
       },
-    });
+      EXPORT_POLICY,
+    );
   }
 
   const doc = buildRiceReportDoc({ title, generatedAt, rows });
@@ -167,12 +192,9 @@ export async function POST(request: Request) {
   const buf = (await instance.toBuffer()) as unknown as Uint8Array;
   const ab = new ArrayBuffer(buf.byteLength);
   new Uint8Array(ab).set(buf);
-  return new NextResponse(ab, {
-    status: 200,
-    headers: {
-      "content-type": "application/pdf",
-      "content-disposition": `attachment; filename="Agrivault-Rice-Report-${generatedAt.slice(0, 10)}.pdf"`,
-    },
-  });
+  return binaryResponse(ctx, ab, {
+    "content-type": "application/pdf",
+    "content-disposition": `attachment; filename="Agrivault-Rice-Report-${generatedAt.slice(0, 10)}.pdf"`,
+  }, EXPORT_POLICY);
 }
 

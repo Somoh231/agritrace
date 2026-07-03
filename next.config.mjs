@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 
-/** Production CSP — Mapbox + Supabase + Next.js hydration allowances. */
+/** Production CSP — Mapbox + Supabase + Sentry + Next.js hydration allowances. */
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -11,7 +11,17 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.mapbox.com https://*.supabase.co",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mapbox.com https://events.mapbox.com https://*.tiles.mapbox.com",
+  [
+    "connect-src 'self'",
+    "https://*.supabase.co",
+    "wss://*.supabase.co",
+    "https://api.mapbox.com",
+    "https://events.mapbox.com",
+    "https://*.tiles.mapbox.com",
+    "https://*.ingest.sentry.io",
+    "https://*.ingest.us.sentry.io",
+    "https://*.ingest.de.sentry.io",
+  ].join(" "),
   "worker-src 'self' blob:",
   "child-src 'self' blob:",
 ].join("; ");
@@ -39,6 +49,7 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "recharts"],
+    instrumentationHook: true,
   },
   headers: async () => [
     {
@@ -72,4 +83,25 @@ const nextConfig = {
   ],
 };
 
-export default nextConfig;
+const sentryEnabled = Boolean(
+  process.env.NEXT_PUBLIC_SENTRY_DSN?.trim() || process.env.SENTRY_DSN?.trim(),
+);
+
+let exportedConfig = nextConfig;
+
+if (sentryEnabled) {
+  const { withSentryConfig } = await import("@sentry/nextjs");
+  exportedConfig = withSentryConfig(nextConfig, {
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    silent: !process.env.CI,
+    widenClientFileUpload: true,
+    hideSourceMaps: true,
+    disableLogger: true,
+    tunnelRoute: "/monitoring",
+    automaticVercelMonitors: true,
+  });
+}
+
+export default exportedConfig;
