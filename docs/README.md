@@ -1,74 +1,152 @@
-# AgriVault Engineering Documentation
+# AgriVault Documentation Portal
 
-Technical reference for maintaining, extending, and operating the AgriVault (`agritrace`) platform.
+Complete documentation for deploying, operating, and governing AgriVault as Liberia's national agriculture operations platform.
 
-**Version:** 0.1.0-rc1 · **Stack:** Next.js 14 · Supabase · Mapbox · IndexedDB PWA
+**Version:** 0.1.0-rc1 · **Product:** AgriVault (`agritrace`) · **Stack:** Next.js 14 · Supabase · Mapbox · IndexedDB PWA
 
 ---
 
-## Documentation index
+## Documentation map
 
-### Engineering reference (start here)
+```mermaid
+graph TB
+  subgraph Enterprise
+    BUS[business/]
+    PROD[product/]
+    OPS[operations/]
+    GOV[government/]
+    ADR[adr/]
+  end
 
-| Document | Description |
-|----------|-------------|
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | System overview, request flow, module layout, data flow |
-| [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) | CSS tokens, component primitives, typography, layout patterns |
-| [DATABASE.md](./DATABASE.md) | Schema, migrations, RLS, enums, key tables |
-| [WORKFLOW_ENGINE.md](./WORKFLOW_ENGINE.md) | Approval chain, status model, API, submission bridge |
-| [OFFLINE_ARCHITECTURE.md](./OFFLINE_ARCHITECTURE.md) | IndexedDB, sync queue, Edge Function, PWA |
-| [GIS_ARCHITECTURE.md](./GIS_ARCHITECTURE.md) | Mapbox, boundary capture, Turf geometry |
-| [SECURITY.md](./SECURITY.md) | Auth, authorization, CSP, rate limits, RLS |
-| [API_GUIDE.md](./API_GUIDE.md) | All API routes, request/response formats |
-| [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) | Environment, build, seed, smoke tests |
+  subgraph Engineering
+    ENG[Engineering reference]
+    PILOT[Pilot role guides]
+    AUDIT[Audits and inventories]
+  end
 
-### Architecture and platform
+  BUS --> ENG
+  PROD --> ENG
+  OPS --> ENG
+  GOV --> BUS
+  ADR --> ENG
+```
 
-### Release and pilot
+---
 
-| Document | Description |
-|----------|-------------|
-| [RELEASE_NOTES_RC1.md](./RELEASE_NOTES_RC1.md) | RC1 verification and readiness scores |
-| [KNOWN_LIMITATIONS.md](./KNOWN_LIMITATIONS.md) | Accepted RC1 constraints |
-| [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md) | Deferred engineering items |
-| [ROADMAP_POST_PILOT.md](./ROADMAP_POST_PILOT.md) | Post-pilot phases |
+## Enterprise documentation
 
-### Role guides (pilot operators)
+### [business/](./business/) — Programme and implementation
 
-| Document | Audience |
-|----------|----------|
-| [PILOT_ADMIN_GUIDE.md](./PILOT_ADMIN_GUIDE.md) | Administrators |
-| [CLAN_FIELD_GUIDE.md](./CLAN_FIELD_GUIDE.md) | Field technicians |
-| [DAO_GUIDE.md](./DAO_GUIDE.md) | District officers |
-| [CAC_GUIDE.md](./CAC_GUIDE.md) | County coordinators |
-| [MINISTRY_GUIDE.md](./MINISTRY_GUIDE.md) | Ministry staff |
-
-### Audits and inventories
+Implementation playbooks, operating model, data governance, risk, continuity, and national scale.
 
 | Document | Purpose |
 |----------|---------|
-| [workflow-completeness-audit.md](./workflow-completeness-audit.md) | Form → submission wiring |
-| [data-source-inventory.md](./data-source-inventory.md) | LIVE / PILOT / OFFLINE / DEMO |
-| [production-readiness.md](./production-readiness.md) | HTTP infrastructure |
-| [pilot-readiness-qa.md](./pilot-readiness-qa.md) | QA route inventory |
-| [security-hardening-notes.md](./security-hardening-notes.md) | API security audit |
+| [PLATFORM_OVERVIEW.md](./business/PLATFORM_OVERVIEW.md) | Platform scope and capability summary |
+| [MINISTRY_IMPLEMENTATION_GUIDE.md](./business/MINISTRY_IMPLEMENTATION_GUIDE.md) | Ministry deployment path |
+| [IMPLEMENTATION_PLAYBOOK.md](./business/IMPLEMENTATION_PLAYBOOK.md) | Phased rollout playbook |
+| [OPERATING_MODEL.md](./business/OPERATING_MODEL.md) | RACI and service ownership |
+| [DATA_GOVERNANCE.md](./business/DATA_GOVERNANCE.md) | Data stewards and quality policy |
+| [PILOT_SUCCESS_METRICS.md](./business/PILOT_SUCCESS_METRICS.md) | Pilot KPIs and measurement |
+| [NATIONAL_SCALE_GUIDE.md](./business/NATIONAL_SCALE_GUIDE.md) | County-to-national expansion |
+| [RISK_REGISTER.md](./business/RISK_REGISTER.md) | Programme risk matrix |
+
+[Full business index →](./business/README.md)
+
+### [product/](./product/) — Product definition
+
+Vision, principles (constitution), role/entity catalogues, permissions, journeys, roadmap.
+
+| Document | Purpose |
+|----------|---------|
+| [PRODUCT_PRINCIPLES.md](./product/PRODUCT_PRINCIPLES.md) | **Product constitution** |
+| [VISION.md](./product/VISION.md) | Strategic vision and outcomes |
+| [ROLE_CATALOG.md](./product/ROLE_CATALOG.md) | All 18 system roles |
+| [ENTITY_CATALOG.md](./product/ENTITY_CATALOG.md) | Core data entities |
+| [USER_JOURNEYS.md](./product/USER_JOURNEYS.md) | Operational workflows J1–J8 |
+| [PERMISSIONS_MATRIX.md](./product/PERMISSIONS_MATRIX.md) | Role × capability matrix |
+
+[Full product index →](./product/README.md)
+
+### [operations/](./operations/) — Runbooks and SOPs
+
+Daily operations, incident response, monitoring, release process, role SOPs.
+
+| Document | Purpose |
+|----------|---------|
+| [RUNBOOK.md](./operations/RUNBOOK.md) | Daily/weekly/monthly procedures |
+| [INCIDENT_RESPONSE.md](./operations/INCIDENT_RESPONSE.md) | P1–P4 incident protocol |
+| [MONITORING.md](./operations/MONITORING.md) | Observability and alerts |
+| [SERVICE_LEVEL_OBJECTIVES.md](./operations/SERVICE_LEVEL_OBJECTIVES.md) | SLOs and availability targets |
+| [SOP_FIELD_OPERATIONS.md](./operations/SOP_FIELD_OPERATIONS.md) | CLAN field SOP |
+
+[Full operations index →](./operations/README.md)
+
+### [government/](./government/) — Executive and donor
+
+Minister briefings, cabinet memos, procurement, county rollout, legal framework.
+
+| Document | Purpose |
+|----------|---------|
+| [MINISTER_BRIEFING.md](./government/MINISTER_BRIEFING.md) | Minister executive summary |
+| [CABINET_BRIEF.md](./government/CABINET_BRIEF.md) | Cabinet memorandum |
+| [COUNTY_ROLLOUT_PLAN.md](./government/COUNTY_ROLLOUT_PLAN.md) | County deployment waves |
+| [PILOT_EVALUATION_FRAMEWORK.md](./government/PILOT_EVALUATION_FRAMEWORK.md) | Pilot go/no-go evaluation |
+| [NATIONAL_GOVERNANCE_MODEL.md](./government/NATIONAL_GOVERNANCE_MODEL.md) | Three-tier governance |
+
+[Full government index →](./government/README.md)
+
+### [adr/](./adr/) — Architecture decision records
+
+| ADR | Decision |
+|-----|----------|
+| [0001](./adr/0001-enterprise-design-system.md) | Enterprise design system |
+| [0002](./adr/0002-workflow-engine.md) | Workflow engine FSM |
+| [0003](./adr/0003-offline-first.md) | Offline-first field capture |
+| [0007](./adr/0007-data-source-strategy.md) | Data source disclosure |
+| [0008](./adr/0008-role-based-security.md) | Role-based security |
+
+[Full ADR index →](./adr/README.md)
 
 ---
 
-## Quick start for engineers
+## Engineering reference
 
-```bash
-cd agritrace
-npm install
-cp .env.example .env.local   # configure Supabase + Mapbox
-npm run dev
-```
+| Document | Purpose |
+|----------|---------|
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | System architecture |
+| [DATABASE.md](./DATABASE.md) | Schema and RLS |
+| [WORKFLOW_ENGINE.md](./WORKFLOW_ENGINE.md) | Approval state machine |
+| [OFFLINE_ARCHITECTURE.md](./OFFLINE_ARCHITECTURE.md) | IndexedDB and PWA |
+| [GIS_ARCHITECTURE.md](./GIS_ARCHITECTURE.md) | Mapbox and boundary capture |
+| [SECURITY.md](./SECURITY.md) | Auth, CSP, rate limits |
+| [API_GUIDE.md](./API_GUIDE.md) | HTTP API reference |
+| [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) | Deploy and smoke tests |
 
-```bash
-npm run lint && npm run build && npm run test:workflow
-```
+---
 
-See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for production deployment.
+## Pilot operator guides
+
+| Guide | Role |
+|-------|------|
+| [PILOT_ADMIN_GUIDE.md](./PILOT_ADMIN_GUIDE.md) | Administrator |
+| [CLAN_FIELD_GUIDE.md](./CLAN_FIELD_GUIDE.md) | CLAN Technician |
+| [DAO_GUIDE.md](./DAO_GUIDE.md) | DAO Officer |
+| [CAC_GUIDE.md](./CAC_GUIDE.md) | CAC Coordinator |
+| [MINISTRY_GUIDE.md](./MINISTRY_GUIDE.md) | Ministry Officer |
+| [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) | Live demonstration |
+| [PILOT_CHECKLIST.md](./PILOT_CHECKLIST.md) | Launch checklist |
+
+---
+
+## Release and audits
+
+| Document | Purpose |
+|----------|---------|
+| [RELEASE_NOTES_RC1.md](./RELEASE_NOTES_RC1.md) | RC1 verification |
+| [KNOWN_LIMITATIONS.md](./KNOWN_LIMITATIONS.md) | Accepted constraints |
+| [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md) | Engineering debt register |
+| [workflow-completeness-audit.md](./workflow-completeness-audit.md) | Form wiring audit |
+| [data-source-inventory.md](./data-source-inventory.md) | LIVE/PILOT/OFFLINE/DEMO |
 
 ---
 
@@ -78,6 +156,15 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for production deployment.
 CLAN (field capture) → DAO (district review) → CAC (county verify) → Ministry (national approve)
 ```
 
-Primary workflow tables: `operational_submissions`, `workflow_actions`, `workflow_comments`, `workflow_notifications`.
+---
 
-See [WORKFLOW_ENGINE.md](./WORKFLOW_ENGINE.md) for the full state machine.
+## Quick start
+
+**Engineers:** [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)  
+**Programme managers:** [business/IMPLEMENTATION_PLAYBOOK.md](./business/IMPLEMENTATION_PLAYBOOK.md)  
+**Ministers:** [government/MINISTER_BRIEFING.md](./government/MINISTER_BRIEFING.md)  
+**Field technicians:** [CLAN_FIELD_GUIDE.md](./CLAN_FIELD_GUIDE.md)
+
+```bash
+npm run lint && npm run build && npm run test:workflow
+```
