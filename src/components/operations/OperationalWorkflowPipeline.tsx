@@ -4,6 +4,8 @@ import Link from "next/link";
 
 import { farmerRegistrationPipeline } from "@/lib/demo/agriculture-pilot-data";
 import { MINISTRY_INVENTORY_MOVEMENTS } from "@/lib/data/ministry-canonical-data";
+import { demoSource, pilotSource, resolveDisplaySource } from "@/lib/data/data-source";
+import { DataSourceNotice } from "@/components/enterprise";
 
 /**
  * Read-only illustration of how operational artefacts flow through the ministry stack.
@@ -12,6 +14,10 @@ import { MINISTRY_INVENTORY_MOVEMENTS } from "@/lib/data/ministry-canonical-data
 export default function OperationalWorkflowPipeline() {
   const p = farmerRegistrationPipeline;
   const corridorDepth = MINISTRY_INVENTORY_MOVEMENTS.length;
+  const pipelineSource = resolveDisplaySource([
+    demoSource("farmerRegistrationPipeline queue counts"),
+    pilotSource("MINISTRY_INVENTORY_MOVEMENTS corridor depth"),
+  ]);
 
   const stages = [
     {
@@ -62,6 +68,7 @@ export default function OperationalWorkflowPipeline() {
             reporting. Queue figures are indicative operational pressure, not personnel counts.
           </p>
         </div>
+        <DataSourceNotice source={pipelineSource} theme="dark" />
       </div>
       <div className="mt-4 flex flex-wrap items-stretch gap-2 lg:flex-nowrap lg:overflow-x-auto lg:pb-1">
         {stages.map((s, i) => (

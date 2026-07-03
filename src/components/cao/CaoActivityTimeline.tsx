@@ -2,7 +2,9 @@
 
 import * as React from "react";
 
+import { DataSourceBadge } from "@/components/enterprise";
 import type { DaoOversightRow } from "@/lib/ais/county-dao-demo";
+import { demoSource, resolveDisplaySource, type DataSourceMeta } from "@/lib/data/data-source";
 import { fetchOperationalFeedItems, normalizeCountyKey, type MinistryFeedItem } from "@/lib/data/ministry-data-service";
 
 function toneBorder(t: MinistryFeedItem["tone"]): string {
@@ -20,9 +22,15 @@ function toneBorder(t: MinistryFeedItem["tone"]): string {
 
 export default function CaoActivityTimeline({ county, daoRows }: { county: string | null; daoRows: DaoOversightRow[] }) {
   const [feed, setFeed] = React.useState<MinistryFeedItem[]>([]);
+  const [timelineSource, setTimelineSource] = React.useState<DataSourceMeta>(demoSource("Loading…"));
 
   React.useEffect(() => {
-    void fetchOperationalFeedItems(36).then(setFeed);
+    void fetchOperationalFeedItems(36).then((result) => {
+      setFeed(result.data);
+      setTimelineSource(
+        resolveDisplaySource([result.source, demoSource("Synthetic CAC rehearsal timeline rows")]),
+      );
+    });
   }, []);
 
   const nk = normalizeCountyKey(county);
@@ -81,8 +89,13 @@ export default function CaoActivityTimeline({ county, daoRows }: { county: strin
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-      <h2 className="text-[15px] font-semibold text-ink-900">Activity timeline</h2>
-      <p className="mt-1 text-[12px] text-slate-600">County-filtered operational feed blended with CAC rehearsal cadence statements.</p>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h2 className="text-[15px] font-semibold text-ink-900">Activity timeline</h2>
+          <p className="mt-1 text-[12px] text-slate-600">County-filtered operational feed blended with CAC rehearsal cadence statements.</p>
+        </div>
+        <DataSourceBadge source={timelineSource} />
+      </div>
       <ul className="mt-4 space-y-3">
         {merged.map((item) => (
           <li key={item.id} className={`rounded-lg border px-4 py-3 ${toneBorder(item.tone)}`}>

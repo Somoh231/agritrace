@@ -9,6 +9,7 @@ import { ClipboardList, Map } from "lucide-react";
 import {
   AlertCard,
   DashboardPanel,
+  DataSourceBadge,
   EmptyState,
   PageHeader,
   SectionHeader,
@@ -28,6 +29,7 @@ import {
   verificationStatusTone,
 } from "@/components/verification/verification-workspace-utils";
 import { useVerificationQueue } from "@/features/verification/hooks/use-verification-queue";
+import type { VerificationQueueResult } from "@/features/verification/repositories/verification-repository";
 import type {
   VerificationGridRow,
   VerificationQueueDetail,
@@ -59,7 +61,9 @@ export default function VerificationQueueWorkspace() {
   const actor = useOperationalActor();
   const [workflowErr, setWorkflowErr] = React.useState<string | null>(null);
 
-  const { data: rows = [], isPending, isError, error } = useVerificationQueue();
+  const { data: queueResult, isPending, isError, error } = useVerificationQueue();
+  const rows = React.useMemo(() => queueResult?.data ?? [], [queueResult]);
+  const queueSource = queueResult?.source;
 
   const filteredRows = React.useMemo(
     () =>
@@ -74,19 +78,23 @@ export default function VerificationQueueWorkspace() {
 
   const patchDetail = React.useCallback(
     (id: string, fn: (d: VerificationQueueDetail) => VerificationQueueDetail) => {
-      queryClient.setQueryData<VerificationGridRow[]>(operationalQueryKeys.verification.queue(), (prev) =>
-        (prev ?? []).map((r) => {
-          if (r.id !== id) return r;
-          const d = fn({ ...r._detail });
-          return {
-            ...r,
-            status: fmtVerificationStatus(d.status),
-            verificationAge: r.verificationAge,
-            posture: d.chips.map((c) => c.replace(/_/g, " ")).join(" · ") || "—",
-            _detail: d,
-          };
-        }),
-      );
+      queryClient.setQueryData<VerificationQueueResult>(operationalQueryKeys.verification.queue(), (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          data: prev.data.map((r) => {
+            if (r.id !== id) return r;
+            const d = fn({ ...r._detail });
+            return {
+              ...r,
+              status: fmtVerificationStatus(d.status),
+              verificationAge: r.verificationAge,
+              posture: d.chips.map((c) => c.replace(/_/g, " ")).join(" · ") || "—",
+              _detail: d,
+            };
+          }),
+        };
+      });
     },
     [queryClient],
   );
@@ -112,7 +120,7 @@ export default function VerificationQueueWorkspace() {
       if (!canPerform(actor, perm, vctx)) return;
 
       const key = operationalQueryKeys.verification.queue();
-      const prev = queryClient.getQueryData<VerificationGridRow[]>(key);
+      const prev = queryClient.getQueryData<VerificationQueueResult>(key);
       setWorkflowErr(null);
 
       const iso = new Date().toISOString();
@@ -179,9 +187,13 @@ export default function VerificationQueueWorkspace() {
         return;
       }
 
-      queryClient.setQueryData<VerificationGridRow[]>(key, (curr) =>
-        (curr ?? []).map((r) => (String(r.id) === String(result.row.id) ? result.row : r)),
-      );
+      queryClient.setQueryData<VerificationQueueResult>(key, (curr) => {
+        if (!curr) return curr;
+        return {
+          ...curr,
+          data: (curr.data ?? []).map((r) => (String(r.id) === String(result.row.id) ? result.row : r)),
+        };
+      });
     },
     [actor, patchDetail, queryClient, rows],
   );
@@ -265,6 +277,8 @@ export default function VerificationQueueWorkspace() {
           </div>
         }
       />
+
+      {queueSource ? <DataSourceBadge source={queueSource} className="block w-fit" /> : null}
 
       {actor.role === "donor_observer" ? (
         <AlertCard tone="info" title="Donor observer posture">

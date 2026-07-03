@@ -4,6 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 
 import { useNationalAISLive } from "@/components/ais/useNationalAISLive";
+import { DataSourceBadge } from "@/components/enterprise";
+import { demoSource, resolveDisplaySource } from "@/lib/data/data-source";
 import {
   dataQualityAlerts,
   farmerRegistrationPipeline,
@@ -48,6 +50,11 @@ export default function MinistryCommandCenter() {
 
   const activeAlerts =
     postHarvestLossAlerts.filter((a) => a.lossPct > 10).length + dataQualityAlerts.length;
+
+  const commandSource = React.useMemo(
+    () => resolveDisplaySource([live.dataSource, demoSource("nationalHeroMetrics + pipeline + alerts blended")]),
+    [live.dataSource],
+  );
 
   const countyRows = React.useMemo(() => {
     return countiesRanked.slice(0, 9).map((c) => {
@@ -199,6 +206,7 @@ export default function MinistryCommandCenter() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          <DataSourceBadge source={commandSource} />
           <span className="btn-gov-outline h-9 px-3 rounded-lg text-[12px]">Season {live.season}</span>
           <Link href="/executive-briefing" className="btn-gold h-9 px-3.5 rounded-lg text-[12px]">
             Cabinet Brief

@@ -4,6 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 
 import MinistryPageShell from "@/components/operations/MinistryPageShell";
+import { DataSourceNotice } from "@/components/enterprise";
+import { pilotSource } from "@/lib/data/data-source";
 import type { GridColumn } from "@/components/operations/EnterpriseDataGrid";
 import EnterpriseDataGrid from "@/components/operations/EnterpriseDataGrid";
 import LiveQueryGrid from "@/components/operations/LiveQueryGrid";
@@ -178,6 +180,7 @@ export default function DonorDashboardClient() {
       }
     >
       <div className="space-y-8 pb-10">
+        <DataSourceNotice source={pilotSource("MINISTRY_* canonical arrays — no live Supabase reads in this view")} theme="dark" />
         <div className="rounded-xl border border-white/[0.08] bg-gradient-to-br from-slate-950/80 via-emerald-950/25 to-slate-950/60 p-5">
           <div className="font-mono text-[9px] uppercase tracking-[0.26em] text-emerald-300/75">Transparent execution · read-only</div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

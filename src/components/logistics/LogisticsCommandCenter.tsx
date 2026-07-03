@@ -7,12 +7,15 @@ import { ArrowRightLeft, Map, Package } from "lucide-react";
 import {
   AlertCard,
   DashboardPanel,
+  DataSourceBadge,
+  DataSourceNotice,
   QuickActionCard,
   SectionHeader,
 } from "@/components/enterprise";
 import LogisticsNetworkMap from "@/components/logistics/LogisticsNetworkMap";
 import { RegistryKpiStrip } from "@/components/registry";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
+import { liveSource, pilotSource, resolveDisplaySource } from "@/lib/data/data-source";
 import { buildLogisticsAlerts } from "@/lib/logistics/logistics-alerts";
 import {
   buildStockoutForecastText,
@@ -20,17 +23,22 @@ import {
   exportMinistryAllocationReport,
   exportWarehouseUtilization,
 } from "@/lib/logistics/logistics-reporting";
-import { listTransferOrders } from "@/lib/logistics/transfer-repository";
+import { listTransferOrdersSourced } from "@/lib/logistics/transfer-repository";
 import type { TransferOrderView } from "@/lib/logistics/types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function LogisticsCommandCenter() {
   const [transfers, setTransfers] = React.useState<TransferOrderView[]>([]);
+  const [transferSource, setTransferSource] = React.useState<import("@/lib/data/data-source").DataSourceMeta | null>(null);
+  const [stockSource, setStockSource] = React.useState<import("@/lib/data/data-source").DataSourceMeta | null>(null);
   const [lowSku, setLowSku] = React.useState(0);
   const [expiryRisk, setExpiryRisk] = React.useState(0);
 
   React.useEffect(() => {
-    void listTransferOrders().then(setTransfers);
+    void listTransferOrdersSourced().then((r) => {
+      setTransfers(r.data);
+      setTransferSource(r.source);
+    });
   }, []);
 
   React.useEffect(() => {
@@ -39,7 +47,11 @@ export default function LogisticsCommandCenter() {
       try {
         const supabase = getSupabaseBrowserClient();
         const { data } = await supabase.from("warehouse_stock").select("quantity, expiry_date").limit(600);
-        if (c || !data?.length) return;
+        if (c || !data?.length) {
+          if (!c) setStockSource(pilotSource("warehouse_stock empty — KPI heuristics unavailable"));
+          return;
+        }
+        if (!c) setStockSource(liveSource("warehouse_stock"));
         let low = 0;
         let exp = 0;
         const now = Date.now();
@@ -55,7 +67,7 @@ export default function LogisticsCommandCenter() {
         setLowSku(low);
         setExpiryRisk(exp);
       } catch {
-        /* ignore */
+        if (!c) setStockSource(pilotSource("warehouse_stock unreachable — KPI heuristics unavailable"));
       }
     })();
     return () => {
@@ -70,6 +82,16 @@ export default function LogisticsCommandCenter() {
 
   const inTransit = transfers.filter((t) => t.status === "in_transit" || t.status === "dispatched").length;
   const pendingApproval = transfers.filter((t) => t.status === "requested").length;
+
+  const pageSource = React.useMemo(
+    () =>
+      resolveDisplaySource([
+        transferSource ?? pilotSource("Transfer ledger loading"),
+        stockSource ?? pilotSource("warehouse_stock KPIs"),
+        pilotSource("MINISTRY_WAREHOUSES network + logistics alerts"),
+      ]),
+    [stockSource, transferSource],
+  );
 
   const exportDonor = async () => {
     try {
@@ -106,6 +128,10 @@ export default function LogisticsCommandCenter() {
 
   return (
     <div className="space-y-6">
+      <DataSourceNotice source={pageSource} />
+      <div className="flex justify-end">
+        <DataSourceBadge source={pageSource} />
+      </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <QuickActionCard href="/transfers" icon={ArrowRightLeft} title="Transfer trace" description="National TRF chain-of-custody workflow and corridor approvals." />
         <QuickActionCard href="/operations/warehouses" icon={Package} title="Warehouse registry" description="National warehouse footprint, thresholds, and geo anchors." />

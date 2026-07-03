@@ -14,10 +14,12 @@ import { safePct } from "@/lib/utils/rice";
 import {
   AlertCard,
   DashboardPanel,
+  DataSourceNotice,
   SectionHeader,
   StatusBadge,
 } from "@/components/enterprise";
 import { RegistryKpiStrip } from "@/components/registry";
+import { demoSource } from "@/lib/data/data-source";
 import ProgressBar from "@/components/shared/ProgressBar";
 
 function stockRiskTone(status: string): "success" | "warning" | "danger" {
@@ -31,6 +33,7 @@ export default function InventoryOperationsClient() {
 
   return (
     <div className="space-y-6">
+      <DataSourceNotice source={demoSource("warehouses + inventoryTransfers + inputDistributionProgress")} />
       <RegistryKpiStrip
         items={[
           { label: "Fertilizer distributed", value: `${inputDistributionProgress.fertilizerDistributedMt} t`, hint: "National programme" },

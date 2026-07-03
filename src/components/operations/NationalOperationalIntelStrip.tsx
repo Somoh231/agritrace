@@ -4,11 +4,13 @@ import * as React from "react";
 import Link from "next/link";
 
 import { useNationalAISLive } from "@/components/ais/useNationalAISLive";
+import { DataSourceBadge } from "@/components/enterprise";
 import {
   farmerRegistrationPipeline,
   foodSecurityIndicators,
   nationalHeroMetrics,
 } from "@/lib/demo/agriculture-pilot-data";
+import { demoSource, pilotSource, resolveDisplaySource } from "@/lib/data/data-source";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import {
   fetchOperationalFeedItems,
@@ -40,8 +42,8 @@ export default function NationalOperationalIntelStrip() {
 
   React.useEffect(() => {
     let cancelled = false;
-    void fetchOperationalFeedItems(8).then((items) => {
-      if (!cancelled) setFeed(items);
+    void fetchOperationalFeedItems(8).then((result) => {
+      if (!cancelled) setFeed(result.data);
     });
     return () => {
       cancelled = true;
@@ -96,6 +98,16 @@ export default function NationalOperationalIntelStrip() {
     ],
   );
 
+  const stripSource = React.useMemo(
+    () =>
+      resolveDisplaySource([
+        live.dataSource,
+        demoSource("farmerRegistrationPipeline + foodSecurityIndicators"),
+        pilotSource("MINISTRY_WAREHOUSES stress warehouse"),
+      ]),
+    [live.dataSource],
+  );
+
   return (
     <section className="rounded-2xl border border-white/[0.08] bg-gradient-to-br from-slate-950/90 via-slate-950/70 to-emerald-950/20 px-4 py-4 md:px-5 md:py-5">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 pb-3 mb-4">
@@ -103,9 +115,10 @@ export default function NationalOperationalIntelStrip() {
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-emerald-200/70">Operational intelligence</div>
           <h2 className="mt-1 font-display text-[16px] font-semibold text-white">National situation — narratives, not noise</h2>
           <p className="mt-1 text-[11px] leading-relaxed text-slate-400 max-w-[920px]">
-            Synthesized from pilot operational tables and canonical ministry signals. When live data is thin, fixtures preserve a believable national story for planning and briefings.
+            Synthesized from pilot operational tables and canonical ministry signals. Source badge reflects live vs fixture contribution.
           </p>
         </div>
+        <DataSourceBadge source={stripSource} theme="dark" />
         <div className="flex flex-wrap gap-2 shrink-0">
           <Link
             href="/executive-briefing"

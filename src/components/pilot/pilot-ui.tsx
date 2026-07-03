@@ -1,22 +1,16 @@
 import type { PilotStatus } from "@/lib/demo/agriculture-pilot-data";
 import { PILOT_DATA_LABEL } from "@/lib/demo/agriculture-pilot-data";
 
+import { DataSourceNotice } from "@/components/enterprise";
+import { demoSource } from "@/lib/data/data-source";
 import StatusBadge from "@/components/enterprise/StatusBadge";
 
 export function PilotDatasetNotice({ variant = "default" }: { variant?: "default" | "compact" }) {
   return (
-    <div
-      className={
-        variant === "compact"
-          ? "rounded-lg border border-indigo-100 bg-indigo-50/90 px-3 py-2 text-[11px] text-indigo-950 leading-snug"
-          : "rounded-xl border border-indigo-100 bg-indigo-50/80 px-4 py-3 text-[12px] text-indigo-950 leading-relaxed"
-      }
-      role="status"
-    >
-      <span className="font-semibold text-indigo-950">Pilot dataset · </span>
-      Using illustrative national pilot figures while live Ministry data connections are finalized.{" "}
-      <span className="font-mono text-[10px] text-indigo-800/90">({PILOT_DATA_LABEL})</span>
-    </div>
+    <DataSourceNotice
+      source={demoSource(PILOT_DATA_LABEL)}
+      className={variant === "compact" ? "text-[11px]" : "text-[12px]"}
+    />
   );
 }
 

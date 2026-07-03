@@ -4,15 +4,24 @@ import * as React from "react";
 
 import { countyProductionPerformance, nationalHeroMetrics, type CountyProductionRow } from "@/lib/demo/agriculture-pilot-data";
 import {
-  countyMetricToProductionRow,
   countyMetricsFallbackRows,
+  fetchPilotCountyMetricRows,
 } from "@/lib/data/ministry-data-service";
+import {
+  demoSource,
+  liveSource,
+  pilotSource,
+  resolveDisplaySource,
+  type DataSourceMeta,
+} from "@/lib/data/data-source";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { safePct, seasonLabel } from "@/lib/utils/rice";
 
 export type NationalAISLive = {
   season: string;
+  /** @deprecated Prefer `dataSource` */
   usingFallbackSignals: boolean;
+  dataSource: DataSourceMeta;
   farmersCount: number;
   productionMt: number;
   targetMt: number;
@@ -25,6 +34,7 @@ export function useNationalAISLive(): NationalAISLive {
   const [state, setState] = React.useState<NationalAISLive>(() => ({
     season,
     usingFallbackSignals: true,
+    dataSource: demoSource("Initial load — agriculture-pilot-data"),
     farmersCount: nationalHeroMetrics.registeredFarmers,
     productionMt: nationalHeroMetrics.domesticRiceProductionMt,
     targetMt: nationalHeroMetrics.nationalProductionTargetMt,
@@ -57,33 +67,15 @@ export function useNationalAISLive(): NationalAISLive {
           loss: Number(r.post_harvest_loss_kg ?? 0),
         }));
 
-        const { data: pilotMetricRows, error: pilotMetricErr } = await supabase
-          .from("pilot_county_metrics")
-          .select("county,production_index,food_risk,dao_compliance")
-          .order("production_index", { ascending: false });
-
-        const pilotCountyLive =
-          !pilotMetricErr && pilotMetricRows?.length
-            ? (pilotMetricRows as Record<string, unknown>[]).map((r) =>
-                countyMetricToProductionRow(
-                  {
-                    county: String(r.county ?? ""),
-                    productionIndex: Number(r.production_index ?? 0),
-                    foodRisk: String(r.food_risk ?? "Low"),
-                    daoCompliance: Number(r.dao_compliance ?? 70),
-                    lng: 0,
-                    lat: 0,
-                  },
-                  0,
-                ),
-              )
-            : null;
+        const pilotMetrics = await fetchPilotCountyMetricRows();
+        const pilotCountyLive = pilotMetrics.source.kind === "live" ? pilotMetrics.data : null;
 
         const useFullDemoFallback = fc === 0 && rows.length === 0 && !pilotCountyLive?.length;
         if (useFullDemoFallback) {
           setState({
             season,
             usingFallbackSignals: true,
+            dataSource: demoSource("farmers + rice_production_records + pilot_county_metrics all empty"),
             farmersCount: nationalHeroMetrics.registeredFarmers,
             productionMt: nationalHeroMetrics.domesticRiceProductionMt,
             targetMt: nationalHeroMetrics.nationalProductionTargetMt,
@@ -103,6 +95,10 @@ export function useNationalAISLive(): NationalAISLive {
           setState({
             season,
             usingFallbackSignals: fc === 0,
+            dataSource: resolveDisplaySource([
+              pilotMetrics.source,
+              fc > 0 ? liveSource("farmers count") : pilotSource("farmers empty — county metrics only"),
+            ]),
             farmersCount: fcDisplay,
             productionMt: prodSum,
             targetMt: nationalHeroMetrics.nationalProductionTargetMt,
@@ -120,6 +116,10 @@ export function useNationalAISLive(): NationalAISLive {
           setState({
             season,
             usingFallbackSignals: true,
+            dataSource: resolveDisplaySource([
+              liveSource("farmers count"),
+              pilotSource("rice_production_records empty → MINISTRY_COUNTY_METRICS"),
+            ]),
             farmersCount: fc,
             productionMt: prodSum,
             targetMt: nationalHeroMetrics.nationalProductionTargetMt,
@@ -161,6 +161,7 @@ export function useNationalAISLive(): NationalAISLive {
         setState({
           season,
           usingFallbackSignals: false,
+          dataSource: liveSource("farmers + rice_production_records"),
           farmersCount: fc,
           productionMt: actualKg / 1000,
           targetMt: nationalHeroMetrics.nationalProductionTargetMt,
@@ -172,6 +173,7 @@ export function useNationalAISLive(): NationalAISLive {
           setState({
             season,
             usingFallbackSignals: true,
+            dataSource: demoSource("Supabase fetch failed → agriculture-pilot-data"),
             farmersCount: nationalHeroMetrics.registeredFarmers,
             productionMt: nationalHeroMetrics.domesticRiceProductionMt,
             targetMt: nationalHeroMetrics.nationalProductionTargetMt,

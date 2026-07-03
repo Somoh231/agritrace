@@ -1,9 +1,16 @@
 /**
  * Browser-safe Supabase reads for ministry pilot tables with canonical CSV fixtures as fallback.
+ * Every fetch returns explicit {@link SourcedResult} metadata — no silent fallback.
  */
 
 import type { DaoOversightRow, DaoRiskStatus, DaoSyncStatus } from "@/lib/ais/county-dao-demo";
 import type { CountyProductionRow, PilotStatus, WarehouseRow } from "@/lib/demo/agriculture-pilot-data";
+import {
+  liveSource,
+  pilotSource,
+  sourced,
+  type SourcedResult,
+} from "@/lib/data/data-source";
 import {
   MINISTRY_COUNTY_METRICS,
   MINISTRY_DAO_OFFICERS,
@@ -131,7 +138,7 @@ function mapPilotDaoDbRow(r: Record<string, unknown>): DaoOversightRow {
   );
 }
 
-export async function fetchDaoOversightRows(countyFilter: string | null): Promise<DaoOversightRow[]> {
+export async function fetchDaoOversightRows(countyFilter: string | null): Promise<SourcedResult<DaoOversightRow[]>> {
   try {
     const supabase = getSupabaseBrowserClient();
     let q = supabase
@@ -144,10 +151,15 @@ export async function fetchDaoOversightRows(countyFilter: string | null): Promis
       q = q.ilike("county", countyFilter.trim());
     }
     const { data, error } = await q;
-    if (error || !data?.length) return daoOversightFallback(countyFilter);
-    return (data as Record<string, unknown>[]).map(mapPilotDaoDbRow);
+    if (error || !data?.length) {
+      return sourced(daoOversightFallback(countyFilter), pilotSource("pilot_dao_officers empty → MINISTRY_DAO_OFFICERS"));
+    }
+    return sourced(
+      (data as Record<string, unknown>[]).map(mapPilotDaoDbRow),
+      liveSource("pilot_dao_officers"),
+    );
   } catch {
-    return daoOversightFallback(countyFilter);
+    return sourced(daoOversightFallback(countyFilter), pilotSource("pilot_dao_officers unreachable → MINISTRY_DAO_OFFICERS"));
   }
 }
 
@@ -169,7 +181,7 @@ function mapEventToFeed(e: MinistryOperationalEventRecord): MinistryFeedItem {
   };
 }
 
-export async function fetchOperationalFeedItems(limit = 24): Promise<MinistryFeedItem[]> {
+export async function fetchOperationalFeedItems(limit = 24): Promise<SourcedResult<MinistryFeedItem[]>> {
   try {
     const supabase = getSupabaseBrowserClient();
     const { data, error } = await supabase
@@ -178,22 +190,31 @@ export async function fetchOperationalFeedItems(limit = 24): Promise<MinistryFee
       .order("occurred_at", { ascending: false })
       .limit(limit);
     if (error || !data?.length) {
-      return MINISTRY_OPERATIONAL_EVENTS.slice(0, limit).map(mapEventToFeed);
+      return sourced(
+        MINISTRY_OPERATIONAL_EVENTS.slice(0, limit).map(mapEventToFeed),
+        pilotSource("pilot_operational_events empty → MINISTRY_OPERATIONAL_EVENTS"),
+      );
     }
-    return (data as Record<string, unknown>[]).map((r) =>
-      mapEventToFeed({
-        eventCode: String(r.event_code ?? r.id ?? "evt"),
-        occurredAt: String(r.occurred_at ?? new Date().toISOString()),
-        severity: String(r.severity ?? "LOW").toUpperCase() as MinistryOperationalEventRecord["severity"],
-        county: String(r.county ?? "National"),
-        district: String(r.district ?? ""),
-        eventType: String(r.event_type ?? "Event"),
-        message: String(r.message ?? ""),
-        status: String(r.status ?? "Open") as MinistryOperationalEventRecord["status"],
-      }),
+    return sourced(
+      (data as Record<string, unknown>[]).map((r) =>
+        mapEventToFeed({
+          eventCode: String(r.event_code ?? r.id ?? "evt"),
+          occurredAt: String(r.occurred_at ?? new Date().toISOString()),
+          severity: String(r.severity ?? "LOW").toUpperCase() as MinistryOperationalEventRecord["severity"],
+          county: String(r.county ?? "National"),
+          district: String(r.district ?? ""),
+          eventType: String(r.event_type ?? "Event"),
+          message: String(r.message ?? ""),
+          status: String(r.status ?? "Open") as MinistryOperationalEventRecord["status"],
+        }),
+      ),
+      liveSource("pilot_operational_events"),
     );
   } catch {
-    return MINISTRY_OPERATIONAL_EVENTS.slice(0, limit).map(mapEventToFeed);
+    return sourced(
+      MINISTRY_OPERATIONAL_EVENTS.slice(0, limit).map(mapEventToFeed),
+      pilotSource("pilot_operational_events unreachable → MINISTRY_OPERATIONAL_EVENTS"),
+    );
   }
 }
 
@@ -222,7 +243,7 @@ export function warehousesSignalFallback(countyFilter: string | null): Warehouse
   return mapped.filter((w) => normalizeCountyKey(w.county) === k);
 }
 
-export async function fetchCountyWarehouseSignals(countyFilter: string | null): Promise<WarehouseRow[]> {
+export async function fetchCountyWarehouseSignals(countyFilter: string | null): Promise<SourcedResult<WarehouseRow[]>> {
   const fallback = warehousesSignalFallback(countyFilter);
   try {
     const supabase = getSupabaseBrowserClient();
@@ -237,7 +258,9 @@ export async function fetchCountyWarehouseSignals(countyFilter: string | null): 
       q = q.ilike("county", countyFilter.trim());
     }
     const { data, error } = await q;
-    if (error || !data?.length) return fallback;
+    if (error || !data?.length) {
+      return sourced(fallback, pilotSource("warehouses empty → MINISTRY_WAREHOUSES"));
+    }
     const rows = (data as Record<string, unknown>[]).map((r) =>
       ministryWarehouseToSignalRow({
         ministryCode: String(r.ministry_code ?? "WH"),
@@ -253,9 +276,12 @@ export async function fetchCountyWarehouseSignals(countyFilter: string | null): 
         longitude: 0,
       }),
     );
-    return rows.length ? rows : fallback;
+    if (!rows.length) {
+      return sourced(fallback, pilotSource("warehouses mapped empty → MINISTRY_WAREHOUSES"));
+    }
+    return sourced(rows, liveSource("warehouses"));
   } catch {
-    return fallback;
+    return sourced(fallback, pilotSource("warehouses unreachable → MINISTRY_WAREHOUSES"));
   }
 }
 
@@ -290,28 +316,33 @@ export function countyMetricsFallbackRows(): CountyProductionRow[] {
   return MINISTRY_COUNTY_METRICS.map((m) => countyMetricToProductionRow(m, 0));
 }
 
-export async function fetchPilotCountyMetricRows(): Promise<CountyProductionRow[]> {
+export async function fetchPilotCountyMetricRows(): Promise<SourcedResult<CountyProductionRow[]>> {
   try {
     const supabase = getSupabaseBrowserClient();
     const { data, error } = await supabase
       .from("pilot_county_metrics")
       .select("county,production_index,food_risk,dao_compliance")
       .order("production_index", { ascending: false });
-    if (error || !data?.length) return countyMetricsFallbackRows();
-    return (data as Record<string, unknown>[]).map((r) =>
-      countyMetricToProductionRow(
-        {
-          county: String(r.county ?? ""),
-          productionIndex: Number(r.production_index ?? 0),
-          foodRisk: String(r.food_risk ?? "Low"),
-          daoCompliance: Number(r.dao_compliance ?? 70),
-          lng: 0,
-          lat: 0,
-        },
-        0,
+    if (error || !data?.length) {
+      return sourced(countyMetricsFallbackRows(), pilotSource("pilot_county_metrics empty → MINISTRY_COUNTY_METRICS"));
+    }
+    return sourced(
+      (data as Record<string, unknown>[]).map((r) =>
+        countyMetricToProductionRow(
+          {
+            county: String(r.county ?? ""),
+            productionIndex: Number(r.production_index ?? 0),
+            foodRisk: String(r.food_risk ?? "Low"),
+            daoCompliance: Number(r.dao_compliance ?? 70),
+            lng: 0,
+            lat: 0,
+          },
+          0,
+        ),
       ),
+      liveSource("pilot_county_metrics"),
     );
   } catch {
-    return countyMetricsFallbackRows();
+    return sourced(countyMetricsFallbackRows(), pilotSource("pilot_county_metrics unreachable → MINISTRY_COUNTY_METRICS"));
   }
 }

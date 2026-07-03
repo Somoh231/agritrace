@@ -14,5 +14,6 @@ export { default as StatusPipeline } from "@/components/enterprise/StatusPipelin
 export type { StatusPipelineStage } from "@/components/enterprise/StatusPipeline";
 export { default as QueueRow, QueuePrimaryLink } from "@/components/enterprise/QueueRow";
 export type { QueueRowTone } from "@/components/enterprise/QueueRow";
+export { default as DataSourceBadge, DataSourceNotice } from "@/components/enterprise/DataSourceBadge";
 export { default as EnterpriseDataGrid } from "@/components/enterprise/EnterpriseDataGrid";
 export type { GridColumn } from "@/components/enterprise/EnterpriseDataGrid";

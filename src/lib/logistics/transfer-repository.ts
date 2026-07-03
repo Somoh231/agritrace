@@ -2,6 +2,14 @@ import { canonicalTransferOrders } from "@/lib/logistics/canonical-transfers";
 import { mapWarehouseTransferRows } from "@/lib/logistics/transfer-map";
 import { collectExistingCodes, suggestTransferCode } from "@/lib/logistics/transfer-code";
 import type { TransferOrderView, TransferWorkflowStatus } from "@/lib/logistics/types";
+import {
+  liveSource,
+  offlineSource,
+  pilotSource,
+  resolveDisplaySource,
+  sourced,
+  type SourcedResult,
+} from "@/lib/data/data-source";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const LOCAL_KEY = "agrivault-logistics-transfer-local";
@@ -42,7 +50,7 @@ function nextStatus(cur: TransferWorkflowStatus): TransferWorkflowStatus | null 
 
 type DbTransferRow = Record<string, unknown>;
 
-export async function listTransferOrders(): Promise<TransferOrderView[]> {
+export async function listTransferOrdersSourced(): Promise<SourcedResult<TransferOrderView[]>> {
   let remote: TransferOrderView[] = [];
   try {
     const supabase = getSupabaseBrowserClient();
@@ -59,7 +67,25 @@ export async function listTransferOrders(): Promise<TransferOrderView[]> {
   const mergedCodes = new Set(remote.map((r) => r.transferCode));
   const canonical = canonicalTransferOrders().filter((c) => !mergedCodes.has(c.transferCode));
   const local = readLocal().filter((l) => !mergedCodes.has(l.transferCode));
-  return [...remote, ...local, ...canonical];
+  const merged = [...remote, ...local, ...canonical];
+
+  const contributors = [];
+  if (remote.length) contributors.push(liveSource("warehouse_transfer_orders"));
+  if (local.length) contributors.push(offlineSource("localStorage agrivault-logistics-transfer-local"));
+  if (canonical.length) contributors.push(pilotSource("MINISTRY canonical transfer fixtures"));
+
+  if (!contributors.length) {
+    return sourced([], pilotSource("No transfer rows in remote, local, or canonical layers"));
+  }
+  if (contributors.length === 1) {
+    return sourced(merged, contributors[0]!);
+  }
+  return sourced(merged, resolveDisplaySource(contributors));
+}
+
+export async function listTransferOrders(): Promise<TransferOrderView[]> {
+  const result = await listTransferOrdersSourced();
+  return result.data;
 }
 
 export async function advanceTransferOrder(row: TransferOrderView): Promise<{ ok: boolean; error?: string }> {

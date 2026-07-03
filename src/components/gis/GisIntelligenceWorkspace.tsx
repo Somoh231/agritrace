@@ -32,6 +32,8 @@ import {
 } from "@/features/verification/utils/queue-metrics";
 import { optionalMapboxToken } from "@/lib/mapbox/config";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { DataSourceBadge } from "@/components/enterprise";
+import { pilotSource, resolveDisplaySource } from "@/lib/data/data-source";
 
 const GisIntelligenceMap = dynamic(() => import("@/components/gis/GisIntelligenceMap"), {
   ssr: false,
@@ -101,8 +103,20 @@ export default function GisIntelligenceWorkspace() {
   });
 
   const [countyGeo, setCountyGeo] = React.useState<Record<string, unknown> | null>(null);
-  const { data: transfers = [] } = useTransferOrders();
-  const { data: verificationRows = [] } = useVerificationQueue();
+  const { data: transferResult } = useTransferOrders();
+  const { data: verificationQueue } = useVerificationQueue();
+  const transfers = React.useMemo(() => transferResult?.data ?? [], [transferResult]);
+  const verificationRows = React.useMemo(() => verificationQueue?.data ?? [], [verificationQueue]);
+
+  const gisDisplaySource = React.useMemo(
+    () =>
+      resolveDisplaySource([
+        pilotSource("GIS base layers — ministry-canonical fixtures"),
+        ...(verificationQueue?.source ? [verificationQueue.source] : []),
+        ...(transferResult?.source ? [transferResult.source] : []),
+      ]),
+    [transferResult?.source, verificationQueue?.source],
+  );
   const [countySel, setCountySel] = React.useState<string | null>(null);
   const [whSel, setWhSel] = React.useState<string | null>(null);
   const [transferSel, setTransferSel] = React.useState<string | null>(null);
@@ -269,7 +283,8 @@ export default function GisIntelligenceWorkspace() {
             warehouses for operational drawers.
           </p>
         </div>
-        <div className="mt-3 flex flex-wrap gap-2 md:mt-0">
+        <div className="mt-3 flex flex-wrap items-center gap-2 md:mt-0">
+          <DataSourceBadge source={gisDisplaySource} theme="dark" />
           <Link
             href="/national-heat-map"
             className="rounded-lg border border-slate-700 px-3 py-1.5 text-[11px] text-slate-200 hover:bg-slate-900"

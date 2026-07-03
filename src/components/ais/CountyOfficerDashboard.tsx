@@ -14,6 +14,7 @@ import CaoReportingSection from "@/components/cao/CaoReportingSection";
 import {
   AlertCard,
   DashboardPanel,
+  DataSourceNotice,
   PageHeader,
   QuickActionCard,
   SectionHeader,
@@ -36,6 +37,7 @@ import {
 } from "@/lib/data/ministry-data-service";
 import type { WarehouseRow } from "@/lib/demo/agriculture-pilot-data";
 import { warehouses as demoWarehouses } from "@/lib/demo/agriculture-pilot-data";
+import { demoSource, resolveDisplaySource, type DataSourceMeta } from "@/lib/data/data-source";
 import { isCountyCoordinatorRole, isMinistryNationalRole } from "@/lib/auth/operational-roles";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { MoaOperationalSurveyKind } from "@/lib/reporting/moa-operational-payload";
@@ -75,6 +77,7 @@ export default function CountyOfficerDashboard({
   const [farmersCount, setFarmersCount] = React.useState<number | null>(null);
   const [daoRows, setDaoRows] = React.useState<DaoOversightRow[]>([]);
   const [warehouseRows, setWarehouseRows] = React.useState<WarehouseRow[]>([]);
+  const [pageSource, setPageSource] = React.useState<DataSourceMeta | null>(null);
   const [districtFilter, setDistrictFilter] = React.useState("all");
   const [syncFilter, setSyncFilter] = React.useState("all");
   const [actionBanner, setActionBanner] = React.useState<string | null>(null);
@@ -99,8 +102,9 @@ export default function CountyOfficerDashboard({
   React.useEffect(() => {
     void (async () => {
       const [dao, wh] = await Promise.all([fetchDaoOversightRows(county), fetchCountyWarehouseSignals(county)]);
-      setDaoRows(dao);
-      setWarehouseRows(wh);
+      setDaoRows(dao.data);
+      setWarehouseRows(wh.data);
+      setPageSource(resolveDisplaySource([dao.source, wh.source]));
     })();
   }, [county]);
 
@@ -145,6 +149,12 @@ export default function CountyOfficerDashboard({
     return demoWarehouses.filter((w) => normalizeCounty(w.county) === nc || w.county.toLowerCase().includes(nc));
   }, [nc, warehouseRows]);
 
+  React.useEffect(() => {
+    if (warehouseRows.length === 0 && scopedWarehouses.length > 0) {
+      setPageSource((prev) => resolveDisplaySource([prev ?? demoSource(), demoSource("warehouses empty → demoWarehouses")]));
+    }
+  }, [warehouseRows.length, scopedWarehouses.length]);
+
   const countyMetric = MINISTRY_COUNTY_METRICS.find((m) => normalizeCountyKey(m.county) === nk);
 
   const productionEstimateMt = React.useMemo(() => {
@@ -162,7 +172,8 @@ export default function CountyOfficerDashboard({
 
   const [alertFeed, setAlertFeed] = React.useState<MinistryFeedItem[]>([]);
   React.useEffect(() => {
-    void fetchOperationalFeedItems(48).then((items) => {
+    void fetchOperationalFeedItems(48).then((result) => {
+      const items = result.data;
       const scoped = items.filter((f) => {
         if (!nk) return true;
         const hay = `${f.title} ${f.detail}`.toLowerCase();
@@ -209,6 +220,7 @@ export default function CountyOfficerDashboard({
             </div>
           }
         />
+        {pageSource ? <DataSourceNotice source={pageSource} className="mt-1" /> : null}
 
         {assignmentGap ? (
           <AlertCard tone="warning" title="County assignment required">

@@ -15,6 +15,7 @@ import {
 import {
   AlertCard,
   DashboardPanel,
+  DataSourceNotice,
   PageHeader,
   QuickActionCard,
   SectionHeader,
@@ -22,6 +23,7 @@ import {
   Timeline,
 } from "@/components/enterprise";
 import { RegistryKpiStrip } from "@/components/registry";
+import { demoSource } from "@/lib/data/data-source";
 import {
   countyProductionPerformance,
   foodSecurityIndicators,
@@ -45,6 +47,7 @@ export default function FoodSecurityClient() {
 
   return (
     <div className="space-y-6 pb-8">
+      <DataSourceNotice source={demoSource("foodSecurityIndicators + countyProductionPerformance")} />
       <PageHeader
         kicker="National intelligence · Early warning"
         title="Food security command layer"

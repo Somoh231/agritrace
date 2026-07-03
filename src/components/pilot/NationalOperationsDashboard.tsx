@@ -24,6 +24,8 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { safePct, seasonLabel } from "@/lib/utils/rice";
 
 import { OpsCard, OpsMetric, OpsSectionTitle, OpsStatusBadge } from "@/components/pilot/pilot-ui";
+import { DataSourceBadge } from "@/components/enterprise";
+import { demoSource, liveSource } from "@/lib/data/data-source";
 import ProgressBar from "@/components/shared/ProgressBar";
 
 function targetActualPct(actualMt: number, targetMt: number) {
@@ -151,10 +153,7 @@ export default function NationalOperationsDashboard() {
           <div className="flex shrink-0 flex-col items-start gap-2 rounded-lg border border-white/15 bg-white/10 px-3 py-2">
             <div className="font-mono text-[10px] uppercase tracking-widest text-emerald-100/80">Status</div>
             <div className="flex flex-wrap items-center gap-2">
-              <OpsStatusBadge status={usingPilotDemo ? "warning" : "healthy"} />
-              <span className="text-[12px] text-emerald-50">
-                {usingPilotDemo ? "Pilot demo dataset" : "Live tables contributing"}
-              </span>
+              <DataSourceBadge source={usingPilotDemo ? demoSource("farmers + rice_production_records empty") : liveSource("farmers + rice_production_records")} theme="dark" />
             </div>
           </div>
         </div>

@@ -11,6 +11,7 @@ import { checkWorkflowPermission, workflowStageForRole } from "../roles";
 import { allowedActionsFor, computeSubmissionTransition } from "../status-model";
 import { buildWorkflowDedupeKey } from "../submission-bridge";
 import { OPERATIONAL_SUBMISSION_TYPES } from "../submission-types";
+import { demoSource, liveSource, pilotSource, resolveDisplaySource } from "../../data/data-source";
 
 let passed = 0;
 function check(name: string, fn: () => void) {
@@ -181,6 +182,23 @@ check("farm boundary dedupe uses plot client id when present", () => {
 check("missing entity refs yield null dedupe key", () => {
   const k = buildWorkflowDedupeKey({ kind: "register_farmer", payload: {} });
   assert.equal(k, null);
+});
+
+console.log("data source layer — taxonomy & merge");
+
+check("resolveDisplaySource picks demo over live when mixed", () => {
+  const r = resolveDisplaySource([liveSource("farmers"), demoSource("hero metrics")]);
+  assert.equal(r.kind, "demo");
+  assert.ok(r.mixed?.includes("live"));
+});
+
+check("live-only source requires no banner disclosure", () => {
+  const r = resolveDisplaySource([liveSource()]);
+  assert.equal(r.kind, "live");
+});
+
+check("pilot fallback is distinct from demo", () => {
+  assert.notEqual(pilotSource().kind, demoSource().kind);
 });
 
 console.log(`\nAll ${passed} workflow checks passed.`);

@@ -11,12 +11,14 @@ import {
 import {
   AlertCard,
   DashboardPanel,
+  DataSourceNotice,
   PageHeader,
   QuickActionCard,
   SectionHeader,
   StatusBadge,
   Timeline,
 } from "@/components/enterprise";
+import { demoSource, offlineSource, resolveDisplaySource } from "@/lib/data/data-source";
 import { RegistryKpiStrip } from "@/components/registry";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import OfflineFieldOperationsCard from "@/components/pwa/OfflineFieldOperationsCard";
@@ -73,9 +75,14 @@ export default function ReportingWorkspaceView({ tab }: { tab: ReportingTabId })
     postHarvestLossAlerts.filter((a) => a.lossPct > 10).length + dataQualityAlerts.length;
   const nf = (n: number) => Intl.NumberFormat().format(n);
   const draftRecords = offlineSyncQueue.reduce((s, q) => s + q.records, 0);
+  const reportingSource = resolveDisplaySource([
+    demoSource("fieldReports + nationalHeroMetrics + pipeline"),
+    offlineSource("offlineSyncQueue counts are illustrative — use /field/sync-queue for real IndexedDB"),
+  ]);
 
   return (
     <div className="space-y-6 pb-8">
+      <DataSourceNotice source={reportingSource} />
       <PageHeader
         kicker="Operations · DAO & CAC reporting"
         title="National reporting control center"

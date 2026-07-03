@@ -4,7 +4,9 @@ import * as React from "react";
 import Link from "next/link";
 
 import { dataQualityAlerts } from "@/lib/demo/agriculture-pilot-data";
+import { demoSource, liveSource, pilotSource, resolveDisplaySource, type DataSourceMeta } from "@/lib/data/data-source";
 import { fetchOperationalFeedItems } from "@/lib/data/ministry-data-service";
+import { DataSourceBadge } from "@/components/enterprise";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export type QueueStatus =
@@ -50,6 +52,7 @@ function toneForStatus(s: QueueStatus) {
 
 export default function OperationalQueuesPanel({ className }: { className?: string }) {
   const [rows, setRows] = React.useState<OpsQueueRow[]>([]);
+  const [panelSource, setPanelSource] = React.useState<DataSourceMeta>(demoSource("Loading…"));
 
   React.useEffect(() => {
     void (async () => {
@@ -93,7 +96,7 @@ export default function OperationalQueuesPanel({ className }: { className?: stri
         });
 
         const feed = await fetchOperationalFeedItems(4);
-        const approvalHints: OpsQueueRow[] = feed.map((f, i) => ({
+        const approvalHints: OpsQueueRow[] = feed.data.map((f, i) => ({
           id: `act-${f.id}-${i}`,
           queue: "Approvals & coordination",
           status: "under_review",
@@ -106,8 +109,16 @@ export default function OperationalQueuesPanel({ className }: { className?: stri
         }));
 
         setRows([...fromDb, ...approvalHints.slice(0, 2), ...synthetic].slice(0, 12));
+        setPanelSource(
+          resolveDisplaySource([
+            fromDb.length ? liveSource("pilot_operational_events") : pilotSource("pilot_operational_events empty"),
+            feed.source,
+            demoSource("dataQualityAlerts synthetic rows"),
+          ]),
+        );
       } catch {
         setRows(synthetic);
+        setPanelSource(demoSource("Fetch failed — dataQualityAlerts only"));
       }
     })();
   }, []);
@@ -115,8 +126,13 @@ export default function OperationalQueuesPanel({ className }: { className?: stri
   return (
     <div className={className}>
       <div className="rounded-2xl border border-white/10 bg-black/25 p-4 backdrop-blur-md">
-        <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-200/65">Operational queues</div>
-        <div className="mt-1 font-display text-[15px] font-semibold text-white">Items requiring ministry action</div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-200/65">Operational queues</div>
+            <div className="mt-1 font-display text-[15px] font-semibold text-white">Items requiring ministry action</div>
+          </div>
+          <DataSourceBadge source={panelSource} theme="dark" />
+        </div>
         <ul className="mt-4 space-y-2 max-h-[min(42vh,420px)] overflow-y-auto pr-1">
           {rows.map((r) => (
             <li key={r.id} className={`rounded-xl border px-3 py-2.5 ${toneForPriority(r.priority)}`}>

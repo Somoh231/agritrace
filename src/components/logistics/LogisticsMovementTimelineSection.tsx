@@ -2,12 +2,14 @@
 
 import * as React from "react";
 
-import { EmptyState, SectionHeader } from "@/components/enterprise";
-import { fetchNationalMovementTimeline } from "@/lib/logistics/movement-timeline";
+import { DataSourceBadge, EmptyState, SectionHeader } from "@/components/enterprise";
+import { fetchNationalMovementTimelineSourced } from "@/lib/logistics/movement-timeline";
+import type { DataSourceMeta } from "@/lib/data/data-source";
 import type { MovementTimelineRow } from "@/lib/logistics/types";
 
 export default function LogisticsMovementTimelineSection({ limit = 60 }: { limit?: number }) {
   const [rows, setRows] = React.useState<MovementTimelineRow[]>([]);
+  const [source, setSource] = React.useState<DataSourceMeta | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -15,9 +17,10 @@ export default function LogisticsMovementTimelineSection({ limit = 60 }: { limit
     let c = false;
     void (async () => {
       try {
-        const data = await fetchNationalMovementTimeline(limit);
+        const result = await fetchNationalMovementTimelineSourced(limit);
         if (!c) {
-          setRows(data);
+          setRows(result.data);
+          setSource(result.source);
           setError(null);
         }
       } catch (e) {
@@ -33,11 +36,14 @@ export default function LogisticsMovementTimelineSection({ limit = 60 }: { limit
 
   return (
     <section id="logistics-movements" className="scroll-mt-24 p-5 sm:p-6">
-      <SectionHeader
-        kicker="Inventory movement timeline"
-        title="National logistics ledger"
-        subtitle="Timestamped movements from inventory_movements with operator attribution; canonical fixtures appear when the ledger is empty."
-      />
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <SectionHeader
+          kicker="Inventory movement timeline"
+          title="National logistics ledger"
+          subtitle="Timestamped movements from inventory_movements; pilot fixtures appear when the ledger is empty."
+        />
+        {source ? <DataSourceBadge source={source} /> : null}
+      </div>
 
       {loading ? (
         <div className="mt-4 space-y-2">

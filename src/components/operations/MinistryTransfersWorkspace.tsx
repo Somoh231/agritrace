@@ -9,6 +9,7 @@ import { Map, Package } from "lucide-react";
 import {
   AlertCard,
   DashboardPanel,
+  DataSourceBadge,
   EmptyState,
   PageHeader,
   SectionHeader,
@@ -26,7 +27,7 @@ import {
   type TransferGridRow,
 } from "@/components/logistics/transfer-workspace-utils";
 import { RegistryKpiStrip } from "@/components/registry";
-import { useTransferOrders } from "@/features/transfers/hooks/use-transfer-orders";
+import { useTransferOrders, type TransferOrdersResult } from "@/features/transfers/hooks/use-transfer-orders";
 import { useOperationalActor } from "@/lib/ops/operational-actor-context";
 import { canPerform } from "@/lib/ops/permissions";
 import { postTransferWorkflow } from "@/lib/ops/workflow-api-client";
@@ -39,7 +40,9 @@ export default function MinistryTransfersWorkspace() {
   const queryClient = useQueryClient();
   const actor = useOperationalActor();
   const [workflowErr, setWorkflowErr] = React.useState<string | null>(null);
-  const { data: orders = [], isPending, isError, error } = useTransferOrders();
+  const { data: ordersResult, isPending, isError, error } = useTransferOrders();
+  const orders = React.useMemo(() => ordersResult?.data ?? [], [ordersResult]);
+  const transferSource = ordersResult?.source;
 
   const rows = React.useMemo(() => orders.map(toTransferGridRow), [orders]);
 
@@ -53,18 +56,22 @@ export default function MinistryTransfersWorkspace() {
 
   const patchOrder = React.useCallback(
     (id: string, next: TransferWorkflowStatus, note: string) => {
-      queryClient.setQueryData<TransferOrderView[]>(operationalQueryKeys.transfers.list(), (prev) =>
-        (prev ?? []).map((o) => {
-          if (o.id !== id) return o;
-          const iso = new Date().toISOString();
-          const patch: Partial<TransferOrderView> = { status: next };
-          if (next === "approved") patch.approvedAt = iso;
-          if (next === "dispatched") patch.dispatchedAt = iso;
-          if (next === "delivered") patch.deliveredAt = iso;
-          if (next === "completed") patch.completedAt = iso;
-          return { ...o, ...patch, notes: note || o.notes };
-        }),
-      );
+      queryClient.setQueryData<TransferOrdersResult>(operationalQueryKeys.transfers.list(), (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          data: prev.data.map((o) => {
+            if (o.id !== id) return o;
+            const iso = new Date().toISOString();
+            const patch: Partial<TransferOrderView> = { status: next };
+            if (next === "approved") patch.approvedAt = iso;
+            if (next === "dispatched") patch.dispatchedAt = iso;
+            if (next === "delivered") patch.deliveredAt = iso;
+            if (next === "completed") patch.completedAt = iso;
+            return { ...o, ...patch, notes: note || o.notes };
+          }),
+        };
+      });
     },
     [queryClient],
   );
@@ -117,7 +124,7 @@ export default function MinistryTransfersWorkspace() {
       if (!next) return;
 
       const key = operationalQueryKeys.transfers.list();
-      const prev = queryClient.getQueryData<TransferOrderView[]>(key);
+      const prev = queryClient.getQueryData<TransferOrdersResult>(key);
       setWorkflowErr(null);
 
       patchOrder(id, next, note);
@@ -130,9 +137,13 @@ export default function MinistryTransfersWorkspace() {
         return;
       }
 
-      queryClient.setQueryData<TransferOrderView[]>(key, (curr) =>
-        (curr ?? []).map((o) => (o.id === result.order.id ? result.order : o)),
-      );
+      queryClient.setQueryData<TransferOrdersResult>(key, (curr) => {
+        if (!curr) return curr;
+        return {
+          ...curr,
+          data: curr.data.map((o) => (o.id === result.order.id ? result.order : o)),
+        };
+      });
     },
     [actor, orders, patchOrder, queryClient],
   );
@@ -172,7 +183,8 @@ export default function MinistryTransfersWorkspace() {
         title="National transfer trace"
         description="Ministry-grade fertilizer, seed, donor inventory, and redistribution custody — TRF identifiers, verification checkpoints, receiving attestations, and audit-grade workflow actions."
         actions={
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {transferSource ? <DataSourceBadge source={transferSource} /> : null}
             <Link href="/map" className="inline-flex h-10 items-center gap-2 rounded-lg btn-gov-outline px-4 text-[12px]">
               <Map className="h-4 w-4" aria-hidden />
               Map corridors

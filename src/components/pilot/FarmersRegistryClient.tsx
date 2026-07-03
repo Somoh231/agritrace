@@ -12,11 +12,13 @@ import {
 import {
   AlertCard,
   DashboardPanel,
+  DataSourceBadge,
   EmptyState,
   PageHeader,
   SectionHeader,
   StatusBadge,
 } from "@/components/enterprise";
+import { demoSource, liveSource } from "@/lib/data/data-source";
 import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
 import OperationDrawer from "@/components/operations/OperationDrawer";
 import FarmerProfileDrawer from "@/components/operations/FarmerProfileDrawer";
@@ -206,10 +208,10 @@ export default function FarmersRegistryClient() {
       />
 
       {usingDemo ? (
-        <AlertCard tone="warning" title="Pilot dataset active">
-          Showing illustrative registry rows while live Supabase data loads or when the farmers table is empty. National pipeline metrics remain available for executive context.
-        </AlertCard>
-      ) : null}
+        <DataSourceBadge source={demoSource("farmerRegistrySample — farmers table empty or unavailable")} />
+      ) : (
+        <DataSourceBadge source={liveSource("farmers")} />
+      )}
 
       {loadError && !usingDemo ? (
         <AlertCard tone="danger" title="Registry sync notice">

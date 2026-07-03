@@ -13,6 +13,8 @@ import {
 import {
   AlertCard,
   DashboardPanel,
+  DataSourceBadge,
+  DataSourceNotice,
   PageHeader,
   QuickActionCard,
   SectionHeader,
@@ -21,7 +23,9 @@ import {
 } from "@/components/enterprise";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
-import { fieldReports, offlineSyncQueue } from "@/lib/demo/agriculture-pilot-data";
+import { fieldReports } from "@/lib/demo/agriculture-pilot-data";
+import { demoSource, liveSource, offlineSource, resolveDisplaySource } from "@/lib/data/data-source";
+import { getPendingCount } from "@/lib/offline/sync-queue";
 
 const TASKS = [
   { id: "1", title: "Land boundary mapping — Parcel 882", meta: "Gbarnga · 09:15", tone: "warning" as const, badge: "In progress" },
@@ -37,13 +41,19 @@ const RECENT = [
 
 export default function ClanWorkspaceClient() {
   const [gpsOk] = React.useState(true);
-  const pending = offlineSyncQueue.reduce((s, q) => s + q.records, 0);
+  const [pending, setPending] = React.useState(0);
   const [sessionId, setSessionId] = React.useState<string | null>(null);
   const [online, setOnline] = React.useState<boolean | null>(null);
+
+  const pageSource = resolveDisplaySource([
+    demoSource("Field task list and recent activity samples"),
+    pending > 0 ? offlineSource(`${pending} records in IndexedDB sync queue`) : liveSource("No pending offline captures"),
+  ]);
 
   React.useEffect(() => {
     setSessionId(`FIELD-${String(Date.now()).slice(-4)}`);
     setOnline(navigator.onLine);
+    void getPendingCount().then(setPending);
     const syncOnline = () => setOnline(navigator.onLine);
     window.addEventListener("online", syncOnline);
     window.addEventListener("offline", syncOnline);
@@ -61,11 +71,14 @@ export default function ClanWorkspaceClient() {
         description="Field capture, farm registration, GPS boundaries, and offline-first reporting. Submissions flow to the District Agriculture Officer (DAO) for district review."
         actions={
           <>
+            <DataSourceBadge source={pageSource} />
             <InstallAppButton label="Install App" />
             <SyncStatusIndicator />
           </>
         }
       />
+
+      <DataSourceNotice source={pageSource} />
 
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-[12px] text-slate-700">
         <span className="inline-flex items-center gap-1.5">

@@ -2,11 +2,13 @@
 
 import * as React from "react";
 
+import { DataSourceBadge } from "@/components/enterprise";
 import {
   dataQualityAlerts,
   inventoryTransfers,
   postHarvestLossAlerts,
 } from "@/lib/demo/agriculture-pilot-data";
+import { demoSource, resolveDisplaySource, type DataSourceMeta } from "@/lib/data/data-source";
 import { fetchOperationalFeedItems, type MinistryFeedItem } from "@/lib/data/ministry-data-service";
 
 export type FeedItem = MinistryFeedItem;
@@ -26,9 +28,13 @@ function toneClasses(tone: FeedItem["tone"]) {
 
 export default function OperationalActivityRail({ className }: { className?: string }) {
   const [pilotFeed, setPilotFeed] = React.useState<FeedItem[]>([]);
+  const [feedSource, setFeedSource] = React.useState<DataSourceMeta>(demoSource("Loading…"));
 
   React.useEffect(() => {
-    void fetchOperationalFeedItems(18).then(setPilotFeed);
+    void fetchOperationalFeedItems(18).then((result) => {
+      setPilotFeed(result.data);
+      setFeedSource(result.source);
+    });
   }, []);
 
   const items = React.useMemo((): FeedItem[] => {
@@ -81,11 +87,21 @@ export default function OperationalActivityRail({ className }: { className?: str
     return [...pilotFeed, ...loss, ...dq, ...mov, ...dao].sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 14);
   }, [pilotFeed]);
 
+  const displaySource = React.useMemo(
+    () => resolveDisplaySource([feedSource, demoSource("Blended demo alerts, transfers, and situational rows")]),
+    [feedSource],
+  );
+
   return (
     <div className={className}>
       <div className="rounded-2xl border border-white/10 bg-black/25 p-4 backdrop-blur-md">
-        <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-200/65">Live operational feed</div>
-        <div className="mt-1 font-display text-[15px] font-semibold text-white">National activity rail</div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-200/65">Operational feed</div>
+            <div className="mt-1 font-display text-[15px] font-semibold text-white">National activity rail</div>
+          </div>
+          <DataSourceBadge source={displaySource} theme="dark" />
+        </div>
         <ul className="mt-4 space-y-2.5 max-h-[min(62vh,560px)] overflow-y-auto pr-1">
           {items.map((it) => (
             <li key={it.id} className={`rounded-xl border px-3 py-2.5 ${toneClasses(it.tone)}`}>
