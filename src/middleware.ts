@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { assertPilotRouteAccess, needsPilotRoleGate } from "@/lib/auth/workspace-access";
+import { REQUEST_ID_HEADER, resolveRequestId } from "@/lib/http/request-context";
 import { normalizeHttpUrl } from "@/lib/supabase/env";
 import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { UserRole } from "@/lib/supabase/types";
@@ -57,7 +58,9 @@ function isProtectedPath(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
+  const requestId = resolveRequestId(request);
   const response = NextResponse.next({ request });
+  response.headers.set(REQUEST_ID_HEADER, requestId);
   const pathname = request.nextUrl.pathname;
 
   if (pathname === "/" && !request.cookies.get("av_exp_home_hero")) {
@@ -101,7 +104,9 @@ export async function middleware(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirectTo", pathname);
-    return NextResponse.redirect(redirectUrl);
+    const redirect = NextResponse.redirect(redirectUrl);
+    redirect.headers.set(REQUEST_ID_HEADER, requestId);
+    return redirect;
   }
 
   if (user && isProtectedPath(pathname) && needsPilotRoleGate(pathname)) {
@@ -114,7 +119,9 @@ export async function middleware(request: NextRequest) {
         const next = request.nextUrl.clone();
         next.pathname = gate.redirectTo;
         next.search = "";
-        return NextResponse.redirect(next);
+        const redirect = NextResponse.redirect(next);
+        redirect.headers.set(REQUEST_ID_HEADER, requestId);
+        return redirect;
       }
     }
   }

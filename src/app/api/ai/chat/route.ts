@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
 import {
@@ -7,7 +6,13 @@ import {
   API_ERROR_UNAUTHORIZED,
   requestBodyTooLarge,
 } from "@/lib/http/api-security";
-import { rateLimitPolicyHeaders } from "@/lib/http/rate-limit";
+import {
+  apiError,
+  apiHeaders,
+  beginApiRequest,
+  rejectIfRateLimited,
+} from "@/lib/http/api-response";
+import { logApiFailure } from "@/lib/http/structured-log";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, UserRole } from "@/lib/supabase/types";
 import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
@@ -226,9 +231,15 @@ function describeAnthropicStreamError(e: unknown): { logLine: string; streamNoti
   };
 }
 
+const AI_CHAT_POLICY = { windowMs: 60_000, max: 20 };
+
 export async function POST(req: Request) {
+  const ctx = beginApiRequest(req, AI_CHAT_POLICY);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
+
   if (requestBodyTooLarge(req, 256_000)) {
-    return NextResponse.json({ error: "Payload too large." }, { status: 413 });
+    return apiError(ctx, "Payload too large.", 413, { policy: AI_CHAT_POLICY });
   }
 
   const supabase = await createClient();
@@ -236,7 +247,7 @@ export async function POST(req: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: API_ERROR_UNAUTHORIZED }, { status: 401 });
+    return apiError(ctx, API_ERROR_UNAUTHORIZED, 401, { policy: AI_CHAT_POLICY });
   }
 
   const { data: profileRow } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>();
@@ -247,7 +258,7 @@ export async function POST(req: Request) {
     const body = (await req.json()) as ReqBody;
     const latestUser = [...(body.messages ?? [])].reverse().find((m) => m.role === "user")?.content ?? "";
     if (!latestUser.trim()) {
-      return NextResponse.json({ error: "A user message is required." }, { status: 400 });
+      return apiError(ctx, "A user message is required.", 400, { policy: AI_CHAT_POLICY, userId: user.id });
     }
     const intent = classifyIntent(latestUser);
 
@@ -255,8 +266,8 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
     if (!apiKey) {
-      console.error("[ai/chat] Missing ANTHROPIC_API_KEY on server.");
-      return NextResponse.json({ error: API_ERROR_GENERIC }, { status: 503 });
+      logApiFailure("ai/chat", new Error("Missing ANTHROPIC_API_KEY"), ctx.requestId);
+      return apiError(ctx, API_ERROR_GENERIC, 503, { policy: AI_CHAT_POLICY, userId: user.id });
     }
 
     const client = new Anthropic({ apiKey });
@@ -311,11 +322,11 @@ export async function POST(req: Request) {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "no-store",
-        ...rateLimitPolicyHeaders({ windowMs: 60_000, max: 20 }),
+        ...apiHeaders(ctx, AI_CHAT_POLICY),
       },
     });
   } catch {
-    return NextResponse.json({ error: API_ERROR_INVALID_JSON }, { status: 400 });
+    return apiError(ctx, API_ERROR_INVALID_JSON, 400, { policy: AI_CHAT_POLICY });
   }
 }
 

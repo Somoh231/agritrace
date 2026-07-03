@@ -12,6 +12,7 @@ import { allowedActionsFor, computeSubmissionTransition } from "../status-model"
 import { buildWorkflowDedupeKey } from "../submission-bridge";
 import { OPERATIONAL_SUBMISSION_TYPES } from "../submission-types";
 import { demoSource, liveSource, pilotSource, resolveDisplaySource } from "../../data/data-source";
+import { checkRateLimit } from "../../http/rate-limit";
 
 let passed = 0;
 function check(name: string, fn: () => void) {
@@ -199,6 +200,17 @@ check("live-only source requires no banner disclosure", () => {
 
 check("pilot fallback is distinct from demo", () => {
   assert.notEqual(pilotSource().kind, demoSource().kind);
+});
+
+console.log("http rate limit — enforcement");
+
+check("checkRateLimit blocks after max requests", () => {
+  const policy = { windowMs: 60_000, max: 3 };
+  const key = `test-${Date.now()}-${Math.random()}`;
+  assert.equal(checkRateLimit(key, policy).allowed, true);
+  assert.equal(checkRateLimit(key, policy).allowed, true);
+  assert.equal(checkRateLimit(key, policy).allowed, true);
+  assert.equal(checkRateLimit(key, policy).allowed, false);
 });
 
 console.log(`\nAll ${passed} workflow checks passed.`);
