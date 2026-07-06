@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 
+import { StatusBadge } from "@/components/enterprise";
 import { getPendingCount, getSyncErrors, readQueueClearTimestamp } from "@/lib/offline/sync-queue";
 
 import { detectInstallSurface } from "@/components/pwa/InstallAppGuide";
@@ -17,6 +18,13 @@ function formatShort(iso: string | null): string | null {
   } catch {
     return null;
   }
+}
+
+function readinessTone(label: string): "success" | "warning" | "danger" | "neutral" {
+  if (label === "Ready" || label === "Installed" || label === "Install available") return "success";
+  if (label === "Pending sync" || label === "Needs setup") return "warning";
+  if (label === "Sync failed") return "danger";
+  return "neutral";
 }
 
 export default function OfflineReadinessPanel({ className }: { className?: string }) {
@@ -89,68 +97,47 @@ export default function OfflineReadinessPanel({ className }: { className?: strin
   let gpsLabel = "Needs setup";
   if (gpsState === "granted") gpsLabel = "Ready";
   else if (gpsState === "prompt" || gpsState === "unknown") gpsLabel = "Needs setup";
-  else if (gpsState === "denied") gpsLabel = "Needs setup";
+  else if (gpsState === "denied") gpsLabel = "Denied";
 
   let syncLabel = "Ready";
   if (errors.length > 0) syncLabel = "Sync failed";
-  else if (pending > 0) syncLabel = online ? "Pending sync" : "Pending sync";
+  else if (pending > 0) syncLabel = "Pending sync";
 
+  const installLabel = installedView ? "Installed" : installAvailable ? "Install available" : "Manual setup required";
   const lastClear = formatShort(queueClear);
 
+  const rows = [
+    { label: "Install", value: installLabel },
+    { label: "GPS permission", value: gpsLabel },
+    { label: "Offline storage", value: storageLabel },
+    { label: "Pending sync", value: pending > 0 ? `${pending} on device` : "None" },
+    { label: "Sync health", value: syncLabel },
+    { label: "Network", value: online ? "Online" : "Offline" },
+  ];
+
   return (
-    <div
-      className={
-        className ??
-        "rounded-xl border border-slate-800 bg-slate-950/50 px-3 py-3 text-[12px] text-slate-300 sm:px-4"
-      }
-    >
-      <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Offline readiness</div>
-      <ul className="mt-2 space-y-1.5 font-mono text-[11px] leading-snug">
-        <li className="flex flex-wrap justify-between gap-2">
-          <span className="text-slate-500">Install</span>
-          <span
-            className={
-              installedView ? "text-emerald-300" : installAvailable ? "text-emerald-300" : "text-amber-200/90"
-            }
-          >
-            {installedView ? "Installed" : installAvailable ? "Install available" : "Manual setup required"}
-          </span>
-        </li>
-        <li className="flex flex-wrap justify-between gap-2">
-          <span className="text-slate-500">GPS permission</span>
-          <span className={gpsLabel === "Ready" ? "text-emerald-300" : "text-amber-200/90"}>{gpsLabel}</span>
-        </li>
-        <li className="flex flex-wrap justify-between gap-2">
-          <span className="text-slate-500">Offline storage</span>
-          <span className={storageLabel === "Ready" ? "text-emerald-300" : "text-rose-200/90"}>{storageLabel}</span>
-        </li>
-        <li className="flex flex-wrap justify-between gap-2">
-          <span className="text-slate-500">Pending sync</span>
-          <span className={pending > 0 ? "text-amber-200/90" : "text-emerald-300"}>{pending > 0 ? `${pending} on device` : "None"}</span>
-        </li>
-        <li className="flex flex-wrap justify-between gap-2">
-          <span className="text-slate-500">Sync health</span>
-          <span
-            className={
-              syncLabel === "Sync failed" ? "text-rose-300" : syncLabel === "Pending sync" ? "text-amber-200/90" : "text-emerald-300"
-            }
-          >
-            {syncLabel}
-          </span>
-        </li>
-        {lastClear ? (
-          <li className="flex flex-wrap justify-between gap-2 border-t border-slate-800/80 pt-1.5">
-            <span className="text-slate-500">Queue last cleared</span>
-            <span className="text-slate-400">{lastClear}</span>
+    <div className={className ?? "rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3"}>
+      <p className="ent-label">Offline readiness checklist</p>
+      <ul className="mt-3 space-y-2">
+        {rows.map((row) => (
+          <li key={row.label} className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-[13px] text-slate-600">{row.label}</span>
+            <StatusBadge tone={readinessTone(row.value === "None" ? "Ready" : row.value)}>{row.value}</StatusBadge>
           </li>
-        ) : null}
+        ))}
+        {lastClear ?
+          <li className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-2">
+            <span className="text-[13px] text-slate-600">Queue last cleared</span>
+            <span className="font-mono text-[11px] text-slate-500">{lastClear}</span>
+          </li>
+        : null}
       </ul>
-      <div className="mt-2 flex flex-wrap gap-2 border-t border-slate-800/80 pt-2">
-        <Link href="/field/sync-queue" className="text-[11px] font-medium text-emerald-400 underline decoration-emerald-600/40 hover:text-emerald-300">
+      <div className="mt-3 flex flex-wrap gap-3 border-t border-slate-200 pt-3">
+        <Link href="/field/sync-queue" className="text-[13px] font-medium text-forest-700 hover:text-forest-800">
           View offline queue
         </Link>
-        <button type="button" onClick={() => void refresh()} className="text-[11px] font-medium text-slate-400 underline hover:text-slate-200">
-          Refresh
+        <button type="button" onClick={() => void refresh()} className="text-[13px] font-medium text-slate-600 hover:text-ink-900">
+          Refresh status
         </button>
       </div>
     </div>

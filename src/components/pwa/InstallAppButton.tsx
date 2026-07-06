@@ -14,12 +14,9 @@ type Props = {
 };
 
 const variantClass: Record<NonNullable<Props["variant"]>, string> = {
-  toolbar:
-    "h-9 px-3 rounded-lg border border-slate-600 bg-slate-950 text-[12px] font-medium text-slate-200 hover:bg-slate-900",
-  primary:
-    "min-h-[48px] w-full px-4 rounded-xl bg-emerald-600 text-[15px] font-semibold text-white shadow-sm hover:bg-emerald-500 active:scale-[0.99] sm:w-auto",
-  compact:
-    "h-10 min-h-[44px] px-3 rounded-lg border border-white/15 bg-white/5 text-[13px] font-medium text-slate-100 hover:bg-white/10",
+  toolbar: "btn-gov-outline h-9 rounded-lg px-3 text-[13px]",
+  primary: "btn-emerald min-h-[44px] w-full rounded-lg px-4 text-[14px] sm:w-auto",
+  compact: "btn-gov-outline h-10 min-h-[44px] rounded-lg px-3 text-[13px]",
 };
 
 export default function InstallAppButton({ className, label = "Install for offline use", variant = "toolbar" }: Props) {
@@ -38,7 +35,6 @@ export default function InstallAppButton({ className, label = "Install for offli
       toast.info("Already installed", "Open Agrivault Data from your home screen or app list.");
       return;
     }
-    // Prefer native prompt whenever `beforeinstallprompt` was captured (ref-backed in provider).
     let native = await runBrowserInstall();
     if (native.status === "unavailable" && hasDeferredInstallPrompt()) {
       native = await runBrowserInstall();

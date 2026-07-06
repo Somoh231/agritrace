@@ -2,25 +2,10 @@
 
 import * as React from "react";
 
+import { DashboardPanel, EmptyState, SectionHeader, StatusBadge, type StatusBadgeTone } from "@/components/enterprise";
 import { postWorkflowAction, fetchWorkflowThread } from "@/lib/workflow/client";
 import { allowedActionsFor, type WorkflowAction, type WorkflowStage, type WorkflowStatus } from "@/lib/workflow/status-model";
 import type { OperationalSubmission, WorkflowThread } from "@/lib/workflow/types";
-
-const STATUS_TONE: Record<WorkflowStatus, string> = {
-  draft: "border-slate-600 bg-slate-900/80 text-slate-200",
-  submitted: "border-sky-600/50 bg-sky-950/35 text-sky-50",
-  dao_review: "border-sky-600/50 bg-sky-950/35 text-sky-50",
-  dao_corrections_requested: "border-amber-700/50 bg-amber-950/35 text-amber-50",
-  dao_approved: "border-emerald-700/45 bg-emerald-950/25 text-emerald-50",
-  cac_review: "border-sky-600/50 bg-sky-950/35 text-sky-50",
-  cac_corrections_requested: "border-amber-700/50 bg-amber-950/35 text-amber-50",
-  cac_approved: "border-emerald-700/45 bg-emerald-950/25 text-emerald-50",
-  ministry_review: "border-sky-600/50 bg-sky-950/35 text-sky-50",
-  ministry_approved: "border-emerald-700/55 bg-emerald-900/35 text-emerald-50",
-  rejected: "border-rose-700/50 bg-rose-950/30 text-rose-50",
-  escalated: "border-amber-700/50 bg-amber-950/35 text-amber-50",
-  archived: "border-slate-700 bg-slate-900/60 text-slate-400",
-};
 
 const ACTION_LABEL: Record<WorkflowAction, string> = {
   submit: "Submit",
@@ -32,6 +17,15 @@ const ACTION_LABEL: Record<WorkflowAction, string> = {
   comment: "Comment",
   archive: "Archive",
 };
+
+function statusBadgeTone(s: WorkflowStatus): StatusBadgeTone {
+  if (s.includes("approved")) return "success";
+  if (s === "rejected") return "danger";
+  if (s.includes("corrections") || s === "escalated") return "warning";
+  if (s.includes("review") || s === "submitted") return "info";
+  if (s === "archived") return "neutral";
+  return "neutral";
+}
 
 function fmt(ts: string): string {
   try {
@@ -83,37 +77,39 @@ export default function WorkflowReviewPanel({
   const interactive = !readOnly && stage !== "auditor" && stage !== "donor";
 
   return (
-    <section className="rounded-xl border border-slate-700/85 bg-slate-950/45 p-4 sm:p-5">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="font-display text-[15px] font-semibold text-white">{title}</h2>
-          <p className="mt-1 text-[12px] text-slate-400">
-            Persistent CLAN → DAO → CAC → Ministry decisions. Every action is audited and permission-checked server-side.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+    <DashboardPanel>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <SectionHeader
+          title={title}
+          subtitle="Persistent CLAN → DAO → CAC → Ministry decisions. Every action is audited and permission-checked server-side."
+        />
+        <div className="flex shrink-0 items-center gap-2">
           {canCreate && interactive ? <CreateSubmission onCreated={load} /> : null}
-          <button
-            type="button"
-            onClick={() => void load()}
-            className="h-9 rounded-lg border border-slate-600 bg-slate-950 px-3 text-[12px] text-slate-100 hover:bg-slate-900"
-          >
+          <button type="button" onClick={() => void load()} className="btn-gov-outline h-9 rounded-lg px-3 text-[13px]">
             Refresh
           </button>
         </div>
       </div>
 
-      {error ? <div className="mt-4 rounded-lg border border-rose-800/50 bg-rose-950/30 px-3 py-2 text-[12px] text-rose-100">{error}</div> : null}
+      {error ?
+        <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-[13px] text-rose-800">{error}</div>
+      : null}
 
-      <ul className="mt-4 divide-y divide-slate-800/90">
-        {loading ? (
-          <li className="py-10 text-center text-[12px] text-slate-500">Loading submissions…</li>
-        ) : items.length === 0 ? (
-          <li className="py-10 text-center text-[12px] text-slate-500">
-            No submissions in your scope yet. {canCreate ? "Create one to start the approval chain." : "Submissions appear here once field operators submit them."}
+      <ul className="mt-4 divide-y divide-slate-100">
+        {loading ?
+          <li className="py-12 text-center text-[13px] text-slate-500">Loading submissions…</li>
+        : items.length === 0 ?
+          <li className="py-8">
+            <EmptyState
+              title="No submissions in scope"
+              description={
+                canCreate ?
+                  "Create one to start the approval chain."
+                : "Submissions appear here once field operators submit them."
+              }
+            />
           </li>
-        ) : (
-          items.map((s) => {
+        : items.map((s) => {
             const actions = interactive ? allowedActionsFor(s.status, stage) : [];
             const isOpen = expanded === s.id;
             return (
@@ -121,27 +117,27 @@ export default function WorkflowReviewPanel({
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0 flex-1 space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase ${STATUS_TONE[s.status]}`}>
+                      <StatusBadge tone={statusBadgeTone(s.status)} uppercase>
                         {statusLabel(s.status)}
-                      </span>
-                      <span className="text-[13px] font-medium text-white">{s.title}</span>
-                      <span className="font-mono text-[10px] text-slate-500">{s.referenceCode ?? s.id.slice(0, 8)}</span>
+                      </StatusBadge>
+                      <span className="text-[14px] font-medium text-ink-900">{s.title}</span>
+                      <span className="font-mono text-[11px] text-slate-500">{s.referenceCode ?? s.id.slice(0, 8)}</span>
                     </div>
-                    <div className="text-[11px] text-slate-500">
+                    <div className="text-[12px] leading-relaxed text-slate-600">
                       {s.submissionType.replace(/_/g, " ")} · {s.county ?? "—"}
                       {s.district ? ` · ${s.district}` : ""} · {fmt(s.createdAt)}
                     </div>
-                    {s.summary ? <p className="text-[12px] leading-relaxed text-slate-400">{s.summary}</p> : null}
+                    {s.summary ? <p className="text-[13px] leading-relaxed text-slate-600">{s.summary}</p> : null}
                     <button
                       type="button"
                       onClick={() => setExpanded(isOpen ? null : s.id)}
-                      className="text-[11px] font-medium text-emerald-400 hover:text-emerald-300"
+                      className="text-[12px] font-medium text-forest-700 hover:text-forest-800 focus:outline-none focus-visible:underline"
                     >
                       {isOpen ? "Hide history" : "View history, comments & assignment"}
                     </button>
                   </div>
 
-                  {actions.length > 0 ? (
+                  {actions.length > 0 ?
                     <div className="flex shrink-0 flex-wrap gap-2">
                       {actions
                         .filter((a) => a !== "comment" && a !== "assign_reviewer" && a !== "submit")
@@ -163,10 +159,10 @@ export default function WorkflowReviewPanel({
                           />
                         ))}
                     </div>
-                  ) : null}
+                  : null}
                 </div>
 
-                {isOpen ? (
+                {isOpen ?
                   <WorkflowThreadView
                     submissionId={s.id}
                     interactive={interactive}
@@ -175,13 +171,12 @@ export default function WorkflowReviewPanel({
                       if (updated) setItems((prev) => prev.map((x) => (x.id === s.id ? updated : x)));
                     }}
                   />
-                ) : null}
+                : null}
               </li>
             );
-          })
-        )}
+          })}
       </ul>
-    </section>
+    </DashboardPanel>
   );
 }
 
@@ -195,14 +190,11 @@ function ActionButton({
   onRun: (note?: string) => Promise<void>;
 }) {
   const needsNote = action === "request_corrections" || action === "reject" || action === "escalate";
-  const tone =
-    action === "approve"
-      ? "bg-emerald-800 text-white hover:bg-emerald-700"
-      : action === "reject"
-        ? "border border-rose-700/60 text-rose-100 hover:bg-rose-950/35"
-        : action === "escalate"
-          ? "border border-amber-700/55 text-amber-100 hover:bg-amber-950/30"
-          : "border border-slate-600 text-slate-200 hover:bg-slate-900";
+  const className =
+    action === "approve" ? "btn-emerald h-9 rounded-lg px-3 text-[12px]"
+    : action === "reject" ? "h-9 rounded-lg border border-rose-200 bg-rose-50 px-3 text-[12px] font-medium text-rose-800 hover:bg-rose-100"
+    : action === "escalate" ? "h-9 rounded-lg border border-amber-200 bg-amber-50 px-3 text-[12px] font-medium text-amber-900 hover:bg-amber-100"
+    : "btn-gov-outline h-9 rounded-lg px-3 text-[12px]";
   return (
     <button
       type="button"
@@ -215,7 +207,7 @@ function ActionButton({
         }
         await onRun(note);
       }}
-      className={`rounded-lg px-3 py-1.5 text-[11px] disabled:opacity-50 ${tone}`}
+      className={`disabled:opacity-50 ${className}`}
     >
       {ACTION_LABEL[action]}
     </button>
@@ -281,98 +273,94 @@ function WorkflowThreadView({
   }
 
   return (
-    <div className="mt-3 rounded-lg border border-slate-800 bg-slate-950/60 p-3">
-      {err ? <div className="mb-2 rounded border border-rose-800/50 bg-rose-950/30 px-2 py-1 text-[11px] text-rose-100">{err}</div> : null}
-      {loading || !thread ? (
-        <div className="text-[11px] text-slate-500">Loading history…</div>
-      ) : (
-        <div className="grid gap-4 lg:grid-cols-3">
+    <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+      {err ?
+        <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[12px] text-rose-800">{err}</div>
+      : null}
+      {loading || !thread ?
+        <div className="text-[13px] text-slate-500">Loading history…</div>
+      : <div className="grid gap-4 lg:grid-cols-3">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Decision history</div>
-            <ol className="mt-2 space-y-1.5">
-              {thread.actions.length === 0 ? (
-                <li className="text-[11px] text-slate-500">No actions recorded.</li>
-              ) : (
-                thread.actions.map((a) => (
-                  <li key={a.id} className="text-[11px] text-slate-300">
-                    <span className="font-semibold text-slate-100">{a.action.replace(/_/g, " ")}</span>
-                    {a.fromStatus && a.toStatus ? (
+            <p className="ent-label">Decision history</p>
+            <ol className="mt-2 space-y-2">
+              {thread.actions.length === 0 ?
+                <li className="text-[12px] text-slate-500">No actions recorded.</li>
+              : thread.actions.map((a) => (
+                  <li key={a.id} className="rounded-lg border border-slate-100 bg-white px-3 py-2 text-[12px]">
+                    <span className="font-semibold text-ink-900">{a.action.replace(/_/g, " ")}</span>
+                    {a.fromStatus && a.toStatus ?
                       <span className="text-slate-500">
                         {" "}
                         · {statusLabel(a.fromStatus)} → {statusLabel(a.toStatus)}
                       </span>
-                    ) : null}
-                    <div className="text-slate-500">{fmt(a.createdAt)}</div>
-                    {a.note ? <div className="text-slate-400">“{a.note}”</div> : null}
+                    : null}
+                    <div className="mt-0.5 text-slate-500">{fmt(a.createdAt)}</div>
+                    {a.note ? <div className="mt-1 text-slate-600">“{a.note}”</div> : null}
                   </li>
-                ))
-              )}
+                ))}
             </ol>
           </div>
 
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Comments & corrections</div>
-            <ul className="mt-2 space-y-1.5">
-              {thread.comments.length === 0 ? (
-                <li className="text-[11px] text-slate-500">No comments.</li>
-              ) : (
-                thread.comments.map((c) => (
-                  <li key={c.id} className="text-[11px]">
-                    {c.isCorrectionRequest ? (
-                      <span className="mr-1 rounded bg-amber-950/50 px-1 text-[10px] font-semibold uppercase text-amber-200">corrections</span>
-                    ) : null}
-                    <span className="text-slate-300">{c.body}</span>
-                    <div className="text-slate-500">{fmt(c.createdAt)}</div>
+            <p className="ent-label">Comments & corrections</p>
+            <ul className="mt-2 space-y-2">
+              {thread.comments.length === 0 ?
+                <li className="text-[12px] text-slate-500">No comments.</li>
+              : thread.comments.map((c) => (
+                  <li key={c.id} className="rounded-lg border border-slate-100 bg-white px-3 py-2 text-[12px]">
+                    {c.isCorrectionRequest ?
+                      <StatusBadge tone="warning" className="mb-1">
+                        corrections
+                      </StatusBadge>
+                    : null}
+                    <span className="text-slate-700">{c.body}</span>
+                    <div className="mt-0.5 text-slate-500">{fmt(c.createdAt)}</div>
                   </li>
-                ))
-              )}
+                ))}
             </ul>
-            {interactive ? (
-              <div className="mt-2 flex gap-2">
+            {interactive ?
+              <div className="mt-3 flex gap-2">
                 <input
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Add a comment…"
-                  className="h-8 flex-1 rounded-md border border-slate-600 bg-slate-950 px-2 text-[11px] text-slate-100 outline-none focus:border-emerald-600"
+                  className="av-input h-9 flex-1 text-[13px]"
                 />
-                <button type="button" disabled={busy} onClick={runComment} className="rounded-md border border-slate-600 px-2 text-[11px] text-slate-200 hover:bg-slate-900 disabled:opacity-50">
+                <button type="button" disabled={busy} onClick={runComment} className="btn-gov-outline h-9 rounded-lg px-3 text-[12px] disabled:opacity-50">
                   Post
                 </button>
               </div>
-            ) : null}
+            : null}
           </div>
 
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Assignment</div>
-            <ul className="mt-2 space-y-1.5">
-              {thread.assignments.length === 0 ? (
-                <li className="text-[11px] text-slate-500">Unassigned.</li>
-              ) : (
-                thread.assignments.map((a) => (
-                  <li key={a.id} className="text-[11px] text-slate-300">
-                    <span className="font-semibold text-slate-100">{a.roleScope ?? "review"}</span> · {a.status}
+            <p className="ent-label">Assignment</p>
+            <ul className="mt-2 space-y-2">
+              {thread.assignments.length === 0 ?
+                <li className="text-[12px] text-slate-500">Unassigned.</li>
+              : thread.assignments.map((a) => (
+                  <li key={a.id} className="rounded-lg border border-slate-100 bg-white px-3 py-2 text-[12px] text-slate-700">
+                    <span className="font-semibold text-ink-900">{a.roleScope ?? "review"}</span> · {a.status}
                     <div className="font-mono text-[10px] text-slate-500">→ {a.assigneeId ? a.assigneeId.slice(0, 8) : "—"}</div>
                     <div className="text-slate-500">{fmt(a.createdAt)}</div>
                   </li>
-                ))
-              )}
+                ))}
             </ul>
-            {canAssign ? (
-              <div className="mt-2 flex gap-2">
+            {canAssign ?
+              <div className="mt-3 flex gap-2">
                 <input
                   value={assignee}
                   onChange={(e) => setAssignee(e.target.value)}
                   placeholder="Reviewer profile ID (uuid)"
-                  className="h-8 flex-1 rounded-md border border-slate-600 bg-slate-950 px-2 text-[11px] text-slate-100 outline-none focus:border-emerald-600"
+                  className="av-input h-9 flex-1 text-[13px]"
                 />
-                <button type="button" disabled={busy} onClick={runAssign} className="rounded-md border border-slate-600 px-2 text-[11px] text-slate-200 hover:bg-slate-900 disabled:opacity-50">
+                <button type="button" disabled={busy} onClick={runAssign} className="btn-emerald h-9 rounded-lg px-3 text-[12px] disabled:opacity-50">
                   Assign
                 </button>
               </div>
-            ) : null}
+            : null}
           </div>
-        </div>
-      )}
+        </div>}
     </div>
   );
 }
@@ -401,14 +389,14 @@ function CreateSubmission({ onCreated }: { onCreated: () => void | Promise<void>
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="h-9 rounded-lg bg-emerald-700 px-3 text-[12px] font-semibold text-white hover:bg-emerald-600">
+      <button type="button" onClick={() => setOpen(true)} className="btn-emerald h-9 rounded-lg px-3 text-[13px]">
         New submission
       </button>
     );
   }
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <select value={type} onChange={(e) => setType(e.target.value)} className="h-9 rounded-lg border border-slate-600 bg-slate-950 px-2 text-[12px] text-slate-100">
+      <select value={type} onChange={(e) => setType(e.target.value)} className="av-input h-9 w-auto min-w-[160px] text-[13px]">
         <option value="farmer_registration">Farmer registration</option>
         <option value="dao_inspection">Field inspection</option>
         <option value="gps_verification">GPS verification</option>
@@ -420,15 +408,15 @@ function CreateSubmission({ onCreated }: { onCreated: () => void | Promise<void>
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Title"
-        className="h-9 w-48 rounded-lg border border-slate-600 bg-slate-950 px-2 text-[12px] text-slate-100 outline-none focus:border-emerald-600"
+        className="av-input h-9 w-48 text-[13px]"
       />
-      <button type="button" disabled={busy} onClick={submit} className="h-9 rounded-lg bg-emerald-700 px-3 text-[12px] font-semibold text-white hover:bg-emerald-600 disabled:opacity-50">
+      <button type="button" disabled={busy} onClick={submit} className="btn-emerald h-9 rounded-lg px-3 text-[13px] disabled:opacity-50">
         Submit
       </button>
-      <button type="button" onClick={() => setOpen(false)} className="h-9 rounded-lg border border-slate-600 px-3 text-[12px] text-slate-300 hover:bg-slate-900">
+      <button type="button" onClick={() => setOpen(false)} className="btn-gov-outline h-9 rounded-lg px-3 text-[13px]">
         Cancel
       </button>
-      {err ? <span className="text-[11px] text-rose-300">{err}</span> : null}
+      {err ? <span className="text-[12px] text-rose-600">{err}</span> : null}
     </div>
   );
 }

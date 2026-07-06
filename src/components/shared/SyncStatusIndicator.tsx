@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Loader2 } from "lucide-react";
 
+import { StatusBadge } from "@/components/enterprise";
 import { getPendingCount, getSyncErrors, processSyncQueue, recordQueueClearTimestamp } from "@/lib/offline/sync-queue";
 
 export default function SyncStatusIndicator() {
@@ -64,85 +65,86 @@ export default function SyncStatusIndicator() {
     }
   }, [pendingCount, online, errors.length, runSync]);
 
-  // State 4 — Sync errors
   if (errors.length > 0) {
     return (
       <>
         <button
           type="button"
           onClick={() => setReviewOpen(true)}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1 hover:bg-gray-50"
+          className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-forest-200"
         >
-          <span className="h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
-          <span className="font-mono text-[10px] text-red-700">Sync Failed · tap to review</span>
+          <StatusBadge tone="danger" dot>
+            Sync failed
+          </StatusBadge>
+          <span className="font-mono text-[11px] text-slate-600">Tap to review</span>
         </button>
 
-        {reviewOpen ? (
-          <div className="fixed inset-0 z-[130] bg-black/30 flex items-center justify-center px-4">
-            <div className="w-full max-w-[640px] rounded-2xl border border-gray-200 bg-white shadow-lift overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
+        {reviewOpen ?
+          <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-900/40 px-4">
+            <div className="w-full max-w-[640px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
                 <div className="min-w-0">
-                  <div className="font-display text-[16px] text-ink-900">Sync Failed</div>
-                  <div className="mt-1 font-mono text-[10px] text-slate-500">
+                  <h2 className="ent-section-title">Sync failed</h2>
+                  <p className="mt-1 font-mono text-[11px] text-slate-500">
                     Records that failed after multiple retries — review, correct, then retry sync
-                  </div>
+                  </p>
                 </div>
-                <button type="button" onClick={() => setReviewOpen(false)} className="av-btn-secondary h-9 px-3">
+                <button type="button" onClick={() => setReviewOpen(false)} className="btn-gov-outline h-9 px-3 text-[13px]">
                   Close
                 </button>
               </div>
 
               <div className="p-5">
-                <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 max-h-[50vh] overflow-auto">
+                <div className="max-h-[50vh] overflow-auto rounded-xl border border-slate-200 bg-slate-50/80 p-3">
                   <ul className="space-y-2">
                     {errors.map((e) => (
-                      <li key={e} className="font-mono text-[11px] text-gray-800 break-words">
+                      <li key={e} className="break-words font-mono text-[12px] text-slate-700">
                         {e}
                       </li>
                     ))}
                   </ul>
                 </div>
                 <div className="mt-3 flex items-center justify-end gap-2">
-                  <button type="button" onClick={() => void refresh()} className="av-btn-secondary h-9 px-3">
+                  <button type="button" onClick={() => void refresh()} className="btn-gov-outline h-9 px-3 text-[13px]">
                     Refresh
                   </button>
                 </div>
               </div>
             </div>
           </div>
-        ) : null}
+        : null}
       </>
     );
   }
 
-  // State 1 — All synced
   if (pendingCount === 0) {
     return (
-      <div className="flex items-center gap-1.5">
-        <span className="h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
-        <span className="font-mono text-[10px] text-green-600">No pending sync</span>
+      <div className="flex items-center gap-2">
+        <StatusBadge tone="success" dot>
+          Synced
+        </StatusBadge>
+        <span className="font-mono text-[11px] text-slate-500">No pending sync</span>
       </div>
     );
   }
 
-  // State 3 — Offline with pending records
   if (!online) {
     return (
-      <div className="flex items-center gap-1.5">
-        <span className="h-2 w-2 rounded-full bg-gray-400" aria-hidden="true" />
-        <span className="font-mono text-[10px] text-gray-500">
-          Pending Sync · {pendingCount} on device until connected
+      <div className="flex items-center gap-2">
+        <StatusBadge tone="warning" dot>
+          Offline
+        </StatusBadge>
+        <span className="font-mono text-[11px] text-slate-600">
+          {pendingCount} on device until connected
         </span>
       </div>
     );
   }
 
-  // State 2 — Pending records (online)
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-2">
       <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-600" aria-hidden="true" />
-      <span className="font-mono text-[10px] text-amber-700">Pending Sync · {pendingCount}</span>
+      <StatusBadge tone="syncing">Pending sync · {pendingCount}</StatusBadge>
     </div>
   );
 }
-

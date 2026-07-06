@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { AlertCard } from "@/components/enterprise";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function RecordWarehouseForm({
@@ -55,62 +56,75 @@ export default function RecordWarehouseForm({
   };
 
   return (
-    <form onSubmit={submit} className="space-y-4 text-[13px]">
-      {error ? <div className="rounded-lg border border-rose-800 bg-rose-950/50 px-3 py-2 text-rose-100">{error}</div> : null}
-      <label className="block text-slate-300">
-        Warehouse name *
+    <form onSubmit={submit} className="space-y-5">
+      {error ?
+        <AlertCard tone="danger" title="Could not save warehouse">
+          {error}
+        </AlertCard>
+      : null}
+
+      <div>
+        <label htmlFor="wh-name" className="ent-label">
+          Warehouse name *
+        </label>
         <input
+          id="wh-name"
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="av-input mt-1.5"
+          placeholder="e.g. Bong Central Storage"
         />
-      </label>
-      <label className="block text-slate-300">
-        County *
+      </div>
+
+      <div>
+        <label htmlFor="wh-county" className="ent-label">
+          County *
+        </label>
         <input
+          id="wh-county"
           required
           value={county}
           onChange={(e) => setCounty(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="av-input mt-1.5"
+          placeholder="County name"
         />
-      </label>
-      <div className="grid grid-cols-2 gap-3">
-        <label className="block text-slate-300">
-          Latitude
-          <input
-            value={lat}
-            onChange={(e) => setLat(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
-          />
-        </label>
-        <label className="block text-slate-300">
-          Longitude
-          <input
-            value={lng}
-            onChange={(e) => setLng(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
-          />
-        </label>
       </div>
-      <label className="block text-slate-300">
-        Low-stock threshold (%)
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="wh-lat" className="ent-label">
+            Latitude
+          </label>
+          <input id="wh-lat" value={lat} onChange={(e) => setLat(e.target.value)} className="av-input mt-1.5" placeholder="6.3000" />
+        </div>
+        <div>
+          <label htmlFor="wh-lng" className="ent-label">
+            Longitude
+          </label>
+          <input id="wh-lng" value={lng} onChange={(e) => setLng(e.target.value)} className="av-input mt-1.5" placeholder="-10.8000" />
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="wh-threshold" className="ent-label">
+          Low-stock threshold (%)
+        </label>
         <input
+          id="wh-threshold"
           type="number"
           value={threshold}
           onChange={(e) => setThreshold(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="av-input mt-1.5"
         />
-      </label>
-      <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-        <button type="button" onClick={onCancel} className="h-10 px-4 rounded-lg text-[12px] text-slate-400 hover:text-white">
+        <p className="mt-1.5 text-[12px] text-slate-500">Alert when stock falls below this percentage of capacity.</p>
+      </div>
+
+      <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
+        <button type="button" onClick={onCancel} className="btn-gov-outline h-10 rounded-lg px-4 text-[13px]">
           Cancel
         </button>
-        <button
-          type="submit"
-          disabled={saving}
-          className="h-10 px-5 rounded-lg bg-emerald-700 text-[12px] font-medium text-white hover:bg-emerald-600 disabled:opacity-50"
-        >
+        <button type="submit" disabled={saving} className="btn-emerald h-10 rounded-lg px-5 text-[13px] disabled:opacity-50">
           {saving ? "Saving…" : "Create warehouse"}
         </button>
       </div>

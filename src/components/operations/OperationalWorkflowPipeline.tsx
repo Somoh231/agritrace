@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 
+import { DashboardPanel, DataSourceNotice, SectionHeader, StatusBadge } from "@/components/enterprise";
 import { farmerRegistrationPipeline } from "@/lib/demo/agriculture-pilot-data";
 import { MINISTRY_INVENTORY_MOVEMENTS } from "@/lib/data/ministry-canonical-data";
 import { demoSource, pilotSource, resolveDisplaySource } from "@/lib/data/data-source";
-import { DataSourceNotice } from "@/components/enterprise";
 
 /**
  * Read-only illustration of how operational artefacts flow through the ministry stack.
@@ -21,32 +21,36 @@ export default function OperationalWorkflowPipeline() {
 
   const stages = [
     {
-      label: "Clan Agriculture Crops Technician (CLAN)",
-      detail: "Field capture",
+      label: "CLAN field capture",
+      detail: "Clan Agriculture Crops Technician",
       queue: p.pendingVerification + p.flagged,
       hint: "Pending + flagged registry touches",
       href: "/field/mobile",
+      tone: "info" as const,
     },
     {
-      label: "District Agriculture Officer (DAO)",
-      detail: "District review",
+      label: "DAO district review",
+      detail: "District Agriculture Officer",
       queue: p.pendingVerification,
       hint: "Verification queue pressure",
       href: "/verification-queue",
+      tone: "warning" as const,
     },
     {
-      label: "County Agriculture Coordinator (CAC)",
-      detail: "County verification",
+      label: "CAC county verification",
+      detail: "County Agriculture Coordinator",
       queue: Math.max(2, Math.round(p.pendingVerification / 4)),
       hint: "County attest backlog (illustrative)",
       href: "/county-dashboard",
+      tone: "info" as const,
     },
     {
-      label: "Warehouse",
-      detail: "Receipt & issue",
+      label: "Warehouse receipt & issue",
+      detail: "Chain of custody",
       queue: corridorDepth,
       hint: "Active corridor legs in ministry ledger",
       href: "/transfers",
+      tone: "neutral" as const,
     },
     {
       label: "Ministry / national",
@@ -54,44 +58,47 @@ export default function OperationalWorkflowPipeline() {
       queue: 4,
       hint: "National reconcile + executive briefing (demo)",
       href: "/command-center",
+      tone: "success" as const,
     },
   ] as const;
 
   return (
-    <section className="rounded-2xl border border-slate-700/70 bg-slate-950/80 px-5 py-4 backdrop-blur-sm">
+    <DashboardPanel>
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-500">Operational workflow</div>
-          <h2 className="mt-1 font-display text-[16px] font-semibold text-white">How responsibilities chain across the ministry stack</h2>
-          <p className="mt-1 max-w-[880px] text-[11px] leading-relaxed text-slate-500">
-            Field capture escalates through DAO district review and CAC county verification before warehouse logistics and national reconcile feed ministerial
-            reporting. Queue figures are indicative operational pressure, not personnel counts.
-          </p>
-        </div>
-        <DataSourceNotice source={pipelineSource} theme="dark" />
+        <SectionHeader
+          kicker="Operational workflow"
+          title="Ministry responsibility chain"
+          subtitle="Field capture escalates through DAO district review and CAC county verification before warehouse logistics and national reconcile feed ministerial reporting."
+        />
+        <DataSourceNotice source={pipelineSource} />
       </div>
-      <div className="mt-4 flex flex-wrap items-stretch gap-2 lg:flex-nowrap lg:overflow-x-auto lg:pb-1">
+      <div className="mt-5 flex flex-wrap items-stretch gap-3 lg:flex-nowrap lg:overflow-x-auto lg:pb-1">
         {stages.map((s, i) => (
-          <div key={s.label} className="flex min-w-[140px] flex-1 items-stretch gap-2">
-            <div className="flex flex-1 flex-col rounded-lg border border-white/[0.08] bg-black/35 px-3 py-2.5">
-              <div className="font-mono text-[9px] uppercase tracking-wider text-slate-500">{s.detail}</div>
-              <div className="mt-0.5 font-display text-[13px] font-semibold text-slate-100">{s.label}</div>
-              <div className="mt-2 flex items-baseline justify-between gap-2">
-                <span className="font-mono text-[20px] font-semibold tabular-nums text-emerald-400">{s.queue}</span>
-                <span className="text-[9px] leading-tight text-slate-600">{s.hint}</span>
+          <div key={s.label} className="flex min-w-[160px] flex-1 items-stretch gap-2">
+            <div className="flex flex-1 flex-col rounded-xl border border-slate-200 bg-white px-4 py-3.5 shadow-sm transition hover:border-forest-200 hover:shadow-md">
+              <p className="ent-label">{s.detail}</p>
+              <p className="mt-1 text-[14px] font-semibold text-ink-900 leading-snug">{s.label}</p>
+              <div className="mt-3 flex items-baseline justify-between gap-2">
+                <span className="font-display text-2xl font-semibold tabular-nums text-forest-800">{s.queue}</span>
+                {s.queue > 0 ?
+                  <StatusBadge tone={s.tone} className="shrink-0">
+                    Active
+                  </StatusBadge>
+                : <span className="text-[11px] text-slate-400">Clear</span>}
               </div>
-              <Link href={s.href} className="mt-2 text-[10px] font-medium text-emerald-500/90 hover:text-emerald-400">
+              <p className="mt-2 text-[11px] leading-relaxed text-slate-500">{s.hint}</p>
+              <Link href={s.href} className="mt-3 text-[12px] font-medium text-forest-700 hover:text-forest-800">
                 Open workspace →
               </Link>
             </div>
-            {i < stages.length - 1 ? (
-              <div className="hidden shrink-0 items-center text-slate-600 lg:flex" aria-hidden>
-                <span className="font-mono text-[11px]">→</span>
+            {i < stages.length - 1 ?
+              <div className="hidden shrink-0 items-center text-slate-300 lg:flex" aria-hidden>
+                <span className="font-mono text-[14px]">→</span>
               </div>
-            ) : null}
+            : null}
           </div>
         ))}
       </div>
-    </section>
+    </DashboardPanel>
   );
 }

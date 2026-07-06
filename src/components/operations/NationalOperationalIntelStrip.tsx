@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 
 import { useNationalAISLive } from "@/components/ais/useNationalAISLive";
-import { DataSourceBadge } from "@/components/enterprise";
+import { DashboardPanel, DataSourceBadge, SectionHeader, StatusBadge } from "@/components/enterprise";
 import {
   farmerRegistrationPipeline,
   foodSecurityIndicators,
@@ -19,18 +19,18 @@ import {
 import { buildNationalOperationalNarratives } from "@/lib/ops/national-operational-narratives";
 import { safePct } from "@/lib/utils/rice";
 
-function narrativeToneCls(tone: "emerald" | "amber" | "rose" | "slate") {
-  if (tone === "emerald") return "border-emerald-500/25 bg-emerald-950/20";
-  if (tone === "amber") return "border-amber-500/30 bg-amber-950/20";
-  if (tone === "rose") return "border-rose-500/30 bg-rose-950/25";
-  return "border-slate-700 bg-slate-950/40";
+function narrativeTone(tone: "emerald" | "amber" | "rose" | "slate"): "success" | "warning" | "danger" | "neutral" {
+  if (tone === "emerald") return "success";
+  if (tone === "amber") return "warning";
+  if (tone === "rose") return "danger";
+  return "neutral";
 }
 
-function feedToneCls(t: MinistryFeedItem["tone"]) {
-  if (t === "rose") return "text-rose-200";
-  if (t === "amber") return "text-amber-200";
-  if (t === "emerald") return "text-emerald-200";
-  return "text-slate-300";
+function feedTone(t: MinistryFeedItem["tone"]): "danger" | "warning" | "success" | "neutral" {
+  if (t === "rose") return "danger";
+  if (t === "amber") return "warning";
+  if (t === "emerald") return "success";
+  return "neutral";
 }
 
 export default function NationalOperationalIntelStrip() {
@@ -109,61 +109,57 @@ export default function NationalOperationalIntelStrip() {
   );
 
   return (
-    <section className="rounded-2xl border border-white/[0.08] bg-gradient-to-br from-slate-950/90 via-slate-950/70 to-emerald-950/20 px-4 py-4 md:px-5 md:py-5">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 pb-3 mb-4">
-        <div className="min-w-0">
-          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-emerald-200/70">Operational intelligence</div>
-          <h2 className="mt-1 font-display text-[16px] font-semibold text-white">National situation — narratives, not noise</h2>
-          <p className="mt-1 text-[11px] leading-relaxed text-slate-400 max-w-[920px]">
-            Synthesized from pilot operational tables and canonical ministry signals. Source badge reflects live vs fixture contribution.
-          </p>
-        </div>
-        <DataSourceBadge source={stripSource} theme="dark" />
-        <div className="flex flex-wrap gap-2 shrink-0">
-          <Link
-            href="/executive-briefing"
-            className="h-9 inline-flex items-center rounded-lg border border-emerald-500/35 bg-emerald-950/40 px-3 text-[12px] font-medium text-emerald-100 hover:bg-emerald-900/50"
-          >
+    <DashboardPanel padding="lg">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
+        <SectionHeader
+          kicker="Operational intelligence"
+          title="National situation — narratives, not noise"
+          subtitle="Synthesized from pilot operational tables and canonical ministry signals."
+        />
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <DataSourceBadge source={stripSource} />
+          <Link href="/executive-briefing" className="btn-emerald h-9 inline-flex items-center rounded-lg px-3 text-[13px]">
             Executive briefing
           </Link>
-          <Link href="/map" className="h-9 inline-flex items-center rounded-lg border border-slate-600 bg-slate-900 px-3 text-[12px] text-slate-200 hover:bg-slate-800">
+          <Link href="/map" className="btn-gov-outline h-9 inline-flex items-center rounded-lg px-3 text-[13px]">
             Operational map
           </Link>
         </div>
       </div>
 
-      <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-4 grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
         {narratives.map((n) => (
-          <article
-            key={n.id}
-            className={`rounded-xl border px-3 py-2.5 ${narrativeToneCls(n.tone)}`}
-          >
-            <div className="font-display text-[13px] font-semibold leading-snug text-white">{n.headline}</div>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-slate-300">{n.detail}</p>
+          <article key={n.id} className="rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="text-[14px] font-semibold leading-snug text-ink-900">{n.headline}</h3>
+              <StatusBadge tone={narrativeTone(n.tone)} dot>
+                Signal
+              </StatusBadge>
+            </div>
+            <p className="mt-2 text-[13px] leading-relaxed text-slate-600">{n.detail}</p>
           </article>
         ))}
       </div>
 
-      <div className="mt-4 rounded-xl border border-slate-800 bg-black/25">
-        <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 px-3 py-2">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-slate-500">Live operational feed</div>
-          <span className="font-mono text-[10px] text-slate-600">pilot_operational_events</span>
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
+        <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2.5">
+          <p className="ent-label">Live operational feed</p>
+          <span className="font-mono text-[10px] text-slate-500">pilot_operational_events</span>
         </div>
-        <ul className="max-h-[200px] overflow-y-auto divide-y divide-slate-800/80">
-          {feed.length ? (
+        <ul className="max-h-[200px] divide-y divide-slate-100 overflow-y-auto bg-white">
+          {feed.length ?
             feed.map((f) => (
-              <li key={f.id} className="px-3 py-2 text-[11px] leading-snug">
-                <span className={`font-medium ${feedToneCls(f.tone)}`}>{f.title}</span>
-                <span className="text-slate-500"> · </span>
-                <span className="text-slate-400">{f.detail}</span>
-                <span className="block font-mono text-[10px] text-slate-600 mt-0.5">{new Date(f.at).toLocaleString()}</span>
+              <li key={f.id} className="px-4 py-2.5 text-[13px] leading-snug">
+                <StatusBadge tone={feedTone(f.tone)} className="mr-2">
+                  {f.title}
+                </StatusBadge>
+                <span className="text-slate-600">{f.detail}</span>
+                <span className="mt-0.5 block font-mono text-[11px] text-slate-500">{new Date(f.at).toLocaleString()}</span>
               </li>
             ))
-          ) : (
-            <li className="px-3 py-4 text-[12px] text-slate-500">Loading operational events…</li>
-          )}
+          : <li className="px-4 py-6 text-[13px] text-slate-500">Loading operational events…</li>}
         </ul>
       </div>
-    </section>
+    </DashboardPanel>
   );
 }
