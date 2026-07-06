@@ -88,33 +88,33 @@ export default function RecordDonorShipmentForm({
 
   return (
     <form onSubmit={submit} className="space-y-4 text-[13px]">
-      {error ? <div className="rounded-lg border border-rose-800 bg-rose-950/50 px-3 py-2 text-rose-100">{error}</div> : null}
+      {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-900">{error}</div> : null}
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Donor name *
         <input
           required
           value={donorName}
           onChange={(e) => setDonorName(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Programme code
         <input
           value={programmeCode}
           onChange={(e) => setProgrammeCode(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Warehouse (optional)
         <select
           value={warehouseId}
           onChange={(e) => setWarehouseId(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         >
           <option value="">—</option>
           {warehouses.map((w) => (
@@ -125,13 +125,13 @@ export default function RecordDonorShipmentForm({
         </select>
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Inventory item *
         <select
           required
           value={itemId}
           onChange={(e) => setItemId(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         >
           <option value="">Select…</option>
           {items.map((w) => (
@@ -142,28 +142,28 @@ export default function RecordDonorShipmentForm({
         </select>
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Quantity *
         <input
           required
           value={qty}
           onChange={(e) => setQty(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Received date *
         <input
           type="date"
           required
           value={receivedAt}
           onChange={(e) => setReceivedAt(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         />
       </label>
 
-      <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+      <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
         <button type="button" onClick={onCancel} className="h-10 px-4 rounded-lg text-[12px] text-slate-400 hover:text-white">
           Cancel
         </button>

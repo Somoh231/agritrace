@@ -136,15 +136,15 @@ export default function RecordStockTransferForm({
 
   return (
     <form onSubmit={submit} className="space-y-4 text-[13px]">
-      {error ? <div className="rounded-lg border border-rose-800 bg-rose-950/50 px-3 py-2 text-rose-100">{error}</div> : null}
+      {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-900">{error}</div> : null}
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         From warehouse *
         <select
           required
           value={fromId}
           onChange={(e) => setFromId(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         >
           <option value="">Select…</option>
           {warehouses.map((w) => (
@@ -155,13 +155,13 @@ export default function RecordStockTransferForm({
         </select>
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         To warehouse *
         <select
           required
           value={toId}
           onChange={(e) => setToId(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         >
           <option value="">Select…</option>
           {warehouses.map((w) => (
@@ -172,13 +172,13 @@ export default function RecordStockTransferForm({
         </select>
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Item *
         <select
           required
           value={itemId}
           onChange={(e) => setItemId(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         >
           <option value="">Select…</option>
           {items.map((w) => (
@@ -189,26 +189,26 @@ export default function RecordStockTransferForm({
         </select>
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Quantity *
         <input
           required
           value={qty}
           onChange={(e) => setQty(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Reference
         <input
           value={reference}
           onChange={(e) => setReference(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         />
       </label>
 
-      <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+      <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
         <button type="button" onClick={onCancel} className="h-10 px-4 rounded-lg text-[12px] text-slate-400 hover:text-white">
           Cancel
         </button>

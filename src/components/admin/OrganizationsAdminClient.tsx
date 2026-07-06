@@ -4,6 +4,11 @@ import * as React from "react";
 import { ChevronRight, Loader2, Plus, RefreshCcw } from "lucide-react";
 
 import AdminPageShell, { ADMIN_CARD } from "@/components/admin/AdminPageShell";
+import {
+  EnterpriseFormActions,
+  EnterpriseFormField,
+  EnterpriseFormSection,
+} from "@/components/enterprise";
 import AlertBanner from "@/components/shared/AlertBanner";
 import CountySelect from "@/components/shared/CountySelect";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
@@ -214,92 +219,90 @@ function OrgEditor({
   const [license, setLicense] = React.useState(org?.license_number ?? "");
   const [contactName, setContactName] = React.useState(org?.contact_name ?? "");
   const [contactPhone, setContactPhone] = React.useState(org?.contact_phone ?? "");
+  const [district, setDistrict] = React.useState("");
+  const [taxId, setTaxId] = React.useState("");
 
   return (
-    <div className="fixed inset-0 z-[110] bg-black/30 flex items-center justify-center px-4">
-      <div className="w-full max-w-[760px] rounded-2xl border border-gray-200 bg-white shadow-xl overflow-hidden">
-        <div className="p-5 border-b border-gray-100 flex items-start justify-between gap-3">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/30 px-4">
+      <div className="max-h-[90vh] w-full max-w-[760px] overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-xl">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-100 p-5">
           <div>
-            <div className="font-display text-[16px] text-gray-900">{org ? "Edit organization" : "New organization"}</div>
-            <div className="mt-1 text-[11px] text-gray-500">Pilot-ready organization record</div>
+            <h2 className="font-display text-[18px] font-semibold text-ink-900">{org ? "Edit organization" : "New organization"}</h2>
+            <p className="mt-1 text-[13px] text-slate-600">National organization record with ministry identifiers and contact routing.</p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-9 px-3 rounded-md border border-gray-200 bg-white text-[12px] text-gray-700 hover:bg-gray-50"
-          >
+          <button type="button" onClick={onClose} className="btn-gov-outline h-9 rounded-lg px-3 text-[12px]">
             Close
           </button>
         </div>
 
-        <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Field label="Name">
-            <input value={name} onChange={(e) => setName(e.target.value)} className="h-9 w-full rounded-md border border-gray-200 px-3 text-[12px]" />
-          </Field>
-          <Field label="Type">
-            <select value={type} onChange={(e) => setType(e.target.value as any)} className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]">
-              {ORG_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Country">
-            <input value={country} onChange={(e) => setCountry(e.target.value)} className="h-9 w-full rounded-md border border-gray-200 px-3 text-[12px]" />
-          </Field>
-          <Field label="County">
-            <CountySelect
-              value={county}
-              onChange={setCounty}
-              allCounties={false}
-              allowAllOption
-              className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]"
-            />
-          </Field>
-          <Field label="License #">
-            <input value={license} onChange={(e) => setLicense(e.target.value)} className="h-9 w-full rounded-md border border-gray-200 px-3 text-[12px]" placeholder="optional" />
-          </Field>
-          <div />
-          <Field label="Contact name">
-            <input value={contactName} onChange={(e) => setContactName(e.target.value)} className="h-9 w-full rounded-md border border-gray-200 px-3 text-[12px]" placeholder="optional" />
-          </Field>
-          <Field label="Contact phone">
-            <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className="h-9 w-full rounded-md border border-gray-200 px-3 text-[12px]" placeholder="optional" />
-          </Field>
-        </div>
+        <form
+          className="space-y-5 p-5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!name.trim()) return;
+            onSave({
+              id: org?.id,
+              name: name.trim(),
+              type,
+              country: country.trim() || "Liberia",
+              county: county.trim() || null,
+              license_number: license.trim() || null,
+              contact_name: contactName.trim() || null,
+              contact_phone: contactPhone.trim() || null,
+            });
+          }}
+        >
+          <EnterpriseFormSection title="Organization identity">
+            <div className="grid gap-4 md:grid-cols-2">
+              <EnterpriseFormField id="org-name" label="Legal name" required>
+                <input id="org-name" required value={name} onChange={(e) => setName(e.target.value)} className="av-input" />
+              </EnterpriseFormField>
+              <EnterpriseFormField id="org-type" label="Organization type" required>
+                <select id="org-type" value={type} onChange={(e) => setType(e.target.value as OrgType)} className="av-input">
+                  {ORG_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </EnterpriseFormField>
+              <EnterpriseFormField id="org-license" label="License / registration number" helper="Cooperative registration, export license, or ministry permit.">
+                <input id="org-license" value={license} onChange={(e) => setLicense(e.target.value)} className="av-input" placeholder="Optional" />
+              </EnterpriseFormField>
+              <EnterpriseFormField id="org-tax" label="Tax identification number (TIN)" hint="Future-ready field — not persisted until schema column is provisioned.">
+                <input id="org-tax" value={taxId} onChange={(e) => setTaxId(e.target.value)} className="av-input" placeholder="Optional" />
+              </EnterpriseFormField>
+            </div>
+          </EnterpriseFormSection>
 
-        <div className="px-5 pb-5 flex items-center justify-end gap-2">
-          <button
-            type="button"
-            onClick={() =>
-              onSave({
-                id: org?.id,
-                name: name.trim(),
-                type,
-                country: country.trim() || "Liberia",
-                county: county.trim() || null,
-                license_number: license.trim() || null,
-                contact_name: contactName.trim() || null,
-                contact_phone: contactPhone.trim() || null,
-              })
-            }
-            disabled={!name.trim()}
-            className="h-9 px-3 rounded-md bg-forest-700 text-white text-[12px] hover:bg-forest-800 disabled:opacity-50"
-          >
-            Save
-          </button>
-        </div>
+          <EnterpriseFormSection title="Location">
+            <div className="grid gap-4 md:grid-cols-2">
+              <EnterpriseFormField id="org-country" label="Country">
+                <input id="org-country" value={country} onChange={(e) => setCountry(e.target.value)} className="av-input" />
+              </EnterpriseFormField>
+              <EnterpriseFormField id="org-county" label="County">
+                <CountySelect value={county} onChange={setCounty} allCounties={false} allowAllOption className="av-input" />
+              </EnterpriseFormField>
+              <EnterpriseFormField id="org-district" label="District" hint="Recorded locally for routing — not yet a database column.">
+                <input id="org-district" value={district} onChange={(e) => setDistrict(e.target.value)} className="av-input" placeholder="Optional" />
+              </EnterpriseFormField>
+            </div>
+          </EnterpriseFormSection>
+
+          <EnterpriseFormSection title="Primary contact">
+            <div className="grid gap-4 md:grid-cols-2">
+              <EnterpriseFormField id="org-contact" label="Contact person">
+                <input id="org-contact" value={contactName} onChange={(e) => setContactName(e.target.value)} className="av-input" placeholder="Full name" />
+              </EnterpriseFormField>
+              <EnterpriseFormField id="org-phone" label="Phone number" helper="Liberia format: +231 …">
+                <input id="org-phone" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className="av-input" placeholder="+231 77 000 0000" />
+              </EnterpriseFormField>
+            </div>
+          </EnterpriseFormSection>
+
+          <EnterpriseFormActions onCancel={onClose} submitLabel="Save organization" />
+        </form>
       </div>
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">{label}</div>
-      {children}
     </div>
   );
 }

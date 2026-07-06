@@ -112,15 +112,15 @@ export default function RecordInventoryReceiptForm({
 
   return (
     <form onSubmit={submit} className="space-y-4 text-[13px]">
-      {error ? <div className="rounded-lg border border-rose-800 bg-rose-950/50 px-3 py-2 text-rose-100">{error}</div> : null}
+      {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-900">{error}</div> : null}
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Warehouse *
         <select
           required
           value={warehouseId}
           onChange={(e) => setWarehouseId(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         >
           <option value="">Select…</option>
           {warehouses.map((w) => (
@@ -131,13 +131,13 @@ export default function RecordInventoryReceiptForm({
         </select>
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Inventory item *
         <select
           required
           value={itemId}
           onChange={(e) => setItemId(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         >
           <option value="">Select…</option>
           {items.map((w) => (
@@ -148,35 +148,35 @@ export default function RecordInventoryReceiptForm({
         </select>
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Quantity *
         <input
           required
           value={qty}
           onChange={(e) => setQty(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Reference / GRN
         <input
           value={reference}
           onChange={(e) => setReference(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         County allocation label
         <input
           value={countyAllocation}
           onChange={(e) => setCountyAllocation(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         />
       </label>
 
-      <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+      <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
         <button type="button" onClick={onCancel} className="h-10 px-4 rounded-lg text-[12px] text-slate-400 hover:text-white">
           Cancel
         </button>

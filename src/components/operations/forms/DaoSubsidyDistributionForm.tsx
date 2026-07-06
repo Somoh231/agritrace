@@ -124,7 +124,7 @@ export default function DaoSubsidyDistributionForm({
 
   return (
     <form onSubmit={submit} className="space-y-4 text-[13px]">
-      <div className="rounded-lg border border-slate-700 bg-slate-950/50 px-3 py-2 text-[11px] text-slate-400">
+      <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[12px] text-slate-600">
         Operational subsidy ledger posts to <span className="font-mono text-slate-200">distribution_logs</span> with ministry audit trail.
         {countyHint ? (
           <span className="block mt-1">
@@ -139,9 +139,9 @@ export default function DaoSubsidyDistributionForm({
         ) : null}
       </div>
 
-      {error ? <div className="rounded-lg border border-rose-800 bg-rose-950/50 px-3 py-2 text-rose-100">{error}</div> : null}
+      {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-900">{error}</div> : null}
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Farmer UUID *
         <input
           required
@@ -149,18 +149,18 @@ export default function DaoSubsidyDistributionForm({
           value={farmerId}
           onChange={(e) => setFarmerId(e.target.value)}
           placeholder="farmer row id from registry"
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-[12px] text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input font-mono text-[12px] disabled:opacity-50"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Warehouse source *
         <select
           required
           disabled={readOnly}
           value={warehouseId}
           onChange={(e) => setWarehouseId(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         >
           <option value="">Select…</option>
           {warehouses.map((w) => (
@@ -171,14 +171,14 @@ export default function DaoSubsidyDistributionForm({
         </select>
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Primary SKU (seeds / packaged inputs) *
         <select
           required
           disabled={readOnly}
           value={itemId}
           onChange={(e) => setItemId(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         >
           <option value="">Select…</option>
           {items.map((w) => (
@@ -190,7 +190,7 @@ export default function DaoSubsidyDistributionForm({
       </label>
 
       <div className="grid grid-cols-2 gap-3">
-        <label className="block text-slate-300">
+        <label className="ent-label block">
           Seeds qty *
           <input
             required
@@ -199,10 +199,10 @@ export default function DaoSubsidyDistributionForm({
             step="0.01"
             value={quantitySeeds}
             onChange={(e) => setQuantitySeeds(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+            className="mt-1 block w-full av-input disabled:opacity-50"
           />
         </label>
-        <label className="block text-slate-300">
+        <label className="ent-label block">
           Fertilizer qty
           <input
             disabled={readOnly}
@@ -210,12 +210,12 @@ export default function DaoSubsidyDistributionForm({
             step="0.01"
             value={quantityFertilizer}
             onChange={(e) => setQuantityFertilizer(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+            className="mt-1 block w-full av-input disabled:opacity-50"
           />
         </label>
       </div>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Tools / implements (units)
         <input
           disabled={readOnly}
@@ -223,35 +223,35 @@ export default function DaoSubsidyDistributionForm({
           step="1"
           value={quantityTools}
           onChange={(e) => setQuantityTools(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Delivery evidence reference
         <input
           disabled={readOnly}
           value={evidenceRef}
           onChange={(e) => setEvidenceRef(e.target.value)}
           placeholder="GRN / voucher / photo bundle id"
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Farmer verification notes
         <textarea
           disabled={readOnly}
           value={verificationNote}
           onChange={(e) => setVerificationNote(e.target.value)}
           rows={3}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         />
       </label>
 
-      <div className="flex flex-wrap justify-end gap-2 pt-3 border-t border-slate-800">
+      <div className="flex flex-wrap justify-end gap-2 pt-3 border-t border-slate-100">
         {daoWorkflow?.enabled && daoWorkflow.saveDraft && !readOnly ? (
-          <button type="button" onClick={() => void saveDraftLocal()} className="h-10 rounded-lg border border-slate-600 px-4 text-[12px] text-slate-200 hover:bg-slate-900">
+          <button type="button" onClick={() => void saveDraftLocal()} className="btn-gov-outline h-10 rounded-lg px-4 text-[13px]">
             Save draft
           </button>
         ) : null}

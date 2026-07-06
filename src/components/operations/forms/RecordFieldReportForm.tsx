@@ -56,32 +56,32 @@ export default function RecordFieldReportForm({
 
   return (
     <form onSubmit={submit} className="space-y-4 text-[13px]">
-      {error ? <div className="rounded-lg border border-rose-800 bg-rose-950/50 px-3 py-2 text-rose-100">{error}</div> : null}
-      <label className="block text-slate-300">
+      {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-900">{error}</div> : null}
+      <label className="ent-label block">
         County *
         <input
           required
           value={county}
           onChange={(e) => setCounty(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         />
       </label>
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Summary *
         <textarea
           required
           rows={4}
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         />
       </label>
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Channel
         <select
           value={channel}
           onChange={(e) => setChannel(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         >
           <option value="offline">Offline</option>
           <option value="online">Online</option>
@@ -89,7 +89,7 @@ export default function RecordFieldReportForm({
           <option value="sms">SMS</option>
         </select>
       </label>
-      <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+      <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
         <button type="button" onClick={onCancel} className="h-10 px-4 rounded-lg text-[12px] text-slate-400 hover:text-white">
           Cancel
         </button>

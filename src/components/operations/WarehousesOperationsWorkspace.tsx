@@ -8,16 +8,21 @@ import {
   AlertCard,
   DashboardPanel,
   EmptyState,
+  KpiCard,
   PageHeader,
+  QuickActionCard,
   SectionHeader,
   StatusBadge,
+  Timeline,
 } from "@/components/enterprise";
 import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
 import WarehouseCommandAnalytics from "@/components/intelligence/WarehouseCommandAnalytics";
 import OperationDrawer from "@/components/operations/OperationDrawer";
 import RecordWarehouseForm from "@/components/operations/forms/RecordWarehouseForm";
 import { RegistryFilterBar, RegistryKpiStrip } from "@/components/registry";
+import { inventoryTransfers } from "@/lib/demo/agriculture-pilot-data";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ArrowLeftRight, Package, Sprout, Truck, Wrench } from "lucide-react";
 
 function utilizationTone(pct: number | null): "success" | "warning" | "danger" | "neutral" {
   if (pct == null) return "neutral";
@@ -165,49 +170,83 @@ export default function WarehousesOperationsWorkspace() {
         ]}
       />
 
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <QuickActionCard href="/operations/transfers" icon={ArrowLeftRight} title="Stock transfers" description="Inter-hub corridor movements and dispatch legs." />
+        <QuickActionCard href="/operations/donor-shipments" icon={Truck} title="Donor shipments" description="Inbound donor consignments and receipt verification." />
+        <QuickActionCard href="/operations/fertilizer" icon={Package} title="Fertilizer" description="Urea, NPK, and blended fertilizer distribution." />
+        <QuickActionCard href="/operations/seed" icon={Sprout} title="Seed distribution" description="NERICA and certified seed allocation by county." />
+        <QuickActionCard href="/operations/equipment" icon={Wrench} title="Equipment" description="Tools, pumps, and mechanization inventory." />
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiCard label="Active transfers" value={String(inventoryTransfers.filter((t) => t.status === "in_transit").length)} hint="In transit now" />
+        <KpiCard label="Scheduled legs" value={String(inventoryTransfers.filter((t) => t.status === "scheduled").length)} hint="Awaiting dispatch" />
+        <KpiCard label="Completed (7d)" value={String(inventoryTransfers.filter((t) => t.status === "completed").length)} hint="Pilot sample" deltaTone="up" />
+        <KpiCard label="Low-stock risk" value={String(stats.highUtil)} hint="Hubs ≥ 90% utilization" deltaTone={stats.highUtil ? "down" : "up"} />
+      </div>
+
       <WarehouseCommandAnalytics warehouseRows={rows} />
 
-      <RegistryFilterBar
-        search={search}
-        onSearchChange={setSearch}
-        county={countyFilter}
-        onCountyChange={setCountyFilter}
-        counties={counties}
-        status=""
-        onStatusChange={() => {}}
-        statusOptions={[]}
-        showStatusFilter={false}
-      />
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
+          <RegistryFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            county={countyFilter}
+            onCountyChange={setCountyFilter}
+            counties={counties}
+            status=""
+            onStatusChange={() => {}}
+            statusOptions={[]}
+            showStatusFilter={false}
+          />
 
-      <DashboardPanel padding="none">
-        <div className="border-b border-slate-100 px-5 py-4">
-          <SectionHeader title="National warehouse register" subtitle={`${filteredRows.length} hubs in scope`} action={
-            <button type="button" onClick={() => void load()} className="text-[13px] font-medium text-forest-700">Refresh →</button>
-          } />
+          <DashboardPanel padding="none">
+            <div className="border-b border-slate-100 px-5 py-4">
+              <SectionHeader title="National warehouse register" subtitle={`${filteredRows.length} hubs in scope`} action={
+                <button type="button" onClick={() => void load()} className="text-[13px] font-medium text-forest-700">Refresh →</button>
+              } />
+            </div>
+
+            {loading ? (
+              <div className="p-8 space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-10 animate-pulse rounded-lg bg-slate-100" />
+                ))}
+              </div>
+            ) : filteredRows.length === 0 ? (
+              <div className="p-6">
+                <EmptyState
+                  title="No warehouses in scope"
+                  description="Adjust filters or create a new warehouse hub for the national network."
+                  action={
+                    <button type="button" onClick={() => setCreateOpen(true)} className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
+                      Create warehouse
+                    </button>
+                  }
+                />
+              </div>
+            ) : (
+              <EnterpriseDataGrid rows={filteredRows} columns={columns} filename="warehouses.csv" dense theme="light" pageSize={25} />
+            )}
+          </DashboardPanel>
         </div>
 
-        {loading ? (
-          <div className="p-8 space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-10 animate-pulse rounded-lg bg-slate-100" />
-            ))}
-          </div>
-        ) : filteredRows.length === 0 ? (
-          <div className="p-6">
-            <EmptyState
-              title="No warehouses in scope"
-              description="Adjust filters or create a new warehouse hub for the national network."
-              action={
-                <button type="button" onClick={() => setCreateOpen(true)} className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
-                  Create warehouse
-                </button>
-              }
+        <DashboardPanel>
+          <SectionHeader title="Recent stock movement" subtitle="Pilot transfer timeline" />
+          <div className="mt-4">
+            <Timeline
+              items={inventoryTransfers.map((t) => ({
+                id: t.id,
+                title: `${t.commodity} · ${t.qtyTons}t`,
+                meta: `${t.from} → ${t.to}`,
+                time: t.date,
+                tone: t.status === "completed" ? "success" : t.status === "in_transit" ? "warning" : "default",
+              }))}
             />
           </div>
-        ) : (
-          <EnterpriseDataGrid rows={filteredRows} columns={columns} filename="warehouses.csv" dense theme="light" pageSize={25} />
-        )}
-      </DashboardPanel>
+        </DashboardPanel>
+      </div>
 
       <OperationDrawer open={createOpen} onClose={() => setCreateOpen(false)} title="Create warehouse">
         <RecordWarehouseForm

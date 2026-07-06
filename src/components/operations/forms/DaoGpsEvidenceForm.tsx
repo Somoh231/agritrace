@@ -109,41 +109,41 @@ export default function DaoGpsEvidenceForm({
 
   return (
     <form onSubmit={submit} className="space-y-4 text-[13px]">
-      <p className="rounded-lg border border-slate-700 bg-slate-950/50 px-3 py-2 text-[11px] text-slate-400">
+      <p className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[12px] text-slate-600">
         GPS capture logs to <span className="font-mono text-slate-200">geo_locations</span> for plot verification and traceability.
       </p>
-      {error ? <div className="rounded-lg border border-rose-800 bg-rose-950/50 px-3 py-2 text-rose-100">{error}</div> : null}
+      {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-900">{error}</div> : null}
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Farmer UUID *
         <input
           required
           disabled={disabled}
           value={form.farmer_id}
           onChange={(e) => setForm((f) => ({ ...f, farmer_id: e.target.value }))}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-[11px] text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input font-mono text-[11px] disabled:opacity-50"
         />
       </label>
 
       <div className="grid grid-cols-2 gap-3">
-        <label className="block text-slate-300">
+        <label className="ent-label block">
           Latitude *
           <input
             required
             disabled={disabled}
             value={form.latitude}
             onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-[12px] text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+            className="mt-1 block w-full av-input font-mono text-[12px] disabled:opacity-50"
           />
         </label>
-        <label className="block text-slate-300">
+        <label className="ent-label block">
           Longitude *
           <input
             required
             disabled={disabled}
             value={form.longitude}
             onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-[12px] text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+            className="mt-1 block w-full av-input font-mono text-[12px] disabled:opacity-50"
           />
         </label>
       </div>
@@ -159,7 +159,7 @@ export default function DaoGpsEvidenceForm({
         </button>
       </div>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Accuracy (m)
         <input
           disabled={disabled}
@@ -167,35 +167,35 @@ export default function DaoGpsEvidenceForm({
           step="0.1"
           value={form.accuracy_m}
           onChange={(e) => setForm((f) => ({ ...f, accuracy_m: e.target.value }))}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Evidence reference
         <input
           disabled={disabled}
           value={form.evidence_ref}
           onChange={(e) => setForm((f) => ({ ...f, evidence_ref: e.target.value }))}
           placeholder="Photo id / DAO voucher"
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Plot notes
         <textarea
           disabled={disabled}
           value={form.plot_notes}
           onChange={(e) => setForm((f) => ({ ...f, plot_notes: e.target.value }))}
           rows={2}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         />
       </label>
 
-      <div className="flex flex-wrap gap-2 border-t border-slate-800 pt-3">
+      <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
         {daoWorkflow?.enabled && daoWorkflow.saveDraft && !disabled ? (
-          <button type="button" onClick={() => void saveDraftLocal()} className="h-10 rounded-lg border border-slate-600 px-4 text-[12px] text-slate-200 hover:bg-slate-900">
+          <button type="button" onClick={() => void saveDraftLocal()} className="btn-gov-outline h-10 rounded-lg px-4 text-[13px]">
             Save draft
           </button>
         ) : null}

@@ -81,29 +81,29 @@ export default function RecordFarmerVerificationDecisionForm({
 
   return (
     <form onSubmit={submit} className="space-y-4 text-[13px]">
-      {error ? <div className="rounded-lg border border-rose-800 bg-rose-950/50 px-3 py-2 text-rose-100">{error}</div> : null}
-      <label className="block text-slate-300">
+      {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-900">{error}</div> : null}
+      <label className="ent-label block">
         Farmer UUID *
         <input
           required
           value={farmerId}
           onChange={(e) => setFarmerId(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-[11px] text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input font-mono text-[11px]"
         />
       </label>
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Verification status
         <select
           value={verification}
           onChange={(e) => setVerification(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600"
+          className="mt-1 block w-full av-input"
         >
           <option value="verified">Verified</option>
           <option value="pending">Pending</option>
           <option value="flagged">Flagged</option>
         </select>
       </label>
-      <label className="flex items-center gap-2 text-slate-300">
+      <label className="flex items-center gap-2 text-slate-700">
         <input
           type="checkbox"
           checked={subsidyEligible}
@@ -112,7 +112,7 @@ export default function RecordFarmerVerificationDecisionForm({
         />
         Subsidy eligible
       </label>
-      <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+      <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
         <button type="button" onClick={onCancel} className="h-10 px-4 rounded-lg text-[12px] text-slate-400 hover:text-white">
           Cancel
         </button>

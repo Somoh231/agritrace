@@ -2,6 +2,11 @@
 
 import * as React from "react";
 
+import {
+  AlertCard,
+  EnterpriseFormField,
+  EnterpriseFormSection,
+} from "@/components/enterprise";
 import type { DaoWorkflowFormBindings } from "@/lib/dao/dao-workflow-types";
 import { persistRegisterFarmerPayload } from "@/lib/dao/dao-workflow-writers";
 
@@ -35,12 +40,20 @@ export default function RegisterFarmerForm({
     county: countyDefault ?? "",
     district: districtDefault ?? "",
     village: "",
+    clan_community: "",
     phone: "",
     national_id: "",
+    voter_id: "",
+    ministry_registry_id: "",
+    tax_id: "",
+    cooperative: "",
+    cooperative_membership_no: "",
+    plot_id: "",
+    dao_assignment: "",
+    cac_jurisdiction: "",
     main_crop: "rice",
     acreage_hectares: "",
     gender: "",
-    cooperative: "",
     latitude: "",
     longitude: "",
     profile_photo_url: "",
@@ -73,6 +86,14 @@ export default function RegisterFarmerForm({
   const buildNotes = () => {
     const parts: string[] = [];
     if (form.cooperative.trim()) parts.push(`Cooperative: ${form.cooperative.trim()}`);
+    if (form.cooperative_membership_no.trim()) parts.push(`Co-op membership #: ${form.cooperative_membership_no.trim()}`);
+    if (form.voter_id.trim()) parts.push(`Voter ID: ${form.voter_id.trim()}`);
+    if (form.ministry_registry_id.trim()) parts.push(`Ministry farmer ID: ${form.ministry_registry_id.trim()}`);
+    if (form.tax_id.trim()) parts.push(`TIN: ${form.tax_id.trim()}`);
+    if (form.clan_community.trim()) parts.push(`Clan/community: ${form.clan_community.trim()}`);
+    if (form.plot_id.trim()) parts.push(`Plot ID: ${form.plot_id.trim()}`);
+    if (form.dao_assignment.trim()) parts.push(`DAO assignment: ${form.dao_assignment.trim()}`);
+    if (form.cac_jurisdiction.trim()) parts.push(`CAC jurisdiction: ${form.cac_jurisdiction.trim()}`);
     if (form.profile_photo_url.trim()) parts.push(`Profile photo ref: ${form.profile_photo_url.trim()}`);
     if (form.notes.trim()) parts.push(form.notes.trim());
     return parts.length ? parts.join("\n") : null;
@@ -140,205 +161,140 @@ export default function RegisterFarmerForm({
   };
 
   const disabled = Boolean(readOnly);
+  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [key]: e.target.value }));
 
   return (
-    <form onSubmit={submit} className="space-y-4 text-[13px]">
-      {error ? <div className="rounded-lg border border-rose-800 bg-rose-950/50 px-3 py-2 text-rose-100">{error}</div> : null}
+    <form onSubmit={submit} className="space-y-5">
+      {error ? (
+        <AlertCard tone="danger" title="Registration issue">
+          {error}
+        </AlertCard>
+      ) : null}
 
-      <label className="block text-slate-300">
-        Farmer name *
-        <input
-          required
-          disabled={disabled}
-          value={form.full_name}
-          onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-        />
-      </label>
+      <EnterpriseFormSection title="Farmer identity" description="Legal name and national identifiers for registry deduplication.">
+        <EnterpriseFormField id="rf-name" label="Farmer full name" required>
+          <input id="rf-name" required disabled={disabled} value={form.full_name} onChange={set("full_name")} className="av-input" />
+        </EnterpriseFormField>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <EnterpriseFormField id="rf-gender" label="Gender">
+            <select id="rf-gender" disabled={disabled} value={form.gender} onChange={set("gender")} className="av-input">
+              <option value="">—</option>
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+            </select>
+          </EnterpriseFormField>
+          <EnterpriseFormField id="rf-phone" label="Phone number" helper="Liberia format: +231 …">
+            <input id="rf-phone" disabled={disabled} value={form.phone} onChange={set("phone")} className="av-input" placeholder="+231 77 000 0000" />
+          </EnterpriseFormField>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <EnterpriseFormField id="rf-national-id" label="National ID number">
+            <input id="rf-national-id" disabled={disabled} value={form.national_id} onChange={set("national_id")} className="av-input" />
+          </EnterpriseFormField>
+          <EnterpriseFormField id="rf-voter-id" label="Voter ID" hint="Stored in registration notes until dedicated column is provisioned.">
+            <input id="rf-voter-id" disabled={disabled} value={form.voter_id} onChange={set("voter_id")} className="av-input" />
+          </EnterpriseFormField>
+        </div>
+        <EnterpriseFormField id="rf-ministry-id" label="Ministry farmer registry ID" hint="e.g. NIM-0001 — captured in notes if not yet synced.">
+          <input id="rf-ministry-id" disabled={disabled} value={form.ministry_registry_id} onChange={set("ministry_registry_id")} className="av-input font-mono text-[12px]" />
+        </EnterpriseFormField>
+      </EnterpriseFormSection>
 
-      <div className="grid grid-cols-2 gap-3">
-        <label className="block text-slate-300">
-          Gender
-          <select
-            disabled={disabled}
-            value={form.gender}
-            onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-          >
-            <option value="">—</option>
-            <option value="Female">Female</option>
-            <option value="Male">Male</option>
-          </select>
-        </label>
-        <label className="block text-slate-300">
-          Phone
-          <input
-            disabled={disabled}
-            value={form.phone}
-            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-          />
-        </label>
-      </div>
+      <EnterpriseFormSection title="Location" description="County, district, and community anchors for DAO routing.">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <EnterpriseFormField id="rf-county" label="County" required>
+            <input id="rf-county" required disabled={disabled} value={form.county} onChange={set("county")} className="av-input" />
+          </EnterpriseFormField>
+          <EnterpriseFormField id="rf-district" label="District">
+            <input id="rf-district" disabled={disabled} value={form.district} onChange={set("district")} className="av-input" />
+          </EnterpriseFormField>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <EnterpriseFormField id="rf-village" label="Town / village">
+            <input id="rf-village" disabled={disabled} value={form.village} onChange={set("village")} className="av-input" />
+          </EnterpriseFormField>
+          <EnterpriseFormField id="rf-clan" label="Clan / community">
+            <input id="rf-clan" disabled={disabled} value={form.clan_community} onChange={set("clan_community")} className="av-input" />
+          </EnterpriseFormField>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <EnterpriseFormField id="rf-lat" label="GPS latitude">
+            <input id="rf-lat" disabled={disabled} value={form.latitude} onChange={set("latitude")} placeholder="e.g. 6.3156" className="av-input font-mono text-[12px]" />
+          </EnterpriseFormField>
+          <EnterpriseFormField id="rf-lng" label="GPS longitude">
+            <input id="rf-lng" disabled={disabled} value={form.longitude} onChange={set("longitude")} placeholder="e.g. -10.8074" className="av-input font-mono text-[12px]" />
+          </EnterpriseFormField>
+        </div>
+      </EnterpriseFormSection>
 
-      <div className="grid grid-cols-2 gap-3">
-        <label className="block text-slate-300">
-          County *
-          <input
-            required
-            disabled={disabled}
-            value={form.county}
-            onChange={(e) => setForm((f) => ({ ...f, county: e.target.value }))}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-          />
-        </label>
-        <label className="block text-slate-300">
-          District
-          <input
-            disabled={disabled}
-            value={form.district}
-            onChange={(e) => setForm((f) => ({ ...f, district: e.target.value }))}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-          />
-        </label>
-      </div>
+      <EnterpriseFormSection title="Cooperative & jurisdiction" description="Membership spine and officer assignment.">
+        <EnterpriseFormField id="rf-coop" label="Cooperative / farmer group">
+          <input id="rf-coop" disabled={disabled} value={form.cooperative} onChange={set("cooperative")} className="av-input" />
+        </EnterpriseFormField>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <EnterpriseFormField id="rf-coop-no" label="Cooperative membership number" hint="Stored in registration notes.">
+            <input id="rf-coop-no" disabled={disabled} value={form.cooperative_membership_no} onChange={set("cooperative_membership_no")} className="av-input" />
+          </EnterpriseFormField>
+          <EnterpriseFormField id="rf-plot" label="Plot ID" hint="Field parcel identifier when assigned.">
+            <input id="rf-plot" disabled={disabled} value={form.plot_id} onChange={set("plot_id")} className="av-input font-mono text-[12px]" />
+          </EnterpriseFormField>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <EnterpriseFormField id="rf-dao" label="DAO assignment">
+            <input id="rf-dao" disabled={disabled} value={form.dao_assignment} onChange={set("dao_assignment")} className="av-input" placeholder="Officer code" />
+          </EnterpriseFormField>
+          <EnterpriseFormField id="rf-cac" label="CAC jurisdiction">
+            <input id="rf-cac" disabled={disabled} value={form.cac_jurisdiction} onChange={set("cac_jurisdiction")} className="av-input" />
+          </EnterpriseFormField>
+        </div>
+      </EnterpriseFormSection>
 
-      <label className="block text-slate-300">
-        Village
-        <input
-          disabled={disabled}
-          value={form.village}
-          onChange={(e) => setForm((f) => ({ ...f, village: e.target.value }))}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-        />
-      </label>
+      <EnterpriseFormSection title="Production profile">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <EnterpriseFormField id="rf-crop" label="Main crop">
+            <input id="rf-crop" disabled={disabled} value={form.main_crop} onChange={set("main_crop")} className="av-input" />
+          </EnterpriseFormField>
+          <EnterpriseFormField id="rf-acreage" label="Acreage (hectares)">
+            <input id="rf-acreage" disabled={disabled} type="number" step="0.01" value={form.acreage_hectares} onChange={set("acreage_hectares")} className="av-input" />
+          </EnterpriseFormField>
+        </div>
+      </EnterpriseFormSection>
 
-      <label className="block text-slate-300">
-        Cooperative / farmer group
-        <input
-          disabled={disabled}
-          value={form.cooperative}
-          onChange={(e) => setForm((f) => ({ ...f, cooperative: e.target.value }))}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-        />
-      </label>
+      <EnterpriseFormSection title="Farm boundary" description="Operational outline from field capture — approximate, not cadastral.">
+        <div className="rounded-xl border border-slate-100 bg-white p-2">
+          <FarmBoundaryCapture disabled={disabled} readOnly={disabled} value={operationalBoundary} onChange={setOperationalBoundary} />
+        </div>
+      </EnterpriseFormSection>
 
-      <div className="grid grid-cols-2 gap-3">
-        <label className="block text-slate-300">
-          Main crop
-          <input
-            disabled={disabled}
-            value={form.main_crop}
-            onChange={(e) => setForm((f) => ({ ...f, main_crop: e.target.value }))}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-          />
-        </label>
-        <label className="block text-slate-300">
-          Acreage (ha)
-          <input
-            disabled={disabled}
-            type="number"
-            step="0.01"
-            value={form.acreage_hectares}
-            onChange={(e) => setForm((f) => ({ ...f, acreage_hectares: e.target.value }))}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-          />
-        </label>
-      </div>
+      <EnterpriseFormSection title="Additional references">
+        <EnterpriseFormField id="rf-photo" label="Profile photo (URL or ministry media id)">
+          <input id="rf-photo" disabled={disabled} value={form.profile_photo_url} onChange={set("profile_photo_url")} className="av-input" />
+        </EnterpriseFormField>
+        <EnterpriseFormField id="rf-notes" label="Officer notes">
+          <textarea id="rf-notes" disabled={disabled} value={form.notes} onChange={set("notes")} rows={2} className="av-input min-h-[72px]" />
+        </EnterpriseFormField>
+        <p className="text-[12px] text-slate-500">Timestamp and officer attribution are recorded from your authenticated session on submit.</p>
+      </EnterpriseFormSection>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-2">
-        <FarmBoundaryCapture
-          disabled={disabled}
-          readOnly={disabled}
-          value={operationalBoundary}
-          onChange={setOperationalBoundary}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <label className="block text-slate-300">
-          GPS latitude
-          <input
-            disabled={disabled}
-            value={form.latitude}
-            onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))}
-            placeholder="e.g. 6.3156"
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-[12px] text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-          />
-        </label>
-        <label className="block text-slate-300">
-          GPS longitude
-          <input
-            disabled={disabled}
-            value={form.longitude}
-            onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))}
-            placeholder="e.g. -10.8074"
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-[12px] text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-          />
-        </label>
-      </div>
-
-      <label className="block text-slate-300">
-        National ID
-        <input
-          disabled={disabled}
-          value={form.national_id}
-          onChange={(e) => setForm((f) => ({ ...f, national_id: e.target.value }))}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-        />
-      </label>
-
-      <label className="block text-slate-300">
-        Profile photo (URL or ministry media id)
-        <input
-          disabled={disabled}
-          value={form.profile_photo_url}
-          onChange={(e) => setForm((f) => ({ ...f, profile_photo_url: e.target.value }))}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-        />
-      </label>
-
-      <label className="block text-slate-300">
-        Notes
-        <textarea
-          disabled={disabled}
-          value={form.notes}
-          onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-          rows={2}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
-        />
-      </label>
-
-      <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-800">
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => void saveDraft()}
-          className="h-10 px-4 rounded-lg border border-slate-600 text-[12px] text-slate-200 hover:bg-slate-900 disabled:opacity-50"
-        >
+      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-4">
+        <button type="button" disabled={disabled} onClick={() => void saveDraft()} className="btn-gov-outline h-10 rounded-lg px-4 text-[13px] disabled:opacity-50">
           Save draft
         </button>
         {(daoWorkflow?.enabled || onQueueForSync) && !disabled ? (
-          <button type="button" onClick={() => void syncLater()} className="h-10 px-4 rounded-lg border border-amber-700/60 text-[12px] text-amber-100 hover:bg-amber-950/40">
+          <button type="button" onClick={() => void syncLater()} className="h-10 rounded-lg border border-amber-200 bg-amber-50 px-4 text-[13px] font-medium text-amber-900 hover:bg-amber-100">
             Queue sync
           </button>
         ) : null}
-        <button type="button" onClick={onCancel} className="h-10 px-4 rounded-lg text-[12px] text-slate-400 hover:text-white">
+        <button type="button" onClick={onCancel} className="btn-gov-outline h-10 rounded-lg px-4 text-[13px]">
           Cancel
         </button>
         {!disabled ? (
-          <button
-            type="submit"
-            disabled={saving}
-            className="ml-auto h-10 px-5 rounded-lg bg-emerald-700 text-[12px] font-medium text-white hover:bg-emerald-600 disabled:opacity-50"
-          >
-            {saving ? "Saving…" : "Submit"}
+          <button type="submit" disabled={saving} className="btn-emerald h-10 rounded-lg px-5 text-[13px] disabled:opacity-50">
+            {saving ? "Saving…" : "Submit registration"}
           </button>
         ) : null}
       </div>
-      <p className="text-[11px] text-slate-500">
-        Timestamp and officer attribution are recorded from your authenticated session on submit.
-      </p>
     </form>
   );
 }

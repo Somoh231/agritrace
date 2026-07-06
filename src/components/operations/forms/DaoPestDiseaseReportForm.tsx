@@ -101,34 +101,34 @@ export default function DaoPestDiseaseReportForm({
 
   return (
     <form onSubmit={submit} className="space-y-4 text-[13px]">
-      <p className="rounded-lg border border-slate-700 bg-slate-950/50 px-3 py-2 text-[11px] text-slate-400">
+      <p className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[12px] text-slate-600">
         DAO pest and disease capture writes to <span className="font-mono text-slate-200">field_reports</span> with a structured payload and audit trail when online.
       </p>
-      {error ? <div className="rounded-lg border border-rose-800 bg-rose-950/50 px-3 py-2 text-rose-100">{error}</div> : null}
+      {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-900">{error}</div> : null}
 
       <div className="grid grid-cols-2 gap-3">
-        <label className="block text-slate-300">
+        <label className="ent-label block">
           County *
           <input
             required
             disabled={disabled}
             value={form.county}
             onChange={(e) => setForm((f) => ({ ...f, county: e.target.value }))}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+            className="mt-1 block w-full av-input disabled:opacity-50"
           />
         </label>
-        <label className="block text-slate-300">
+        <label className="ent-label block">
           District
           <input
             disabled={disabled}
             value={form.district}
             onChange={(e) => setForm((f) => ({ ...f, district: e.target.value }))}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+            className="mt-1 block w-full av-input disabled:opacity-50"
           />
         </label>
       </div>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Pest or disease *
         <input
           required
@@ -136,19 +136,19 @@ export default function DaoPestDiseaseReportForm({
           value={form.pest_type}
           onChange={(e) => setForm((f) => ({ ...f, pest_type: e.target.value }))}
           placeholder="e.g. Rice blast, stem borer"
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         />
       </label>
 
       <div className="grid grid-cols-2 gap-3">
-        <label className="block text-slate-300">
+        <label className="ent-label block">
           Severity *
           <select
             required
             disabled={disabled}
             value={form.severity}
             onChange={(e) => setForm((f) => ({ ...f, severity: e.target.value }))}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+            className="mt-1 block w-full av-input disabled:opacity-50"
           >
             <option value="low">Low</option>
             <option value="moderate">Moderate</option>
@@ -156,18 +156,18 @@ export default function DaoPestDiseaseReportForm({
             <option value="severe">Severe</option>
           </select>
         </label>
-        <label className="block text-slate-300">
+        <label className="ent-label block">
           Crop
           <input
             disabled={disabled}
             value={form.crop}
             onChange={(e) => setForm((f) => ({ ...f, crop: e.target.value }))}
-            className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+            className="mt-1 block w-full av-input disabled:opacity-50"
           />
         </label>
       </div>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Affected area (ha)
         <input
           disabled={disabled}
@@ -175,56 +175,56 @@ export default function DaoPestDiseaseReportForm({
           step="0.01"
           value={form.affected_area_ha}
           onChange={(e) => setForm((f) => ({ ...f, affected_area_ha: e.target.value }))}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Farmer UUID (optional)
         <input
           disabled={disabled}
           value={form.farmer_id}
           onChange={(e) => setForm((f) => ({ ...f, farmer_id: e.target.value }))}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-[11px] text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input font-mono text-[11px] disabled:opacity-50"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Evidence reference
         <input
           disabled={disabled}
           value={form.evidence_ref}
           onChange={(e) => setForm((f) => ({ ...f, evidence_ref: e.target.value }))}
           placeholder="Photo bundle / trap id"
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Summary override (optional)
         <input
           disabled={disabled}
           value={form.summary}
           onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
           placeholder="Leave blank to auto-build from pest + severity"
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         />
       </label>
 
-      <label className="block text-slate-300">
+      <label className="ent-label block">
         Notes
         <textarea
           disabled={disabled}
           value={form.notes}
           onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
           rows={3}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-50"
+          className="mt-1 block w-full av-input disabled:opacity-50"
         />
       </label>
 
-      <div className="flex flex-wrap gap-2 border-t border-slate-800 pt-3">
+      <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
         {daoWorkflow?.enabled && daoWorkflow.saveDraft && !disabled ? (
-          <button type="button" onClick={() => void saveDraftLocal()} className="h-10 rounded-lg border border-slate-600 px-4 text-[12px] text-slate-200 hover:bg-slate-900">
+          <button type="button" onClick={() => void saveDraftLocal()} className="btn-gov-outline h-10 rounded-lg px-4 text-[13px]">
             Save draft
           </button>
         ) : null}
