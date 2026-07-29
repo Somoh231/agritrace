@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
 import {
+  ANALYTICS_STATUS_HEADER,
+  isAnalyticsTableUnavailable,
+} from "@/lib/analytics/availability";
+import {
   clampStr,
   jsonPayloadTooLarge,
   logApiError,
@@ -21,6 +25,19 @@ type Body = { event?: string; payload?: Record<string, unknown> };
 
 const MAX_BODY_BYTES = 16_384;
 const MAX_PAYLOAD_BYTES = 8_192;
+
+function analyticsNoContent(
+  ctx: Awaited<ReturnType<typeof beginApiRequestAsync>>,
+  status: "stored" | "disabled" | "degraded",
+) {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      ...apiHeaders(ctx, ANALYTICS_POLICY),
+      [ANALYTICS_STATUS_HEADER]: status,
+    },
+  });
+}
 
 function moduleFromPath(pathname: string) {
   if (pathname.startsWith("/rice")) return "rice";
@@ -66,7 +83,7 @@ export async function POST(request: Request) {
   try {
     admin = getSupabaseAdminClient();
   } catch {
-    return new NextResponse(null, { status: 204, headers: apiHeaders(ctx, ANALYTICS_POLICY) });
+    return analyticsNoContent(ctx, "disabled");
   }
 
   const url = new URL(request.url);
@@ -82,9 +99,12 @@ export async function POST(request: Request) {
   } as any);
 
   if (error) {
+    if (isAnalyticsTableUnavailable(error)) {
+      return analyticsNoContent(ctx, "disabled");
+    }
     logApiError("api/analytics", error, ctx.requestId);
-    return new NextResponse(null, { status: 204, headers: apiHeaders(ctx, ANALYTICS_POLICY) });
+    return analyticsNoContent(ctx, "degraded");
   }
 
-  return new NextResponse(null, { status: 204, headers: apiHeaders(ctx, ANALYTICS_POLICY) });
+  return analyticsNoContent(ctx, "stored");
 }

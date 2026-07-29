@@ -582,8 +582,14 @@ curl -X POST https://your-app.vercel.app/api/demo-inquiry \
 ### `POST /api/analytics`
 
 **Auth:** Optional session  
+**Infrastructure:** Optional; operational workflows do not depend on this table
 **Max body:** 16 KB (payload max 8 KB)  
 **Response:** `204 No Content`
+
+The response includes `X-Agrivault-Analytics-Status`: `stored`, `disabled`, or
+`degraded`. A missing `analytics_events` table is an expected `disabled` state
+and does not emit repetitive provider-error logs. Unexpected provider failures
+remain server-logged and return `degraded`; analytics never blocks user actions.
 
 ```bash
 curl -X POST https://your-app.vercel.app/api/analytics \

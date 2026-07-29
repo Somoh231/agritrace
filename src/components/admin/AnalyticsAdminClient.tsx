@@ -4,6 +4,7 @@ import * as React from "react";
 import { Loader2 } from "lucide-react";
 
 import AlertBanner from "@/components/shared/AlertBanner";
+import { isAnalyticsTableUnavailable } from "@/lib/analytics/availability";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { formatDateTime } from "@/lib/utils/formatters";
 
@@ -34,7 +35,7 @@ export default function AnalyticsAdminClient() {
         .order("created_at", { ascending: false })
         .limit(500);
       if (qErr) {
-        if (qErr.message.includes("does not exist") || qErr.code === "42P01") {
+        if (isAnalyticsTableUnavailable(qErr)) {
           setTableMissing(true);
           setRows([]);
           return;
@@ -59,7 +60,7 @@ export default function AnalyticsAdminClient() {
       <div className="max-w-2xl">
         <AlertBanner
           severity="warning"
-          message="Run agritrace/src/lib/supabase/schema.analytics.sql in Supabase to enable analytics, then re-deploy with SUPABASE_SERVICE_ROLE_KEY."
+          message="Usage analytics is optional and currently disabled because analytics_events is not installed. Apply the reviewed analytics schema only with operator approval."
         />
       </div>
     );
@@ -213,4 +214,3 @@ function topKey(map: Record<string, number>) {
   entries.sort((a, b) => b[1] - a[1]);
   return entries[0]?.[0] ?? null;
 }
-

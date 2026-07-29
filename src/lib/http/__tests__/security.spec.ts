@@ -5,6 +5,7 @@
 
 import assert from "node:assert/strict";
 
+import { isAnalyticsTableUnavailable } from "@/lib/analytics/availability";
 import { safeInternalRedirect } from "@/lib/auth/safe-redirect";
 import { resolveRequestId, REQUEST_ID_HEADER } from "@/lib/http/request-context";
 import { checkRateLimitMemory } from "@/lib/http/rate-limit-store";
@@ -107,6 +108,35 @@ check("exporter navigation omits national and admin routes", () => {
 
 check("invalid navigation roles fall back to least privilege", () => {
   assert.equal(normalizeMinistryNavRole(undefined), "auditor");
+});
+
+console.log("security — optional analytics");
+
+check("missing analytics table is a recognized optional state", () => {
+  assert.equal(
+    isAnalyticsTableUnavailable({
+      code: "PGRST205",
+      message: "Could not find public.analytics_events in the schema cache",
+    }),
+    true,
+  );
+  assert.equal(
+    isAnalyticsTableUnavailable({
+      code: "42P01",
+      message: 'relation "analytics_events" does not exist',
+    }),
+    true,
+  );
+});
+
+check("unexpected analytics provider failures remain observable", () => {
+  assert.equal(
+    isAnalyticsTableUnavailable({
+      code: "42501",
+      message: "permission denied",
+    }),
+    false,
+  );
 });
 
 console.log(`\nAll ${passed} security checks passed.\n`);
