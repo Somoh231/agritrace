@@ -40,3 +40,11 @@ Vercel authentication. Therefore `/command-center`, role workspaces, farmers,
 farms, warehouses, reporting, map, modal, drawer, data table, and workflow queue
 axe/keyboard/zoom checks are **not passed** in Preview. VoiceOver/NVDA and
 Lighthouse were not run.
+
+## Controlled-pilot continuation
+
+No new authenticated accessibility cases could run because Preview browser
+access and all designated role credentials are absent. Existing public/login axe
+evidence remains valid; authenticated keyboard, zoom, reduced-motion,
+dialog/drawer, table, chart-alternative, map-description, and touch-target gates
+remain **not proved**. No screen-reader certification is claimed.

@@ -7,15 +7,15 @@ Last updated: 2026-07-29
 | Field | Value |
 | --- | --- |
 | Current phase | `STAGING_VERIFICATION_COMPLETE` |
-| Current audit cycle | `3` |
-| Active workstream | Local and CLI-authenticated preview verification complete; pilot-critical external evidence blocked |
+| Current audit cycle | `4` |
+| Active workstream | Controlled-pilot prerequisite audit complete; optional analytics repaired and pending RLS hardening prepared |
 | Branch | `audit/rc1-360-agentic-qa` |
 | Baseline | `c69b4598fe96fbbf4a968922739e4af0a227c8dc` |
 | Routes inspected | 147 inventoried: 124 pages and 23 APIs; targeted browser coverage across public, auth, command, role-denial, workflow, transfer, admin, health, and setup families |
-| Findings severity | P0: 0 open; P1: 1 open; P2: 8 open; P3: 8 open |
-| Tests | Clean install pass; lint pass; 40 workflow/security checks pass; 22 Playwright core checks pass and 62 credential-gated checks skip; builds pass with and without Sentry |
+| Findings severity | P0: 0 open; P1: 2 open; P2: 7 open; P3: 8 open |
+| Tests | Clean install pass; lint pass; 42 workflow/security checks pass; RLS migration contract passes; 22 Playwright core checks pass and 62 credential-gated checks skip |
 | Browser | Local production-mode core passes at desktop/mobile; interactive preview is blocked by Vercel SSO; CLI-authenticated preview core routes are verified |
-| Blockers | Stale production `/setup`; no browser preview auth or designated role credentials; live RLS/offline/GIS/export-role matrix unproved; no disposable restore target |
+| Blockers | All requested protected-preview/QA variables absent; no disposable restore target; live RLS/offline/GIS/export-role matrix unproved; pending RLS migration not applied; stale production `/setup` |
 | Local verdict | `GO FOR INTERNAL DEMO` |
 | Production/pilot verdict | `NO-GO for controlled pilot; GO FOR INTERNAL DEMO only` |
 
@@ -42,8 +42,8 @@ Last updated: 2026-07-29
 | Severity | Open | Resolved | Notes |
 | --- | ---: | ---: | --- |
 | P0 | 0 | 0 | No confirmed P0 |
-| P1 | 1 | 9 | Added and resolved GET-before-auth behavior on rice/DDS report endpoints; open item remains stale production `/setup` |
-| P2 | 8 | 11 | Transaction atomicity, lint-chain advisory, CSP, bundle/Sentry cost, analytics storage, restore evidence, authenticated E2E/a11y, Node runtime policy |
+| P1 | 2 | 9 | Stale production `/setup`; deployed warehouse transfer/field/geo policies remain over-broad until the pending migration is approved and applied |
+| P2 | 7 | 12 | Optional analytics noise resolved; remaining items include transaction atomicity, lint-chain advisory, CSP, bundle/Sentry cost, restore evidence, authenticated E2E/a11y, Node runtime policy |
 | P3 | 8 | 6 | Consolidation, documentation hygiene, deprecated wrappers, polish |
 
 ## Validation evidence
@@ -62,6 +62,18 @@ Last updated: 2026-07-29
 - CLI-authenticated preview requests prove application `/setup` 404, `/api/health` 200 sanitized JSON, `/login` 200, `/` 200, and `/command-center` 307 to login.
 - Browser preview requests land on Vercel authentication; neither the Vercel nor GitHub browser session is authenticated. Status: **BLOCKED — VERCEL DEPLOYMENT PROTECTION AUTHENTICATION UNAVAILABLE**.
 - Linked migrations are 11 local/11 remote in parity through `20260619120000`; required workflow tables exist and `analytics_events` does not.
+- Controlled-pilot continuation found every requested `PREVIEW_BASE_URL`,
+  protection-bypass, and `QA_*` credential variable absent locally and from
+  Preview environment names. No approved disposable restore project is marked.
+- `analytics_events` is confirmed optional. Missing-table responses now return a
+  quiet 204 with an explicit `X-Agrivault-Analytics-Status: disabled` header;
+  unexpected provider failures remain logged.
+- Static SQL proves `warehouse_transfer_orders_select using (true)` exposes all
+  orders to every authenticated user. Migration
+  `20260729220000_rc1_geography_rls_hardening.sql` narrows transfer, field-report,
+  and geo policies but is intentionally not applied.
+- Repository migration state is now 12 local/11 remote by design; the new RLS
+  migration requires operator approval and disposable-project/live-role tests.
 - Production `https://agrivaultdata.com/setup` still returns 200. Production was not changed.
 
 ## Safety constraints observed
@@ -78,3 +90,5 @@ Last updated: 2026-07-29
 3. Resolve or owner-approve the broad RLS policies observed in static review before any pilot data is loaded.
 4. Reconcile the absent `analytics_events` table without applying an unreviewed remote migration.
 5. Deploy only after the above gates pass; then prove production `/setup` is application-level 404 and remove/rotate training credentials.
+6. Supply the missing prerequisite variables and rerun the 62 authenticated
+   Playwright cases; do not reuse production users.

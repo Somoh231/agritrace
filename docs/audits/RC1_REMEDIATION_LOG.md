@@ -78,3 +78,18 @@
   production promotion, or `main` merge/push occurred.
 - Synthetic mutation tests remain double-gated by non-production hostname and
   `QA_ALLOW_SYNTHETIC_MUTATIONS=true`.
+
+## Wave 4 — controlled-pilot prerequisite and policy closure
+
+- Verified that all requested preview/bypass/role variables and an approved
+  disposable restore target are absent without printing values.
+- Classified `analytics_events` as optional observability and made missing-table
+  behavior quiet and explicit while retaining unexpected-failure logging.
+- Added tests for missing versus unexpected analytics provider failures.
+- Confirmed the deployed transfer policy is globally readable to authenticated
+  sessions and classified it P1.
+- Prepared, but did not apply, a migration narrowing transfer, field-report, and
+  geo policies with active-profile and geography/assignment/ownership checks.
+- Added static migration-contract and applied-schema SQL contract tests.
+- Did not create QA users, apply SQL, seed records, alter Vercel protection,
+  restore a database, touch production, or modify `main`.

@@ -52,5 +52,29 @@ database-owner evidence for those runtime controls.
   inactive/missing-profile fail-closed behavior, read-only roles, replay/dedupe,
   and workflow mutation rejection remain **not proved in the linked runtime**.
 
-The 29 workflow and 11 security model checks pass, but unit policy behavior is
+The 29 workflow and 13 security model checks pass, but unit policy behavior is
 not a substitute for deployed PostgreSQL RLS evidence.
+
+## Controlled-pilot RLS continuation
+
+Static SQL establishes that the deployed transfer SELECT policy returns every
+row for every authenticated role. Because PostgreSQL policies are permissive,
+the existing transfer `FOR ALL` write policy also grants SELECT to its listed
+roles. Field/geo policies likewise grant operational roles national reads
+without row geography predicates.
+
+The pending `20260729220000_rc1_geography_rls_hardening.sql` migration narrows
+these policies and includes:
+
+- an executable static migration-contract test;
+- an applied-schema SQL contract test under `supabase/tests/`;
+- active-profile fail-closed predicates;
+- warehouse assignment/county/requester transfer scope;
+- author/district/county field-report scope;
+- farmer registration/district/county/organization geo scope.
+
+It was not applied remotely. Linked production-like staging history remains
+11/11, while the repository now has 12 local migrations and one expected pending
+entry. Normal authenticated two-geography proof remains mandatory.
+
+Security model checks now total 13 after adding optional analytics-state tests.

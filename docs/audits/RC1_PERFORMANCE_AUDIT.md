@@ -50,3 +50,10 @@ Preview Lighthouse, LCP, CLS, INP/TBT, Sentry request overhead, and Mapbox netwo
 cost were not measured because the interactive browser is blocked by Vercel
 Deployment Protection. CLI response status is not performance evidence. No
 speculative bundle rewrite was made.
+
+## Controlled-pilot continuation
+
+Authenticated Lighthouse remains blocked by the missing Preview bypass and QA
+accounts. No performance rewrite was justified. The normal production build
+continues at 103 kB shared first-load JS and 171 kB middleware; the measured
+Sentry and Node-runtime follow-ups remain open.

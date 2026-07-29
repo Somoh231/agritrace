@@ -98,3 +98,31 @@ creation, or normal-user RLS proof was performed against the linked project.
   content, Lighthouse, and assistive-technology speech output were not passed.
 - CLI-authenticated HTTP results must not be interpreted as browser
   console/network, role, offline, GIS, or accessibility evidence.
+
+## Controlled-pilot prerequisite audit
+
+The following are absent without inspecting or printing values:
+
+- `PREVIEW_BASE_URL` and `VERCEL_AUTOMATION_BYPASS_SECRET`.
+- CLAN, DAO, CAC, Ministry, Admin, Auditor, Donor, and Exporter email/password
+  pairs.
+- An approved disposable AgriVault restore project and restore credentials.
+
+Vercel Preview contains only the application/Supabase/Mapbox/Anthropic variable
+names already documented; it has no bypass or `QA_*` variables. Unrelated
+Supabase projects were not treated as disposable.
+
+## Unaffected continuation results
+
+- Optional analytics: local production-mode POST returns 204, zero-byte body,
+  and `X-Agrivault-Analytics-Status: disabled`; no provider error is logged.
+- Transfer policy: `warehouse_transfer_orders_select using (true)` is confirmed
+  as all-row exposure to authenticated sessions. The permissive `FOR ALL` write
+  policy also contributes to SELECT for its roles.
+- A pending migration replaces transfer `FOR ALL` with separate SELECT/INSERT/
+  UPDATE/DELETE policies, requires an active profile, and scopes by national
+  role, warehouse assignment, related county, or requester as appropriate.
+- Field report reads/writes and geo reads/inserts are narrowed to officer,
+  district/county, registered farmer, organization, or national/auditor scope.
+- Static migration contract passes. The SQL applied-schema contract and live
+  normal-user matrix are blocked and the migration was not applied.

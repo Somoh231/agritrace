@@ -25,8 +25,8 @@ The release candidate is materially safer and more truthful than baseline. It pa
 | Severity | Baseline total | Resolved | Open after remediation |
 | --- | ---: | ---: | ---: |
 | P0 | 0 | 0 | 0 |
-| P1 | 10 | 9 | 1 |
-| P2 | 19 | 11 | 8 |
+| P1 | 11 | 9 | 2 |
+| P2 | 19 | 12 | 7 |
 | P3 | 14 | 6 | 8 |
 
 ## Highest-impact remediations
@@ -46,6 +46,14 @@ The release candidate is materially safer and more truthful than baseline. It pa
 - Browser requests land at Vercel/GitHub authentication, so interactive preview console/network and authenticated role scenarios are not passed.
 - Linked Supabase migrations are in 11/11 parity through `20260619120000`; workflow tables exist; `analytics_events` is absent.
 - Local Playwright: 22 core tests pass across desktop and mobile; 62 authenticated route checks skip due missing environment-only role credentials.
+- The next controlled-pilot prerequisite check found all 18 requested local
+  preview/bypass/role variables absent. Vercel Preview also has no bypass or QA
+  account variables, and no disposable restore target is approved.
+- `analytics_events` is optional observability infrastructure. Its absence now
+  produces a quiet, explicit disabled response rather than repetitive error logs.
+- Static policy review confirms all-authenticated transfer visibility and broad
+  field/geo access. A scoped migration and SQL contract test are committed but
+  remain unapplied pending owner approval.
 
 ## Remaining risks and external blockers
 
@@ -53,6 +61,8 @@ The release candidate is materially safer and more truthful than baseline. It pa
 - Static RLS review found broad authenticated-read policies that require normal-user, cross-geography verification and data-owner approval.
 - No approved disposable restore target exists; the drill is defined but not executed.
 - `public.analytics_events` is absent from the linked schema (`PGRST205`).
+- The linked project still carries the vulnerable transfer/field/geo policies;
+  the repository now has one intentionally pending migration.
 - The development-only ESLint chain retains nine high advisories; runtime dependencies report zero.
 - Sentry builds pass both with and without a DSN, but enabling Sentry increased shared first-load JavaScript from 103 kB to 191 kB and emitted configuration deprecation warnings.
 

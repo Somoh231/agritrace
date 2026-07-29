@@ -29,6 +29,7 @@ Primary assets are farmer PII, geospatial plot data, production records, subsidy
 | SEC-14 | P2 | Migration parity is proved, but no restore execution evidence exists | Approve a disposable target and execute the staging restore drill |
 | SEC-15 | P2 | Preview role/RLS enforcement is not dynamically proved; static policies include broad authenticated reads | Run normal-user cross-geography matrix and obtain data-owner approval |
 | SEC-16 | P2 | Repository requires Node 20.x while Vercel project setting is 24.x; Vercel warns 20.x support ends 2026-10-01 | Validate supported Node target, update engine/config together, rebuild |
+| SEC-17 | P1 | `warehouse_transfer_orders_select USING (true)` exposes all transfer orders to every authenticated role; broad field/geo policies also exceed intended geography | Review and apply pending `20260729220000` only in approved staging, then run normal-user RLS tests |
 
 ## Dependency evidence
 
@@ -65,3 +66,29 @@ The public site has CSP, HSTS, frame denial, content-type protection, permission
 
 SEC-14 is narrowed: migration parity is now proved, but restore evidence remains
 blocked by the lack of an approved disposable destination.
+
+## Pending RLS remediation
+
+Migration `20260729220000_rc1_geography_rls_hardening.sql` is intentionally
+unapplied. It:
+
+- removes the globally permissive transfer SELECT and the `FOR ALL` policy;
+- separates transfer policies by command;
+- requires active profiles;
+- scopes warehouse managers by assignment, DAO/CAC by related county, and
+  cooperative/exporter reads to their own requested transfers;
+- scopes field reports by author, district, county, or intended national/auditor
+  oversight;
+- scopes geo locations through the related farmer, including DAO district,
+  CAC county, CLAN/field registration ownership, and organization boundaries.
+
+Warehouse records have county but no district, so DAO transfer visibility can be
+county-scoped only. This residual model limitation requires product/data-owner
+acceptance. SQL contract tests are prepared, but live RLS is not passed.
+
+## Optional analytics resolution
+
+`analytics_events` is optional observability infrastructure. Known missing-table
+codes (`PGRST205`, `42P01`) now return a quiet 204 `disabled` state; unexpected
+permission/provider failures remain logged and return `degraded`. No analytics
+migration was created or applied.

@@ -60,3 +60,11 @@ The product has a coherent institutional visual language, strong ministry hierar
 5. Consolidate deprecated card/status/table wrappers.
 6. Complete authenticated preview desktop/mobile review once protected-browser
    access and designated `QA_*` accounts are available.
+
+## Controlled-pilot continuation
+
+No authenticated UI claim was added: the bypass secret and all QA account pairs
+remain absent. The role, offline, GIS, modal/drawer/table, 200% zoom, and mobile
+overflow workstreams therefore retain their blocked status. Optional analytics
+now degrades quietly without changing user workflows; the admin analytics page
+states that the feature is optional and disabled when its table is absent.

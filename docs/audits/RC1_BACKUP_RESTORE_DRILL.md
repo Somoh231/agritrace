@@ -121,3 +121,11 @@ against the restored migration head.
 - No approved disposable AgriVault restore project is configured, so the evidence
   checklist remains intentionally incomplete.
 
+## Controlled-pilot prerequisite reconfirmation
+
+The Supabase account can list several projects, but none is configured or
+approved as an AgriVault disposable restore target. No restore project reference,
+database URL, or operator approval was supplied. Unrelated projects were not
+repurposed. The result remains:
+
+**BLOCKED — NO APPROVED DISPOSABLE RESTORE TARGET**
