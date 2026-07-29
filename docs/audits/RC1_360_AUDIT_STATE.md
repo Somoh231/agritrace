@@ -6,7 +6,7 @@ Last updated: 2026-07-29
 
 | Field | Value |
 | --- | --- |
-| Current phase | `STAGING_VERIFICATION_COMPLETE` |
+| Current phase | `CONTROLLED_PILOT_GATES_BLOCKED` |
 | Current audit cycle | `4` |
 | Active workstream | Controlled-pilot prerequisite audit complete; optional analytics repaired and pending RLS hardening prepared |
 | Branch | `audit/rc1-360-agentic-qa` |
@@ -50,7 +50,7 @@ Last updated: 2026-07-29
 
 - `npm run lint` — pass, zero warnings.
 - `npm ci` — pass; Node 22 locally does not satisfy the repository's `20.x` engine declaration.
-- `npm run test:workflow` — pass: 29 workflow + 11 security checks.
+- `npm run test:workflow` — pass: 29 workflow + 13 security checks.
 - `npm run build` — pass on Next.js 15.5.21; 134 static-generation steps.
 - Sentry-enabled build with a non-secret test DSN — pass; configuration deprecation warnings and a shared-JS increase are recorded as P2 follow-up.
 - `npm audit --omit=dev --json` — 0 production vulnerabilities.
@@ -58,10 +58,10 @@ Last updated: 2026-07-29
 - Local browser QA — pass for public shell, invalid/valid login, logout, protected redirects, role denial, corrected exporter navigation, mobile menu focus/Escape, clean console.
 - Responsive dimensions — 1440×900, 1280×800, 1024×768, 768×1024, 390×844, 360×800; no horizontal overflow on the authenticated command center.
 - RC1 Playwright core — 22/22 pass across 1440×900 and 390×844; 62 authenticated route cases skip because no `QA_*` credentials are configured.
-- Preview deployment `dpl_833QkZ2cuJoidseeY1g8wZxRDZwk` is Ready and build logs directly identify branch `audit/rc1-360-agentic-qa`, commit `893860b`, Node 20.x, and Next 15.5.21.
-- CLI-authenticated preview requests prove application `/setup` 404, `/api/health` 200 sanitized JSON, `/login` 200, `/` 200, and `/command-center` 307 to login.
+- Preview deployment `dpl_E86xDN1oHoNcbrq6DqQSSCUdJDWw` is Ready and build logs directly identify branch `audit/rc1-360-agentic-qa`, commit `7f45178`, Node 20.x, and Next 15.5.21.
+- CLI-authenticated preview requests prove application `/setup` 404, `/api/health` 200 sanitized JSON, `/command-center` 307 to login, all six report endpoints 401 when unauthenticated, and `/api/analytics` 204 with `X-Agrivault-Analytics-Status: disabled`.
 - Browser preview requests land on Vercel authentication; neither the Vercel nor GitHub browser session is authenticated. Status: **BLOCKED — VERCEL DEPLOYMENT PROTECTION AUTHENTICATION UNAVAILABLE**.
-- Linked migrations are 11 local/11 remote in parity through `20260619120000`; required workflow tables exist and `analytics_events` does not.
+- The linked project remains unchanged through `20260619120000` (11 remote migrations). The repository has 12 local migrations because the new RLS hardening migration is intentionally pending and unapplied; required workflow tables exist and `analytics_events` does not.
 - Controlled-pilot continuation found every requested `PREVIEW_BASE_URL`,
   protection-bypass, and `QA_*` credential variable absent locally and from
   Preview environment names. No approved disposable restore project is marked.
@@ -88,7 +88,7 @@ Last updated: 2026-07-29
 1. Provide protected-preview browser access and designated `QA_*` role accounts; execute the role, RLS, export, accessibility, console/network, GIS, and offline replay matrices.
 2. Approve a disposable AgriVault Supabase project and execute `RC1_BACKUP_RESTORE_DRILL.md`.
 3. Resolve or owner-approve the broad RLS policies observed in static review before any pilot data is loaded.
-4. Reconcile the absent `analytics_events` table without applying an unreviewed remote migration.
+4. Review the pending RLS migration with the data owner, apply it only to an approved disposable/staging target, and run the SQL plus normal-user two-geography matrix.
 5. Deploy only after the above gates pass; then prove production `/setup` is application-level 404 and remove/rotate training credentials.
 6. Supply the missing prerequisite variables and rerun the 62 authenticated
    Playwright cases; do not reuse production users.

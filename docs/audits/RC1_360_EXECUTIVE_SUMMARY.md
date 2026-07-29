@@ -4,7 +4,7 @@
 
 **GO FOR INTERNAL DEMO. NO-GO for controlled pilot or production promotion today.**
 
-The release candidate is materially safer and more truthful than baseline. It passes a clean install, lint, 40 focused workflow/security checks, two production builds, 22 desktop/mobile Playwright core checks, and a zero-vulnerability production dependency audit. The exact preview build is Ready, its `/setup` route is an application-level 404 through Vercel CLI authentication, and its health response is sanitized. It is not pilot-releasable because interactive authenticated role/RLS/offline/GIS/export verification is blocked by protected-preview authentication and missing designated `QA_*` accounts, no disposable restore target is approved, and production remains stale with `/setup` returning 200.
+The release candidate is materially safer and more truthful than baseline. It passes a clean install, lint, 42 focused workflow/security checks, two production builds, 22 desktop/mobile Playwright core checks, and a zero-vulnerability production dependency audit. The exact final preview build is Ready, its `/setup` route is an application-level 404 through Vercel CLI authentication, its health response is sanitized, all six report endpoints reject unauthenticated requests, and optional analytics degrades quietly. It is not pilot-releasable because interactive authenticated role/RLS/offline/GIS/export verification is blocked by protected-preview authentication and missing designated `QA_*` accounts, no disposable restore target is approved, and production remains stale with `/setup` returning 200.
 
 ## Scorecard
 
@@ -18,7 +18,7 @@ The release candidate is materially safer and more truthful than baseline. It pa
 | UI/UX | 86/100 | Strong institutional design; dead actions and misleading role navigation repaired |
 | Accessibility | 84/100 | Public/login serious-or-critical axe findings cleared on desktop/mobile; authenticated routes and screen-reader output remain unproved |
 | Performance | 72/100 | Build healthy; several operational routes load 306–343 kB JS |
-| Operational readiness | 70/100 | Migration parity proved; protected browser QA, restore proof, production parity, and analytics storage remain absent |
+| Operational readiness | 70/100 | Remote migration state is unchanged with one reviewed local migration pending; protected browser QA, restore proof, and production parity remain absent |
 
 ## Findings before and after
 
@@ -41,10 +41,10 @@ The release candidate is materially safer and more truthful than baseline. It pa
 
 ## Staging continuation evidence
 
-- Vercel deployment `dpl_833QkZ2cuJoidseeY1g8wZxRDZwk` is Ready; build logs directly identify `audit/rc1-360-agentic-qa` at `893860b`.
-- Vercel CLI-authenticated application requests: `/setup` 404, `/api/health` 200 sanitized JSON, `/login` 200, `/` 200, and `/command-center` 307 to login.
+- Vercel deployment `dpl_E86xDN1oHoNcbrq6DqQSSCUdJDWw` is Ready; build logs directly identify `audit/rc1-360-agentic-qa` at `7f45178`.
+- Vercel CLI-authenticated application requests: `/setup` 404, `/api/health` 200 sanitized JSON, `/command-center` 307 to login, all six report endpoints 401 when unauthenticated, and optional analytics 204 `disabled`.
 - Browser requests land at Vercel/GitHub authentication, so interactive preview console/network and authenticated role scenarios are not passed.
-- Linked Supabase migrations are in 11/11 parity through `20260619120000`; workflow tables exist; `analytics_events` is absent.
+- The linked Supabase project remains unchanged at 11 remote migrations through `20260619120000`; the repository has one intentionally pending RLS migration, workflow tables exist, and `analytics_events` is absent.
 - Local Playwright: 22 core tests pass across desktop and mobile; 62 authenticated route checks skip due missing environment-only role credentials.
 - The next controlled-pilot prerequisite check found all 18 requested local
   preview/bypass/role variables absent. Vercel Preview also has no bypass or QA
@@ -60,7 +60,7 @@ The release candidate is materially safer and more truthful than baseline. It pa
 - The deployed production artifact is stale and still exposes `/setup`.
 - Static RLS review found broad authenticated-read policies that require normal-user, cross-geography verification and data-owner approval.
 - No approved disposable restore target exists; the drill is defined but not executed.
-- `public.analytics_events` is absent from the linked schema (`PGRST205`).
+- `public.analytics_events` is absent from the linked schema (`PGRST205`), but it is confirmed optional and now degrades quietly with an explicit status.
 - The linked project still carries the vulnerable transfer/field/geo policies;
   the repository now has one intentionally pending migration.
 - The development-only ESLint chain retains nine high advisories; runtime dependencies report zero.

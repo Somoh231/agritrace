@@ -113,11 +113,13 @@ against the restored migration head.
 
 ## Current evidence
 
-- Linked migration inspection is read-only and shows 11 local migrations and 11
-  remote migrations in parity through `20260619120000`.
+- Linked migration inspection is read-only and shows 11 remote migrations through
+  `20260619120000`; the repository has one intentionally pending RLS migration
+  that has not been applied.
 - The linked schema exposes the required workflow tables sampled through the
   anonymous REST schema surface.
-- `analytics_events` is absent (`PGRST205`) and must be reconciled separately.
+- `analytics_events` is absent (`PGRST205`), is optional observability, and is
+  unrelated to the blocked restore operation.
 - No approved disposable AgriVault restore project is configured, so the evidence
   checklist remains intentionally incomplete.
 

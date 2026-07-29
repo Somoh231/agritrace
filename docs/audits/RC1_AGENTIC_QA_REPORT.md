@@ -5,9 +5,9 @@
 | Environment | Target | Result |
 | --- | --- | --- |
 | Local production build | `http://127.0.0.1:3000` | Remediated branch validated |
-| Protected preview | `dpl_833QkZ2cuJoidseeY1g8wZxRDZwk` | Ready; CLI-authenticated core verified; interactive browser blocked by Vercel SSO |
+| Protected preview | `dpl_E86xDN1oHoNcbrq6DqQSSCUdJDWw` | Ready; final audit-branch core verified; interactive browser blocked by Vercel SSO |
 | Deployed production | `https://agrivaultdata.com` | Stale build; release blocker confirmed |
-| Linked Supabase | `MOA Farm Traceability` | 11/11 migration parity inspected; no remote mutation |
+| Linked Supabase | `MOA Farm Traceability` | 11 remote migrations unchanged; one local RLS migration intentionally pending; no remote mutation |
 
 ## Automated gates
 
@@ -16,7 +16,7 @@
 | ESLint | Pass, zero warnings |
 | Clean install | Pass; 688 packages installed, Node engine mismatch warning recorded |
 | Workflow tests | 29/29 pass |
-| Security tests | 11/11 pass |
+| Security tests | 13/13 pass |
 | Next production build/typecheck | Pass without DSN and with a non-secret Sentry test DSN |
 | Production dependency audit | 0 vulnerabilities |
 | Full dependency audit | Fail: 9 high, development lint chain |
@@ -48,13 +48,15 @@ Each exact viewport reported the requested `window.innerWidth`/`window.innerHeig
 | --- | --- | --- | --- | --- |
 | `/setup` | 404 | deployment host; `text/html`; title `Agrivault` | AgriVault (`x-matched-path: /setup`), no setup form | Blocked at Vercel authentication |
 | `/api/health` | 200 | deployment host; `application/json`; no page title | AgriVault; sanitized app/Supabase/Mapbox checks | Not exercised interactively |
+| `/api/analytics` | 204 | deployment host; zero-byte body; explicit `disabled` header | AgriVault optional observability | Not exercised interactively |
+| Six report endpoints | 401 | deployment host; `application/json` | AgriVault authentication boundary | Not exercised interactively |
 | `/login` | 200 | deployment host; `text/html`; title `Agrivault` | AgriVault | Blocked at Vercel authentication |
 | `/` | 200 | deployment host; `text/html`; title `Agrivault Data — National agricultural intelligence` | AgriVault | Blocked at Vercel authentication |
 | `/command-center` | 307 → `/login?redirectTo=%2Fcommand-center` | deployment host; no protected body rendered | AgriVault middleware | Blocked at Vercel authentication |
 
 Build logs are direct identity evidence: project `agritrace`, Preview, branch
-`audit/rc1-360-agentic-qa`, commit `893860b`, status Ready, deployment
-`dpl_833QkZ2cuJoidseeY1g8wZxRDZwk`. Preview environment variable names required
+`audit/rc1-360-agentic-qa`, commit `7f45178`, status Ready, deployment
+`dpl_E86xDN1oHoNcbrq6DqQSSCUdJDWw`. Preview environment variable names required
 for Supabase and Mapbox are present; values were not printed.
 
 ### Production
@@ -82,11 +84,11 @@ creation, or normal-user RLS proof was performed against the linked project.
 
 ## Export probes
 
-- Preview GET for executive, compliance, donor, and reports index returns 401 JSON.
-- Preview POST for rice and DDS returns 401 JSON.
-- The deployed `893860b` GET handlers for rice and DDS return framework 405 before
-  authentication. The branch now authenticates/authorizes those GETs before its
-  authorized 405 response; local desktop/mobile regression passes.
+- Preview GET for reports index, rice, DDS, executive briefing, compliance
+  oversight, and donor programme returns 401 JSON.
+- The final deployed GET handlers for rice and DDS authenticate/authorize before
+  returning their authorized method response; local desktop/mobile regression
+  passes.
 - Unauthorized and authorized preview role/file matrices remain unproved.
 
 ## Browser QA limitations

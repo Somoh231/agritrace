@@ -44,23 +44,23 @@ The public site has CSP, HSTS, frame denial, content-type protection, permission
 ## Staging continuation evidence
 
 - Exact Preview identity is direct from Vercel build logs, not inferred from an
-  alias: `audit/rc1-360-agentic-qa` at `893860b`, deployment
-  `dpl_833QkZ2cuJoidseeY1g8wZxRDZwk`, Ready.
+  alias: `audit/rc1-360-agentic-qa` at `7f45178`, deployment
+  `dpl_E86xDN1oHoNcbrq6DqQSSCUdJDWw`, Ready.
 - Vercel CLI-authenticated requests prove `/setup` is application 404, health is
   sanitized, and `/command-center` redirects before protected content.
 - Browser automation is rejected by Vercel Deployment Protection. No SSO
   credentials or protection bypass secret was available, and protection was not
   disabled.
-- Unauthenticated report probes return 401 for executive, compliance, donor,
-  reports index, and rice/DDS POST. Rice/DDS GET previously returned 405 before
-  auth; new GET handlers now authenticate and authorize before returning 405.
+- Unauthenticated GET probes return 401 for reports index, rice, DDS, executive
+  briefing, compliance oversight, and donor programme.
 - Static RLS review found `field_reports_read` and `geo_read` role grants without
   a geography predicate and `warehouse_transfer_orders_select` using
-  `authenticated using (true)`. These are potential over-breadth findings, not
-  confirmed exploitation; controlled pilot remains blocked until normal-user
-  cross-county checks pass.
-- Linked migration history is 11 local/11 remote in parity through
-  `20260619120000`. `analytics_events` is absent (`PGRST205`).
+  `authenticated using (true)`. The transfer policy is a confirmed all-row
+  exposure by policy definition; field/geo impact and the proposed replacement
+  remain blocked on normal-user cross-county checks.
+- The linked project remains unchanged at 11 remote migrations through
+  `20260619120000`; the repository has one intentionally pending RLS migration.
+  `analytics_events` is absent (`PGRST205`) and confirmed optional.
 - No service-role RLS test, remote migration, user creation, or data mutation was
   performed.
 
