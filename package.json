@@ -14,11 +14,11 @@
     "test:e2e:rc1": "playwright test --config=playwright.config.ts",
     "test:e2e:rc1:preview": "test -n \"$PREVIEW_BASE_URL\" && playwright test --config=playwright.config.ts",
     "seed": "tsx src/lib/supabase/seed.ts",
-    "seed:demo": "tsx src/lib/supabase/seed-demo.ts",
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
     "seed:ministry": "tsx src/lib/supabase/seed-ministry-canonical.ts",
     "test:workflow": "tsx src/lib/workflow/__tests__/workflow.spec.ts && tsx src/lib/http/__tests__/security.spec.ts",
-    "test:rls:rc1": "node scripts/verify-rc1-rls-hardening.mjs"
+    "test:rls:rc1": "node scripts/verify-rc1-rls-hardening.mjs",
+    "test:identity:rc1": "node scripts/verify-workforce-identity.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",

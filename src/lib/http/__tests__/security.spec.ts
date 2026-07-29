@@ -6,7 +6,18 @@
 import assert from "node:assert/strict";
 
 import { isAnalyticsTableUnavailable } from "@/lib/analytics/availability";
+import {
+  assessOperationalAccess,
+  INACTIVE_ACCOUNT_MESSAGE,
+  INCOMPLETE_PROFILE_MESSAGE,
+  NO_AUTHORIZED_ROLE_MESSAGE,
+} from "@/lib/auth/access-readiness";
 import { safeInternalRedirect } from "@/lib/auth/safe-redirect";
+import {
+  canAssignProvisionedRole,
+  canProvisionUsers,
+  validateProvisioningInput,
+} from "@/lib/admin/user-provisioning";
 import { resolveRequestId, REQUEST_ID_HEADER } from "@/lib/http/request-context";
 import { checkRateLimitMemory } from "@/lib/http/rate-limit-store";
 import { canExportReport } from "@/lib/http/require-api-session";
@@ -137,6 +148,82 @@ check("unexpected analytics provider failures remain observable", () => {
     }),
     false,
   );
+});
+
+console.log("security — workforce identity");
+
+check("inactive and missing-role workforce identities fail closed with canonical messages", () => {
+  const inactive = assessOperationalAccess(
+    { role: "ministry_officer", is_active: false, account_status: "inactive" },
+    ["ministry_officer"],
+  );
+  assert.equal(inactive.ok, false);
+  if (!inactive.ok) assert.equal(inactive.message, INACTIVE_ACCOUNT_MESSAGE);
+
+  const missingRole = assessOperationalAccess(
+    { role: "ministry_officer", is_active: true, account_status: "active", organization_id: "org-1" },
+    [],
+  );
+  assert.equal(missingRole.ok, false);
+  if (!missingRole.ok) assert.equal(missingRole.message, NO_AUTHORIZED_ROLE_MESSAGE);
+});
+
+check("geographically scoped roles require complete organization and geography", () => {
+  const incomplete = assessOperationalAccess(
+    {
+      role: "clan_technician",
+      is_active: true,
+      account_status: "active",
+      organization_id: "org-1",
+      county: "Bong",
+      district: "Salala",
+    },
+    ["clan_technician"],
+  );
+  assert.equal(incomplete.ok, false);
+  if (!incomplete.ok) assert.equal(incomplete.message, INCOMPLETE_PROFILE_MESSAGE);
+
+  const complete = assessOperationalAccess(
+    {
+      role: "clan_technician",
+      is_active: true,
+      account_status: "active",
+      organization_id: "org-1",
+      county: "Bong",
+      district: "Salala",
+      clan_or_field_area: "QA geography A",
+    },
+    ["clan_technician", "dao_officer"],
+  );
+  assert.deepEqual(complete, {
+    ok: true,
+    role: "clan_technician",
+    roles: ["clan_technician", "dao_officer"],
+    multipleRoles: true,
+  });
+});
+
+check("provisioning normalizes email and enforces assignment privilege", () => {
+  assert.equal(canProvisionUsers("ministry_officer"), false);
+  assert.equal(canProvisionUsers("ministry_admin"), true);
+  assert.equal(canAssignProvisionedRole("ministry_admin", "super_admin"), false);
+  assert.equal(canAssignProvisionedRole("super_admin", "admin"), true);
+
+  const result = validateProvisioningInput(
+    {
+      email: "  QA.Clan@Example.ORG ",
+      full_name: "QA Clan Officer",
+      roles: ["clan_technician"],
+      primary_role: "clan_technician",
+      organization_id: "org-1",
+      county: "Bong",
+      district: "Salala",
+      clan_or_field_area: "QA geography A",
+    },
+    "super_admin",
+  );
+  assert.equal(result.ok, true);
+  if (result.ok) assert.equal(result.value.email, "qa.clan@example.org");
 });
 
 console.log(`\nAll ${passed} security checks passed.\n`);

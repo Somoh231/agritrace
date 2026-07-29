@@ -6,10 +6,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AlertBanner from "@/components/shared/AlertBanner";
 import MinistryBrandLogo from "@/components/brand/MinistryBrandLogo";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
+import {
+  assessOperationalAccess,
+  INACTIVE_ACCOUNT_MESSAGE,
+  INCOMPLETE_PROFILE_MESSAGE,
+  NO_AUTHORIZED_ROLE_MESSAGE,
+} from "@/lib/auth/access-readiness";
 import { postLoginHomeForRole } from "@/lib/auth/post-login-home";
 import { safeInternalRedirect } from "@/lib/auth/safe-redirect";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { describeAuthFetchFailure } from "@/lib/supabase/env";
+import type { UserRole } from "@/lib/supabase/types";
 import { track } from "@/lib/analytics/client";
 
 export default function LoginClient() {
@@ -24,10 +31,12 @@ export default function LoginClient() {
 
   React.useEffect(() => {
     const reason = search.get("error");
-    if (reason === "profile_required") {
-      setError("Your sign-in is valid, but no Ministry operator profile is assigned. Contact an administrator.");
+    if (reason === "profile_required" || reason === "profile_incomplete") {
+      setError(INCOMPLETE_PROFILE_MESSAGE);
     } else if (reason === "account_inactive") {
-      setError("This operator account is inactive. Contact an administrator.");
+      setError(INACTIVE_ACCOUNT_MESSAGE);
+    } else if (reason === "role_required") {
+      setError(NO_AUTHORIZED_ROLE_MESSAGE);
     }
   }, [search]);
 
@@ -54,21 +63,38 @@ export default function LoginClient() {
         setError("Sign-in completed without a usable session. Please retry.");
         return;
       }
-      const { data: profile, error: profileError } = await supabase
+      let { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("role,is_active")
+        .select("role,is_active,account_status,organization_id,county,district,clan_or_field_area")
         .eq("id", user.id)
         .maybeSingle();
-      if (profileError || !profile?.role || profile.is_active === false) {
+      if (profileError) {
+        const legacy = await supabase
+          .from("profiles")
+          .select("role,is_active,organization_id,county,district")
+          .eq("id", user.id)
+          .maybeSingle();
+        profile = legacy.data as typeof profile;
+        profileError = legacy.error;
+      }
+      const roleResult = await supabase
+        .from("profile_role_assignments")
+        .select("role")
+        .eq("profile_id", user.id)
+        .is("removed_at", null);
+      const assignedRoles =
+        roleResult.error || !roleResult.data
+          ? profile?.role
+            ? [profile.role as UserRole]
+            : []
+          : roleResult.data.map((item: { role: UserRole }) => item.role);
+      const readiness = profileError ? null : assessOperationalAccess(profile, assignedRoles);
+      if (!readiness?.ok) {
         await supabase.auth.signOut();
-        setError(
-          profile?.is_active === false
-            ? "This operator account is inactive. Contact an administrator."
-            : "Your identity is authenticated, but no Ministry operator profile is assigned. Contact an administrator.",
-        );
+        setError(readiness?.message ?? INCOMPLETE_PROFILE_MESSAGE);
         return;
       }
-      const roleHome = postLoginHomeForRole(profile.role);
+      const roleHome = readiness.multipleRoles ? "/workspace/select" : postLoginHomeForRole(readiness.role);
       const destination = safeInternalRedirect(creds?.redirect ?? redirectToParam, roleHome);
       router.replace(destination);
       router.refresh();
@@ -172,61 +198,6 @@ export default function LoginClient() {
               {isLoading ? "Signing in…" : "Sign in to command center"}
             </button>
 
-            <div className="pt-2">
-              <div className="cmd-kicker mb-2">
-                Demo access profiles
-              </div>
-              <div className="grid grid-cols-1 gap-2">
-                <DemoRoleButton
-                  title="Ministry Officer"
-                  subtitle="National command center"
-                  onClick={() =>
-                    onSignIn({
-                      email: "demo-ministry@agritrace.demo",
-                      password: "DemoPass!2026",
-                      redirect: "/command-center",
-                    })
-                  }
-                />
-                <DemoRoleButton
-                  title="Exporter"
-                  subtitle="Lots, movements, EUDR"
-                  onClick={() =>
-                    onSignIn({
-                      email: "demo-exporter@agritrace.demo",
-                      password: "DemoPass!2026",
-                      redirect: "/cocoa/lots",
-                    })
-                  }
-                />
-                <DemoRoleButton
-                  title="Cooperative Manager"
-                  subtitle="Farmers + lots operations"
-                  onClick={() =>
-                    onSignIn({
-                      email: "demo-coop@agritrace.demo",
-                      password: "DemoPass!2026",
-                      redirect: "/cocoa/farmers",
-                    })
-                  }
-                />
-                <DemoRoleButton
-                  title="District Agriculture Officer (DAO)"
-                  subtitle="District operations hub"
-                  onClick={() =>
-                    onSignIn({
-                      email: "demo-field@agritrace.demo",
-                      password: "DemoPass!2026",
-                      redirect: "/district-dashboard",
-                    })
-                  }
-                />
-              </div>
-              <div className="mt-2 text-[11px] text-emerald-100/40">
-                Run <span className="font-mono text-emerald-100/60">npm run seed:demo</span> to create these demo users.
-              </div>
-            </div>
-
             <div className="cmd-surface px-4 py-4">
               <div className="text-[13px] font-semibold text-white">Using AgriVault in the field?</div>
               <p className="mt-1.5 text-[12px] leading-relaxed text-emerald-100/55">
@@ -238,8 +209,8 @@ export default function LoginClient() {
             </div>
 
             <div className="pt-1 text-[11px] text-emerald-100/40">
-              For first-time setup: create a user in Supabase Auth, then insert a matching row
-              in <span className="font-mono text-emerald-100/60">profiles</span>.
+              First-time users receive a secure invitation from an authorized AgriVault administrator.
+              Passwords are chosen privately and are never visible in the administration workspace.
             </div>
           </form>
         </div>
@@ -249,26 +220,5 @@ export default function LoginClient() {
         </div>
       </div>
     </div>
-  );
-}
-
-function DemoRoleButton({
-  title,
-  subtitle,
-  onClick,
-}: {
-  title: string;
-  subtitle: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group w-full text-left rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-workspace))]/40 px-3 py-2.5 hover:border-[rgb(var(--ministry-gold))]/40 hover:bg-[rgb(var(--ministry-panel))]/60 transition"
-    >
-      <div className="text-[12px] font-medium text-white">{title}</div>
-      <div className="text-[11px] text-emerald-100/50">{subtitle}</div>
-    </button>
   );
 }

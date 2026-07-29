@@ -18,7 +18,7 @@ export function formatRoleLabel(role: UserRole): string {
     case "field_agent":
       return "Clan Agriculture Crops Technician (CLAN)";
     case "warehouse_manager":
-      return "Warehouse manager";
+      return "Warehouse officer";
     case "donor_observer":
       return "Donor observer (read-only)";
     case "donor_partner":
@@ -28,7 +28,7 @@ export function formatRoleLabel(role: UserRole): string {
     case "super_admin":
       return "System administrator";
     case "admin":
-      return "Administrator";
+      return "Data administrator";
     case "exporter":
       return "Exporter";
     case "cooperative_manager":

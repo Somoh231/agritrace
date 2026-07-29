@@ -1,9 +1,9 @@
 /**
  * Pilot-scale national seed (Liberia rice): counties grid, districts, warehouses,
- * inventory SKUs/stock, allocations, rice production rows (needs farmers from seed:demo),
+ * inventory SKUs/stock, allocations, rice production rows (needs approved synthetic farmers),
  * field reports, food security row, donor shipments, reporting + audit samples.
  *
- * Order: apply SQL migrations → npm run seed:demo → npm run seed:national
+ * Order: apply approved staging migrations → provision unique QA operators → npm run seed:national
  */
 import "dotenv/config";
 
@@ -65,6 +65,8 @@ async function ensureWarehouse(
 async function main() {
   const url = requiredEnv("NEXT_PUBLIC_SUPABASE_URL");
   const key = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
+  const ministryOperatorEmail = requiredEnv("SEED_MINISTRY_OPERATOR_EMAIL").trim().toLowerCase();
+  const fieldOperatorEmail = requiredEnv("SEED_FIELD_OPERATOR_EMAIL").trim().toLowerCase();
   const supabase: SupabaseClient<any> = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -183,7 +185,7 @@ async function main() {
   const { data: ministryProfile } = await supabase
     .from("profiles")
     .select("id")
-    .eq("email", "demo-ministry@agritrace.demo")
+    .eq("email", ministryOperatorEmail)
     .maybeSingle();
   const recordedBy = ministryProfile?.id ?? null;
 
@@ -214,7 +216,7 @@ async function main() {
   const { data: fieldAgent } = await supabase
     .from("profiles")
     .select("id")
-    .eq("email", "demo-field@agritrace.demo")
+    .eq("email", fieldOperatorEmail)
     .maybeSingle();
   const officerId = fieldAgent?.id ?? null;
 

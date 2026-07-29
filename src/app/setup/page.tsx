@@ -156,15 +156,12 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000`}</CodeBlock>
         </div>
 
         <div className="rounded-2xl border border-gray-200 bg-white p-5">
-          <div className="font-display text-[16px] text-gray-900">4) Seed demo data (optional)</div>
+          <div className="font-display text-[16px] text-gray-900">4) Provision unique users</div>
           <div className="mt-2 text-[12px] text-gray-700">
-            After schema is applied and service role key is set:
-            <div className="mt-2">
-              <CodeBlock>{`cd agritrace
-npm run seed:demo`}</CodeBlock>
-            </div>
-            This will also create demo Auth users for the “Try Demo Roles” buttons on{" "}
-            <span className="font-mono">/login</span>.
+            After the approved workforce identity migration is applied, sign in
+            as the bootstrap administrator and use <span className="font-mono">/admin/users</span>.
+            Supabase sends each user a private setup link. Shared role accounts
+            and temporary passwords are disabled.
           </div>
         </div>
 

@@ -88,6 +88,20 @@ test.describe("protected preview core", () => {
     expect(failures.consoleErrors).toEqual([]);
   });
 
+  test("login exposes no shared role credentials or demo sign-in controls", async ({ page }) => {
+    await page.goto("/login", { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("First-time users receive a secure invitation")).toBeVisible();
+    await expect(page.getByText("Demo access profiles")).toHaveCount(0);
+    await expect(page.locator("body")).not.toContainText("DemoPass");
+    await expect(page.locator("body")).not.toContainText("@agritrace.demo");
+  });
+
+  test("expired or invalid password-setup link fails clearly", async ({ page }) => {
+    await page.goto("/auth/complete?mode=invite", { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("This setup link is invalid or expired.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Set password and continue" })).toHaveCount(0);
+  });
+
   test("protected route redirects before rendering data", async ({ page }) => {
     const response = await page.goto("/command-center", {
       waitUntil: "domcontentloaded",

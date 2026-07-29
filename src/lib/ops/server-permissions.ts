@@ -1,6 +1,8 @@
 import type { OperationalActor } from "@/lib/ops/permissions";
 import { resolveOperationalActor } from "@/lib/ops/current-actor";
 import type { Profile } from "@/lib/supabase/types";
+import { assessOperationalAccess } from "@/lib/auth/access-readiness";
+import type { UserRole } from "@/lib/supabase/types";
 import { createClient } from "@/lib/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -68,11 +70,20 @@ export async function requireWorkflowPrincipal(): Promise<WorkflowPrincipal | Wo
       };
     }
 
-    const { data: profileRow, error: profileErr } = await supabase
+    let { data: profileRow, error: profileErr } = await supabase
       .from("profiles")
-      .select("id,email,full_name,role,organization_id,county,district,phone,is_active,created_at")
+      .select("id,email,full_name,role,organization_id,county,district,clan_or_field_area,phone,is_active,account_status,created_at")
       .eq("id", user.id)
       .maybeSingle();
+    if (profileErr) {
+      const legacy = await supabase
+        .from("profiles")
+        .select("id,email,full_name,role,organization_id,county,district,phone,is_active,created_at")
+        .eq("id", user.id)
+        .maybeSingle();
+      profileRow = legacy.data as typeof profileRow;
+      profileErr = legacy.error;
+    }
 
     if (profileErr || !profileRow) {
       console.error("[workflow] Profile lookup failed", profileErr?.message ?? "no row");
@@ -84,15 +95,25 @@ export async function requireWorkflowPrincipal(): Promise<WorkflowPrincipal | Wo
       };
     }
 
-    const profile = profileRow as Profile;
-    if (profile.is_active === false) {
+    const assignmentResult = await supabase
+      .from("profile_role_assignments")
+      .select("role")
+      .eq("profile_id", user.id)
+      .is("removed_at", null);
+    const assignedRoles =
+      assignmentResult.error || !assignmentResult.data
+        ? [profileRow.role as UserRole]
+        : assignmentResult.data.map((item: { role: UserRole }) => item.role);
+    const readiness = assessOperationalAccess(profileRow, assignedRoles);
+    if (!readiness.ok) {
       return {
         ok: false,
         status: 403,
-        code: "inactive_profile",
-        message: "Operator account is inactive — workflow access is blocked.",
+        code: readiness.code === "account_inactive" ? "inactive_profile" : "missing_profile",
+        message: readiness.message,
       };
     }
+    const profile = { ...(profileRow as Profile), role: readiness.role };
     const actor = resolveOperationalActor(profile);
 
     return { ok: true, supabase, userId: user.id, profile, actor };

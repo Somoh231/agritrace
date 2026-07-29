@@ -7,6 +7,7 @@ import {
   isDonorObserverRole,
   isMinistryNationalRole,
 } from "@/lib/auth/operational-roles";
+import { assessOperationalAccess } from "@/lib/auth/access-readiness";
 import { API_ERROR_UNAUTHORIZED } from "@/lib/http/api-security";
 import { resolveRequestId, withRequestIdHeader } from "@/lib/http/request-context";
 import { createClient } from "@/lib/supabase/server";
@@ -43,16 +44,35 @@ export async function requireApiSession(request: Request): Promise<ApiSessionRes
       return { ok: false, response: jsonAuthError(requestId, 401, API_ERROR_UNAUTHORIZED) };
     }
 
-    const { data: profileRow, error } = await supabase
+    let { data: profileRow, error } = await supabase
       .from("profiles")
-      .select("id,email,full_name,role,organization_id,county,district,phone,is_active,created_at")
+      .select("id,email,full_name,role,organization_id,county,district,clan_or_field_area,phone,is_active,account_status,created_at")
       .eq("id", user.id)
       .maybeSingle();
+    if (error) {
+      const legacy = await supabase
+        .from("profiles")
+        .select("id,email,full_name,role,organization_id,county,district,phone,is_active,created_at")
+        .eq("id", user.id)
+        .maybeSingle();
+      profileRow = legacy.data as typeof profileRow;
+      error = legacy.error;
+    }
 
     if (error || !profileRow) {
       return { ok: false, response: jsonAuthError(requestId, 403, "Forbidden") };
     }
-    if (profileRow.is_active === false) {
+    const roleResult = await supabase
+      .from("profile_role_assignments")
+      .select("role")
+      .eq("profile_id", user.id)
+      .is("removed_at", null);
+    const assignedRoles =
+      roleResult.error || !roleResult.data
+        ? [profileRow.role as UserRole]
+        : roleResult.data.map((item: { role: UserRole }) => item.role);
+    const readiness = assessOperationalAccess(profileRow, assignedRoles);
+    if (!readiness.ok) {
       return { ok: false, response: jsonAuthError(requestId, 403, "Forbidden") };
     }
 
@@ -60,7 +80,7 @@ export async function requireApiSession(request: Request): Promise<ApiSessionRes
       ok: true,
       session: {
         userId: user.id,
-        role: profileRow.role as UserRole,
+        role: readiness.role,
         profile: profileRow as Profile,
         requestId,
       },

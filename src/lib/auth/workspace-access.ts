@@ -222,6 +222,7 @@ export function needsPilotRoleGate(pathname: string): boolean {
 type PilotRule = { prefix: string; canAccess: (role: UserRole) => boolean };
 
 const PILOT_ROUTE_RULES: PilotRule[] = [
+  { prefix: "/workspace/select", canAccess: () => true },
   { prefix: "/gis-intelligence", canAccess: (r) => canAccessAdvancedGisIntelligence(r) },
   { prefix: "/admin", canAccess: (r) => isAdminConsoleRole(r) },
   { prefix: "/command-center", canAccess: (r) => canAccessNationalCommandCenter(r) },

@@ -64,10 +64,29 @@ export interface Profile {
   organization_id: string | null;
   county: string | null;
   district?: string | null;
+  clan_or_field_area?: string | null;
   phone: string | null;
+  employee_or_staff_id?: string | null;
+  job_title?: string | null;
+  department?: string | null;
+  account_status?: "incomplete" | "invited" | "active" | "inactive";
   is_active?: boolean;
+  invited_at?: string | null;
+  activated_at?: string | null;
   deactivated_at?: string | null;
+  provisioned_by?: string | null;
+  updated_at?: string;
   created_at: string;
+}
+
+export interface ProfileRoleAssignment {
+  id?: string;
+  profile_id: string;
+  role: UserRole;
+  is_primary: boolean;
+  assigned_by?: string | null;
+  assigned_at: string;
+  removed_at?: string | null;
 }
 
 export interface Organization {

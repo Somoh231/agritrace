@@ -1,4 +1,5 @@
 import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
+import { assessOperationalAccess } from "@/lib/auth/access-readiness";
 import { createClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/lib/supabase/types";
 
@@ -13,11 +14,35 @@ export async function requireAdminConsole(): Promise<
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, status: 401, message: "Not authenticated." };
 
-  const { data: profile } = await supabase.from("profiles").select("role,is_active").eq("id", user.id).maybeSingle();
+  let { data: profile, error } = await supabase
+    .from("profiles")
+    .select("role,is_active,account_status,organization_id,county,district,clan_or_field_area")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (error) {
+    const legacy = await supabase
+      .from("profiles")
+      .select("role,is_active,organization_id,county,district")
+      .eq("id", user.id)
+      .maybeSingle();
+    profile = legacy.data as typeof profile;
+    error = legacy.error;
+  }
+  const assignmentResult = await supabase
+    .from("profile_role_assignments")
+    .select("role")
+    .eq("profile_id", user.id)
+    .is("removed_at", null);
+  const roles =
+    assignmentResult.error || !assignmentResult.data
+      ? profile?.role
+        ? [profile.role as UserRole]
+        : []
+      : assignmentResult.data.map((item: { role: UserRole }) => item.role);
+  const readiness = error ? null : assessOperationalAccess(profile, roles);
 
-  const typedProfile = profile as { role: UserRole; is_active?: boolean | null } | null;
-  const role = typedProfile?.role;
-  if (!role || typedProfile?.is_active === false || !isAdminConsoleRole(role)) {
+  const role = readiness?.ok ? readiness.role : null;
+  if (!role || !isAdminConsoleRole(role)) {
     return { ok: false, status: 403, message: "Administrator access required." };
   }
 

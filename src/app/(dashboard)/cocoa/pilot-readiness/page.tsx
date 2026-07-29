@@ -61,7 +61,7 @@ export default async function CocoaPilotReadinessPage() {
 
   let dbOk = false;
   let dbDetail = "Not checked.";
-  let demoProfiles = 0;
+  let workforceProfiles = 0;
   let farmerRows = 0;
   let lotRows = 0;
   let adminRows = 0;
@@ -79,8 +79,8 @@ export default async function CocoaPilotReadinessPage() {
         dbOk = true;
         dbDetail = "Database responded to a profiles probe.";
 
-        const d = await supabase.from("profiles").select("id", { count: "exact", head: true }).ilike("full_name", "%(Demo)%");
-        if (!d.error) demoProfiles = d.count ?? 0;
+        const d = await supabase.from("profiles").select("id", { count: "exact", head: true }).eq("is_active", true);
+        if (!d.error) workforceProfiles = d.count ?? 0;
 
         const f = await supabase.from("farmers").select("id", { count: "exact", head: true });
         if (!f.error) farmerRows = f.count ?? 0;
@@ -113,12 +113,12 @@ export default async function CocoaPilotReadinessPage() {
 
   checks.push({
     id: "demo_users",
-    label: "Demo users created",
-    ok: demoProfiles >= 3,
+    label: "Unique workforce users provisioned",
+    ok: workforceProfiles >= 3,
     detail:
-      demoProfiles >= 3
-        ? `Found ${demoProfiles} profile(s) with “(Demo)” in full name (seed script pattern).`
-        : "Run npm run seed:demo (or your seed) so demo profiles appear, or adjust this check.",
+      workforceProfiles >= 3
+        ? `Found ${workforceProfiles} active operational profile(s).`
+        : "Invite unique workforce or QA identities through Admin → Users & Roles.",
   });
 
   checks.push({
