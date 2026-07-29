@@ -433,12 +433,41 @@ All admin routes require `requireAdminConsole()` — session + admin role.
     {
       "id": "...",
       "email": "officer@example.gov.lr",
-      "full_name": "District Officer",
-      "role": "dao_officer",
-      "county": "Bong",
-      "is_active": true
+      "profile": {
+        "full_name": "District Officer",
+        "organization_id": "...",
+        "county": "Bong",
+        "district": "Salala",
+        "account_status": "active"
+      },
+      "role_assignments": [
+        { "role": "dao_officer", "is_primary": true }
+      ],
+      "access_history": []
     }
   ]
+}
+```
+
+---
+
+### `POST /api/admin/users`
+
+Creates a unique Supabase Auth identity, sends a secure invitation, completes
+the linked profile, creates explicit roles, and writes provisioning audit
+events. Requires `super_admin`, `admin`, or `ministry_admin`; elevated role
+assignment is further restricted. No password or generated link is returned.
+
+```json
+{
+  "email": "qa.dao@example.org",
+  "full_name": "QA DAO Officer",
+  "roles": ["dao_officer"],
+  "primary_role": "dao_officer",
+  "organization_id": "organization-uuid",
+  "county": "Bong",
+  "district": "Salala",
+  "clan_or_field_area": null
 }
 ```
 
@@ -452,12 +481,26 @@ curl -X PATCH https://your-app.vercel.app/api/admin/users \
   -H "Cookie: <admin-session-cookie>" \
   -d '{
     "userId": "user-uuid",
-    "role": "dao_officer",
+    "roles": ["dao_officer", "auditor"],
+    "primary_role": "dao_officer",
+    "organization_id": "organization-uuid",
     "county": "Bong",
     "district": "Salala",
     "is_active": true
   }'
 ```
+
+---
+
+### `PUT /api/admin/users`
+
+Initiates a secure email action without returning a link:
+
+```json
+{ "userId": "user-uuid", "action": "resend_invitation" }
+```
+
+`action` is `resend_invitation` or `password_reset`.
 
 ---
 
@@ -680,7 +723,7 @@ curl -X POST https://your-app.vercel.app/api/workspace-demo-role \
 | `/api/reports/dds` | POST | **None** | — |
 | `/api/reports/compliance-oversight` | GET | **None** | — |
 | `/api/reports/donor-programme` | GET | **None** | — |
-| `/api/admin/users` | GET/PATCH | Admin | — |
+| `/api/admin/users` | GET/POST/PATCH/PUT | Provisioning admin | — |
 | `/api/admin/organizations` | GET/POST/PATCH | Admin | — |
 | `/api/admin/import` | POST | Admin | — |
 | `/api/admin/settings` | GET/PATCH | Admin | — |

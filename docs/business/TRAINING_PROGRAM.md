@@ -236,7 +236,7 @@ Each user must complete the checklist below before production access. Trainer si
 | Module | Duration | Content |
 |--------|----------|---------|
 | T1 — Adult learning | 60 min | Facilitation; hands-on ratio; common mistakes |
-| T2 — Demo environment | 60 min | Demo accounts; seed data; LIVE/DEMO disclosure script |
+| T2 — Demo environment | 60 min | Unique training accounts; seed data; LIVE/DEMO disclosure script |
 | T3 — CLAN co-delivery | 120 min | Co-teach Day 1 modules with master trainer |
 | T4 — DAO co-delivery | 60 min | Co-teach DAO modules |
 | T5 — Assessment | 60 min | Grade quiz; administer certification checklist |
@@ -270,7 +270,7 @@ Aligned with [IMPLEMENTATION_PLAYBOOK.md](./IMPLEMENTATION_PLAYBOOK.md) Phase 1 
 | Week −1 | Ministry 0.5-day | Ministry pilot users | Programme manager |
 | Week 0 | Refresher (optional) | Any uncertified users | County trainer |
 
-**Environment:** Staging URL with demo accounts; production access only after certification.
+**Environment:** Staging URL with unique training accounts; production access only after certification.
 
 ---
 

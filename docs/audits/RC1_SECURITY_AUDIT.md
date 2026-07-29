@@ -86,6 +86,16 @@ Warehouse records have county but no district, so DAO transfer visibility can be
 county-scoped only. This residual model limitation requires product/data-owner
 acceptance. SQL contract tests are prepared, but live RLS is not passed.
 
+## Workforce identity hardening
+
+Migration `20260729230000_workforce_identity_provisioning.sql` is intentionally
+unapplied. It replaces active default-role signup with an inactive/incomplete
+profile, removes self-service role/status updates, adds explicit role
+assignments and lifecycle fields, and constrains transactional role replacement
+to protected service-role server code. Shared login controls and shared demo
+credential seeding are disabled. Staging email flow and QA users remain blocked
+pending operator approval.
+
 ## Optional analytics resolution
 
 `analytics_events` is optional observability infrastructure. Known missing-table

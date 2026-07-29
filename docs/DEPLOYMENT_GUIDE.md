@@ -1,6 +1,6 @@
 # AgriVault Deployment Guide
 
-**Version:** 0.1.0-rc1  
+**Version:** 0.1.0-rc1
 **Related:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [SECURITY.md](./SECURITY.md) · [DATABASE.md](./DATABASE.md)
 
 ---
@@ -302,22 +302,23 @@ All seed scripts require `SUPABASE_SERVICE_ROLE_KEY`.
 npm run seed
 
 # Demo login accounts + pilot fixtures (training environments)
-npm run seed:demo
+Admin Users & Roles invitation workflow
 
 # Ministry canonical CSV fixtures
 npm run seed:ministry
 ```
 
-### Demo accounts (`seed:demo`)
+### Unique training accounts
 
 | Email | Role | Password | Landing |
 |-------|------|----------|---------|
-| `demo-ministry@agritrace.demo` | `ministry_officer` | `DemoPass!2026` | `/command-center` |
-| `demo-field@agritrace.demo` | `dao_officer` | `DemoPass!2026` | `/district-dashboard` |
-| `demo-exporter@agritrace.demo` | `exporter` | `DemoPass!2026` | `/cocoa/lots` |
-| `demo-coop@agritrace.demo` | `cooperative_manager` | `DemoPass!2026` | `/cocoa/farmers` |
+| `unique Ministry presenter account` | `ministry_officer` | `user-selected private password` | `/command-center` |
+| `unique DAO presenter account` | `dao_officer` | `user-selected private password` | `/district-dashboard` |
+| `unique Exporter presenter account` | `exporter` | `user-selected private password` | `/cocoa/lots` |
+| `unique Cooperative presenter account` | `cooperative_manager` | `user-selected private password` | `/cocoa/farmers` |
 
-Do not run `seed:demo` on production deployments with real user data.
+Provision every training user individually and keep training identities isolated
+from production operational data.
 
 ---
 
@@ -366,8 +367,8 @@ curl -s -o /dev/null -w "%{http_code}" \
 
 | Step | Action | Expected |
 |------|--------|----------|
-| 1 | Login as `demo-ministry@agritrace.demo` | Lands on `/command-center` |
-| 2 | Login as `demo-field@agritrace.demo` | Lands on `/district-dashboard` |
+| 1 | Login as `unique Ministry presenter account` | Lands on `/command-center` |
+| 2 | Login as `unique DAO presenter account` | Lands on `/district-dashboard` |
 | 3 | Navigate to `/map` | Mapbox tiles load (no CSP errors) |
 | 4 | Navigate to `/verification-queue` as DAO | Workflow action buttons visible |
 | 5 | Submit field report as CLAN | Appears in DAO verification queue |
@@ -435,7 +436,7 @@ graph TB
 | Sync never completes | Edge Function not deployed | `supabase functions deploy sync-batch` |
 | Workflow buttons disabled | Wrong role or demo fixture row | Confirm session role; check `submissionId` is real UUID |
 | 401 on all API routes | Session cookie not sent | Verify Supabase auth cookie domain matches deployment URL |
-| Demo login fails | Demo users not seeded | Run `npm run seed:demo` |
+| Demo login fails | Demo users not seeded | Run `Admin Users & Roles invitation workflow` |
 | PDF export 401 | Not authenticated | Sign in before calling `/api/reports/executive-briefing` |
 | Rate limit in dev | Previous test run | Wait 60 seconds; limits are per-instance |
 
@@ -450,7 +451,7 @@ Before Ministry pilot go-live:
 - [ ] `sync-batch` Edge Function deployed and tested
 - [ ] Mapbox token configured and maps load on staging
 - [ ] `npm run lint && npm run build && npm run test:workflow` pass
-- [ ] Demo accounts seeded (training) or production users provisioned
+- [ ] Unique training accounts seeded (training) or production users provisioned
 - [ ] HSTS confirmed on custom domain
 - [ ] CSP smoke: no console violations on login + maps + auth
 - [ ] Executive briefing PDF requires auth (401 without session)

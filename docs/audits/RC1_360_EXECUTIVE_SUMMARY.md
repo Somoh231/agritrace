@@ -4,7 +4,7 @@
 
 **GO FOR INTERNAL DEMO. NO-GO for controlled pilot or production promotion today.**
 
-The release candidate is materially safer and more truthful than baseline. It passes a clean install, lint, 42 focused workflow/security checks, two production builds, 22 desktop/mobile Playwright core checks, and a zero-vulnerability production dependency audit. The exact final preview build is Ready, its `/setup` route is an application-level 404 through Vercel CLI authentication, its health response is sanitized, all six report endpoints reject unauthenticated requests, and optional analytics degrades quietly. It is not pilot-releasable because interactive authenticated role/RLS/offline/GIS/export verification is blocked by protected-preview authentication and missing designated `QA_*` accounts, no disposable restore target is approved, and production remains stale with `/setup` returning 200.
+The release candidate is materially safer and more truthful than baseline. It passes a clean install, lint, 45 focused workflow/security checks, two production builds, 26 desktop/mobile Playwright core checks, and a zero-vulnerability production dependency audit. The exact final preview build is Ready, its `/setup` route is an application-level 404 through Vercel CLI authentication, its health response is sanitized, all six report endpoints reject unauthenticated requests, and optional analytics degrades quietly. It is not pilot-releasable because interactive authenticated role/RLS/offline/GIS/export verification is blocked by protected-preview authentication and missing designated `QA_*` accounts, no disposable restore target is approved, and production remains stale with `/setup` returning 200.
 
 ## Scorecard
 
@@ -45,7 +45,7 @@ The release candidate is materially safer and more truthful than baseline. It pa
 - Vercel CLI-authenticated application requests: `/setup` 404, `/api/health` 200 sanitized JSON, `/command-center` 307 to login, all six report endpoints 401 when unauthenticated, and optional analytics 204 `disabled`.
 - Browser requests land at Vercel/GitHub authentication, so interactive preview console/network and authenticated role scenarios are not passed.
 - The linked Supabase project remains unchanged at 11 remote migrations through `20260619120000`; the repository has one intentionally pending RLS migration, workflow tables exist, and `analytics_events` is absent.
-- Local Playwright: 22 core tests pass across desktop and mobile; 62 authenticated route checks skip due missing environment-only role credentials.
+- Local Playwright: 26 core tests pass across desktop and mobile; 62 authenticated route checks skip due missing environment-only role credentials.
 - The next controlled-pilot prerequisite check found all 18 requested local
   preview/bypass/role variables absent. Vercel Preview also has no bypass or QA
   account variables, and no disposable restore target is approved.

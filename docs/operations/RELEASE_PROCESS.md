@@ -1,7 +1,7 @@
 # AgriVault Release Process
 
-**Version:** 0.1.0-rc1  
-**Audience:** Ministry IT, vendor engineering, programme lead  
+**Version:** 0.1.0-rc1
+**Audience:** Ministry IT, vendor engineering, programme lead
 **Related:** [DEPLOYMENT_GUIDE.md](../DEPLOYMENT_GUIDE.md) · [RELEASE_NOTES_RC1.md](../RELEASE_NOTES_RC1.md) · [SECURITY.md](../SECURITY.md) · [RUNBOOK.md](./RUNBOOK.md)
 
 ---
@@ -111,8 +111,8 @@ supabase functions deploy sync-batch
 
 | # | Step | Expected | Doc reference |
 |---|------|----------|---------------|
-| 1 | Login `demo-ministry@agritrace.demo` | `/command-center` | [MINISTRY_GUIDE.md](../MINISTRY_GUIDE.md) |
-| 2 | Login `demo-field@agritrace.demo` | `/district-dashboard` | [DAO_GUIDE.md](../DAO_GUIDE.md) |
+| 1 | Login `unique Ministry presenter account` | `/command-center` | [MINISTRY_GUIDE.md](../MINISTRY_GUIDE.md) |
+| 2 | Login `unique DAO presenter account` | `/district-dashboard` | [DAO_GUIDE.md](../DAO_GUIDE.md) |
 | 3 | `/map` | Mapbox tiles; no CSP errors | [SECURITY.md](../SECURITY.md) |
 | 4 | `/verification-queue` as DAO | Workflow buttons enabled | [WORKFLOW_ENGINE.md](../WORKFLOW_ENGINE.md) |
 | 5 | CLAN field report submit | Appears in DAO queue | [CLAN_FIELD_GUIDE.md](../CLAN_FIELD_GUIDE.md) |

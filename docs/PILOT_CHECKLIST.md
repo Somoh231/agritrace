@@ -54,7 +54,7 @@ Use this checklist across three phases: **Pre-launch**, **During pilot**, and **
 - [ ] CAC accounts created (`county_agriculture_coordinator` / `county_officer`)
 - [ ] Ministry accounts created (`ministry_officer` / `ministry_admin`)
 - [ ] All users have matching `profiles` rows in Supabase
-- [ ] Demo accounts seeded (`npm run seed:demo`) for training
+- [ ] Unique training accounts seeded (`Admin Users & Roles invitation workflow`) for training
 - [ ] Role landing paths verified (each role reaches correct home page)
 
 ### Device and field readiness

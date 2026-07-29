@@ -183,7 +183,7 @@ UI surfaces: `/reports`, `/reports/ministry`, `/reports/export`, `/reports/pdf`,
 | Supabase SSR session in middleware | ✅ |
 | Dashboard layout auth redirect | ✅ |
 | Deep-link `?redirectTo=` | ✅ |
-| Demo accounts (`npm run seed:demo`) | ✅ |
+| Unique administrator-provisioned accounts | ✅ locally; staging migration/email proof pending |
 | Active profile role resolution; missing profiles fail closed | ✅ |
 | Supabase-unset bypass (dev only) | ⚠️ Middleware skips auth if env missing |
 
@@ -274,7 +274,7 @@ Prior foundation: pilot QA pass, enterprise UI consolidation, GIS/food-security 
 npm run lint
 npm run build
 npm run test:workflow
-npm run seed:demo        # training environments only
+npm run test:identity:rc1
 ```
 
 **Post-deploy smoke:**

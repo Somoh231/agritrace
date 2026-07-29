@@ -13,7 +13,7 @@ Goal: demonstrate credibility (visibility + chain-of-custody + integrity + compl
 ## 0:30–2:00 — Login as Ministry Officer → Rice dashboard
 
 1. Go to `/login`
-2. Click **Try Demo Roles → Ministry Officer**
+2. Sign in with the uniquely provisioned non-production Ministry presenter account.
 3. On `/rice` (presentation mode via `/demo`):
    - Point to top KPIs and county breakdown.
    - Show how the dashboard supports policy targeting and monitoring.
@@ -24,7 +24,7 @@ Optional (quick):
 ## 2:00–3:30 — Login as Exporter → Cocoa lots & movements
 
 1. Return to `/login`
-2. Click **Try Demo Roles → Exporter**
+2. Sign in with the uniquely provisioned non-production Exporter presenter account.
 3. On `/cocoa/lots`:
    - Explain lot register: “export-ready evidence starts at the lot.”
 4. Go to `/cocoa/movements`:
@@ -59,4 +59,3 @@ Optional (quick):
 - Start the demo from `/demo` so every page opens in presentation mode (`?present=1`) and shows the on-page demo rail (`?demo=1`).
 - If any DB add-on tables are missing, run the SQL files in Supabase (see `README.md`).
 - Use `/health` for quick environment validation.
-

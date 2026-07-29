@@ -1,8 +1,8 @@
 # AgriVault Ministry Pilot — Demo Script
 
-**Duration:** 45–60 minutes  
-**Audience:** Ministry leadership, donor partners, pilot stakeholders  
-**Presenter:** Pilot administrator or Ministry programme lead  
+**Duration:** 45–60 minutes
+**Audience:** Ministry leadership, donor partners, pilot stakeholders
+**Presenter:** Pilot administrator or Ministry programme lead
 **Version:** Pilot 1.0 · July 2026
 
 ---
@@ -12,17 +12,17 @@
 ### Environment checklist
 
 - [ ] Deployment URL accessible (staging or production)
-- [ ] `npm run seed:demo` completed
+- [ ] `Admin Users & Roles invitation workflow` completed
 - [ ] `NEXT_PUBLIC_MAPBOX_TOKEN` configured (for GPS demo)
 - [ ] Browser: Chrome or Edge (PWA install demo optional)
 - [ ] Second screen or projector for audience
 
-### Demo accounts
+### Unique training accounts
 
 | Role | Email | Password | Landing |
 |------|-------|----------|---------|
-| Ministry | `demo-ministry@agritrace.demo` | `DemoPass!2026` | `/command-center` |
-| DAO | `demo-field@agritrace.demo` | `DemoPass!2026` | `/district-dashboard` |
+| Ministry | `unique Ministry presenter account` | `user-selected private password` | `/command-center` |
+| DAO | `unique DAO presenter account` | `user-selected private password` | `/district-dashboard` |
 
 For CLAN and CAC segments, use pilot accounts provisioned by administrator or narrate from DAO/Ministry views.
 
@@ -34,7 +34,7 @@ For CLAN and CAC segments, use pilot accounts provisioned by administrator or na
 
 ## Act 1 — Ministry command view (10 min)
 
-**Login:** `demo-ministry@agritrace.demo`
+**Login:** `unique Ministry presenter account`
 
 ### Step 1: Command center
 
@@ -88,7 +88,7 @@ If Mapbox token is missing, **Say:** "Maps require a Mapbox token — configured
 
 ## Act 3 — District review (10 min)
 
-**Login:** `demo-field@agritrace.demo`
+**Login:** `unique DAO presenter account`
 
 ### Step 6: District dashboard
 
@@ -139,7 +139,7 @@ If Mapbox token is missing, **Say:** "Maps require a Mapbox token — configured
 
 ## Act 5 — Ministry approval and reporting (10 min)
 
-**Login:** `demo-ministry@agritrace.demo`
+**Login:** `unique Ministry presenter account`
 
 ### Step 12: Ministry verification
 
@@ -211,7 +211,7 @@ Prepare answers for:
 
 | Issue during demo | Recovery |
 |-------------------|----------|
-| Login fails | Re-run `npm run seed:demo`; check Supabase Auth |
+| Login fails | Re-run `Admin Users & Roles invitation workflow`; check Supabase Auth |
 | Map blank | Skip GPS live demo; show `/map` screenshot or narrate |
 | No items in verification queue | Use PILOT fixtures — explain badge; or submit from DAO form live |
 | Approve button disabled | Confirm demo account role; refresh page |

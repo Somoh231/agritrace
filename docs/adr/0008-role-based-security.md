@@ -131,7 +131,7 @@ Key prefixes: `/gis-intelligence` (Ministry + CAC), `/workspace/ministry` (Minis
 | Redirect vs 403 on deny | Redirect to role landing | Better UX; avoids dead-end pages |
 | County in profile vs JWT claim | Profile table + RLS helper | Admin-manageable; single source of truth |
 | Page-level asserts vs middleware only | Both | Deep links and RSC need page guards |
-| Demo accounts | Explicit seeded profiles only | Rotate or disable all training credentials before any external deployment |
+| Unique training accounts | Explicit seeded profiles only | Rotate or disable all training credentials before any external deployment |
 
 ---
 

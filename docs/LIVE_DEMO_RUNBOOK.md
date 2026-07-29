@@ -1,8 +1,8 @@
 # AgriVault Live Demo Runbook
 
-**Duration:** 30–45 minutes  
-**Audience:** Ministry leadership, county agriculture teams, donor partners, technical reviewers  
-**Version:** RC1 · 2026-07-03  
+**Duration:** 30–45 minutes
+**Audience:** Ministry leadership, county agriculture teams, donor partners, technical reviewers
+**Version:** RC1 · 2026-07-03
 **Presenter:** Pilot administrator or programme lead
 
 This runbook is the operator script for a live session. For a longer narrative demo (45–60 min), see [DEMO_SCRIPT.md](./DEMO_SCRIPT.md).
@@ -41,7 +41,7 @@ Complete **24 hours before** the session.
 | # | Task | Verify |
 |---|------|--------|
 | 1 | Deployment URL loads (`/health` returns green) | ☐ |
-| 2 | `npm run seed:demo` run on target environment | ☐ |
+| 2 | `Admin Users & Roles invitation workflow` run on target environment | ☐ |
 | 3 | `NEXT_PUBLIC_MAPBOX_TOKEN` set and maps load on staging | ☐ |
 | 4 | Supabase Edge Function `sync-batch` deployed | ☐ |
 | 5 | Executive briefing PDF downloads when logged in as Ministry | ☐ |
@@ -76,20 +76,20 @@ Complete **24 hours before** the session.
 
 ## Login roles
 
-### Seeded demo accounts (`npm run seed:demo`)
+### Individually provisioned training accounts (`Admin Users & Roles invitation workflow`)
 
-Password for all: `DemoPass!2026`
+Each account uses its own: `user-selected private password`
 
 | Role | Email | Lands on | Use in demo |
 |------|-------|----------|-------------|
-| Ministry Officer | `demo-ministry@agritrace.demo` | `/command-center` | Acts 1, 5, 6; can open county + field routes |
-| DAO Officer | `demo-field@agritrace.demo` | `/district-dashboard` | Acts 3–4 (district review) |
-| Exporter | `demo-exporter@agritrace.demo` | `/cocoa/lots` | Skip — outside pilot chain |
-| Cooperative | `demo-coop@agritrace.demo` | `/cocoa/farmers` | Skip — outside pilot chain |
+| Ministry Officer | `unique Ministry presenter account` | `/command-center` | Acts 1, 5, 6; can open county + field routes |
+| DAO Officer | `unique DAO presenter account` | `/district-dashboard` | Acts 3–4 (district review) |
+| Exporter | `unique Exporter presenter account` | `/cocoa/lots` | Skip — outside pilot chain |
+| Cooperative | `unique Cooperative presenter account` | `/cocoa/farmers` | Skip — outside pilot chain |
 
 ### CAC and CLAN accounts
 
-No CAC/CLAN demo accounts are seeded by default. Choose one:
+No CAC/CLAN unique training accounts are seeded by default. Choose one:
 
 | Option | How |
 |--------|-----|
@@ -135,7 +135,7 @@ No CAC/CLAN demo accounts are seeded by default. Choose one:
 
 ### Act 1 — National picture (5 min)
 
-**Login:** `demo-ministry@agritrace.demo`
+**Login:** `unique Ministry presenter account`
 
 1. **`/command-center`** — Point to KPI cards. Say: *"This is the national operations desk. Numbers come from Supabase where available."*
 2. **Data Source badge** — Pause on any badge. Say: *"LIVE means operational database. PILOT or DEMO means training fixtures — we never present those as live without saying so."*
@@ -160,7 +160,7 @@ No CAC/CLAN demo accounts are seeded by default. Choose one:
 
 ### Act 3 — District review (8 min)
 
-**Logout → Login:** `demo-field@agritrace.demo`
+**Logout → Login:** `unique DAO presenter account`
 
 1. **`/district-dashboard`** — Open operations drawer. Say: *"DAO desk — forms and KPIs in one place."*
 2. **`/verification-queue`** — Find row with **LIVE** badge and `dao_review` (or `submitted`). Say: *"CLAN submissions land here. DAO approves, requests corrections, rejects, or escalates."*
@@ -183,7 +183,7 @@ No CAC/CLAN demo accounts are seeded by default. Choose one:
 
 ### Act 5 — Ministry approve and report (8 min)
 
-**Login:** `demo-ministry@agritrace.demo`
+**Login:** `unique Ministry presenter account`
 
 1. **`/verification-queue`** — Filter `ministry_review` or `escalated`. Approve one item. Say: *"`ministry_approved` is terminal — fully auditable."*
 2. **`/executive-briefing`** — Walk KPI narrative. Say: *"CAC and Ministry use this for leadership meetings."*
@@ -201,10 +201,10 @@ Recap:
 CLAN → DAO → CAC → Ministry
 ```
 
-- Offline-first field capture  
-- Server-validated workflow (29 automated checks)  
-- Data source disclosure on every merged surface  
-- Role separation enforced in middleware and database  
+- Offline-first field capture
+- Server-validated workflow (29 automated checks)
+- Data source disclosure on every merged surface
+- Role separation enforced in middleware and database
 
 Point technical reviewers to [ARCHITECTURE.md](./ARCHITECTURE.md) and [RELEASE_NOTES_RC1.md](./RELEASE_NOTES_RC1.md).
 
@@ -310,7 +310,7 @@ Full list: [KNOWN_LIMITATIONS.md](./KNOWN_LIMITATIONS.md)
 
 ### Login failure
 
-1. Re-run `npm run seed:demo` on environment.
+1. Re-run `Admin Users & Roles invitation workflow` on environment.
 2. Verify Supabase Auth dashboard — users exist.
 3. Fall back to narrated demo using [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) screenshots.
 

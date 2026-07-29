@@ -1,7 +1,7 @@
 # AgriVault Ministry Pilot — Administrator Guide
 
-**Audience:** Pilot administrators, IT leads, and Ministry programme managers  
-**Version:** Pilot 1.0 · July 2026  
+**Audience:** Pilot administrators, IT leads, and Ministry programme managers
+**Version:** Pilot 1.0 · July 2026
 **Application:** AgriVault (`agritrace`)
 
 ---
@@ -83,16 +83,16 @@ Deep-link return after auth:
 
 Additional roles (`warehouse_manager`, `cooperative_manager`, `exporter`, `donor_observer`, `auditor`) exist for logistics and oversight but are outside the core CLAN→DAO→CAC→Ministry chain.
 
-### Demo accounts (training only)
+### Unique training accounts (training only)
 
-Run `npm run seed:demo` on the deployment environment, then use:
+Run `Admin Users & Roles invitation workflow` on the deployment environment, then use:
 
 | Account | Password | Lands on |
 |---------|----------|----------|
-| `demo-ministry@agritrace.demo` | `DemoPass!2026` | `/command-center` |
-| `demo-field@agritrace.demo` | `DemoPass!2026` | `/district-dashboard` |
-| `demo-exporter@agritrace.demo` | `DemoPass!2026` | `/cocoa/lots` |
-| `demo-coop@agritrace.demo` | `DemoPass!2026` | `/cocoa/farmers` |
+| `unique Ministry presenter account` | `user-selected private password` | `/command-center` |
+| `unique DAO presenter account` | `user-selected private password` | `/district-dashboard` |
+| `unique Exporter presenter account` | `user-selected private password` | `/cocoa/lots` |
+| `unique Cooperative presenter account` | `user-selected private password` | `/cocoa/farmers` |
 
 **Important:** Server APIs always use the session profile role from the database. The topbar **Workspace Role Switcher** is a UI preview only — it does not change server permissions.
 
@@ -119,7 +119,7 @@ See [production-readiness.md](./production-readiness.md) for CSP, rate limiting,
 
 - [ ] Confirm all pilot users exist in Supabase Auth + `profiles`
 - [ ] Verify Mapbox token is set on staging/production
-- [ ] Run `npm run seed:demo` if using demo accounts for training
+- [ ] Run `Admin Users & Roles invitation workflow` if using unique training accounts for training
 - [ ] Confirm Supabase Edge Function `sync-batch` is deployed (offline sync)
 - [ ] Brief CLAN technicians on PWA install (see [CLAN_FIELD_GUIDE.md](./CLAN_FIELD_GUIDE.md))
 

@@ -93,3 +93,17 @@
 - Added static migration-contract and applied-schema SQL contract tests.
 - Did not create QA users, apply SQL, seed records, alter Vercel protection,
   restore a database, touch production, or modify `main`.
+
+## Wave 5 — administrator-provisioned workforce identity
+
+- Disabled shared login controls and shared demo-account seeding.
+- Added invitation-only Supabase Auth provisioning with duplicate prevention,
+  server-side permission checks, safe compensation, and provider-safe errors.
+- Added explicit multi-role assignments, primary-role selection, organization
+  and geography readiness checks, activation/deactivation, password recovery,
+  and access history.
+- Replaced active default-role signup with an inactive/incomplete profile in a
+  versioned, unapplied migration and removed the self role/status update policy.
+- Added workforce validation and migration-contract tests.
+- Did not apply migrations, create users, change Auth settings, or touch
+  production.

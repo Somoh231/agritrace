@@ -21,7 +21,7 @@
 | Production dependency audit | 0 vulnerabilities |
 | Full dependency audit | Fail: 9 high, development lint chain |
 | Route inventory | 147 records generated |
-| RC1 Playwright core | 22/22 pass at 1440×900 and 390×844; 62 authenticated cases skip without `QA_*` credentials |
+| RC1 Playwright core | 26/26 pass at 1440×900 and 390×844; 62 authenticated cases skip without `QA_*` credentials |
 
 ## Local browser scenarios
 

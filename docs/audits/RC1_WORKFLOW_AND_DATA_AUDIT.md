@@ -52,7 +52,7 @@ database-owner evidence for those runtime controls.
   inactive/missing-profile fail-closed behavior, read-only roles, replay/dedupe,
   and workflow mutation rejection remain **not proved in the linked runtime**.
 
-The 29 workflow and 13 security model checks pass, but unit policy behavior is
+The 29 workflow and 16 security model checks pass, but unit policy behavior is
 not a substitute for deployed PostgreSQL RLS evidence.
 
 ## Controlled-pilot RLS continuation

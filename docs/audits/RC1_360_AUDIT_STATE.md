@@ -8,12 +8,12 @@ Last updated: 2026-07-29
 | --- | --- |
 | Current phase | `CONTROLLED_PILOT_GATES_BLOCKED` |
 | Current audit cycle | `4` |
-| Active workstream | Controlled-pilot prerequisite audit complete; optional analytics repaired and pending RLS hardening prepared |
+| Active workstream | Workforce identity complete locally; RLS and identity migrations pending approved staging |
 | Branch | `audit/rc1-360-agentic-qa` |
 | Baseline | `c69b4598fe96fbbf4a968922739e4af0a227c8dc` |
 | Routes inspected | 147 inventoried: 124 pages and 23 APIs; targeted browser coverage across public, auth, command, role-denial, workflow, transfer, admin, health, and setup families |
 | Findings severity | P0: 0 open; P1: 2 open; P2: 7 open; P3: 8 open |
-| Tests | Clean install pass; lint pass; 42 workflow/security checks pass; RLS migration contract passes; 22 Playwright core checks pass and 62 credential-gated checks skip |
+| Tests | Clean install pass; lint pass; 45 workflow/security checks pass; RLS and workforce identity migration contracts pass; 26 Playwright core checks pass and 62 credential-gated checks skip |
 | Browser | Local production-mode core passes at desktop/mobile; interactive preview is blocked by Vercel SSO; CLI-authenticated preview core routes are verified |
 | Blockers | All requested protected-preview/QA variables absent; no disposable restore target; live RLS/offline/GIS/export-role matrix unproved; pending RLS migration not applied; stale production `/setup` |
 | Local verdict | `GO FOR INTERNAL DEMO` |
@@ -50,14 +50,14 @@ Last updated: 2026-07-29
 
 - `npm run lint` — pass, zero warnings.
 - `npm ci` — pass; Node 22 locally does not satisfy the repository's `20.x` engine declaration.
-- `npm run test:workflow` — pass: 29 workflow + 13 security checks.
+- `npm run test:workflow` — pass: 29 workflow + 16 security checks.
 - `npm run build` — pass on Next.js 15.5.21; 134 static-generation steps.
 - Sentry-enabled build with a non-secret test DSN — pass; configuration deprecation warnings and a shared-JS increase are recorded as P2 follow-up.
 - `npm audit --omit=dev --json` — 0 production vulnerabilities.
 - Full `npm audit --json` — 9 high findings in the ESLint/plugin development chain; no runtime dependency finding.
 - Local browser QA — pass for public shell, invalid/valid login, logout, protected redirects, role denial, corrected exporter navigation, mobile menu focus/Escape, clean console.
 - Responsive dimensions — 1440×900, 1280×800, 1024×768, 768×1024, 390×844, 360×800; no horizontal overflow on the authenticated command center.
-- RC1 Playwright core — 22/22 pass across 1440×900 and 390×844; 62 authenticated route cases skip because no `QA_*` credentials are configured.
+- RC1 Playwright core — 26/26 pass across 1440×900 and 390×844; 62 authenticated route cases skip because no `QA_*` credentials are configured.
 - Preview deployment `dpl_E86xDN1oHoNcbrq6DqQSSCUdJDWw` is Ready and build logs directly identify branch `audit/rc1-360-agentic-qa`, commit `7f45178`, Node 20.x, and Next 15.5.21.
 - CLI-authenticated preview requests prove application `/setup` 404, `/api/health` 200 sanitized JSON, `/command-center` 307 to login, all six report endpoints 401 when unauthenticated, and `/api/analytics` 204 with `X-Agrivault-Analytics-Status: disabled`.
 - Browser preview requests land on Vercel authentication; neither the Vercel nor GitHub browser session is authenticated. Status: **BLOCKED — VERCEL DEPLOYMENT PROTECTION AUTHENTICATION UNAVAILABLE**.
@@ -72,8 +72,13 @@ Last updated: 2026-07-29
   orders to every authenticated user. Migration
   `20260729220000_rc1_geography_rls_hardening.sql` narrows transfer, field-report,
   and geo policies but is intentionally not applied.
-- Repository migration state is now 12 local/11 remote by design; the new RLS
-  migration requires operator approval and disposable-project/live-role tests.
+- The RLS hardening migration first moved repository state to 12 local/11
+  remote by design; it requires operator approval and disposable-project/live-role tests.
+- Workforce identity now uses unique Auth invitations, explicit role
+  assignments, primary-role selection, organization/geography readiness,
+  lifecycle status, deactivation, recovery, and audit events. Its
+  `20260729230000` migration is also unapplied, so the repository is now 13
+  local/11 remote pending staging approval.
 - Production `https://agrivaultdata.com/setup` still returns 200. Production was not changed.
 
 ## Safety constraints observed

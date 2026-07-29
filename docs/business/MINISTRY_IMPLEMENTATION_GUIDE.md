@@ -118,7 +118,7 @@ Complete all items before requesting go-live approval from the Steering Committe
 | O1 | CLAN device inventory with GPS capability confirmed | County CAC | Device list with IMEI/serial |
 | O2 | Field connectivity plan (mobile data hotspots for sync days) | County CAC | Written plan |
 | O3 | Training sessions scheduled for all four role groups | Programme lead | Training calendar |
-| O4 | Demo accounts seeded for training rehearsals | Programme lead | `npm run seed:demo` on deployment |
+| O4 | Unique training accounts seeded for training rehearsals | Programme lead | `Admin Users & Roles invitation workflow` on deployment |
 | O5 | Role guides distributed in print or PDF | Programme lead | Distribution log |
 
 ---
@@ -178,7 +178,7 @@ values (
 
 First super admin bootstrap: see [../DEPLOYMENT_GUIDE.md](../DEPLOYMENT_GUIDE.md) § First super admin.
 
-Demo accounts: seed with `npm run seed:demo` per [../PILOT_ADMIN_GUIDE.md](../PILOT_ADMIN_GUIDE.md). Not for operational data entry during live pilot.
+Unique training accounts: seed with `Admin Users & Roles invitation workflow` per [../PILOT_ADMIN_GUIDE.md](../PILOT_ADMIN_GUIDE.md). Not for operational data entry during live pilot.
 
 ---
 
@@ -260,7 +260,7 @@ Consolidated gate for county pilot activation. All sections must pass.
 - [ ] All four role groups provisioned for pilot county
 - [ ] Each user verified login and correct landing page
 - [ ] No shared credentials between users
-- [ ] Demo accounts available for training but segregated from live operations
+- [ ] Unique training accounts available for training but segregated from live operations
 - [ ] Admin console access restricted to `super_admin` / `admin` only
 
 ### Operational gate

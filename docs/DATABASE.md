@@ -1,7 +1,7 @@
 # AgriVault Database Reference
 
-**Engine:** Supabase PostgreSQL  
-**Version:** 0.1.0-rc1  
+**Engine:** Supabase PostgreSQL
+**Version:** 0.1.0-rc1
 **Related:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [WORKFLOW_ENGINE.md](./WORKFLOW_ENGINE.md) · [SECURITY.md](./SECURITY.md)
 
 ---
@@ -42,8 +42,8 @@ erDiagram
   warehouse_transfer_orders ||--o{ inventory_movements : tracks
 ```
 
-**Type definitions:** `src/lib/supabase/types.ts`  
-**Baseline schema:** `src/lib/supabase/schema.sql`  
+**Type definitions:** `src/lib/supabase/types.ts`
+**Baseline schema:** `src/lib/supabase/schema.sql`
 **Ordered migrations:** `supabase/migrations/*.sql`
 
 ---
@@ -486,19 +486,19 @@ interface RiceProductionRecord {
 | Command | Script | Purpose |
 |---------|--------|---------|
 | `npm run seed` | `src/lib/supabase/seed.ts` | Baseline geographic and reference data |
-| `npm run seed:demo` | `src/lib/supabase/seed-demo.ts` | Demo login accounts + pilot fixtures |
+| Admin → Users & Roles | Protected server workflow | Unique Auth invitations and operational profiles |
 | `npm run seed:ministry` | `src/lib/supabase/seed-ministry-canonical.ts` | Ministry canonical CSV fixtures |
 
 **Requires:** `SUPABASE_SERVICE_ROLE_KEY` in environment.
 
-Demo accounts created by `seed:demo`:
+Unique training accounts are invited through Admin → Users & Roles:
 
 | Email | Role | Password |
 |-------|------|----------|
-| `demo-ministry@agritrace.demo` | `ministry_officer` | `DemoPass!2026` |
-| `demo-field@agritrace.demo` | `dao_officer` | `DemoPass!2026` |
-| `demo-exporter@agritrace.demo` | `exporter` | `DemoPass!2026` |
-| `demo-coop@agritrace.demo` | `cooperative_manager` | `DemoPass!2026` |
+| `unique Ministry presenter account` | `ministry_officer` | `user-selected private password` |
+| `unique DAO presenter account` | `dao_officer` | `user-selected private password` |
+| `unique Exporter presenter account` | `exporter` | `user-selected private password` |
+| `unique Cooperative presenter account` | `cooperative_manager` | `user-selected private password` |
 
 See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for full setup procedure.
 

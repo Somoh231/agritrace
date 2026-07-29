@@ -1,6 +1,6 @@
 # AgriVault Security Reference
 
-**Version:** 0.1.0-rc1  
+**Version:** 0.1.0-rc1
 **Related:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [DATABASE.md](./DATABASE.md) · [API_GUIDE.md](./API_GUIDE.md)
 
 ---
@@ -88,10 +88,10 @@ const role = profile.role;
 
 Missing and inactive profiles fail closed. Demo seed accounts must have an explicit active `profiles` row; authentication alone never grants a synthetic role.
 
-### Demo accounts
+### Unique training accounts
 
-Created by `npm run seed:demo`. Password: `DemoPass!2026`.  
-Demo accounts are for training environments only — disable or rotate before production GA.
+Created by `Admin Users & Roles invitation workflow`. Password: `user-selected private password`.
+Unique training accounts are for training environments only — disable or rotate before production GA.
 
 ---
 
@@ -422,7 +422,7 @@ Documented in [KNOWN_LIMITATIONS.md](./KNOWN_LIMITATIONS.md) and [TECHNICAL_DEBT
 - [ ] All env vars set (no Supabase-unset bypass)
 - [ ] Service role key server-only (not in `NEXT_PUBLIC_*`)
 - [ ] Mapbox token scoped to deployment domain
-- [ ] Demo accounts disabled or password rotated for production
+- [ ] Unique training accounts disabled or password rotated for production
 - [ ] CSP verified — no console violations on login, maps, auth
 - [ ] HSTS confirmed on custom domain via `curl -I`
 - [ ] Rate limit smoke: 11th demo-inquiry within 1 min → 429

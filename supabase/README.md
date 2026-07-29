@@ -21,11 +21,13 @@ In Supabase Dashboard → **SQL**, paste and run **in filename order**:
 2. `migrations/20260207101000_auth_trigger_and_rls.sql`
 3. `migrations/20260208100000_orgs_locations_unique_for_upserts.sql`
 
-## Seed order
+## Synthetic data order
 
 ```bash
-npm run seed:demo    # demo Auth users, orgs, farmers, cocoa/rice demo graph (service role)
-npm run seed:national   # Liberia counties grid, pilot warehouses, inventory, rice pilot aggregates
+npm run seed:national   # approved staging only; requires unique operator emails
 ```
 
-Requires **`NEXT_PUBLIC_SUPABASE_URL`** and **`SUPABASE_SERVICE_ROLE_KEY`** locally or in CI (never expose the service role to the browser).
+Provision unique users through Admin → Users & Roles first. The national seed
+requires **`NEXT_PUBLIC_SUPABASE_URL`**, **`SUPABASE_SERVICE_ROLE_KEY`**,
+`SEED_MINISTRY_OPERATOR_EMAIL`, and `SEED_FIELD_OPERATOR_EMAIL` locally or in CI
+(never expose the service role to the browser).

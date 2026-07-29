@@ -1,6 +1,6 @@
 # AgriVault — Ministry Guide
 
-**Audience:** Ministry national staff (`ministry_admin`, `ministry_officer`, `government_officer`, `super_admin`, `admin`)  
+**Audience:** Ministry national staff (`ministry_admin`, `ministry_officer`, `government_officer`, `super_admin`, `admin`)
 **Version:** Pilot 1.0 · July 2026
 
 ---
@@ -21,8 +21,8 @@ CLAN → DAO → CAC → You (Ministry)
 2. Sign in with your Ministry credentials.
 3. You land on **`/command-center`** — the national operations desk.
 
-**Demo account (training):** `demo-ministry@agritrace.demo` / `DemoPass!2026` → `/command-center`  
-(Requires `npm run seed:demo`.)
+**Demo account (training):** `unique Ministry presenter account` / `user-selected private password` → `/command-center`
+(Requires `Admin Users & Roles invitation workflow`.)
 
 ---
 

@@ -42,14 +42,11 @@ Open Supabase → **SQL Editor** and run these files in order:
 
 Visit `http://localhost:3000/setup` to generate a copy/paste SQL snippet for the currently signed-in Supabase Auth user.
 
-### 5) Seed demo users + data
+### 5) Provision workforce users
 
-```bash
-cd agritrace
-npm run seed:demo
-```
-
-This creates the demo accounts used by the “Try Demo Roles” buttons on `/login`.
+Sign in as the approved bootstrap administrator, open `/admin/users`, and invite
+each unique workforce or QA identity. Users choose their own passwords from
+Supabase invitation links; shared role accounts are disabled.
 
 ### 6) Run the app (dev)
 
@@ -72,7 +69,6 @@ Open:
 - **start**: serve production build
 - **lint**: run ESLint
 - **seed**: seed baseline data (service role key required)
-- **seed:demo**: seed demo users + pilot data (service role key required)
 
 ## Test checklist (local)
 
@@ -85,7 +81,7 @@ Manual smoke test:
 - `/` renders public homepage
 - `/request-demo` submits successfully (requires `demo_inquiries` table + service role key)
 - `/demo` deep-links to dashboards in presentation mode
-- `/login` demo role buttons work (after `npm run seed:demo`)
+- `/login` accepts individually provisioned users and rejects incomplete profiles
 - `/admin/launch-readiness` shows checks and DB table presence
 
 ## Deploy (Vercel)
@@ -99,12 +95,8 @@ Manual smoke test:
    - `NEXT_PUBLIC_APP_URL` (set to your production URL, e.g. `https://<project>.vercel.app`)
 3. Deploy.
 4. In Supabase, apply all schema files (order above) to the production project.
-5. (Optional) Run demo seed locally against prod Supabase keys:
-
-```bash
-cd agritrace
-NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run seed:demo
-```
+5. Provision unique users through `/admin/users`; never seed shared credentials
+   against production.
 
 6. Confirm readiness:
 - Visit `/health`

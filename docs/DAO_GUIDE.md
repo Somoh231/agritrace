@@ -1,6 +1,6 @@
 # AgriVault — DAO Guide
 
-**Audience:** District Agriculture Officers (`dao_officer`, `district_officer`)  
+**Audience:** District Agriculture Officers (`dao_officer`, `district_officer`)
 **Version:** Pilot 1.0 · July 2026
 
 ---
@@ -21,8 +21,8 @@ CLAN → You (DAO) → CAC → Ministry
 2. Sign in with your district officer credentials.
 3. You land on **`/district-dashboard`** — your primary operations desk.
 
-**Demo account (training):** `demo-field@agritrace.demo` / `DemoPass!2026` → `/district-dashboard`  
-(Requires `npm run seed:demo` on the environment.)
+**Demo account (training):** `unique DAO presenter account` / `user-selected private password` → `/district-dashboard`
+(Requires `Admin Users & Roles invitation workflow` on the environment.)
 
 ---
 

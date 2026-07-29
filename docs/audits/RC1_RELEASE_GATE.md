@@ -11,10 +11,10 @@
 | Clean release branch and known baseline | PASS | Dedicated audit branch at `c69b459` |
 | Lint | PASS | Zero warnings |
 | Typecheck/production build | PASS | Next 15.5.21; 134 static-generation steps; with and without Sentry DSN |
-| Workflow/security unit checks | PASS | 29 + 13 |
+| Workflow/security unit checks | PASS | 29 + 16 |
 | Production dependency audit | PASS | 0 vulnerabilities |
 | Full dependency audit | FAIL | 9 high findings in development lint chain |
-| Local core browser regression | PASS | 22 Playwright checks across desktop/mobile; setup, health, login keyboard, redirect, axe, unauth exports |
+| Local core browser regression | PASS | 26 Playwright checks across desktop/mobile; setup, health, login keyboard, redirect, axe, unauth exports |
 | Preview browser authentication | BLOCKED | Vercel/GitHub browser sessions are signed out and no bypass secret is available |
 | Authenticated role matrix | NOT PROVEN | 62 route cases are harnessed but skip without designated environment-only credentials |
 | Controlled-pilot prerequisites | BLOCKED | `PREVIEW_BASE_URL`, bypass secret, all eight QA credential pairs, and approved restore target are absent |
@@ -26,7 +26,7 @@
 | Staging/production parity | FAIL | Production deployment is stale |
 | Production setup route restricted | FAIL | `https://agrivaultdata.com/setup` returns 200 |
 | Deployed database migration parity | PASS | Linked project remains 11/11 through `20260619120000` |
-| Repository migration parity | PENDING | 12 local/11 remote after preparing unapplied RLS migration `20260729220000` |
+| Repository migration parity | PENDING | 13 local/11 remote after preparing unapplied RLS `20260729220000` and workforce identity `20260729230000` migrations |
 | RLS behavior | FAIL / PENDING FIX | `USING (true)` exposes every transfer order to authenticated users; scoped migration prepared, not applied or live-tested |
 | Backup/restore evidence | BLOCKED | Drill defined; no approved disposable AgriVault restore target |
 | Offline replay/dedupe | NOT PROVEN | Requires authenticated CLAN preview context and authorized synthetic mutation |
@@ -34,6 +34,7 @@
 | Protected exports | PARTIAL | Unauthenticated methods protected; unauthorized/authorized role matrix and files unproved |
 | Observability | PARTIAL | Sentry builds pass but adds 88 kB shared JS and emits deprecations |
 | Optional usage analytics | PASS PREVIEW | Missing table returns quiet 204 `disabled` with an explicit status header; unexpected failures remain logged |
+| Workforce identity architecture | PASS LOCALLY / PENDING MIGRATION | Invitation-only server flow, explicit roles, fail-closed readiness, activation/deactivation, recovery and audit coverage implemented; staging schema/email flow unproved |
 
 ## Required actions before pilot approval
 
@@ -47,6 +48,9 @@
 8. Review and approve the pending RLS migration, apply it only to an approved
    disposable/staging project, run the SQL contract and normal-user two-geography
    matrix, then reconcile migration history.
+9. Review and apply `20260729230000_workforce_identity_provisioning.sql` only to
+   approved staging, configure exact Auth redirects/SMTP, provision unique QA
+   users, and execute `RC1_WORKFORCE_IDENTITY.md`.
 
 ## Source-control decision
 
