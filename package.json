@@ -11,6 +11,8 @@
     "postbuild": "node scripts/postbuild-fix-nft-manifests.mjs",
     "start": "next start",
     "lint": "eslint",
+    "test:e2e:rc1": "playwright test --config=playwright.config.ts",
+    "test:e2e:rc1:preview": "test -n \"$PREVIEW_BASE_URL\" && playwright test --config=playwright.config.ts",
     "seed": "tsx src/lib/supabase/seed.ts",
     "seed:demo": "tsx src/lib/supabase/seed-demo.ts",
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
@@ -43,6 +45,8 @@
     "workbox-window": "^7.4.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.62.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -56,7 +60,7 @@
     "tsx": "^4.21.0",
     "typescript": "^5"
   },
-    "overrides": {
+  "overrides": {
     "@supabase/realtime-js": {
       "ws": "8.21.0"
     },

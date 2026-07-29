@@ -12,7 +12,15 @@ const eslintConfig = [
     },
   },
   {
-    ignores: [".next/**", "out/**", "build/**", "next-env.d.ts", "public/sw.js"],
+    ignores: [
+      ".next/**",
+      "out/**",
+      "build/**",
+      "next-env.d.ts",
+      "public/sw.js",
+      "playwright-report/**",
+      "test-results/**",
+    ],
   },
 ];
 
