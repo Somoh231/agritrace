@@ -40,7 +40,7 @@ export default function Topbar({
   profile: Profile;
   authenticRole: UserRole;
   effectiveRole: UserRole;
-  primaryAction: { label: string; onClick: () => void };
+  primaryAction: { label: string; onClick: () => void } | null;
   onExportPdf: () => void;
   onOpenMobileNav?: () => void;
 }) {
@@ -124,7 +124,10 @@ export default function Topbar({
         <NotificationsMenu />
 
         <details className="relative group">
-          <summary className="list-none h-9 w-9 rounded-lg border border-slate-200 bg-white text-slate-700 inline-flex items-center justify-center cursor-pointer hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
+          <summary
+            aria-label="Open workspace tools"
+            className="list-none h-9 w-9 rounded-lg border border-slate-200 bg-white text-slate-700 inline-flex items-center justify-center cursor-pointer hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 [&::-webkit-details-marker]:hidden"
+          >
             <span className="text-[16px] leading-none">⋯</span>
           </summary>
           <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl">
@@ -151,7 +154,9 @@ export default function Topbar({
                 router.push(next.pathname + "?" + sp.toString());
               }}
             />
-            <ToolItem label={`Action · ${primaryAction.label}`} onClick={primaryAction.onClick} />
+            {primaryAction ? (
+              <ToolItem label={`Action · ${primaryAction.label}`} onClick={primaryAction.onClick} />
+            ) : null}
           </div>
         </details>
 
@@ -181,13 +186,15 @@ export default function Topbar({
           initials={initialsFromName(profile?.full_name || "User")}
         />
 
-        <button
-          type="button"
-          onClick={primaryAction.onClick}
-          className="hidden sm:inline-flex btn-emerald h-9 px-3.5 rounded-lg text-[12px]"
-        >
-          {primaryAction.label}
-        </button>
+        {primaryAction ? (
+          <button
+            type="button"
+            onClick={primaryAction.onClick}
+            className="hidden sm:inline-flex btn-emerald h-9 px-3.5 rounded-lg text-[12px]"
+          >
+            {primaryAction.label}
+          </button>
+        ) : null}
       </div>
       <div className="w-full xl:hidden border-t border-slate-100 pt-2 pb-1">
         <ClientErrorBoundary

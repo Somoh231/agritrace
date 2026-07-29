@@ -60,26 +60,24 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
     };
   }, [county]);
 
-  /**
-   * Persists the decision through the audited workflow API when the row maps to
-   * a real submission; otherwise the optimistic patch stands as temporary UI
-   * state (demo seeds). Reverts on server rejection.
-   */
+  /** Persists decisions only for rows backed by a live operational submission. */
   const decide = React.useCallback(
     async (row: CaoApprovalItem, action: WorkflowAction, nextStatus: CaoApprovalStatus, detailSuffix?: string) => {
       if (readOnly) return;
+      if (!row.submissionId || !UUID_RE.test(row.submissionId)) {
+        setError("Pilot training rows are read-only. Select a live operational submission to record a CAC decision.");
+        return;
+      }
       const prevStatus = row.status;
       setItems((prev) =>
         prev.map((x) =>
           x.id === row.id ? { ...x, status: nextStatus, detail: detailSuffix ? `${x.detail} · ${detailSuffix}` : x.detail } : x,
         ),
       );
-      if (row.submissionId && UUID_RE.test(row.submissionId)) {
-        const res = await postWorkflowAction({ action, submissionId: row.submissionId, note: detailSuffix });
-        if (!res.ok) {
-          setError(res.message);
-          setItems((prev) => prev.map((x) => (x.id === row.id ? { ...x, status: prevStatus } : x)));
-        }
+      const res = await postWorkflowAction({ action, submissionId: row.submissionId, note: detailSuffix });
+      if (!res.ok) {
+        setError(res.message);
+        setItems((prev) => prev.map((x) => (x.id === row.id ? { ...x, status: prevStatus } : x)));
       }
     },
     [readOnly],
@@ -98,7 +96,7 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
           <h2 className="text-[15px] font-semibold text-ink-900">CAC approval queues</h2>
           <p className="mt-1 text-[12px] text-slate-600">
             County-scoped supervisory actions — statuses mirror ministry routing. Decisions on rows backed by a real submission persist via the audited
-            workflow engine; demo seed rows update locally as temporary UI state.
+            workflow engine; pilot training rows remain visibly read-only.
           </p>
         </div>
         <label className="flex items-center gap-2 text-[11px] text-slate-600">
@@ -164,7 +162,7 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
                 </div>
                 <p className="text-[12px] leading-relaxed text-slate-600">{row.detail}</p>
               </div>
-              {!readOnly ? (
+              {!readOnly && row.submissionId && UUID_RE.test(row.submissionId) ? (
                 <div className="flex shrink-0 flex-wrap gap-2">
                   <button type="button" onClick={() => void decide(row, "approve", "approved")} className="rounded-lg bg-forest-800 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-forest-700">
                     Approve
@@ -189,32 +187,11 @@ export default function CaoApprovalQueues({ county, readOnly }: { county: string
                   >
                     Assign investigation
                   </button>
-                  {row.queue === "warehouse_replenishment" ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setItems((prev) => [
-                          ...prev,
-                          {
-                            id: `cac-repl-${Date.now()}`,
-                            queue: "warehouse_replenishment",
-                            title: "Triggered replenishment workflow",
-                            district: row.district,
-                            submittedBy: "CAC routing",
-                            submittedAt: new Date().toISOString(),
-                            status: "pending",
-                            detail: `Derived from ${row.id} — ministry logistics notified (demo).`,
-                          },
-                        ])
-                      }
-                      className="rounded-lg border border-forest-200 bg-forest-50 px-3 py-1.5 text-[11px] text-forest-800 hover:bg-forest-100"
-                    >
-                      Trigger warehouse request
-                    </button>
-                  ) : null}
                 </div>
               ) : (
-                <span className="text-[11px] text-slate-500">Read-only oversight mode</span>
+                <span className="text-[11px] text-slate-500">
+                  {readOnly ? "Read-only oversight mode" : "Pilot training row · no persistent actions"}
+                </span>
               )}
             </li>
           ))

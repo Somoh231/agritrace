@@ -1,5 +1,6 @@
 import type { UserRole } from "@/lib/supabase/types";
 
+import { assertPilotRouteAccess } from "@/lib/auth/workspace-access";
 import {
   CAC_COUNTY_ROLES,
   CLAN_FIELD_ROLES,
@@ -8,8 +9,8 @@ import {
   MINISTRY_NATIONAL_ROLES,
 } from "@/lib/auth/operational-roles";
 
-/** Safe default when profile.role is missing or invalid (matches ministry-wide read posture). */
-export const MINISTRY_NAV_FALLBACK_ROLE: UserRole = "ministry_officer";
+/** Least-privilege display fallback; authenticated workspaces reject missing profiles before this layer. */
+export const MINISTRY_NAV_FALLBACK_ROLE: UserRole = "auditor";
 
 const KNOWN_ROLES_SET = new Set<UserRole>([
   "super_admin",
@@ -206,7 +207,7 @@ export function ministryNavForRole(role: UserRole | null | undefined): MinistryN
   return MINISTRY_NAV.filter((s) => sectionVisible(r, s))
     .map((s) => ({
       ...s,
-      items: s.items.filter((i) => itemVisible(r, i)),
+      items: s.items.filter((i) => itemVisible(r, i) && assertPilotRouteAccess(r, i.href).ok),
     }))
     .filter((s) => s.items.length > 0);
 }

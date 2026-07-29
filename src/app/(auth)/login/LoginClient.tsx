@@ -7,9 +7,9 @@ import AlertBanner from "@/components/shared/AlertBanner";
 import MinistryBrandLogo from "@/components/brand/MinistryBrandLogo";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import { postLoginHomeForRole } from "@/lib/auth/post-login-home";
+import { safeInternalRedirect } from "@/lib/auth/safe-redirect";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { describeAuthFetchFailure } from "@/lib/supabase/env";
-import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
 import { track } from "@/lib/analytics/client";
 
 export default function LoginClient() {
@@ -21,6 +21,15 @@ export default function LoginClient() {
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    const reason = search.get("error");
+    if (reason === "profile_required") {
+      setError("Your sign-in is valid, but no Ministry operator profile is assigned. Contact an administrator.");
+    } else if (reason === "account_inactive") {
+      setError("This operator account is inactive. Contact an administrator.");
+    }
+  }, [search]);
 
   const onSignIn = async (creds?: { email: string; password: string; redirect?: string }) => {
     setError(null);
@@ -38,17 +47,30 @@ export default function LoginClient() {
         return;
       }
       track("login_success", { email_domain: nextEmail.split("@")[1] ?? "" });
-      let destination = creds?.redirect ?? redirectToParam ?? undefined;
-      if (!destination) {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user) {
-          const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-          destination = postLoginHomeForRole(resolveUserRoleWithDemoFallback(prof, user));
-        }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setError("Sign-in completed without a usable session. Please retry.");
+        return;
       }
-      router.push(destination ?? "/command-center");
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role,is_active")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (profileError || !profile?.role || profile.is_active === false) {
+        await supabase.auth.signOut();
+        setError(
+          profile?.is_active === false
+            ? "This operator account is inactive. Contact an administrator."
+            : "Your identity is authenticated, but no Ministry operator profile is assigned. Contact an administrator.",
+        );
+        return;
+      }
+      const roleHome = postLoginHomeForRole(profile.role);
+      const destination = safeInternalRedirect(creds?.redirect ?? redirectToParam, roleHome);
+      router.replace(destination);
       router.refresh();
     } catch (e) {
       const raw = e instanceof Error ? e.message : "Sign-in failed.";
@@ -95,14 +117,25 @@ export default function LoginClient() {
 
           <div className="cmd-rule my-4" aria-hidden />
 
-          <div className="space-y-3">
+          <form
+            className="space-y-3"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void onSignIn();
+            }}
+          >
             {error ? <AlertBanner severity="danger" message={error} /> : null}
 
             <div>
-              <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[rgb(var(--ministry-gold))]/70 mb-1.5">
+              <label
+                htmlFor="operator-email"
+                className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[rgb(var(--ministry-gold))]/70 mb-1.5"
+              >
                 Email
               </label>
               <input
+                id="operator-email"
+                name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 inputMode="email"
@@ -113,10 +146,15 @@ export default function LoginClient() {
             </div>
 
             <div>
-              <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[rgb(var(--ministry-gold))]/70 mb-1.5">
+              <label
+                htmlFor="operator-password"
+                className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[rgb(var(--ministry-gold))]/70 mb-1.5"
+              >
                 Password
               </label>
               <input
+                id="operator-password"
+                name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 type="password"
@@ -127,8 +165,7 @@ export default function LoginClient() {
             </div>
 
             <button
-              type="button"
-              onClick={() => onSignIn()}
+              type="submit"
               disabled={isLoading || !email || !password}
               className="h-12 w-full rounded-lg bg-gradient-to-b from-emerald-600 to-emerald-700 text-white text-[13px] font-semibold shadow-lg ring-1 ring-[rgb(var(--ministry-gold))]/30 hover:from-emerald-500 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
@@ -204,7 +241,7 @@ export default function LoginClient() {
               For first-time setup: create a user in Supabase Auth, then insert a matching row
               in <span className="font-mono text-emerald-100/60">profiles</span>.
             </div>
-          </div>
+          </form>
         </div>
 
         <div className="mt-4 text-center text-[10px] text-emerald-200/40 font-mono uppercase tracking-[0.18em]">
@@ -235,4 +272,3 @@ function DemoRoleButton({
     </button>
   );
 }
-

@@ -29,6 +29,9 @@ export default function TransferCustodyPanel({
 }) {
   const t = detail.raw;
   const tctx = transferOperationalContext(t);
+  const liveBacked = t.source === "supabase" && /^[0-9a-f-]{36}$/i.test(t.id);
+  const readOnlyReason =
+    "Canonical/offline transfer example — read-only in the national ledger. Persistent actions require a live Supabase transfer.";
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -99,7 +102,11 @@ export default function TransferCustodyPanel({
 
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Workflow actions</p>
-          <p className="mt-1 text-[11px] text-slate-500">Warehouse → County → Ministry custody chain. Actions emit audit_log when authenticated.</p>
+          <p className="mt-1 text-[11px] text-slate-500">
+            {liveBacked
+              ? "Warehouse → County → Ministry custody chain. Decisions persist with audit attribution."
+              : "Canonical/offline example · read-only. No custody decision will be simulated."}
+          </p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {(
               [
@@ -114,8 +121,8 @@ export default function TransferCustodyPanel({
             ).map(([action, label, perm, cls]) => (
               <OperationalWorkflowButton
                 key={action}
-                allowed={canPerform(actor, perm, tctx)}
-                disabledReason={explainPermission(actor, perm, tctx)}
+                allowed={liveBacked && canPerform(actor, perm, tctx)}
+                disabledReason={liveBacked ? explainPermission(actor, perm, tctx) : readOnlyReason}
                 onClick={() => onWorkflow(t.id, action)}
                 className={`rounded-md border px-2 py-1 text-[10px] font-medium hover:opacity-90 ${cls}`}
               >

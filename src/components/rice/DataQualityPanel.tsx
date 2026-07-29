@@ -6,7 +6,6 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import Drawer from "@/components/shared/Drawer";
 import ProgressBar from "@/components/shared/ProgressBar";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { UserRole } from "@/lib/supabase/types";
 
 type RegRow = {
@@ -107,19 +106,14 @@ export default function DataQualityPanel() {
         return;
       }
       const { data: prof, error: pErr } = await supabase.from("profiles").select("role").eq("id", uid).single();
-      let role: UserRole | undefined = (prof as { role?: UserRole } | null)?.role;
-      if (!prof) {
-        // TEMP DEMO FALLBACK — allow panel shell when profiles row is missing
-        role = buildDemoProfileForAuthUser({ id: uid }).role;
-      } else if (pErr) {
-        throw pErr;
-      }
+      if (pErr || !prof) throw new Error("An assigned operator profile is required.");
+      const role: UserRole | undefined = (prof as { role?: UserRole }).role;
       const ok =
         role === "super_admin" ||
         role === "ministry_admin" ||
         role === "ministry_officer" ||
         role === "government_officer" ||
-        role === "admin"; // TEMP DEMO FALLBACK
+        role === "admin";
       setAllowed(ok);
       if (!ok) return;
 
@@ -423,4 +417,3 @@ export default function DataQualityPanel() {
     </div>
   );
 }
-

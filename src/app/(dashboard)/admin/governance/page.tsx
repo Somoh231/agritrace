@@ -41,7 +41,7 @@ export default async function GovernancePage() {
         <Card title="Roles & permissions matrix" subtitle="Review and update role assignments and account state.">
           <div className="space-y-2 text-[12px] text-gray-700">
             {[
-              "super_admin / admin: full console access (admin also used as TEMP DEMO FALLBACK)",
+              "super_admin / admin: full console access for explicitly provisioned active profiles",
               "ministry_admin / ministry_officer / government_officer: national ministry operations",
               "county_agriculture_coordinator / county_officer (CAC): county verification and consolidation",
               "dao_officer / district_officer (DAO): district oversight and CLAN submission review",
@@ -119,4 +119,3 @@ function fmt(v: number | null) {
   if (v === null) return "—";
   return Intl.NumberFormat().format(v);
 }
-

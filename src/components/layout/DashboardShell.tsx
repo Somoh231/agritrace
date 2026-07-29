@@ -21,7 +21,7 @@ function initialsFromName(name: string) {
   return (first + last).toUpperCase();
 }
 
-function primaryActionForPath(pathname: string): { label: string; href?: string; event?: boolean } {
+function primaryActionForPath(pathname: string): { label: string; href?: string; event?: boolean } | null {
   if (pathname.startsWith("/farmers")) return { label: "Register farmer", event: true };
   if (pathname.startsWith("/cooperatives")) return { label: "Add cooperative", event: true };
   if (pathname.startsWith("/operations/warehouses")) return { label: "Create warehouse", event: true };
@@ -32,14 +32,13 @@ function primaryActionForPath(pathname: string): { label: string; href?: string;
   if (pathname.startsWith("/field/pest-reports")) return { label: "Pest / disease report", event: true };
   if (pathname.startsWith("/subsidies/verification")) return { label: "Verify beneficiary", event: true };
   if (pathname.startsWith("/production/rice")) return { label: "Record production", href: "/rice/production" };
-  if (pathname.startsWith("/compliance/audit-log")) return { label: "Refresh log", event: true };
   if (pathname.startsWith("/reports/pdf")) return { label: "Open PDF export", href: "/rice/reports" };
   if (pathname.startsWith("/admin/import")) return { label: "Import data", href: "/admin/import" };
-  if (pathname.startsWith("/district-dashboard")) return { label: "CLAN / DAO capture", event: true };
+  if (pathname.startsWith("/district-dashboard")) return { label: "CLAN / DAO capture", href: "/workspace/clan" };
   if (pathname.startsWith("/county-dashboard")) return { label: "CAC county briefing", href: "/executive-briefing" };
   if (pathname.startsWith("/command-center") || pathname.startsWith("/national-operations"))
     return { label: "Executive view", href: "/executive-briefing" };
-  return { label: "Workspace actions", event: true };
+  return null;
 }
 
 /** Outermost fallback if the dashboard shell tree throws during render/update. */
@@ -126,6 +125,41 @@ export default function DashboardShell({
   );
 
   const [mobileNav, setMobileNav] = React.useState(false);
+  const mobileNavRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!mobileNav) return;
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = mobileNavRef.current;
+    const selector =
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>(selector) ?? []);
+    focusable()[0]?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMobileNav(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const items = focusable();
+      if (!items.length) return;
+      const first = items[0]!;
+      const last = items[items.length - 1]!;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previous?.focus();
+    };
+  }, [mobileNav]);
 
   // Centralized page layout modes (command | table | admin | map).
   const layoutMode = React.useMemo(() => resolveLayoutMode(pathname), [pathname]);
@@ -171,7 +205,7 @@ export default function DashboardShell({
                 Exit presentation
               </button>
             </div>
-            <main className="min-h-screen p-4 md:p-8">{children}</main>
+            <main id="main-content" className="min-h-screen p-4 md:p-8">{children}</main>
           </div>,
         )}
       </DashboardShellFatalBoundary>
@@ -209,7 +243,7 @@ export default function DashboardShell({
                 Export PDF
               </a>
             </div>
-            <main className="briefing-print-root min-h-screen p-4 md:p-10">{children}</main>
+            <main id="main-content" className="briefing-print-root min-h-screen p-4 md:p-10">{children}</main>
           </div>,
         )}
       </DashboardShellFatalBoundary>
@@ -220,6 +254,12 @@ export default function DashboardShell({
     <DashboardShellFatalBoundary>
       {actorShell(
         <div className="gov-canvas overflow-x-hidden h-[100dvh]">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-slate-950 focus:shadow-xl"
+        >
+          Skip to main content
+        </a>
         <div className="grid grid-cols-1 md:grid-cols-[232px_minmax(0,1fr)] h-full overflow-hidden">
           <div className="hidden md:block h-full border-r border-[rgb(var(--ministry-gold))]/10 overflow-hidden">
             <div className="h-full overflow-y-auto overscroll-contain">
@@ -234,24 +274,34 @@ export default function DashboardShell({
               authenticRole={safeAuthenticRole}
               effectiveRole={safeEffectiveRole}
               onOpenMobileNav={() => setMobileNav(true)}
-              primaryAction={{
-                label: primary.label,
-                onClick: () => {
-                  if (primary.href) {
-                    router.push(primary.href);
-                    return;
-                  }
-                  if (typeof window !== "undefined") {
-                    window.dispatchEvent(new CustomEvent("agritrace-primary-action"));
-                  }
-                },
-              }}
+              primaryAction={
+                primary
+                  ? {
+                      label: primary.label,
+                      onClick: () => {
+                        if (primary.href) {
+                          router.push(primary.href);
+                          return;
+                        }
+                        if (primary.event && typeof window !== "undefined") {
+                          window.dispatchEvent(new CustomEvent("agritrace-primary-action"));
+                        }
+                      },
+                    }
+                  : null
+              }
               onExportPdf={() => {
                 if (typeof window !== "undefined") window.open(exportHref, "_blank", "noopener,noreferrer");
               }}
             />
             {mobileNav ? (
-              <div className="fixed inset-0 z-[70] lg:hidden">
+              <div
+                ref={mobileNavRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Ministry navigation"
+                className="fixed inset-0 z-[70] lg:hidden"
+              >
                 <button
                   type="button"
                   aria-label="Close navigation"
@@ -259,6 +309,13 @@ export default function DashboardShell({
                   onClick={() => setMobileNav(false)}
                 />
                 <div className="absolute left-0 top-0 bottom-0 w-[min(264px,92vw)] shadow-2xl border-r border-[rgb(var(--ministry-border))]/10 bg-[rgb(var(--ministry-sidebar))]">
+                  <button
+                    type="button"
+                    onClick={() => setMobileNav(false)}
+                    className="absolute right-2 top-2 z-10 inline-flex h-10 items-center rounded-lg border border-white/15 bg-white/10 px-3 text-xs font-semibold text-white hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                  >
+                    Close
+                  </button>
                   <MinistrySidebar
                     pathname={pathname}
                     onNavigate={(href) => {
@@ -271,14 +328,15 @@ export default function DashboardShell({
               </div>
             ) : null}
             {layoutMode === "map" ? (
-              <main className="flex-1 min-w-0 overflow-hidden">{children}</main>
+              <main id="main-content" className="flex-1 min-w-0 overflow-hidden">{children}</main>
             ) : layoutMode === "admin" ? (
-              <main className="flex-1 min-w-0 overflow-y-auto overscroll-contain bg-slate-50 text-slate-900">
+              <main id="main-content" className="flex-1 min-w-0 overflow-y-auto overscroll-contain bg-slate-50 text-slate-900">
                 <PilotBanner />
                 <div className={LAYOUT_CONTAINER_CLASS.admin}>{children}</div>
               </main>
             ) : (
               <main
+                id="main-content"
                 className={`flex-1 min-w-0 overflow-y-auto overscroll-contain ${
                   darkCanvas ? "" : "gov-canvas text-slate-900"
                 }`}

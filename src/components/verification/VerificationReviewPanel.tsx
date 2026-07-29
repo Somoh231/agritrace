@@ -29,6 +29,8 @@ export default function VerificationReviewPanel({
   const d = row._detail;
   const reviewer = String(row.assignedReviewer ?? "Reviewer");
   const vctx = verificationOperationalContext(row);
+  const liveBacked = Boolean(d.submissionId && /^[0-9a-f-]{36}$/i.test(d.submissionId));
+  const disabledReason = "Pilot training artefact — read-only. Workflow decisions require a live operational submission.";
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -114,44 +116,46 @@ export default function VerificationReviewPanel({
         <div className="rounded-xl border border-slate-200 bg-white p-4">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Workflow actions</p>
           <p className="mt-1 text-[11px] text-slate-500">
-            DAO → CAC → Ministry patterns enforced via reviewer attribution and audit_log inserts (best-effort).
+            {liveBacked
+              ? "DAO → CAC → Ministry decisions persist through the audited workflow engine."
+              : "Pilot training artefact · read-only. No decision is written for illustrative rows."}
           </p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             <OperationalWorkflowButton
-              allowed={canPerform(actor, "verification.approve", vctx)}
-              disabledReason={explainPermission(actor, "verification.approve", vctx)}
+              allowed={liveBacked && canPerform(actor, "verification.approve", vctx)}
+              disabledReason={liveBacked ? explainPermission(actor, "verification.approve", vctx) : disabledReason}
               onClick={() => void onAction(String(row.id), "approve", reviewer)}
               className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-medium text-emerald-800 hover:bg-emerald-100"
             >
               Approve
             </OperationalWorkflowButton>
             <OperationalWorkflowButton
-              allowed={canPerform(actor, "verification.reject", vctx)}
-              disabledReason={explainPermission(actor, "verification.reject", vctx)}
+              allowed={liveBacked && canPerform(actor, "verification.reject", vctx)}
+              disabledReason={liveBacked ? explainPermission(actor, "verification.reject", vctx) : disabledReason}
               onClick={() => void onAction(String(row.id), "reject", reviewer)}
               className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50"
             >
               Reject
             </OperationalWorkflowButton>
             <OperationalWorkflowButton
-              allowed={canPerform(actor, "verification.escalate", vctx)}
-              disabledReason={explainPermission(actor, "verification.escalate", vctx)}
+              allowed={liveBacked && canPerform(actor, "verification.escalate", vctx)}
+              disabledReason={liveBacked ? explainPermission(actor, "verification.escalate", vctx) : disabledReason}
               onClick={() => void onAction(String(row.id), "escalate", reviewer)}
               className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-900 hover:bg-amber-100"
             >
               Escalate
             </OperationalWorkflowButton>
             <OperationalWorkflowButton
-              allowed={canPerform(actor, "verification.request_revision", vctx)}
-              disabledReason={explainPermission(actor, "verification.request_revision", vctx)}
+              allowed={liveBacked && canPerform(actor, "verification.request_revision", vctx)}
+              disabledReason={liveBacked ? explainPermission(actor, "verification.request_revision", vctx) : disabledReason}
               onClick={() => void onAction(String(row.id), "revision", reviewer)}
               className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50"
             >
               Request revision
             </OperationalWorkflowButton>
             <OperationalWorkflowButton
-              allowed={canPerform(actor, "verification.assign_investigation", vctx)}
-              disabledReason={explainPermission(actor, "verification.assign_investigation", vctx)}
+              allowed={liveBacked && canPerform(actor, "verification.assign_investigation", vctx)}
+              disabledReason={liveBacked ? explainPermission(actor, "verification.assign_investigation", vctx) : disabledReason}
               onClick={() => void onAction(String(row.id), "investigate", reviewer)}
               className="rounded-md border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-[11px] font-medium text-violet-800 hover:bg-violet-100"
             >

@@ -41,7 +41,6 @@ import {
   explainPermission,
   type OperationalWorkflowAction,
 } from "@/lib/ops/permissions";
-import { postVerificationWorkflow } from "@/lib/ops/workflow-api-client";
 import { postWorkflowAction } from "@/lib/workflow/client";
 import type { WorkflowAction } from "@/lib/workflow/status-model";
 import { operationalQueryKeys } from "@/platform/query-keys";
@@ -108,6 +107,11 @@ export default function VerificationQueueWorkspace() {
     ) => {
       const row = rows.find((r) => r.id === id);
       if (!row) return;
+      const liveSubmissionId = row._detail.submissionId;
+      if (!liveSubmissionId || !UUID_RE.test(liveSubmissionId)) {
+        setWorkflowErr("Pilot training artefacts are read-only. Create or select a live operational submission to record a decision.");
+        return;
+      }
       const vctx = verificationOperationalContext(row);
       const permByUi: Record<typeof action, OperationalWorkflowAction> = {
         approve: "verification.approve",
@@ -159,41 +163,17 @@ export default function VerificationQueueWorkspace() {
         auditTimeline: [...d.auditTimeline, { at: iso, actor: reviewer, stage: "workflow", note: auditNote }],
       }));
 
-      const liveSubmissionId = row._detail.submissionId;
-      if (liveSubmissionId && UUID_RE.test(liveSubmissionId)) {
-        const wf = await postWorkflowAction({
-          action: verificationActionToWorkflow(action),
-          submissionId: liveSubmissionId,
-          note: note?.trim() || auditNote,
-        });
-        if (!wf.ok) {
-          if (prev) queryClient.setQueryData(key, prev);
-          setWorkflowErr(`Workflow denied (${wf.code}) — ${wf.message}`);
-          return;
-        }
-        await queryClient.invalidateQueries({ queryKey: key });
-        return;
-      }
-
-      const result = await postVerificationWorkflow({
-        verificationId: id,
-        action,
-        note: note?.trim() || undefined,
+      const wf = await postWorkflowAction({
+        action: verificationActionToWorkflow(action),
+        submissionId: liveSubmissionId,
+        note: note?.trim() || auditNote,
       });
-
-      if (!result.ok) {
+      if (!wf.ok) {
         if (prev) queryClient.setQueryData(key, prev);
-        setWorkflowErr(`Workflow denied (${result.code}) — ${result.message}`);
+        setWorkflowErr(`Workflow denied (${wf.code}) — ${wf.message}`);
         return;
       }
-
-      queryClient.setQueryData<VerificationQueueResult>(key, (curr) => {
-        if (!curr) return curr;
-        return {
-          ...curr,
-          data: (curr.data ?? []).map((r) => (String(r.id) === String(result.row.id) ? result.row : r)),
-        };
-      });
+      await queryClient.invalidateQueries({ queryKey: key });
     },
     [actor, patchDetail, queryClient, rows],
   );

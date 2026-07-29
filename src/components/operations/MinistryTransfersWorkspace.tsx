@@ -83,6 +83,10 @@ export default function MinistryTransfersWorkspace() {
     ) => {
       const order = orders.find((o) => o.id === id);
       if (!order) return;
+      if (order.source !== "supabase" || !/^[0-9a-f-]{36}$/i.test(order.id)) {
+        setWorkflowErr("Canonical and offline transfer examples are read-only in the national ledger. Select a live Supabase transfer to record custody.");
+        return;
+      }
       const ctx = transferOperationalContext(order);
       const perm = transferActionToPermission(action);
       if (!canPerform(actor, perm, ctx)) return;
@@ -134,6 +138,11 @@ export default function MinistryTransfersWorkspace() {
       if (!result.ok) {
         if (prev) queryClient.setQueryData(key, prev);
         setWorkflowErr(`Workflow denied (${result.code}) — ${result.message}`);
+        return;
+      }
+      if (!result.persisted) {
+        if (prev) queryClient.setQueryData(key, prev);
+        setWorkflowErr("The server did not persist this custody decision; the local preview was reverted.");
         return;
       }
 
