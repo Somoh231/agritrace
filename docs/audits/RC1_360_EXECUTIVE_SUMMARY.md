@@ -4,29 +4,29 @@
 
 **GO FOR INTERNAL DEMO. NO-GO for controlled pilot or production promotion today.**
 
-The local release candidate is materially safer and more truthful than baseline. It compiles, passes lint, passes 40 focused workflow/security checks, has zero known production dependency vulnerabilities, and passes authenticated browser QA at six responsive sizes. It is not yet pilot-releasable because the current production deployment is stale and publicly exposes `/setup`, the development lint chain still reports nine high advisories, and no linked-database migration/backup evidence was produced.
+The release candidate is materially safer and more truthful than baseline. It passes a clean install, lint, 40 focused workflow/security checks, two production builds, 22 desktop/mobile Playwright core checks, and a zero-vulnerability production dependency audit. The exact preview build is Ready, its `/setup` route is an application-level 404 through Vercel CLI authentication, and its health response is sanitized. It is not pilot-releasable because interactive authenticated role/RLS/offline/GIS/export verification is blocked by protected-preview authentication and missing designated `QA_*` accounts, no disposable restore target is approved, and production remains stale with `/setup` returning 200.
 
 ## Scorecard
 
 | Area | Score | Summary |
 | --- | ---: | --- |
-| Overall | 80/100 | Strong internal-demo candidate; production and database operational evidence remain incomplete |
+| Overall | 82/100 | Strong internal-demo candidate; pilot-critical browser, RLS, offline, GIS, and restore evidence remain incomplete |
 | Architecture | 82/100 | Clear App Router/domain boundaries; oversized modules and duplicated policy metadata remain |
-| Security | 84/100 local; 55/100 deployed | Fail-closed profiles, safer inputs/exports/headers; deployed artifact remains exposed |
+| Security | 86/100 local/preview core; 55/100 production | Fail-closed profiles and protected preview core; production remains stale and live RLS matrix is unproved |
 | Workflow | 80/100 | Real records only mutate; CAS transitions and explicit invalid-state responses added |
 | Data integrity | 76/100 | Ledger compensation and CSV protections added; no database transaction boundary |
 | UI/UX | 86/100 | Strong institutional design; dead actions and misleading role navigation repaired |
-| Accessibility | 82/100 | Labels, form semantics, skip link, focus trap, Escape and restoration verified |
+| Accessibility | 84/100 | Public/login serious-or-critical axe findings cleared on desktop/mobile; authenticated routes and screen-reader output remain unproved |
 | Performance | 72/100 | Build healthy; several operational routes load 306–343 kB JS |
-| Operational readiness | 68/100 | Strong local evidence; staging E2E, backup proof, production parity, and analytics storage absent |
+| Operational readiness | 70/100 | Migration parity proved; protected browser QA, restore proof, production parity, and analytics storage remain absent |
 
 ## Findings before and after
 
 | Severity | Baseline total | Resolved | Open after remediation |
 | --- | ---: | ---: | ---: |
 | P0 | 0 | 0 | 0 |
-| P1 | 9 | 8 | 1 |
-| P2 | 16 | 9 | 7 |
+| P1 | 10 | 9 | 1 |
+| P2 | 19 | 11 | 8 |
 | P3 | 14 | 6 | 8 |
 
 ## Highest-impact remediations
@@ -39,14 +39,23 @@ The local release candidate is materially safer and more truthful than baseline.
 6. Upgraded Next.js 14.2.25 to 15.5.21 and patched Sentry, PostCSS, Sharp, WebSocket, esbuild, and supporting dependencies.
 7. Repaired login semantics, skip navigation, mobile focus management, and role-aware sidebar filtering.
 
+## Staging continuation evidence
+
+- Vercel deployment `dpl_833QkZ2cuJoidseeY1g8wZxRDZwk` is Ready; build logs directly identify `audit/rc1-360-agentic-qa` at `893860b`.
+- Vercel CLI-authenticated application requests: `/setup` 404, `/api/health` 200 sanitized JSON, `/login` 200, `/` 200, and `/command-center` 307 to login.
+- Browser requests land at Vercel/GitHub authentication, so interactive preview console/network and authenticated role scenarios are not passed.
+- Linked Supabase migrations are in 11/11 parity through `20260619120000`; workflow tables exist; `analytics_events` is absent.
+- Local Playwright: 22 core tests pass across desktop and mobile; 62 authenticated route checks skip due missing environment-only role credentials.
+
 ## Remaining risks and external blockers
 
 - The deployed production artifact is stale and still exposes `/setup`.
-- Linked Supabase migration/RLS parity and a tested backup/restore record were not available.
-- The local environment lacks `public.analytics_events`, so analytics persistence needs staging proof.
+- Static RLS review found broad authenticated-read policies that require normal-user, cross-geography verification and data-owner approval.
+- No approved disposable restore target exists; the drill is defined but not executed.
+- `public.analytics_events` is absent from the linked schema (`PGRST205`).
 - The development-only ESLint chain retains nine high advisories; runtime dependencies report zero.
 - Sentry builds pass both with and without a DSN, but enabling Sentry increased shared first-load JavaScript from 103 kB to 191 kB and emitted configuration deprecation warnings.
 
 ## Release conditions
 
-The branch should remain unmerged and unpushed until the blockers in `RC1_RELEASE_GATE.md` are closed. No migration was applied and no production deployment was changed during this audit.
+The branch may be pushed for protected Preview deployment only. It must remain unmerged to `main`, and no production promotion should occur until the blockers in `RC1_RELEASE_GATE.md` close. No migration was applied and no production deployment was changed during this audit.

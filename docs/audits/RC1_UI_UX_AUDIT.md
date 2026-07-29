@@ -37,6 +37,20 @@ The product has a coherent institutional visual language, strong ministry hierar
 - After remediation, exporter navigation contains farmer/inventory/compliance tools and omits national/admin destinations.
 - Empty live workflow/transfer queues render stable zero/empty states rather than fake successful records.
 
+## Staging continuation
+
+- Automated desktop/mobile core checks now cover the public landing page, login
+  labels and keyboard submit, protected redirect, setup 404, health response,
+  unauthenticated exports, and serious/critical axe findings.
+- Axe identified public color-contrast and link-in-text-block failures. Footer,
+  navigation subtitle, language label, section tag, and homepage CTA colors were
+  adjusted. The affected desktop and 390×844 checks now pass.
+- The protected Preview cannot be inspected interactively because browser
+  navigation lands on Vercel authentication. CLI route proof does not validate
+  rendered navigation, responsive layout, console failures, or Mapbox controls.
+- Authenticated role-route screenshots are intentionally absent because no
+  designated environment-only role credentials were configured.
+
 ## Open UX items
 
 1. Simplify the mobile command topbar by grouping export/briefing/account controls.
@@ -44,3 +58,5 @@ The product has a coherent institutional visual language, strong ministry hierar
 3. Revisit permissive compliance/audit navigation with product and data owners.
 4. Standardize primary-action availability per role and per data source.
 5. Consolidate deprecated card/status/table wrappers.
+6. Complete authenticated preview desktop/mobile review once protected-browser
+   access and designated `QA_*` accounts are available.

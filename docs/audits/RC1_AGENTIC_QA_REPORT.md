@@ -5,20 +5,23 @@
 | Environment | Target | Result |
 | --- | --- | --- |
 | Local production build | `http://127.0.0.1:3000` | Remediated branch validated |
+| Protected preview | `dpl_833QkZ2cuJoidseeY1g8wZxRDZwk` | Ready; CLI-authenticated core verified; interactive browser blocked by Vercel SSO |
 | Deployed production | `https://agrivaultdata.com` | Stale build; release blocker confirmed |
-| Database | Repository migrations only | No remote mutation or certification |
+| Linked Supabase | `MOA Farm Traceability` | 11/11 migration parity inspected; no remote mutation |
 
 ## Automated gates
 
 | Gate | Result |
 | --- | --- |
 | ESLint | Pass, zero warnings |
+| Clean install | Pass; 688 packages installed, Node engine mismatch warning recorded |
 | Workflow tests | 29/29 pass |
 | Security tests | 11/11 pass |
 | Next production build/typecheck | Pass without DSN and with a non-secret Sentry test DSN |
 | Production dependency audit | 0 vulnerabilities |
 | Full dependency audit | Fail: 9 high, development lint chain |
 | Route inventory | 147 records generated |
+| RC1 Playwright core | 22/22 pass at 1440×900 and 390×844; 62 authenticated cases skip without `QA_*` credentials |
 
 ## Local browser scenarios
 
@@ -39,15 +42,59 @@ Each exact viewport reported the requested `window.innerWidth`/`window.innerHeig
 
 ## Deployed scenarios
 
-1. Public landing — pass.
-2. Protected command-center redirect — pass.
-3. Demo authentication — pass.
-4. `/setup` production restriction — **fail; returns 200**.
-5. Login label semantics — **fail relative to remediated branch**.
-6. Security headers — present, but CSP includes unsafe directives and HSTS lacks `includeSubDomains`.
+### Protected preview
+
+| Route | Status / redirect | Host and content | Source | Browser result |
+| --- | --- | --- | --- | --- |
+| `/setup` | 404 | deployment host; `text/html`; title `Agrivault` | AgriVault (`x-matched-path: /setup`), no setup form | Blocked at Vercel authentication |
+| `/api/health` | 200 | deployment host; `application/json`; no page title | AgriVault; sanitized app/Supabase/Mapbox checks | Not exercised interactively |
+| `/login` | 200 | deployment host; `text/html`; title `Agrivault` | AgriVault | Blocked at Vercel authentication |
+| `/` | 200 | deployment host; `text/html`; title `Agrivault Data — National agricultural intelligence` | AgriVault | Blocked at Vercel authentication |
+| `/command-center` | 307 → `/login?redirectTo=%2Fcommand-center` | deployment host; no protected body rendered | AgriVault middleware | Blocked at Vercel authentication |
+
+Build logs are direct identity evidence: project `agritrace`, Preview, branch
+`audit/rc1-360-agentic-qa`, commit `893860b`, status Ready, deployment
+`dpl_833QkZ2cuJoidseeY1g8wZxRDZwk`. Preview environment variable names required
+for Supabase and Mapbox are present; values were not printed.
+
+### Production
+
+1. `/setup` restriction — **fail; HTTP 200 on 2026-07-29**.
+2. Public/protected routing reflects the stale pre-remediation build.
+3. Security headers are present, but CSP includes unsafe directives and HSTS
+   lacks `includeSubDomains`.
+
+## Role QA matrix
+
+| Role | Harness coverage | Live preview result |
+| --- | --- | --- |
+| CLAN | 6 desktop + 6 mobile routes | Blocked: no designated credentials/protected browser access |
+| DAO | 4 + 4 routes | Blocked |
+| CAC | 3 + 3 routes | Blocked |
+| Ministry | 5 + 5 routes | Blocked |
+| Admin | 5 + 5 routes | Blocked |
+| Auditor | 3 + 3 routes | Blocked |
+| Donor | 2 + 2 routes | Blocked |
+| Exporter | 3 + 3 routes | Blocked |
+
+These 62 cases are skipped, not passed. No role mutation, synthetic record
+creation, or normal-user RLS proof was performed against the linked project.
+
+## Export probes
+
+- Preview GET for executive, compliance, donor, and reports index returns 401 JSON.
+- Preview POST for rice and DDS returns 401 JSON.
+- The deployed `893860b` GET handlers for rice and DDS return framework 405 before
+  authentication. The branch now authenticates/authorizes those GETs before its
+  authorized 405 response; local desktop/mobile regression passes.
+- Unauthorized and authorized preview role/file matrices remain unproved.
 
 ## Browser QA limitations
 
 - No real workflow mutation, file import, user change, or destructive operation was authorized or performed.
-- GIS token rendering, offline disconnection/sync replay, PDF download content, and assistive-technology speech output were not fully exercised.
-- A complete all-route authenticated crawl was not performed; the generated route matrix supplies static coverage and risk routing.
+- **BLOCKED — VERCEL DEPLOYMENT PROTECTION AUTHENTICATION UNAVAILABLE** for
+  interactive preview navigation; the browser reaches Vercel/GitHub sign-in.
+- GIS rendering, offline disconnection/sync replay/dedupe, authorized PDF/CSV
+  content, Lighthouse, and assistive-technology speech output were not passed.
+- CLI-authenticated HTTP results must not be interpreted as browser
+  console/network, role, offline, GIS, or accessibility evidence.

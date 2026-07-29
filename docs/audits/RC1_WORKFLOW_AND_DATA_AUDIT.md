@@ -29,5 +29,28 @@ Command-center content labels live/mixed/demo/pilot sources. The ministry summar
 
 ## Database caveat
 
-Repository migrations and RLS policies were inspected, but no remote migration list, row count, backup, restore, or RLS behavior was changed or certified. Pilot release requires database-owner evidence.
+Repository migrations, linked remote migration history, table presence, and RLS
+policy text were inspected read-only. No backup, restore, normal-user RLS matrix,
+or synthetic workflow replay was executed. Pilot release still requires
+database-owner evidence for those runtime controls.
 
+## Linked staging inspection — 2026-07-29
+
+- `supabase migration list --linked` reports 11 local and 11 remote migrations
+  with exact version parity through `20260619120000_workflow_engine.sql`.
+- Anonymous schema-presence probes confirm `operational_submissions`,
+  `workflow_actions`, `workflow_comments`, `workflow_assignments`,
+  `workflow_notifications`, `warehouse_transfer_orders`, and `profiles`.
+- `analytics_events` is absent and returns `PGRST205`.
+- Local Supabase containers are not running; `supabase status` therefore does not
+  constitute a local database test.
+- Static workflow RLS uses county-scope helpers and national Ministry/admin
+  access, but broader field/geo/transfer read policies require live normal-user
+  validation.
+- No designated CLAN/DAO/CAC/Ministry/auditor users and no approved
+  `QA-RC1-` staging mutation context were available. Geography isolation,
+  inactive/missing-profile fail-closed behavior, read-only roles, replay/dedupe,
+  and workflow mutation rejection remain **not proved in the linked runtime**.
+
+The 29 workflow and 11 security model checks pass, but unit policy behavior is
+not a substitute for deployed PostgreSQL RLS evidence.
