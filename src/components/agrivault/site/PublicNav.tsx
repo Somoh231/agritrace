@@ -35,7 +35,7 @@ export default function PublicNav() {
           <MinistryBrandLogo variant="seal" size="sm" />
           <span className="min-w-0 leading-tight">
             <span className="block text-[15px] font-semibold tracking-tight text-white">Agrivault Data</span>
-            <span className="hidden text-[9px] font-medium uppercase tracking-[0.14em] text-slate-500 sm:block">
+            <span className="hidden text-[9px] font-medium uppercase tracking-[0.14em] text-slate-400 sm:block">
               National agricultural intelligence
             </span>
           </span>

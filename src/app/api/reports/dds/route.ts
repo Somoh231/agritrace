@@ -206,6 +206,17 @@ function buildDDSDoc({
   );
 }
 
+export async function GET(request: Request) {
+  const auth = await requireApiSession(request);
+  if (!auth.ok) return auth.response;
+  const forbidden = forbidReportExport(auth.session, "dds");
+  if (forbidden) return forbidden;
+  return new Response("Method Not Allowed", {
+    status: 405,
+    headers: { allow: "POST" },
+  });
+}
+
 export async function POST(request: Request) {
   const auth = await requireApiSession(request);
   if (!auth.ok) return auth.response;
@@ -276,4 +287,3 @@ export async function POST(request: Request) {
     "content-disposition": `attachment; filename="Agrivault-${lot.lot_code}-DDS-${generatedAt.slice(0, 10)}.pdf"`,
   }, EXPORT_POLICY);
 }
-

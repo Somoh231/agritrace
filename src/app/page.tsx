@@ -85,7 +85,7 @@ export default function Page() {
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Link
                     href="/request-demo"
-                    className="inline-flex h-11 items-center rounded-lg bg-emerald-600 px-5 text-[14px] font-medium text-white shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-500"
+                    className="inline-flex h-11 items-center rounded-lg bg-emerald-700 px-5 text-[14px] font-medium text-white shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-600"
                   >
                     Request demo
                   </Link>
@@ -180,7 +180,7 @@ export default function Page() {
             <div className="mt-10 flex flex-wrap gap-3">
               <Link
                 href="/request-demo"
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-[13px] font-medium text-white shadow-lg transition hover:bg-emerald-500"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-[13px] font-medium text-white shadow-lg transition hover:bg-emerald-600"
               >
                 Request demo →
               </Link>

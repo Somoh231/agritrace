@@ -110,6 +110,17 @@ function buildRiceReportDoc({
   );
 }
 
+export async function GET(request: Request) {
+  const auth = await requireApiSession(request);
+  if (!auth.ok) return auth.response;
+  const forbidden = forbidReportExport(auth.session, "rice");
+  if (forbidden) return forbidden;
+  return new Response("Method Not Allowed", {
+    status: 405,
+    headers: { allow: "POST" },
+  });
+}
+
 export async function POST(request: Request) {
   const auth = await requireApiSession(request);
   if (!auth.ok) return auth.response;

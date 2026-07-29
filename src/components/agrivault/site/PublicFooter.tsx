@@ -7,36 +7,36 @@ export default function PublicFooter() {
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           <div className="max-w-sm">
             <div className="text-[15px] font-semibold text-white">Agrivault Data</div>
-            <p className="mt-3 text-[13px] font-light leading-relaxed text-white/45">
+            <p className="mt-3 text-[13px] font-light leading-relaxed text-white/70">
               Institutional agricultural data infrastructure for national reporting, field coordination, and auditable traceability.
             </p>
-            <p className="mt-4 text-[11px] font-medium tracking-wide text-white/25">agrivaultdata.com</p>
+            <p className="mt-4 text-[11px] font-medium tracking-wide text-white/70">agrivaultdata.com</p>
           </div>
           <div>
             <h4 className="text-[10px] font-medium uppercase tracking-[0.14em] text-emerald-400/90">Company</h4>
             <ul className="mt-4 flex flex-col gap-2.5 text-[13px] font-light">
               <li>
-                <Link href="/about" className="text-white/45 transition hover:text-white/90">
+                <Link href="/about" className="text-white/70 transition hover:text-white">
                   About
                 </Link>
               </li>
               <li>
-                <Link href="/liberia" className="text-white/45 transition hover:text-white/90">
+                <Link href="/liberia" className="text-white/70 transition hover:text-white">
                   Liberia
                 </Link>
               </li>
               <li>
-                <Link href="/africa" className="text-white/45 transition hover:text-white/90">
+                <Link href="/africa" className="text-white/70 transition hover:text-white">
                   Africa
                 </Link>
               </li>
               <li>
-                <Link href="/partners" className="text-white/45 transition hover:text-white/90">
+                <Link href="/partners" className="text-white/70 transition hover:text-white">
                   Partners
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-white/45 transition hover:text-white/90">
+                <Link href="/contact" className="text-white/70 transition hover:text-white">
                   Contact
                 </Link>
               </li>
@@ -46,22 +46,22 @@ export default function PublicFooter() {
             <h4 className="text-[10px] font-medium uppercase tracking-[0.14em] text-emerald-400/90">Platform</h4>
             <ul className="mt-4 flex flex-col gap-2.5 text-[13px] font-light">
               <li>
-                <Link href="/platform" className="text-white/45 transition hover:text-white/90">
+                <Link href="/platform" className="text-white/70 transition hover:text-white">
                   Platform overview
                 </Link>
               </li>
               <li>
-                <Link href="/platform-preview" className="text-white/45 transition hover:text-white/90">
+                <Link href="/platform-preview" className="text-white/70 transition hover:text-white">
                   Product preview
                 </Link>
               </li>
               <li>
-                <Link href="/docs" className="text-white/45 transition hover:text-white/90">
+                <Link href="/docs" className="text-white/70 transition hover:text-white">
                   Documentation
                 </Link>
               </li>
               <li>
-                <Link href="/news" className="text-white/45 transition hover:text-white/90">
+                <Link href="/news" className="text-white/70 transition hover:text-white">
                   News
                 </Link>
               </li>
@@ -71,27 +71,27 @@ export default function PublicFooter() {
             <h4 className="text-[10px] font-medium uppercase tracking-[0.14em] text-emerald-400/90">Governments</h4>
             <ul className="mt-4 flex flex-col gap-2.5 text-[13px] font-light">
               <li>
-                <Link href="/government" className="text-white/45 transition hover:text-white/90">
+                <Link href="/government" className="text-white/70 transition hover:text-white">
                   Partnership model
                 </Link>
               </li>
               <li>
-                <Link href="/government#sovereignty" className="text-white/45 transition hover:text-white/90">
+                <Link href="/government#sovereignty" className="text-white/70 transition hover:text-white">
                   Data sovereignty
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="text-white/45 transition hover:text-white/90">
+                <Link href="/pricing" className="text-white/70 transition hover:text-white">
                   Pricing
                 </Link>
               </li>
             </ul>
           </div>
         </div>
-        <div className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-8 text-[11px] text-white/25 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-8 text-[11px] text-white/70 sm:flex-row sm:items-center sm:justify-between">
           <span>© 2026 Agrivault Data · All rights reserved</span>
-          <span className="text-white/35">
-            <a href="mailto:msdonzo@agrivaultdata.com" className="text-emerald-400/80 no-underline hover:text-emerald-300">
+          <span className="text-white/70">
+            <a href="mailto:msdonzo@agrivaultdata.com" className="text-emerald-300 underline underline-offset-2 hover:text-emerald-200">
               msdonzo@agrivaultdata.com
             </a>{" "}
             · Sacramento, CA · Monrovia, Liberia

@@ -37,7 +37,7 @@ export default function LanguageSwitcher({ variant = "light" }: LanguageSwitcher
 
   return (
     <label className="inline-flex items-center gap-1.5 text-[11px] text-slate-500">
-      <span className={isDark ? "text-slate-500" : "text-slate-600"}>Lang</span>
+      <span className={isDark ? "text-slate-400" : "text-slate-600"}>Lang</span>
       <select
         value={current}
         onChange={onChange}
@@ -57,4 +57,3 @@ export default function LanguageSwitcher({ variant = "light" }: LanguageSwitcher
     </label>
   );
 }
-
