@@ -210,7 +210,7 @@ sequenceDiagram
 1. Assign or propagate `x-request-id` (`src/lib/http/request-context.ts`)
 2. Refresh Supabase session cookies via `createServerClient`
 3. Redirect unauthenticated users on protected path roots to `/login?redirectTo=<path>`
-4. Load `profiles.role` (fallback: `buildDemoProfileForAuthUser`)
+4. Load the active `profiles` row; a missing or inactive profile is denied
 5. Call `assertPilotRouteAccess(role, pathname)` for role-gated prefixes
 6. Redirect denied users to `pilotRoleLandingPath(role)` without redirect loops
 

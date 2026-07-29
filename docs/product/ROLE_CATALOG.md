@@ -102,12 +102,12 @@ Roles outside this chain (warehouse, exporter, donor, auditor) interact with spe
 
 | Attribute | Value |
 |-----------|-------|
-| **Description** | Synthetic administrator role used as a **temporary demo fallback** when a Supabase Auth user exists without a `profiles` row. Also assignable for service accounts during pilot stabilization. |
+| **Description** | Legacy platform-administrator role retained for existing explicitly provisioned database profiles. It is never inferred from authentication state. |
 | **Operational group** | Platform admin |
 | **Default landing route** | `/command-center` |
 | **Workflow stage** | `ministry` |
 | **Key capabilities** | Same route access as `ministry_admin` via `isAdminConsoleRole()` and `isMinistryNationalRole()` |
-| **Restrictions** | Marked for removal once all users have proper `profiles` rows (`TEMP_DEMO_FALLBACK.md`). Must not be used for routine field operations. |
+| **Restrictions** | Provision only through controlled administration. Missing or inactive profile rows fail closed and receive no role. Must not be used for routine field operations. |
 
 ---
 

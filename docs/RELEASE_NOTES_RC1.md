@@ -184,7 +184,7 @@ UI surfaces: `/reports`, `/reports/ministry`, `/reports/export`, `/reports/pdf`,
 | Dashboard layout auth redirect | ✅ |
 | Deep-link `?redirectTo=` | ✅ |
 | Demo accounts (`npm run seed:demo`) | ✅ |
-| Profile role resolution + demo fallback | ✅ |
+| Active profile role resolution; missing profiles fail closed | ✅ |
 | Supabase-unset bypass (dev only) | ⚠️ Middleware skips auth if env missing |
 
 ### Authorization

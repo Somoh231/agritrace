@@ -32,7 +32,7 @@ Session managed via `@supabase/ssr` cookie refresh in `src/middleware.ts`.
 
 - Supabase Auth handles signup/login; `handle_new_user()` trigger creates `profiles` row.
 - Middleware calls `supabase.auth.getUser()` on every request; unauthenticated users redirect to `/login?redirectTo=...`.
-- Profile role loaded from `profiles.role`; demo fallback via `buildDemoProfileForAuthUser()`.
+- Profile role loaded from an active `profiles` row; missing/inactive profiles fail closed.
 
 ### Row Level Security
 
@@ -86,7 +86,7 @@ Generated/hand-maintained in `src/lib/supabase/types.ts`. Updated when migration
 - Vendor lock-in to Supabase hosting model; self-hosting adds ops complexity.
 - RLS policies are SQL-heavy; debugging requires Supabase logs or local `supabase start`.
 - Service role key leakage would bypass all RLS — strict server-only enforcement required.
-- Middleware skips auth entirely if Supabase env vars unset (dev convenience; dangerous in production).
+- Production startup and middleware require Supabase public configuration; local development may use the documented no-backend degradation path only.
 
 ### Neutral
 

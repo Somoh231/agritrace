@@ -43,7 +43,7 @@ graph TD
 1. Assign `x-request-id`
 2. Refresh Supabase session via `@supabase/ssr`
 3. Redirect unauthenticated users on protected paths → `/login?redirectTo=...`
-4. Load `profiles.role` (demo fallback if missing)
+4. Load the active `profiles` row; deny missing/inactive profiles
 5. `assertPilotRouteAccess(role, pathname)` — deny → `pilotRoleLandingPath(role)`
 
 Protected path roots: `/command-center`, `/field`, `/workspace`, `/verification-queue`, `/admin`, and 25+ prefixes in `src/lib/auth/workspace-access.ts`.
@@ -101,7 +101,7 @@ Key prefixes: `/gis-intelligence` (Ministry + CAC), `/workspace/ministry` (Minis
 ### Negative
 
 - Four layers require synchronized updates when adding routes or roles.
-- Demo profile fallback (`buildDemoProfileForAuthUser`) must be disabled before production GA.
+- Profile provisioning is now mandatory; authentication without an active profile is denied.
 - Middleware skips auth when Supabase env unset — deployment checklist critical.
 - RLS policy debugging requires SQL expertise and Supabase logs.
 
@@ -131,7 +131,7 @@ Key prefixes: `/gis-intelligence` (Ministry + CAC), `/workspace/ministry` (Minis
 | Redirect vs 403 on deny | Redirect to role landing | Better UX; avoids dead-end pages |
 | County in profile vs JWT claim | Profile table + RLS helper | Admin-manageable; single source of truth |
 | Page-level asserts vs middleware only | Both | Deep links and RSC need page guards |
-| Demo auth fallback | Enabled for training | Must document production disable step |
+| Demo accounts | Explicit seeded profiles only | Rotate or disable all training credentials before any external deployment |
 
 ---
 

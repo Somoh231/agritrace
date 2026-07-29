@@ -82,10 +82,11 @@ After authentication, role is loaded from `profiles.role`:
 
 ```typescript
 const profile = await loadProfile(supabase, user.id);
-const role = resolveUserRoleWithDemoFallback(profile, user);
+if (!profile || profile.is_active === false) redirect("/login?error=profile_access");
+const role = profile.role;
 ```
 
-Fallback: `buildDemoProfileForAuthUser()` for demo seed accounts when profiles row is missing.
+Missing and inactive profiles fail closed. Demo seed accounts must have an explicit active `profiles` row; authentication alone never grants a synthetic role.
 
 ### Demo accounts
 
