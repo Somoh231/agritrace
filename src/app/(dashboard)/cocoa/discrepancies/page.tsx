@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const DiscrepanciesClient = dynamic(() => import("@/components/cocoa/DiscrepanciesClient"), {

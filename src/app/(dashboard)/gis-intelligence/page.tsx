@@ -4,8 +4,7 @@ import { Suspense } from "react";
 import GisIntelligenceWorkspace from "@/components/gis/GisIntelligenceWorkspace";
 import { assertPilotRouteAccess } from "@/lib/auth/workspace-access";
 import { createClient } from "@/lib/supabase/server";
-import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
-import type { Profile, UserRole } from "@/lib/supabase/types";
+import type { Profile } from "@/lib/supabase/types";
 
 export default async function GisIntelligencePage() {
   const supabase = await createClient();
@@ -15,8 +14,8 @@ export default async function GisIntelligencePage() {
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle<Pick<Profile, "role">>();
-  const role = (profile?.role as UserRole | undefined) ?? buildDemoProfileForAuthUser(user).role;
-  const gate = assertPilotRouteAccess(role, "/gis-intelligence");
+  if (!profile?.role) redirect("/login?error=profile_required");
+  const gate = assertPilotRouteAccess(profile.role, "/gis-intelligence");
   if (!gate.ok) redirect(gate.redirectTo);
 
   return (

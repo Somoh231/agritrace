@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const LotRegisterTable = dynamic(() => import("@/components/cocoa/LotRegisterTable"), {
@@ -8,4 +10,3 @@ const LotRegisterTable = dynamic(() => import("@/components/cocoa/LotRegisterTab
 export default function CocoaLotsPage() {
   return <LotRegisterTable />;
 }
-

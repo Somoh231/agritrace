@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const ApprovalsClient = dynamic(() => import("@/components/cocoa/ApprovalsClient"), {

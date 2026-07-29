@@ -7,11 +7,18 @@ import {
   MINISTRY_OPERATIONAL_EVENTS,
   MINISTRY_WAREHOUSES,
 } from "@/lib/data/ministry-canonical-data";
+import { apiHeaders, beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-response";
+import { PUBLIC_POLICY } from "@/lib/http/rate-limit-policies";
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const ctx = await beginApiRequestAsync(request, PUBLIC_POLICY);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
+
   const canonical = {
     source: "canonical" as const,
+    sourceDetail: "Public pilot canonical dataset; no live operational records are included.",
     counts: {
       fixtureFarmers: MINISTRY_FARMERS.length,
       fixtureWarehouses: MINISTRY_WAREHOUSES.length,
@@ -31,7 +38,15 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json(canonical);
+      return NextResponse.json(canonical, { headers: apiHeaders(ctx, PUBLIC_POLICY) });
+    }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_active")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (!profile || profile.is_active === false) {
+      return NextResponse.json(canonical, { headers: apiHeaders(ctx, PUBLIC_POLICY) });
     }
 
     const [farmersRes, metricsRes, eventsRes, daoRes] = await Promise.all([
@@ -41,8 +56,17 @@ export async function GET() {
       supabase.from("pilot_dao_officers").select("dao_code,full_name,county,district,compliance_score").limit(40),
     ]);
 
+    const fallbacks = [
+      metricsRes.error || !metricsRes.data?.length ? "county metrics" : null,
+      eventsRes.error || !eventsRes.data?.length ? "operational events" : null,
+      daoRes.error || !daoRes.data?.length ? "DAO officers" : null,
+    ].filter(Boolean);
+
     return NextResponse.json({
-      source: "live",
+      source: fallbacks.length ? "mixed" : "live",
+      sourceDetail: fallbacks.length
+        ? `Live RLS-governed summary with canonical pilot fallback for: ${fallbacks.join(", ")}.`
+        : "Live RLS-governed Supabase summary.",
       authenticated: true,
       counts: {
         farmersTotal: farmersRes.count ?? null,
@@ -57,8 +81,8 @@ export async function GET() {
           : eventsRes.data,
       daoOfficersSample:
         daoRes.error || !daoRes.data?.length ? canonical.daoOfficersSample : daoRes.data,
-    });
+    }, { headers: apiHeaders(ctx, PUBLIC_POLICY) });
   } catch {
-    return NextResponse.json(canonical);
+    return NextResponse.json(canonical, { headers: apiHeaders(ctx, PUBLIC_POLICY) });
   }
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const MinistryReportsTable = dynamic(() => import("@/components/rice/MinistryReportsTable"), {
@@ -8,4 +10,3 @@ const MinistryReportsTable = dynamic(() => import("@/components/rice/MinistryRep
 export default function RiceReportsPage() {
   return <MinistryReportsTable />;
 }
-

@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const PostHarvestLossAlerts = dynamic(() => import("@/components/rice/PostHarvestLossAlerts"), {
@@ -8,4 +10,3 @@ const PostHarvestLossAlerts = dynamic(() => import("@/components/rice/PostHarves
 export default function RiceLossPage() {
   return <PostHarvestLossAlerts />;
 }
-

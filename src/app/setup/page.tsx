@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { isValidHttpUrl } from "@/lib/supabase/env";
 import CopyButton from "@/components/shared/CopyButton";
+import { notFound } from "next/navigation";
 
 function CodeBlock({ children }: { children: string }) {
   return (
@@ -11,6 +12,9 @@ function CodeBlock({ children }: { children: string }) {
 }
 
 export default async function SetupPage() {
+  if (process.env.NODE_ENV === "production" && process.env.AGRIVAULT_ENABLE_SETUP_PAGE !== "true") {
+    notFound();
+  }
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -197,4 +201,3 @@ npm run seed:demo`}</CodeBlock>
     </div>
   );
 }
-

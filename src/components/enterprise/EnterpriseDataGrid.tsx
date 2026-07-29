@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight, ChevronDown, Download } from "lucide-react";
+import { escapeCsvCell } from "@/lib/reports/csv";
 
 export type GridColumn<T> = {
   key: keyof T | string;
@@ -11,8 +12,10 @@ export type GridColumn<T> = {
 };
 
 function downloadCsv(filename: string, headers: string[], rows: string[][]) {
-  const esc = (c: string) => `"${String(c).replace(/"/g, '""')}"`;
-  const body = [headers.map(esc).join(","), ...rows.map((r) => r.map(esc).join(","))].join("\n");
+  const body = [
+    headers.map(escapeCsvCell).join(","),
+    ...rows.map((r) => r.map(escapeCsvCell).join(",")),
+  ].join("\n");
   const blob = new Blob([body], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

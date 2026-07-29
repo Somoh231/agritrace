@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-response";
+import { clampStr, parseJsonObject } from "@/lib/http/api-security";
 import { WORKFLOW_MUTATION_POLICY } from "@/lib/http/rate-limit-policies";
 import { requireWorkflowPrincipal } from "@/lib/ops/server-permissions";
 import { persistWorkflowAuditLog } from "@/lib/ops/server-workflow-io";
@@ -109,25 +110,29 @@ export async function POST(req: Request) {
   const { supabase, userId, profile } = principal;
   const stage = workflowStageForRole(profile.role);
 
-  let body: WorkflowMutationBody;
-  try {
-    body = (await req.json()) as WorkflowMutationBody;
-  } catch {
-    return NextResponse.json({ ok: false, code: "bad_request", message: "Invalid JSON body." }, { status: 400 });
+  const parsed = await parseJsonObject(req, 128_000);
+  if (!parsed.ok) {
+    return NextResponse.json(
+      { ok: false, code: parsed.status === 413 ? "payload_too_large" : "bad_request", message: parsed.error },
+      { status: parsed.status },
+    );
   }
+  const body = parsed.body as WorkflowMutationBody;
 
   if (!isWorkflowAction(body.action)) {
     return NextResponse.json({ ok: false, code: "bad_request", message: "Unknown workflow action." }, { status: 400 });
   }
   const action = body.action;
-  const note = typeof body.note === "string" && body.note.trim() ? body.note.trim() : "";
+  const note = clampStr(body.note, 4_000);
 
   // -------------------------------------------------------------------------
   // Create + submit (no submissionId, has `create`)
   // -------------------------------------------------------------------------
   if (action === "submit" && !body.submissionId) {
     const c = body.create;
-    if (!c || typeof c.submissionType !== "string" || !c.submissionType.trim() || typeof c.title !== "string" || !c.title.trim()) {
+    const submissionType = clampStr(c?.submissionType, 100);
+    const title = clampStr(c?.title, 240);
+    if (!c || !submissionType || !title) {
       return NextResponse.json(
         { ok: false, code: "bad_request", message: "submissionType and title are required to create a submission." },
         { status: 400 },
@@ -140,7 +145,7 @@ export async function POST(req: Request) {
     }
 
     const dedupeKey =
-      typeof c.metadata?.dedupe_key === "string" && c.metadata.dedupe_key.trim() ? c.metadata.dedupe_key.trim() : "";
+      typeof c.metadata?.dedupe_key === "string" ? clampStr(c.metadata.dedupe_key, 200) : "";
     if (dedupeKey) {
       const { data: existing } = await supabase
         .from("operational_submissions")
@@ -160,12 +165,14 @@ export async function POST(req: Request) {
       }
     }
 
+    const tr = computeSubmissionTransition("draft", "submit", stage);
+    const nextStatus = tr.ok ? tr.nextStatus : "submitted";
     const insertRow = {
       reference_code: refCode(),
-      submission_type: c.submissionType.trim(),
-      title: c.title.trim(),
-      summary: c.summary?.trim() || null,
-      status: "draft" as WorkflowStatus,
+      submission_type: submissionType,
+      title,
+      summary: clampStr(c.summary, 4_000) || null,
+      status: nextStatus,
       actor_id: userId,
       organization_id: c.organizationId ?? profile.organization_id ?? null,
       county,
@@ -183,11 +190,7 @@ export async function POST(req: Request) {
     }
 
     const submission = mapSubmission(created);
-    const tr = computeSubmissionTransition("draft", "submit", stage);
-    const nextStatus = tr.ok ? tr.nextStatus : "submitted";
-
-    await supabase.from("operational_submissions").update({ status: nextStatus }).eq("id", submission.id);
-    await supabase.from("workflow_actions").insert({
+    const { error: actionInsertError } = await supabase.from("workflow_actions").insert({
       submission_id: submission.id,
       actor_id: userId,
       action: "submit",
@@ -197,6 +200,22 @@ export async function POST(req: Request) {
       district: submission.district,
       note: note || null,
     });
+    if (actionInsertError) {
+      console.error("[workflow] initial action ledger insert failed", actionInsertError.message);
+      await supabase
+        .from("operational_submissions")
+        .update({ status: "draft" })
+        .eq("id", submission.id)
+        .eq("status", nextStatus);
+      return NextResponse.json(
+        {
+          ok: false,
+          code: "audit_persist_failed",
+          message: "Submission was not finalized because its decision ledger could not be written.",
+        },
+        { status: 422 },
+      );
+    }
     await persistWorkflowAuditLog({
       supabase,
       userId,
@@ -266,7 +285,13 @@ export async function POST(req: Request) {
   if (action === "assign_reviewer" && assigneeId) patch.current_assignee_id = assigneeId;
 
   if (Object.keys(patch).length > 0) {
-    const { error: updErr } = await supabase.from("operational_submissions").update(patch).eq("id", submission.id);
+    const { data: updated, error: updErr } = await supabase
+      .from("operational_submissions")
+      .update(patch)
+      .eq("id", submission.id)
+      .eq("status", submission.status)
+      .select("id")
+      .maybeSingle();
     if (updErr) {
       console.error("[workflow] submission update failed", updErr.message);
       return NextResponse.json(
@@ -274,10 +299,20 @@ export async function POST(req: Request) {
         { status: 422 },
       );
     }
+    if (!updated) {
+      return NextResponse.json(
+        {
+          ok: false,
+          code: "concurrent_transition",
+          message: "This submission changed in another session. Reload before applying a new decision.",
+        },
+        { status: 409 },
+      );
+    }
   }
 
   // 4) Append-only action ledger entry
-  await supabase.from("workflow_actions").insert({
+  const { error: actionErr } = await supabase.from("workflow_actions").insert({
     submission_id: submission.id,
     actor_id: userId,
     action,
@@ -287,6 +322,24 @@ export async function POST(req: Request) {
     district: submission.district,
     note: note || null,
   });
+  if (actionErr) {
+    console.error("[workflow] action ledger insert failed", actionErr.message);
+    if (tr.changed) {
+      await supabase
+        .from("operational_submissions")
+        .update({ status: submission.status })
+        .eq("id", submission.id)
+        .eq("status", tr.nextStatus);
+    }
+    return NextResponse.json(
+      {
+        ok: false,
+        code: "audit_persist_failed",
+        message: "Decision was reverted because its append-only action record could not be written.",
+      },
+      { status: 422 },
+    );
+  }
 
   // 5) Comments / correction requests
   if (action === "request_corrections" || (action === "comment" && note)) {

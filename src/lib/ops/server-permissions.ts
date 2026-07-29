@@ -7,6 +7,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export type WorkflowAuthFailureCode =
   | "unauthorized"
   | "missing_profile"
+  | "inactive_profile"
   | "configuration_error";
 
 export type WorkflowAuthFailure = {
@@ -84,6 +85,14 @@ export async function requireWorkflowPrincipal(): Promise<WorkflowPrincipal | Wo
     }
 
     const profile = profileRow as Profile;
+    if (profile.is_active === false) {
+      return {
+        ok: false,
+        status: 403,
+        code: "inactive_profile",
+        message: "Operator account is inactive — workflow access is blocked.",
+      };
+    }
     const actor = resolveOperationalActor(profile);
 
     return { ok: true, supabase, userId: user.id, profile, actor };

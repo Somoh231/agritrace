@@ -6,7 +6,6 @@ import PlatformProviders from "@/platform/providers";
 import { applyWorkspaceDemoRoleToProfile, WORKSPACE_DEMO_ROLE_COOKIE } from "@/lib/auth/workspace-demo-role";
 import { normalizeMinistryNavRole } from "@/lib/navigation/ministry-nav";
 import { createClient } from "@/lib/supabase/server";
-import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { Profile } from "@/lib/supabase/types";
 
 export default async function DashboardLayout({
@@ -56,8 +55,27 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .maybeSingle<Profile>();
 
-  // TEMP DEMO FALLBACK — missing profiles row: use synthetic profile instead of blocking.
-  const effectiveProfile: Profile = profile ?? buildDemoProfileForAuthUser(user);
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-slate-50 p-6">
+        <div className="mx-auto max-w-xl rounded-xl border border-amber-200 bg-white p-6 shadow-sm">
+          <h1 className="text-lg font-semibold text-slate-950">Operator profile required</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-700">
+            Your identity is authenticated, but it is not linked to an active Ministry operator
+            profile. Access remains blocked until an administrator assigns your role and
+            jurisdiction.
+          </p>
+          <a
+            href="/login?error=profile_required"
+            className="mt-4 inline-flex h-10 items-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+          >
+            Return to sign in
+          </a>
+        </div>
+      </div>
+    );
+  }
+  const effectiveProfile: Profile = profile;
 
   if (effectiveProfile.is_active === false) {
     return (
@@ -97,4 +115,3 @@ export default async function DashboardLayout({
     </PlatformProviders>
   );
 }
-

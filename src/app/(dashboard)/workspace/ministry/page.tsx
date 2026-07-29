@@ -8,7 +8,6 @@ import {
 } from "@/lib/demo/agriculture-pilot-data";
 import { assertPilotWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { createClient } from "@/lib/supabase/server";
-import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { Profile } from "@/lib/supabase/types";
 
 export default async function MinistryWorkspacePage() {
@@ -19,8 +18,8 @@ export default async function MinistryWorkspacePage() {
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>();
-  const effective = profile ?? buildDemoProfileForAuthUser(user);
-  const gate = assertPilotWorkspaceAccess(effective.role, "ministry");
+  if (!profile) redirect("/login?error=profile_required");
+  const gate = assertPilotWorkspaceAccess(profile.role, "ministry");
   if (!gate.ok) redirect(gate.redirectTo);
 
   const hero = nationalHeroMetrics;

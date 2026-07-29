@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const MovementLedger = dynamic(() => import("@/components/cocoa/MovementLedger"), {
@@ -8,4 +10,3 @@ const MovementLedger = dynamic(() => import("@/components/cocoa/MovementLedger")
 export default function CocoaMovementsPage() {
   return <MovementLedger />;
 }
-

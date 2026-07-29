@@ -1,3 +1,11 @@
+/** Escapes a CSV cell and neutralizes spreadsheet formula execution. */
+export function escapeCsvCell(value: unknown): string {
+  const raw = value == null ? "" : String(value);
+  const safe = /^[\t\r ]*[=+\-@]/.test(raw) ? `'${raw}` : raw;
+  const needsQuotes = /[,"\n\r]/.test(safe);
+  return needsQuotes ? `"${safe.replaceAll('"', '""')}"` : safe;
+}
+
 export function toCsv(rows: Array<Record<string, unknown>>): string {
   const keys = Array.from(
     rows.reduce((s, r) => {
@@ -6,17 +14,9 @@ export function toCsv(rows: Array<Record<string, unknown>>): string {
     }, new Set<string>()),
   );
 
-  const esc = (v: unknown) => {
-    const s = v == null ? "" : String(v);
-    const needs = /[,"\n]/.test(s);
-    const quoted = `"${s.replaceAll('"', '""')}"`;
-    return needs ? quoted : s;
-  };
-
   const lines = [
-    keys.map(esc).join(","),
-    ...rows.map((r) => keys.map((k) => esc(r[k])).join(",")),
+    keys.map(escapeCsvCell).join(","),
+    ...rows.map((r) => keys.map((k) => escapeCsvCell(r[k])).join(",")),
   ];
   return lines.join("\n");
 }
-

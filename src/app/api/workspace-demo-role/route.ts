@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { API_ERROR_UNAUTHORIZED } from "@/lib/http/api-security";
+import { parseJsonObject } from "@/lib/http/api-security";
 import { apiHeaders, beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-response";
 import { READ_POLICY } from "@/lib/http/rate-limit-policies";
 import {
@@ -37,7 +38,11 @@ export async function POST(request: Request) {
   const blocked = rejectIfRateLimited(ctx);
   if (blocked) return blocked;
 
-  const body = (await request.json().catch(() => ({}))) as { role?: UserRole | "" | null };
+  const parsedBody = await parseJsonObject(request, 4_000);
+  if (!parsedBody.ok) {
+    return NextResponse.json({ ok: false, error: parsedBody.error }, { status: parsedBody.status });
+  }
+  const body = parsedBody.body as { role?: UserRole | "" | null };
   const raw = body.role;
   if (raw === "" || raw === null || raw === undefined) {
     const res = NextResponse.json({ ok: true, role: null }, { headers: apiHeaders(ctx) });

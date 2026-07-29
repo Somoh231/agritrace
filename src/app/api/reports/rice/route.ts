@@ -11,6 +11,7 @@ import {
 } from "@/lib/http/api-response";
 import { EXPORT_POLICY } from "@/lib/http/rate-limit-policies";
 import { forbidReportExport, requireApiSession } from "@/lib/http/require-api-session";
+import { escapeCsvCell } from "@/lib/reports/csv";
 import { createClient } from "@/lib/supabase/server";
 
 import React from "react";
@@ -33,12 +34,6 @@ const styles = StyleSheet.create({
   footer: { marginTop: 18, paddingTop: 10, borderTop: "1px solid #e5e7eb" },
   sigLine: { marginTop: 10, borderBottom: "1px solid #9ca3af", width: 240 },
 });
-
-function csvCell(v: unknown) {
-  const s = String(v ?? "");
-  const needs = /[",\n]/.test(s);
-  return needs ? `"${s.replaceAll("\"", "\"\"")}"` : s;
-}
 
 function buildRiceReportDoc({
   title,
@@ -171,9 +166,9 @@ export async function POST(request: Request) {
 
   if (body.format === "csv") {
     const csv = [
-      ["County", "Expected (kg)", "Actual (kg)", "Loss (kg)"].map(csvCell).join(","),
+      ["County", "Expected (kg)", "Actual (kg)", "Loss (kg)"].map(escapeCsvCell).join(","),
       ...rows.map((r) =>
-        [r.county, Math.round(r.expected), Math.round(r.actual), Math.round(r.loss)].map(csvCell).join(","),
+        [r.county, Math.round(r.expected), Math.round(r.actual), Math.round(r.loss)].map(escapeCsvCell).join(","),
       ),
     ].join("\n");
     return binaryResponse(
@@ -197,4 +192,3 @@ export async function POST(request: Request) {
     "content-disposition": `attachment; filename="Agrivault-Rice-Report-${generatedAt.slice(0, 10)}.pdf"`,
   }, EXPORT_POLICY);
 }
-

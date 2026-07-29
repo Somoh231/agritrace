@@ -52,6 +52,9 @@ export async function requireApiSession(request: Request): Promise<ApiSessionRes
     if (error || !profileRow) {
       return { ok: false, response: jsonAuthError(requestId, 403, "Forbidden") };
     }
+    if (profileRow.is_active === false) {
+      return { ok: false, response: jsonAuthError(requestId, 403, "Forbidden") };
+    }
 
     return {
       ok: true,

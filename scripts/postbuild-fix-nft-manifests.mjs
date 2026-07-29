@@ -83,7 +83,5 @@ for (const nftPath of nftFiles) {
 }
 
 if (created) {
-  // eslint-disable-next-line no-console
   console.log(`[postbuild] created ${created} missing client reference manifests`);
 }
-

@@ -8,10 +8,10 @@ export function isHomepageHeroExperimentEnabled() {
   return process.env.NEXT_PUBLIC_ENABLE_HOMEPAGE_EXPERIMENT !== "false";
 }
 
-export function getHeroVariant(): HeroVariant {
+export async function getHeroVariant(): Promise<HeroVariant> {
   if (!isHomepageHeroExperimentEnabled()) return "control";
   try {
-    const value = cookies().get(HERO_COOKIE)?.value;
+    const value = (await cookies()).get(HERO_COOKIE)?.value;
     if (value === "authority") return "authority";
     return "control";
   } catch {
@@ -24,4 +24,3 @@ export const HERO_EXPERIMENT = {
   key: "homepage_hero_copy_v1",
   cookie: HERO_COOKIE,
 };
-

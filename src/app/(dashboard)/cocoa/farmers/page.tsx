@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const FarmerRegistryTable = dynamic(() => import("@/components/cocoa/FarmerRegistryTable"), {
@@ -8,4 +10,3 @@ const FarmerRegistryTable = dynamic(() => import("@/components/cocoa/FarmerRegis
 export default function CocoaFarmersPage() {
   return <FarmerRegistryTable />;
 }
-

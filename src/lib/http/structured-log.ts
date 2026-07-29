@@ -29,6 +29,15 @@ export function logError(event: string, fields: StructuredLogFields = {}): void 
 
 /** Server-side API failure — never include secrets or full request bodies. */
 export function logApiFailure(scope: string, err: unknown, requestId?: string): void {
-  const message = err instanceof Error ? err.message : String(err ?? "unknown");
-  logError("api.failure", { scope, requestId, message });
+  const record = typeof err === "object" && err !== null ? (err as Record<string, unknown>) : null;
+  const message =
+    err instanceof Error
+      ? err.message
+      : typeof record?.message === "string"
+        ? record.message
+        : typeof err === "string" || typeof err === "number" || typeof err === "boolean"
+          ? String(err)
+          : "non_error_object";
+  const code = typeof record?.code === "string" ? record.code : undefined;
+  logError("api.failure", { scope, requestId, message: message.slice(0, 500), code });
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const EUDRChecklist = dynamic(() => import("@/components/cocoa/EUDRChecklist"), {
@@ -8,4 +10,3 @@ const EUDRChecklist = dynamic(() => import("@/components/cocoa/EUDRChecklist"), 
 export default function CocoaEudrPage() {
   return <EUDRChecklist />;
 }
-

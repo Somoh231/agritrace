@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const AuditTrail = dynamic(() => import("@/components/cocoa/AuditTrail"), {
@@ -8,4 +10,3 @@ const AuditTrail = dynamic(() => import("@/components/cocoa/AuditTrail"), {
 export default function CocoaAuditPage() {
   return <AuditTrail />;
 }
-

@@ -4,7 +4,6 @@ import { NextResponse, type NextRequest } from "next/server";
 import { assertPilotRouteAccess, needsPilotRoleGate } from "@/lib/auth/workspace-access";
 import { REQUEST_ID_HEADER, resolveRequestId } from "@/lib/http/request-context";
 import { normalizeHttpUrl } from "@/lib/supabase/env";
-import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { UserRole } from "@/lib/supabase/types";
 
 function matchesProtectedRoute(pathname: string, pattern: string) {
@@ -110,8 +109,21 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && isProtectedPath(pathname) && needsPilotRoleGate(pathname)) {
-    const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-    const role = (prof?.role as UserRole | undefined) ?? buildDemoProfileForAuthUser(user).role;
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("role,is_active")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (!prof?.role || prof.is_active === false) {
+      const next = request.nextUrl.clone();
+      next.pathname = "/login";
+      next.search = "";
+      next.searchParams.set("error", prof?.is_active === false ? "account_inactive" : "profile_required");
+      const redirect = NextResponse.redirect(next);
+      redirect.headers.set(REQUEST_ID_HEADER, requestId);
+      return redirect;
+    }
+    const role = prof.role as UserRole;
     const gate = assertPilotRouteAccess(role, pathname);
     if (!gate.ok) {
       const normalized = pathname.split("?")[0] ?? pathname;

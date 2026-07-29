@@ -19,9 +19,10 @@ export default async function CommandCenterLayout({ children }: { children: Reac
     .select("role")
     .eq("id", user.id)
     .maybeSingle<Pick<Profile, "role">>();
+  if (!profile?.role) redirect("/login?error=profile_required");
 
   const cookieStore = await cookies();
-  const role = resolveEffectiveWorkspaceRole(profile, user, cookieStore.get(WORKSPACE_DEMO_ROLE_COOKIE)?.value);
+  const role = resolveEffectiveWorkspaceRole(profile, cookieStore.get(WORKSPACE_DEMO_ROLE_COOKIE)?.value);
   if (!mayAccessNationalCommandCenter(role)) {
     redirect(postLoginHomeForRole(role));
   }

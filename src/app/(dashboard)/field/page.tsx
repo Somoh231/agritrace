@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const FieldHome = dynamic(() => import("@/components/field/FieldHome"), {
@@ -8,4 +10,3 @@ const FieldHome = dynamic(() => import("@/components/field/FieldHome"), {
 export default function FieldPage() {
   return <FieldHome />;
 }
-

@@ -16,7 +16,6 @@ import {
 import { AI_CHAT_POLICY } from "@/lib/http/rate-limit-policies";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, UserRole } from "@/lib/supabase/types";
-import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -250,8 +249,13 @@ export async function POST(req: Request) {
   }
 
   const { data: profileRow } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>();
-  const profile = profileRow ?? buildDemoProfileForAuthUser(user);
-  const serverRole = profile.role;
+  if (!profileRow?.role || profileRow.is_active === false) {
+    return apiError(ctx, "An active operator profile is required.", 403, {
+      policy: AI_CHAT_POLICY,
+      userId: user.id,
+    });
+  }
+  const serverRole = profileRow.role;
 
   try {
     const body = (await req.json()) as ReqBody;
@@ -328,4 +332,3 @@ export async function POST(req: Request) {
     return apiError(ctx, API_ERROR_INVALID_JSON, 400, { policy: AI_CHAT_POLICY });
   }
 }
-

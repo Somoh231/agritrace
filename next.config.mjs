@@ -28,8 +28,10 @@ const contentSecurityPolicy = [
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
   {
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(self), payment=(), usb=()",
@@ -42,6 +44,7 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  outputFileTracingRoot: process.cwd(),
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200],
@@ -49,7 +52,6 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "recharts"],
-    instrumentationHook: true,
   },
   headers: async () => [
     {

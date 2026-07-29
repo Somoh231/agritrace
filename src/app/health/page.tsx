@@ -36,13 +36,13 @@ export default async function HealthPage() {
       const { error } = await supabase.from("profiles").select("id").limit(1);
       if (error) {
         dbReachable = false;
-        dbDetail = error.message;
+        dbDetail = "Database check unavailable.";
       } else {
         dbReachable = true;
       }
-    } catch (e) {
+    } catch {
       dbReachable = false;
-      dbDetail = e instanceof Error ? e.message : "Failed to reach database.";
+      dbDetail = "Database check unavailable.";
     }
   } else {
     dbDetail = "Supabase env not set.";
@@ -72,6 +72,8 @@ export default async function HealthPage() {
       detail: dbReachable ? "Supabase query succeeded." : dbDetail,
     },
   ];
+  const setupEnabled =
+    process.env.NODE_ENV !== "production" || process.env.AGRIVAULT_ENABLE_SETUP_PAGE === "true";
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -93,12 +95,14 @@ export default async function HealthPage() {
             <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
               Checks
             </div>
-            <a
-              href="/setup"
-              className="text-[12px] text-forest-700 hover:underline underline-offset-2"
-            >
-              First-time setup →
-            </a>
+            {setupEnabled ? (
+              <a
+                href="/setup"
+                className="text-[12px] text-forest-700 hover:underline underline-offset-2"
+              >
+                First-time setup →
+              </a>
+            ) : null}
           </div>
           <div>
             {checks.map((c) => (
@@ -141,4 +145,3 @@ export default async function HealthPage() {
     </div>
   );
 }
-

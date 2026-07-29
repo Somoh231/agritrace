@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 
 import { postLoginHomeForRole } from "@/lib/auth/post-login-home";
 import { createClient } from "@/lib/supabase/server";
-import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { Profile } from "@/lib/supabase/types";
 
 export default async function DashboardEntry() {
@@ -17,7 +16,6 @@ export default async function DashboardEntry() {
     .select("role")
     .eq("id", user.id)
     .maybeSingle<Pick<Profile, "role">>();
-
-  const role = resolveUserRoleWithDemoFallback(profile, user);
-  redirect(postLoginHomeForRole(role));
+  if (!profile?.role) redirect("/login?error=profile_required");
+  redirect(postLoginHomeForRole(profile.role));
 }

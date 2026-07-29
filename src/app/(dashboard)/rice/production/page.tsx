@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const ProductionRecordsTable = dynamic(() => import("@/components/rice/ProductionRecordsTable"), {
@@ -8,4 +10,3 @@ const ProductionRecordsTable = dynamic(() => import("@/components/rice/Productio
 export default function RiceProductionRecordsPage() {
   return <ProductionRecordsTable />;
 }
-

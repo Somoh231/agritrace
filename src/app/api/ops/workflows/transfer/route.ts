@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-response";
+import { clampStr, parseJsonObject } from "@/lib/http/api-security";
 import { WORKFLOW_MUTATION_POLICY } from "@/lib/http/rate-limit-policies";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import { findTransferOrderServer } from "@/lib/logistics/transfer-repository-server";
@@ -53,12 +54,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, code: scopeDenied.code, message: scopeDenied.message }, { status: 403 });
   }
 
-  let body: { transferId?: string; action?: string; note?: string };
-  try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ ok: false, code: "bad_request", message: "Invalid JSON body." }, { status: 400 });
+  const parsed = await parseJsonObject(req, 16_000);
+  if (!parsed.ok) {
+    return NextResponse.json(
+      { ok: false, code: parsed.status === 413 ? "payload_too_large" : "bad_request", message: parsed.error },
+      { status: parsed.status },
+    );
   }
+  const body = parsed.body as { transferId?: string; action?: string; note?: string };
 
   const transferId = typeof body.transferId === "string" ? body.transferId.trim() : "";
   const rawAction = typeof body.action === "string" ? body.action.trim() : "";
@@ -86,6 +89,16 @@ export async function POST(req: Request) {
   if (!order) {
     return NextResponse.json({ ok: false, code: "not_found", message: "Transfer order not found in corridor ledger." }, { status: 404 });
   }
+  if (order.source !== "supabase" || !isPersistableSupabasePk(order.id)) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: "illustrative_read_only",
+        message: "Canonical and offline transfer examples are read-only. A live transfer record is required.",
+      },
+      { status: 409 },
+    );
+  }
 
   const permAction = transferMutationToPermissionAction(action);
   const pctx = transferOperationalContext(order);
@@ -106,7 +119,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, code: "invalid_transition", message: tr.error }, { status: 422 });
   }
 
-  const extraNote = typeof body.note === "string" && body.note.trim() ? body.note.trim() : "";
+  const extraNote = clampStr(body.note, 4_000);
   const mergedNotes = extraNote ? `${tr.notes} · ${extraNote}` : tr.notes;
 
   const nextOrder: TransferOrderView = {
@@ -119,32 +132,45 @@ export async function POST(req: Request) {
     completedAt: tr.timestamps.completedAt ?? order.completedAt ?? null,
   };
 
-  let persisted = false;
-  if (order.source === "supabase" && isPersistableSupabasePk(order.id)) {
-    const patch: Record<string, unknown> = {
-      status: tr.nextStatus,
-      notes: mergedNotes,
-      updated_at: new Date().toISOString(),
-    };
-    if (tr.timestamps.approvedAt) patch.approved_at = tr.timestamps.approvedAt;
-    if (tr.timestamps.dispatchedAt) patch.dispatched_at = tr.timestamps.dispatchedAt;
-    if (tr.timestamps.deliveredAt) patch.delivered_at = tr.timestamps.deliveredAt;
-    if (tr.timestamps.completedAt) patch.completed_at = tr.timestamps.completedAt;
+  const patch: Record<string, unknown> = {
+    status: tr.nextStatus,
+    notes: mergedNotes,
+    updated_at: new Date().toISOString(),
+  };
+  if (tr.timestamps.approvedAt) patch.approved_at = tr.timestamps.approvedAt;
+  if (tr.timestamps.dispatchedAt) patch.dispatched_at = tr.timestamps.dispatchedAt;
+  if (tr.timestamps.deliveredAt) patch.delivered_at = tr.timestamps.deliveredAt;
+  if (tr.timestamps.completedAt) patch.completed_at = tr.timestamps.completedAt;
 
-    const { error: updErr } = await principal.supabase.from("warehouse_transfer_orders").update(patch).eq("id", order.id);
-    if (updErr) {
-      console.error("[workflow] transfer persist failed", updErr.message);
-      return NextResponse.json(
-        {
-          ok: false,
-          code: "persist_failed",
-          message: "Could not persist transfer status — verify Supabase permissions and row integrity.",
-        },
-        { status: 422 },
-      );
-    }
-    persisted = true;
+  const { data: updated, error: updErr } = await principal.supabase
+    .from("warehouse_transfer_orders")
+    .update(patch)
+    .eq("id", order.id)
+    .eq("status", order.status)
+    .select("id")
+    .maybeSingle();
+  if (updErr) {
+    console.error("[workflow] transfer persist failed", updErr.message);
+    return NextResponse.json(
+      {
+        ok: false,
+        code: "persist_failed",
+        message: "Could not persist transfer status — verify Supabase permissions and row integrity.",
+      },
+      { status: 422 },
+    );
   }
+  if (!updated) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: "concurrent_transition",
+        message: "This transfer changed in another session. Reload before applying a new decision.",
+      },
+      { status: 409 },
+    );
+  }
+  const persisted = true;
 
   const auditLabel =
     action === "dispute"
@@ -163,7 +189,7 @@ export async function POST(req: Request) {
       next_status: tr.nextStatus,
       internal_id: order.id,
       persisted,
-      note: typeof body.note === "string" ? body.note : null,
+      note: extraNote || null,
     },
   });
 

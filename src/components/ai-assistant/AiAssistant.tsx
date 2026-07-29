@@ -93,7 +93,6 @@ export default function AiAssistant({
     } catch {
       /* ignore */
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
   React.useEffect(() => {
@@ -361,4 +360,3 @@ export default function AiAssistant({
     </>
   );
 }
-

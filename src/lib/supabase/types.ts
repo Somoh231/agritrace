@@ -1,7 +1,7 @@
 /** Matches `public.user_role` enum in Supabase migrations. */
 export type UserRole =
   | "super_admin"
-  | "admin" // TEMP DEMO FALLBACK — synthetic when profiles row missing; also assignable for service accounts
+  | "admin" // legacy explicit platform-admin profile; never synthesized from auth state
   | "ministry_admin"
   | "ministry_officer"
   | "government_officer" // legacy alias — prefer ministry_officer or ministry_admin for new profiles
@@ -279,4 +279,3 @@ export interface DemoInquiry {
   status: DemoInquiryStatus;
   admin_notes: string | null;
 }
-

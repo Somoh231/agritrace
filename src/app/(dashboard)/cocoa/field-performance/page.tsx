@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 
 const FieldPerformanceClient = dynamic(() => import("@/components/cocoa/FieldPerformanceClient"), {

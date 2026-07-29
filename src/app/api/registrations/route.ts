@@ -1,28 +1,25 @@
 import {
-  API_ERROR_UNAUTHORIZED,
   logApiError,
   parseBoundedInt,
 } from "@/lib/http/api-security";
 import {
-  apiError,
   apiInternalError,
   apiJson,
   beginApiRequestAsync,
   rejectIfRateLimited,
 } from "@/lib/http/api-response";
 import { READ_POLICY } from "@/lib/http/rate-limit-policies";
+import { requireApiSession } from "@/lib/http/require-api-session";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
-  const ctx = await beginApiRequestAsync(request, READ_POLICY);
+  const auth = await requireApiSession(request);
+  if (!auth.ok) return auth.response;
+  const ctx = await beginApiRequestAsync(request, READ_POLICY, auth.session.userId);
   const blocked = rejectIfRateLimited(ctx);
   if (blocked) return blocked;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return apiError(ctx, API_ERROR_UNAUTHORIZED, 401, { policy: READ_POLICY });
 
   const url = new URL(request.url);
   const limit = parseBoundedInt(url.searchParams.get("limit"), 50, 1, 200);
@@ -39,5 +36,5 @@ export async function GET(request: Request) {
     logApiError("api/registrations", error, ctx.requestId);
     return apiInternalError(ctx);
   }
-  return apiJson(ctx, { registrations: data ?? [] }, { policy: READ_POLICY, userId: user.id });
+  return apiJson(ctx, { registrations: data ?? [] }, { policy: READ_POLICY, userId: auth.session.userId });
 }

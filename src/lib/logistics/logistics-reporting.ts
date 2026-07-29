@@ -1,9 +1,12 @@
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import type { TransferOrderView } from "@/lib/logistics/types";
+import { escapeCsvCell } from "@/lib/reports/csv";
 
 export function downloadLogisticsCsv(filename: string, headers: string[], rows: string[][]) {
-  const esc = (c: string) => `"${String(c).replace(/"/g, '""')}"`;
-  const body = [headers.map(esc).join(","), ...rows.map((r) => r.map(esc).join(","))].join("\n");
+  const body = [
+    headers.map(escapeCsvCell).join(","),
+    ...rows.map((r) => r.map(escapeCsvCell).join(",")),
+  ].join("\n");
   const blob = new Blob([body], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
