@@ -18,7 +18,9 @@
     "seed:ministry": "tsx src/lib/supabase/seed-ministry-canonical.ts",
     "test:workflow": "tsx src/lib/workflow/__tests__/workflow.spec.ts && tsx src/lib/http/__tests__/security.spec.ts",
     "test:rls:rc1": "node scripts/verify-rc1-rls-hardening.mjs",
-    "test:identity:rc1": "node scripts/verify-workforce-identity.mjs"
+    "test:identity:rc1": "node scripts/verify-workforce-identity.mjs",
+    "test:private:rc1": "node scripts/verify-private-cutover.mjs",
+    "audit:workforce:preflight": "tsx scripts/audit-workforce-preflight.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",

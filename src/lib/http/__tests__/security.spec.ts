@@ -155,13 +155,19 @@ console.log("security — workforce identity");
 check("inactive and missing-role workforce identities fail closed with canonical messages", () => {
   const inactive = assessOperationalAccess(
     { role: "ministry_officer", is_active: false, account_status: "inactive" },
-    ["ministry_officer"],
+    [{ role: "ministry_officer", is_primary: true }],
   );
   assert.equal(inactive.ok, false);
   if (!inactive.ok) assert.equal(inactive.message, INACTIVE_ACCOUNT_MESSAGE);
 
   const missingRole = assessOperationalAccess(
-    { role: "ministry_officer", is_active: true, account_status: "active", organization_id: "org-1" },
+    {
+      role: "ministry_officer",
+      is_active: true,
+      account_status: "active",
+      access_transition_status: "complete",
+      organization_id: "org-1",
+    },
     [],
   );
   assert.equal(missingRole.ok, false);
@@ -174,11 +180,12 @@ check("geographically scoped roles require complete organization and geography",
       role: "clan_technician",
       is_active: true,
       account_status: "active",
+      access_transition_status: "complete",
       organization_id: "org-1",
       county: "Bong",
       district: "Salala",
     },
-    ["clan_technician"],
+    [{ role: "clan_technician", is_primary: true }],
   );
   assert.equal(incomplete.ok, false);
   if (!incomplete.ok) assert.equal(incomplete.message, INCOMPLETE_PROFILE_MESSAGE);
@@ -188,12 +195,16 @@ check("geographically scoped roles require complete organization and geography",
       role: "clan_technician",
       is_active: true,
       account_status: "active",
+      access_transition_status: "complete",
       organization_id: "org-1",
       county: "Bong",
       district: "Salala",
       clan_or_field_area: "QA geography A",
     },
-    ["clan_technician", "dao_officer"],
+    [
+      { role: "clan_technician", is_primary: true },
+      { role: "dao_officer", is_primary: false },
+    ],
   );
   assert.deepEqual(complete, {
     ok: true,
@@ -201,6 +212,55 @@ check("geographically scoped roles require complete organization and geography",
     roles: ["clan_technician", "dao_officer"],
     multipleRoles: true,
   });
+});
+
+check("primary, transition, expiry, and warehouse prerequisites fail closed", () => {
+  const base = {
+    role: "warehouse_manager" as const,
+    is_active: true,
+    account_status: "active",
+    access_transition_status: "complete",
+    organization_id: "org-1",
+    county: "Bong",
+    has_warehouse_assignment: true,
+  };
+  const now = new Date("2026-07-29T12:00:00.000Z");
+
+  assert.equal(
+    assessOperationalAccess(
+      base,
+      [{ role: "warehouse_manager", is_primary: true, expires_at: "2026-07-29T11:59:59.000Z" }],
+      now,
+    ).ok,
+    false,
+  );
+  assert.equal(
+    assessOperationalAccess(
+      { ...base, access_transition_status: "legacy_admin_review_required" },
+      [{ role: "warehouse_manager", is_primary: true }],
+      now,
+    ).ok,
+    false,
+  );
+  assert.equal(
+    assessOperationalAccess(
+      { ...base, has_warehouse_assignment: false },
+      [{ role: "warehouse_manager", is_primary: true }],
+      now,
+    ).ok,
+    false,
+  );
+  assert.equal(
+    assessOperationalAccess(
+      base,
+      [
+        { role: "warehouse_manager", is_primary: true },
+        { role: "field_agent", is_primary: true },
+      ],
+      now,
+    ).ok,
+    false,
+  );
 });
 
 check("provisioning normalizes email and enforces assignment privilege", () => {
