@@ -4,10 +4,8 @@ import * as React from "react";
 import { Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { ClientErrorBoundary } from "@/components/layout/ClientErrorBoundary";
 import NotificationsMenu from "@/components/layout/NotificationsMenu";
 import UserWorkspaceMenu from "@/components/layout/UserWorkspaceMenu";
-import WorkspaceRoleSwitcher from "@/components/layout/WorkspaceRoleSwitcher";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import { ministryBreadcrumb } from "@/lib/navigation/ministry-nav";
@@ -30,7 +28,6 @@ function initialsFromName(name: string) {
 export default function Topbar({
   pathname,
   profile,
-  authenticRole,
   effectiveRole,
   primaryAction,
   onExportPdf,
@@ -38,7 +35,6 @@ export default function Topbar({
 }: {
   pathname: string;
   profile: Profile;
-  authenticRole: UserRole;
   effectiveRole: UserRole;
   primaryAction: { label: string; onClick: () => void } | null;
   onExportPdf: () => void;
@@ -102,18 +98,6 @@ export default function Topbar({
             aria-label="Global search"
           />
         </form>
-        <div className="hidden xl:flex items-center">
-          <ClientErrorBoundary
-            name="workspace-preview"
-            fallback={
-              <div className="font-mono text-[9px] text-amber-700 max-w-[220px]">
-                Workspace preview unavailable — continue with signed-in scope.
-              </div>
-            }
-          >
-            <WorkspaceRoleSwitcher effectiveRole={effectiveRole} authenticRole={authenticRole} />
-          </ClientErrorBoundary>
-        </div>
         <div className="hidden lg:flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden />
           <span className="font-mono text-[10px] text-emerald-800">System live</span>
@@ -195,18 +179,6 @@ export default function Topbar({
             {primaryAction.label}
           </button>
         ) : null}
-      </div>
-      <div className="w-full xl:hidden border-t border-slate-100 pt-2 pb-1">
-        <ClientErrorBoundary
-          name="workspace-preview-mobile"
-          fallback={
-            <div className="font-mono text-[9px] text-amber-700 px-1">
-              Workspace preview unavailable.
-            </div>
-          }
-        >
-          <WorkspaceRoleSwitcher effectiveRole={effectiveRole} authenticRole={authenticRole} />
-        </ClientErrorBoundary>
       </div>
     </header>
   );

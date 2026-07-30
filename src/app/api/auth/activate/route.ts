@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { assessOperationalAccess } from "@/lib/auth/access-readiness";
+import {
+  assessOperationalAccess,
+  type AccessRoleAssignment,
+} from "@/lib/auth/access-readiness";
 import { apiHeaders, beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-response";
 import { ADMIN_MUTATION_POLICY } from "@/lib/http/rate-limit-policies";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import type { UserRole } from "@/lib/supabase/types";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -21,21 +23,30 @@ export async function POST(request: Request) {
   const admin = getSupabaseAdminClient();
 
   try {
-    const [profileResult, roleResult] = await Promise.all([
+    const [profileResult, roleResult, warehouseResult] = await Promise.all([
       admin
         .from("profiles")
         .select(
-          "id,role,organization_id,county,district,clan_or_field_area,is_active,account_status,activated_at",
+          "id,role,organization_id,county,district,clan_or_field_area,is_active,account_status,access_transition_status,activated_at,deactivated_at,suspended_at",
         )
         .eq("id", user.id)
         .maybeSingle(),
       admin
         .from("profile_role_assignments")
-        .select("role,is_primary")
+        .select("role,is_primary,starts_at,expires_at,ended_at")
         .eq("profile_id", user.id)
-        .is("removed_at", null),
+        .is("ended_at", null),
+      admin
+        .from("warehouse_assignments")
+        .select("warehouse_id", { count: "exact", head: true })
+        .eq("profile_id", user.id),
     ]);
-    if (profileResult.error || roleResult.error || !profileResult.data) {
+    if (
+      profileResult.error ||
+      roleResult.error ||
+      warehouseResult.error ||
+      !profileResult.data
+    ) {
       return NextResponse.json(
         {
           error:
@@ -52,10 +63,14 @@ export async function POST(request: Request) {
         { status: 403, headers },
       );
     }
-    const roles = (roleResult.data ?? []).map((item: any) => item.role as UserRole);
     const readiness = assessOperationalAccess(
-      { ...profile, is_active: true, account_status: "active" },
-      roles,
+      {
+        ...profile,
+        is_active: true,
+        account_status: "active",
+        has_warehouse_assignment: (warehouseResult.count ?? 0) > 0,
+      },
+      (roleResult.data ?? []) as AccessRoleAssignment[],
     );
     if (!readiness.ok) {
       return NextResponse.json({ error: readiness.message }, { status: 403, headers });

@@ -8,6 +8,7 @@ import MinistryBrandLogo from "@/components/brand/MinistryBrandLogo";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import {
   assessOperationalAccess,
+  type AccessRoleAssignment,
   INACTIVE_ACCOUNT_MESSAGE,
   INCOMPLETE_PROFILE_MESSAGE,
   NO_AUTHORIZED_ROLE_MESSAGE,
@@ -16,7 +17,6 @@ import { postLoginHomeForRole } from "@/lib/auth/post-login-home";
 import { safeInternalRedirect } from "@/lib/auth/safe-redirect";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { describeAuthFetchFailure } from "@/lib/supabase/env";
-import type { UserRole } from "@/lib/supabase/types";
 import { track } from "@/lib/analytics/client";
 
 export default function LoginClient() {
@@ -63,32 +63,32 @@ export default function LoginClient() {
         setError("Sign-in completed without a usable session. Please retry.");
         return;
       }
-      let { data: profile, error: profileError } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("role,is_active,account_status,organization_id,county,district,clan_or_field_area")
+        .select("role,is_active,account_status,access_transition_status,organization_id,county,district,clan_or_field_area,deactivated_at,suspended_at")
         .eq("id", user.id)
         .maybeSingle();
-      if (profileError) {
-        const legacy = await supabase
-          .from("profiles")
-          .select("role,is_active,organization_id,county,district")
-          .eq("id", user.id)
-          .maybeSingle();
-        profile = legacy.data as typeof profile;
-        profileError = legacy.error;
-      }
-      const roleResult = await supabase
-        .from("profile_role_assignments")
-        .select("role")
-        .eq("profile_id", user.id)
-        .is("removed_at", null);
-      const assignedRoles =
-        roleResult.error || !roleResult.data
-          ? profile?.role
-            ? [profile.role as UserRole]
-            : []
-          : roleResult.data.map((item: { role: UserRole }) => item.role);
-      const readiness = profileError ? null : assessOperationalAccess(profile, assignedRoles);
+      const [roleResult, warehouseResult] = await Promise.all([
+        supabase
+          .from("profile_role_assignments")
+          .select("role,is_primary,starts_at,expires_at,ended_at")
+          .eq("profile_id", user.id)
+          .is("ended_at", null),
+        supabase
+          .from("warehouse_assignments")
+          .select("warehouse_id", { count: "exact", head: true })
+          .eq("profile_id", user.id),
+      ]);
+      const readiness =
+        profileError || roleResult.error || warehouseResult.error
+          ? null
+          : assessOperationalAccess(
+              {
+                ...profile,
+                has_warehouse_assignment: (warehouseResult.count ?? 0) > 0,
+              },
+              (roleResult.data ?? []) as AccessRoleAssignment[],
+            );
       if (!readiness?.ok) {
         await supabase.auth.signOut();
         setError(readiness?.message ?? INCOMPLETE_PROFILE_MESSAGE);

@@ -1,8 +1,10 @@
 import type { OperationalActor } from "@/lib/ops/permissions";
 import { resolveOperationalActor } from "@/lib/ops/current-actor";
 import type { Profile } from "@/lib/supabase/types";
-import { assessOperationalAccess } from "@/lib/auth/access-readiness";
-import type { UserRole } from "@/lib/supabase/types";
+import {
+  assessOperationalAccess,
+  type AccessRoleAssignment,
+} from "@/lib/auth/access-readiness";
 import { createClient } from "@/lib/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -70,20 +72,11 @@ export async function requireWorkflowPrincipal(): Promise<WorkflowPrincipal | Wo
       };
     }
 
-    let { data: profileRow, error: profileErr } = await supabase
+    const { data: profileRow, error: profileErr } = await supabase
       .from("profiles")
-      .select("id,email,full_name,role,organization_id,county,district,clan_or_field_area,phone,is_active,account_status,created_at")
+      .select("id,email,full_name,role,organization_id,county,district,clan_or_field_area,phone,is_active,account_status,access_transition_status,deactivated_at,suspended_at,created_at")
       .eq("id", user.id)
       .maybeSingle();
-    if (profileErr) {
-      const legacy = await supabase
-        .from("profiles")
-        .select("id,email,full_name,role,organization_id,county,district,phone,is_active,created_at")
-        .eq("id", user.id)
-        .maybeSingle();
-      profileRow = legacy.data as typeof profileRow;
-      profileErr = legacy.error;
-    }
 
     if (profileErr || !profileRow) {
       console.error("[workflow] Profile lookup failed", profileErr?.message ?? "no row");
@@ -95,16 +88,32 @@ export async function requireWorkflowPrincipal(): Promise<WorkflowPrincipal | Wo
       };
     }
 
-    const assignmentResult = await supabase
-      .from("profile_role_assignments")
-      .select("role")
-      .eq("profile_id", user.id)
-      .is("removed_at", null);
-    const assignedRoles =
-      assignmentResult.error || !assignmentResult.data
-        ? [profileRow.role as UserRole]
-        : assignmentResult.data.map((item: { role: UserRole }) => item.role);
-    const readiness = assessOperationalAccess(profileRow, assignedRoles);
+    const [assignmentResult, warehouseResult] = await Promise.all([
+      supabase
+        .from("profile_role_assignments")
+        .select("role,is_primary,starts_at,expires_at,ended_at")
+        .eq("profile_id", user.id)
+        .is("ended_at", null),
+      supabase
+        .from("warehouse_assignments")
+        .select("warehouse_id", { count: "exact", head: true })
+        .eq("profile_id", user.id),
+    ]);
+    if (assignmentResult.error || warehouseResult.error) {
+      return {
+        ok: false,
+        status: 403,
+        code: "missing_profile",
+        message: "Explicit workforce authorization is unavailable.",
+      };
+    }
+    const readiness = assessOperationalAccess(
+      {
+        ...profileRow,
+        has_warehouse_assignment: (warehouseResult.count ?? 0) > 0,
+      },
+      (assignmentResult.data ?? []) as AccessRoleAssignment[],
+    );
     if (!readiness.ok) {
       return {
         ok: false,

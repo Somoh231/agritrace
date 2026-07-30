@@ -13,7 +13,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { UserRole } from "@/lib/supabase/types";
 
 const PROFILE_COLUMNS =
-  "id,email,full_name,role,organization_id,county,district,clan_or_field_area,phone,is_active,account_status,employee_or_staff_id,job_title,department,invited_at,activated_at,deactivated_at,provisioned_by,created_at,updated_at";
+  "id,email,full_name,role,organization_id,county,district,clan_or_field_area,phone,is_active,account_status,access_transition_status,employee_or_staff_id,job_title,department,invited_at,activated_at,deactivated_at,suspended_at,suspension_reason,provisioned_by,authorization_version,created_at,updated_at";
 const LEGACY_PROFILE_COLUMNS =
   "id,email,full_name,role,organization_id,county,district,phone,is_active,deactivated_at,created_at";
 const HISTORY_ACTIONS = [
@@ -132,14 +132,24 @@ export async function GET(request: Request) {
     if (profileError) throw profileError;
 
     let assignments: any[] = [];
+    let warehouseAssignments: any[] = [];
+    let warehouses: any[] = [];
     let history: any[] = [];
     if (schemaReady) {
-      const [assignmentRes, historyRes] = await Promise.all([
+      const [assignmentRes, warehouseAssignmentRes, warehousesRes, historyRes] = await Promise.all([
         admin
           .from("profile_role_assignments")
-          .select("id,profile_id,role,is_primary,assigned_by,assigned_at,removed_at")
+          .select("id,profile_id,role,is_primary,provenance,evidence_ref,assigned_by,starts_at,expires_at,ended_at,ended_by,created_at")
           .in("profile_id", ids)
-          .is("removed_at", null),
+          .is("ended_at", null),
+        admin
+          .from("warehouse_assignments")
+          .select("profile_id,warehouse_id")
+          .in("profile_id", ids),
+        admin
+          .from("warehouses")
+          .select("id,name,county")
+          .order("name"),
         admin
           .from("audit_log")
           .select("id,user_id,action,record_id,new_values,created_at")
@@ -149,8 +159,12 @@ export async function GET(request: Request) {
           .limit(1000),
       ]);
       if (assignmentRes.error) throw assignmentRes.error;
+      if (warehouseAssignmentRes.error) throw warehouseAssignmentRes.error;
+      if (warehousesRes.error) throw warehousesRes.error;
       if (historyRes.error) throw historyRes.error;
       assignments = assignmentRes.data ?? [];
+      warehouseAssignments = warehouseAssignmentRes.data ?? [];
+      warehouses = warehousesRes.data ?? [];
       history = historyRes.data ?? [];
     }
 
@@ -160,7 +174,7 @@ export async function GET(request: Request) {
       const roles = schemaReady
         ? assignments.filter((item) => item.profile_id === user.id)
         : profile
-          ? [{ profile_id: user.id, role: profile.role, is_primary: true, assigned_at: profile.created_at }]
+          ? [{ profile_id: user.id, role: profile.role, is_primary: true, starts_at: profile.created_at }]
           : [];
       return {
         id: user.id,
@@ -177,6 +191,9 @@ export async function GET(request: Request) {
             }
           : null,
         role_assignments: roles,
+        warehouse_ids: warehouseAssignments
+          .filter((item) => item.profile_id === user.id)
+          .map((item) => item.warehouse_id),
         access_history: history.filter((item) => item.record_id === user.id),
       };
     });
@@ -194,7 +211,7 @@ export async function GET(request: Request) {
       return true;
     });
 
-    return NextResponse.json({ users: filtered, schemaReady }, { headers });
+    return NextResponse.json({ users: filtered, warehouses, schemaReady }, { headers });
   } catch (error) {
     console.error("Admin workforce list failed", { requestId: gate.ctx.requestId, error });
     return safeFailure("Unable to load workforce users.", 500, headers);
@@ -259,6 +276,7 @@ export async function POST(request: Request) {
       activated_at: null,
       deactivated_at: null,
       provisioned_by: gate.userId,
+      access_transition_status: "incomplete",
     };
     const profileResult = await admin.from("profiles").update(profilePatch as any).eq("id", createdUserId);
     if (profileResult.error) throw profileResult.error;
@@ -269,6 +287,8 @@ export async function POST(request: Request) {
       selected_primary_role: input.primary_role,
       actor_profile_id: gate.userId,
       audit_request_id: gate.ctx.requestId,
+      expected_authorization_version: 1,
+      assigned_warehouse_ids: input.warehouse_ids,
     });
     if (roleResult.error) throw roleResult.error;
 
@@ -401,6 +421,8 @@ export async function PATCH(request: Request) {
       selected_primary_role: input.primary_role,
       actor_profile_id: gate.userId,
       audit_request_id: gate.ctx.requestId,
+      expected_authorization_version: currentProfile.authorization_version,
+      assigned_warehouse_ids: input.warehouse_ids,
     });
     if (roleUpdate.error) throw roleUpdate.error;
 

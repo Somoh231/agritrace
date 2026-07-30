@@ -12,7 +12,7 @@ import PilotBanner from "@/components/shared/PilotBanner";
 import { resolveOperationalActor } from "@/lib/ops/current-actor";
 import OperationalActorProvider from "@/lib/ops/operational-actor-context";
 import { normalizeMinistryNavRole } from "@/lib/navigation/ministry-nav";
-import type { Profile, UserRole } from "@/lib/supabase/types";
+import type { Profile } from "@/lib/supabase/types";
 
 function initialsFromName(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -80,12 +80,9 @@ class DashboardShellFatalBoundary extends React.Component<
 
 export default function DashboardShell({
   profile,
-  authenticRole,
   children,
 }: {
   profile: Profile | null;
-  /** Database-backed role before workspace preview cookie — may be undefined if profile incomplete */
-  authenticRole: UserRole | null | undefined;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -99,10 +96,6 @@ export default function DashboardShell({
   const safeEffectiveRole = React.useMemo(
     () => normalizeMinistryNavRole(profile?.role),
     [profile?.role],
-  );
-  const safeAuthenticRole = React.useMemo(
-    () => normalizeMinistryNavRole(authenticRole ?? profile?.role),
-    [authenticRole, profile?.role],
   );
 
   const operationalActor = React.useMemo(() => {
@@ -271,7 +264,6 @@ export default function DashboardShell({
             <Topbar
               pathname={pathname}
               profile={profile}
-              authenticRole={safeAuthenticRole}
               effectiveRole={safeEffectiveRole}
               onOpenMobileNav={() => setMobileNav(true)}
               primaryAction={

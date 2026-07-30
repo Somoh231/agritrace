@@ -20,6 +20,18 @@ export type AccessProfile = {
   clan_or_field_area?: string | null;
   is_active?: boolean | null;
   account_status?: string | null;
+  access_transition_status?: string | null;
+  deactivated_at?: string | null;
+  suspended_at?: string | null;
+  has_warehouse_assignment?: boolean;
+};
+
+export type AccessRoleAssignment = {
+  role: UserRole;
+  is_primary: boolean;
+  starts_at?: string | null;
+  expires_at?: string | null;
+  ended_at?: string | null;
 };
 
 export type AccessReadiness =
@@ -42,34 +54,59 @@ export function roleRequiresClanOrFieldArea(role: UserRole): boolean {
   return isClanFieldRole(role);
 }
 
+export function roleRequiresWarehouseAssignment(role: UserRole): boolean {
+  return role === "warehouse_manager";
+}
+
 export function assessOperationalAccess(
   profile: AccessProfile | null | undefined,
-  assignedRoles: UserRole[],
+  assignments: AccessRoleAssignment[],
+  now = new Date(),
 ): AccessReadiness {
   if (!profile) {
     return { ok: false, code: "profile_incomplete", message: INCOMPLETE_PROFILE_MESSAGE };
   }
 
-  if (profile.is_active === false || profile.account_status === "inactive") {
+  if (
+    profile.is_active !== true ||
+    profile.account_status === "inactive" ||
+    profile.account_status === "suspended" ||
+    profile.deactivated_at ||
+    profile.suspended_at
+  ) {
     return { ok: false, code: "account_inactive", message: INACTIVE_ACCOUNT_MESSAGE };
   }
 
-  const roles = [...new Set(assignedRoles)];
+  const nowMs = now.getTime();
+  const currentAssignments = assignments.filter((assignment) => {
+    if (assignment.ended_at) return false;
+    const startsAt = assignment.starts_at ? Date.parse(assignment.starts_at) : Number.NEGATIVE_INFINITY;
+    const expiresAt = assignment.expires_at ? Date.parse(assignment.expires_at) : Number.POSITIVE_INFINITY;
+    return !Number.isNaN(startsAt) && !Number.isNaN(expiresAt) && startsAt <= nowMs && expiresAt > nowMs;
+  });
+  const roles = [...new Set(currentAssignments.map((assignment) => assignment.role))];
   if (roles.length === 0) {
     return { ok: false, code: "role_required", message: NO_AUTHORIZED_ROLE_MESSAGE };
   }
 
-  const role = profile.role && roles.includes(profile.role) ? profile.role : null;
-  if (!role) {
+  const primaryAssignments = currentAssignments.filter((assignment) => assignment.is_primary);
+  const role =
+    primaryAssignments.length === 1 &&
+    profile.role === primaryAssignments[0]?.role
+      ? primaryAssignments[0].role
+      : null;
+  if (!role || !roles.includes(role)) {
     return { ok: false, code: "profile_incomplete", message: INCOMPLETE_PROFILE_MESSAGE };
   }
 
   if (
-    (profile.account_status && profile.account_status !== "active") ||
+    profile.account_status !== "active" ||
+    profile.access_transition_status !== "complete" ||
     !profile.organization_id ||
     (roleRequiresCounty(role) && !profile.county) ||
     (roleRequiresDistrict(role) && !profile.district) ||
-    (roleRequiresClanOrFieldArea(role) && !profile.clan_or_field_area)
+    (roleRequiresClanOrFieldArea(role) && !profile.clan_or_field_area) ||
+    (roleRequiresWarehouseAssignment(role) && !profile.has_warehouse_assignment)
   ) {
     return { ok: false, code: "profile_incomplete", message: INCOMPLETE_PROFILE_MESSAGE };
   }

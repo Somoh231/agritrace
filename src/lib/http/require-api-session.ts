@@ -7,7 +7,10 @@ import {
   isDonorObserverRole,
   isMinistryNationalRole,
 } from "@/lib/auth/operational-roles";
-import { assessOperationalAccess } from "@/lib/auth/access-readiness";
+import {
+  assessOperationalAccess,
+  type AccessRoleAssignment,
+} from "@/lib/auth/access-readiness";
 import { API_ERROR_UNAUTHORIZED } from "@/lib/http/api-security";
 import { resolveRequestId, withRequestIdHeader } from "@/lib/http/request-context";
 import { createClient } from "@/lib/supabase/server";
@@ -44,34 +47,36 @@ export async function requireApiSession(request: Request): Promise<ApiSessionRes
       return { ok: false, response: jsonAuthError(requestId, 401, API_ERROR_UNAUTHORIZED) };
     }
 
-    let { data: profileRow, error } = await supabase
+    const { data: profileRow, error } = await supabase
       .from("profiles")
-      .select("id,email,full_name,role,organization_id,county,district,clan_or_field_area,phone,is_active,account_status,created_at")
+      .select("id,email,full_name,role,organization_id,county,district,clan_or_field_area,phone,is_active,account_status,access_transition_status,deactivated_at,suspended_at,created_at")
       .eq("id", user.id)
       .maybeSingle();
-    if (error) {
-      const legacy = await supabase
-        .from("profiles")
-        .select("id,email,full_name,role,organization_id,county,district,phone,is_active,created_at")
-        .eq("id", user.id)
-        .maybeSingle();
-      profileRow = legacy.data as typeof profileRow;
-      error = legacy.error;
-    }
 
     if (error || !profileRow) {
       return { ok: false, response: jsonAuthError(requestId, 403, "Forbidden") };
     }
-    const roleResult = await supabase
-      .from("profile_role_assignments")
-      .select("role")
-      .eq("profile_id", user.id)
-      .is("removed_at", null);
-    const assignedRoles =
-      roleResult.error || !roleResult.data
-        ? [profileRow.role as UserRole]
-        : roleResult.data.map((item: { role: UserRole }) => item.role);
-    const readiness = assessOperationalAccess(profileRow, assignedRoles);
+    const [roleResult, warehouseResult] = await Promise.all([
+      supabase
+        .from("profile_role_assignments")
+        .select("role,is_primary,starts_at,expires_at,ended_at")
+        .eq("profile_id", user.id)
+        .is("ended_at", null),
+      supabase
+        .from("warehouse_assignments")
+        .select("warehouse_id", { count: "exact", head: true })
+        .eq("profile_id", user.id),
+    ]);
+    if (roleResult.error || warehouseResult.error) {
+      return { ok: false, response: jsonAuthError(requestId, 403, "Forbidden") };
+    }
+    const readiness = assessOperationalAccess(
+      {
+        ...profileRow,
+        has_warehouse_assignment: (warehouseResult.count ?? 0) > 0,
+      },
+      (roleResult.data ?? []) as AccessRoleAssignment[],
+    );
     if (!readiness.ok) {
       return { ok: false, response: jsonAuthError(requestId, 403, "Forbidden") };
     }

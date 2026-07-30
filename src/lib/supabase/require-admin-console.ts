@@ -1,5 +1,8 @@
 import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
-import { assessOperationalAccess } from "@/lib/auth/access-readiness";
+import {
+  assessOperationalAccess,
+  type AccessRoleAssignment,
+} from "@/lib/auth/access-readiness";
 import { createClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/lib/supabase/types";
 
@@ -14,32 +17,32 @@ export async function requireAdminConsole(): Promise<
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, status: 401, message: "Not authenticated." };
 
-  let { data: profile, error } = await supabase
+  const { data: profile, error } = await supabase
     .from("profiles")
-    .select("role,is_active,account_status,organization_id,county,district,clan_or_field_area")
+    .select("role,is_active,account_status,access_transition_status,organization_id,county,district,clan_or_field_area,deactivated_at,suspended_at")
     .eq("id", user.id)
     .maybeSingle();
-  if (error) {
-    const legacy = await supabase
-      .from("profiles")
-      .select("role,is_active,organization_id,county,district")
-      .eq("id", user.id)
-      .maybeSingle();
-    profile = legacy.data as typeof profile;
-    error = legacy.error;
-  }
-  const assignmentResult = await supabase
-    .from("profile_role_assignments")
-    .select("role")
-    .eq("profile_id", user.id)
-    .is("removed_at", null);
-  const roles =
-    assignmentResult.error || !assignmentResult.data
-      ? profile?.role
-        ? [profile.role as UserRole]
-        : []
-      : assignmentResult.data.map((item: { role: UserRole }) => item.role);
-  const readiness = error ? null : assessOperationalAccess(profile, roles);
+  const [assignmentResult, warehouseResult] = await Promise.all([
+    supabase
+      .from("profile_role_assignments")
+      .select("role,is_primary,starts_at,expires_at,ended_at")
+      .eq("profile_id", user.id)
+      .is("ended_at", null),
+    supabase
+      .from("warehouse_assignments")
+      .select("warehouse_id", { count: "exact", head: true })
+      .eq("profile_id", user.id),
+  ]);
+  const readiness =
+    error || assignmentResult.error || warehouseResult.error
+      ? null
+      : assessOperationalAccess(
+          {
+            ...profile,
+            has_warehouse_assignment: (warehouseResult.count ?? 0) > 0,
+          },
+          (assignmentResult.data ?? []) as AccessRoleAssignment[],
+        );
 
   const role = readiness?.ok ? readiness.role : null;
   if (!role || !isAdminConsoleRole(role)) {

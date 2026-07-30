@@ -30,7 +30,7 @@ type AdminUser = {
     employee_or_staff_id: string | null;
     job_title: string | null;
     department: string | null;
-    account_status: "incomplete" | "invited" | "active" | "inactive";
+    account_status: "incomplete" | "invited" | "active" | "inactive" | "suspended";
     is_active: boolean;
     invited_at: string | null;
     activated_at: string | null;
@@ -38,6 +38,7 @@ type AdminUser = {
     created_at: string;
   };
   role_assignments: ProfileRoleAssignment[];
+  warehouse_ids: string[];
   access_history: Array<{
     id: string;
     user_id: string | null;
@@ -46,6 +47,12 @@ type AdminUser = {
     new_values: Record<string, unknown> | null;
     created_at: string;
   }>;
+};
+
+type WarehouseOption = {
+  id: string;
+  name: string;
+  county: string;
 };
 
 const ROLE_OPTIONS = PROVISIONABLE_ROLES;
@@ -68,6 +75,7 @@ export default function UsersAdminClient() {
   const [error, setError] = React.useState<string | null>(null);
   const [users, setUsers] = React.useState<AdminUser[]>([]);
   const [schemaReady, setSchemaReady] = React.useState(true);
+  const [warehouses, setWarehouses] = React.useState<WarehouseOption[]>([]);
 
   const [orgs, setOrgs] = React.useState<Organization[]>([]);
   const [orgsError, setOrgsError] = React.useState<string | null>(null);
@@ -102,6 +110,7 @@ export default function UsersAdminClient() {
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error ?? `Failed to load users (${res.status}).`);
       setUsers((j.users ?? []) as AdminUser[]);
+      setWarehouses((j.warehouses ?? []) as WarehouseOption[]);
       setSchemaReady(j.schemaReady !== false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load users.");
@@ -325,9 +334,10 @@ export default function UsersAdminClient() {
       </div>
 
       {selected ? (
-        <UserEditor
-          user={selected}
-          orgs={orgs}
+          <UserEditor
+            user={selected}
+            orgs={orgs}
+            warehouses={warehouses}
           onClose={() => setSelected(null)}
           onMutate={mutateUser}
           onToggleActive={(userId, nextActive) => setConfirm({ userId, nextActive })}
@@ -336,8 +346,9 @@ export default function UsersAdminClient() {
       ) : null}
 
       {showInvite ? (
-        <UserProvisioningForm
-          orgs={orgs}
+          <UserProvisioningForm
+            orgs={orgs}
+            warehouses={warehouses}
           isSaving={isSaving}
           onClose={() => setShowInvite(false)}
           onSubmit={async (payload) => {
@@ -389,6 +400,7 @@ type WorkforceFormState = {
   employee_or_staff_id: string;
   job_title: string;
   department: string;
+  warehouse_ids: string[];
 };
 
 function initialForm(user?: AdminUser): WorkforceFormState {
@@ -410,6 +422,7 @@ function initialForm(user?: AdminUser): WorkforceFormState {
     employee_or_staff_id: profile?.employee_or_staff_id ?? "",
     job_title: profile?.job_title ?? "",
     department: profile?.department ?? "",
+    warehouse_ids: user?.warehouse_ids ?? [],
   };
 }
 
@@ -427,6 +440,7 @@ function formPayload(form: WorkforceFormState) {
     employee_or_staff_id: form.employee_or_staff_id || null,
     job_title: form.job_title || null,
     department: form.department || null,
+    warehouse_ids: form.warehouse_ids,
   };
 }
 
@@ -437,6 +451,7 @@ function profilePayload(user: AdminUser, override: Record<string, unknown> = {})
 function UserEditor({
   user,
   orgs,
+  warehouses,
   onClose,
   onMutate,
   onToggleActive,
@@ -444,6 +459,7 @@ function UserEditor({
 }: {
   user: AdminUser;
   orgs: Organization[];
+  warehouses: WarehouseOption[];
   onClose: () => void;
   onMutate: (method: "POST" | "PATCH" | "PUT", body: Record<string, unknown>) => Promise<unknown>;
   onToggleActive: (userId: string, nextActive: boolean) => void;
@@ -463,7 +479,7 @@ function UserEditor({
         />
       ) : (
         <>
-          <WorkforceFields form={form} set={set} orgs={orgs} emailReadOnly />
+          <WorkforceFields form={form} set={set} orgs={orgs} warehouses={warehouses} emailReadOnly />
           <div className="mt-5 grid gap-4 border-t border-gray-100 pt-4 lg:grid-cols-2">
             <div>
               <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400">Access status</div>
@@ -541,11 +557,13 @@ function UserEditor({
 
 function UserProvisioningForm({
   orgs,
+  warehouses,
   onClose,
   onSubmit,
   isSaving,
 }: {
   orgs: Organization[];
+  warehouses: WarehouseOption[];
   onClose: () => void;
   onSubmit: (payload: Record<string, unknown>) => Promise<void>;
   isSaving: boolean;
@@ -561,7 +579,7 @@ function UserProvisioningForm({
       onClose={onClose}
       width="max-w-[900px]"
     >
-      <WorkforceFields form={form} set={set} orgs={orgs} />
+      <WorkforceFields form={form} set={set} orgs={orgs} warehouses={warehouses} />
       <div className="mt-5 flex justify-end gap-2">
         <button type="button" onClick={onClose} className="h-9 rounded-md border px-3 text-[12px]">
           Cancel
@@ -583,11 +601,13 @@ function WorkforceFields({
   form,
   set,
   orgs,
+  warehouses,
   emailReadOnly = false,
 }: {
   form: WorkforceFormState;
   set: (key: keyof WorkforceFormState, value: any) => void;
   orgs: Organization[];
+  warehouses: WarehouseOption[];
   emailReadOnly?: boolean;
 }) {
   const toggleRole = (role: UserRole) => {
@@ -655,6 +675,40 @@ function WorkforceFields({
       <Field label="Clan / field area">
         <input value={form.clan_or_field_area} onChange={(e) => set("clan_or_field_area", e.target.value)} className="h-9 w-full rounded-md border px-3 text-[12px]" />
       </Field>
+      {form.roles.includes("warehouse_manager") ? (
+        <div className="md:col-span-2">
+          <Field label="Warehouse assignments">
+            <div className="grid gap-2 rounded-lg border border-gray-200 p-3 sm:grid-cols-2 lg:grid-cols-3">
+              {warehouses.length ? (
+                warehouses.map((warehouse) => (
+                  <label key={warehouse.id} className="flex items-start gap-2 text-[11px] text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={form.warehouse_ids.includes(warehouse.id)}
+                      onChange={() =>
+                        set(
+                          "warehouse_ids",
+                          form.warehouse_ids.includes(warehouse.id)
+                            ? form.warehouse_ids.filter((id) => id !== warehouse.id)
+                            : [...form.warehouse_ids, warehouse.id],
+                        )
+                      }
+                    />
+                    <span>
+                      {warehouse.name}
+                      <span className="block text-gray-400">{warehouse.county}</span>
+                    </span>
+                  </label>
+                ))
+              ) : (
+                <p className="text-[11px] text-red-700">
+                  No warehouses are available. A warehouse manager cannot be provisioned.
+                </p>
+              )}
+            </div>
+          </Field>
+        </div>
+      ) : null}
     </div>
   );
 }

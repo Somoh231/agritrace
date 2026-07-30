@@ -10,12 +10,17 @@ export const PROVISIONABLE_ROLES: UserRole[] = [
   "admin",
   "ministry_admin",
   "ministry_officer",
+  "government_officer",
   "county_agriculture_coordinator",
+  "county_officer",
   "dao_officer",
+  "district_officer",
   "clan_technician",
+  "field_agent",
   "warehouse_manager",
   "auditor",
   "donor_observer",
+  "donor_partner",
   "exporter",
   "cooperative_manager",
   "call_center_agent",
@@ -38,6 +43,7 @@ export type ProvisioningInput = {
   county?: string | null;
   district?: string | null;
   clan_or_field_area?: string | null;
+  warehouse_ids?: string[];
 };
 
 export type ProvisioningValidation =
@@ -76,6 +82,13 @@ export function validateProvisioningInput(
   const organizationId = String(input.organization_id ?? "").trim();
   const roles = [...new Set(Array.isArray(input.roles) ? input.roles : [])];
   const primaryRole = input.primary_role;
+  const warehouseIds = [
+    ...new Set(
+      Array.isArray(input.warehouse_ids)
+        ? input.warehouse_ids.map((value) => String(value).trim()).filter(Boolean)
+        : [],
+    ),
+  ];
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
     return { ok: false, error: "Enter a valid work email address." };
@@ -105,6 +118,19 @@ export function validateProvisioningInput(
   if (roles.some(roleRequiresClanOrFieldArea) && !clanOrFieldArea) {
     return { ok: false, error: "Clan or field-area assignment is required for the selected role." };
   }
+  if (
+    warehouseIds.some(
+      (warehouseId) =>
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          warehouseId,
+        ),
+    )
+  ) {
+    return { ok: false, error: "One or more warehouse assignments are invalid." };
+  }
+  if (roles.includes("warehouse_manager") && warehouseIds.length === 0) {
+    return { ok: false, error: "At least one warehouse assignment is required for a warehouse manager." };
+  }
 
   return {
     ok: true,
@@ -121,6 +147,7 @@ export function validateProvisioningInput(
       county,
       district,
       clan_or_field_area: clanOrFieldArea,
+      warehouse_ids: warehouseIds,
     },
   };
 }

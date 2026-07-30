@@ -8,6 +8,7 @@ import {
   MINISTRY_WAREHOUSES,
 } from "@/lib/data/ministry-canonical-data";
 import { apiHeaders, beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-response";
+import { requireApiSession } from "@/lib/http/require-api-session";
 import { PUBLIC_POLICY } from "@/lib/http/rate-limit-policies";
 import { createClient } from "@/lib/supabase/server";
 
@@ -15,10 +16,13 @@ export async function GET(request: Request) {
   const ctx = await beginApiRequestAsync(request, PUBLIC_POLICY);
   const blocked = rejectIfRateLimited(ctx);
   if (blocked) return blocked;
+  const sessionResult = await requireApiSession(request);
+  if (!sessionResult.ok) return sessionResult.response;
+  const supabase = await createClient();
 
   const canonical = {
     source: "canonical" as const,
-    sourceDetail: "Public pilot canonical dataset; no live operational records are included.",
+    sourceDetail: "Authenticated pilot canonical fallback; no live operational records are included.",
     counts: {
       fixtureFarmers: MINISTRY_FARMERS.length,
       fixtureWarehouses: MINISTRY_WAREHOUSES.length,
@@ -32,23 +36,6 @@ export async function GET(request: Request) {
   };
 
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json(canonical, { headers: apiHeaders(ctx, PUBLIC_POLICY) });
-    }
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_active")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (!profile || profile.is_active === false) {
-      return NextResponse.json(canonical, { headers: apiHeaders(ctx, PUBLIC_POLICY) });
-    }
-
     const [farmersRes, metricsRes, eventsRes, daoRes] = await Promise.all([
       supabase.from("farmers").select("id", { count: "exact", head: true }),
       supabase.from("pilot_county_metrics").select("*").limit(80),

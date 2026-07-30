@@ -1,9 +1,7 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import DashboardShell from "@/components/layout/DashboardShell";
 import PlatformProviders from "@/platform/providers";
-import { applyWorkspaceDemoRoleToProfile, WORKSPACE_DEMO_ROLE_COOKIE } from "@/lib/auth/workspace-demo-role";
 import { normalizeMinistryNavRole } from "@/lib/navigation/ministry-nav";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/supabase/types";
@@ -101,15 +99,11 @@ export default async function DashboardLayout({
 
   // `/admin/*` access is enforced by `admin/layout.tsx` (role guard), admin APIs, and sidebar visibility.
 
-  const cookieStore = await cookies();
-  const workspacePreviewCookie = cookieStore.get(WORKSPACE_DEMO_ROLE_COOKIE)?.value ?? null;
   const profileCore = { ...effectiveProfile, role: normalizeMinistryNavRole(effectiveProfile.role) };
-  const authenticRole = profileCore.role;
-  const workspaceProfile = applyWorkspaceDemoRoleToProfile(profileCore, workspacePreviewCookie);
 
   return (
     <PlatformProviders>
-      <DashboardShell profile={workspaceProfile} authenticRole={authenticRole}>
+      <DashboardShell profile={profileCore}>
         {children}
       </DashboardShell>
     </PlatformProviders>

@@ -69,12 +69,16 @@ export interface Profile {
   employee_or_staff_id?: string | null;
   job_title?: string | null;
   department?: string | null;
-  account_status?: "incomplete" | "invited" | "active" | "inactive";
+  account_status?: "incomplete" | "invited" | "active" | "inactive" | "suspended";
+  access_transition_status?: "complete" | "legacy_admin_review_required" | "incomplete";
   is_active?: boolean;
+  suspended_at?: string | null;
+  suspension_reason?: string | null;
   invited_at?: string | null;
   activated_at?: string | null;
   deactivated_at?: string | null;
   provisioned_by?: string | null;
+  authorization_version?: number;
   updated_at?: string;
   created_at: string;
 }
@@ -84,9 +88,14 @@ export interface ProfileRoleAssignment {
   profile_id: string;
   role: UserRole;
   is_primary: boolean;
+  provenance?: string;
+  evidence_ref?: string | null;
   assigned_by?: string | null;
-  assigned_at: string;
-  removed_at?: string | null;
+  starts_at: string;
+  expires_at?: string | null;
+  ended_at?: string | null;
+  ended_by?: string | null;
+  created_at?: string;
 }
 
 export interface Organization {
