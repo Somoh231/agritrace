@@ -11,7 +11,7 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = public
+set search_path = pg_catalog
 as $$
   select exists (
     select 1
@@ -66,7 +66,7 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = public
+set search_path = pg_catalog
 as $$
   select exists (
     select 1
@@ -109,10 +109,14 @@ as $$
   );
 $$;
 
-revoke all on function public.can_read_warehouse_transfer(uuid, uuid, uuid) from public, anon;
-revoke all on function public.can_manage_warehouse_transfer(uuid, uuid) from public, anon;
+revoke all on function public.can_read_warehouse_transfer(uuid, uuid, uuid)
+  from public, anon, authenticated, service_role;
+revoke all on function public.can_manage_warehouse_transfer(uuid, uuid)
+  from public, anon, authenticated, service_role;
 grant execute on function public.can_read_warehouse_transfer(uuid, uuid, uuid) to authenticated;
 grant execute on function public.can_manage_warehouse_transfer(uuid, uuid) to authenticated;
+grant execute on function public.can_read_warehouse_transfer(uuid, uuid, uuid) to service_role;
+grant execute on function public.can_manage_warehouse_transfer(uuid, uuid) to service_role;
 
 drop policy if exists warehouse_transfer_orders_select on public.warehouse_transfer_orders;
 drop policy if exists warehouse_transfer_orders_write on public.warehouse_transfer_orders;
@@ -167,7 +171,7 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = public
+set search_path = pg_catalog
 as $$
   select exists (
     select 1
@@ -197,6 +201,8 @@ as $$
             select 1
             from public.profiles officer
             where officer.id = report_officer
+              and officer.county is not null
+              and lower(officer.county) = lower(p.county)
               and officer.district is not null
               and lower(officer.district) = lower(p.district)
           )
@@ -217,7 +223,7 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = public
+set search_path = pg_catalog
 as $$
   select exists (
     select 1
@@ -248,10 +254,14 @@ as $$
   );
 $$;
 
-revoke all on function public.can_read_field_report(text, uuid) from public, anon;
-revoke all on function public.can_write_field_report(text, uuid) from public, anon;
+revoke all on function public.can_read_field_report(text, uuid)
+  from public, anon, authenticated, service_role;
+revoke all on function public.can_write_field_report(text, uuid)
+  from public, anon, authenticated, service_role;
 grant execute on function public.can_read_field_report(text, uuid) to authenticated;
 grant execute on function public.can_write_field_report(text, uuid) to authenticated;
+grant execute on function public.can_read_field_report(text, uuid) to service_role;
+grant execute on function public.can_write_field_report(text, uuid) to service_role;
 
 drop policy if exists field_reports_read on public.field_reports;
 drop policy if exists field_reports_write on public.field_reports;
@@ -277,7 +287,7 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = public
+set search_path = pg_catalog
 as $$
   select exists (
     select 1
@@ -329,7 +339,7 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = public
+set search_path = pg_catalog
 as $$
   select exists (
     select 1
@@ -366,10 +376,14 @@ as $$
   );
 $$;
 
-revoke all on function public.can_read_geo_location(uuid) from public, anon;
-revoke all on function public.can_write_geo_location(uuid) from public, anon;
+revoke all on function public.can_read_geo_location(uuid)
+  from public, anon, authenticated, service_role;
+revoke all on function public.can_write_geo_location(uuid)
+  from public, anon, authenticated, service_role;
 grant execute on function public.can_read_geo_location(uuid) to authenticated;
 grant execute on function public.can_write_geo_location(uuid) to authenticated;
+grant execute on function public.can_read_geo_location(uuid) to service_role;
+grant execute on function public.can_write_geo_location(uuid) to service_role;
 
 drop policy if exists geo_read on public.geo_locations;
 drop policy if exists geo_write on public.geo_locations;
