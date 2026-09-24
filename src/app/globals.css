@@ -60,7 +60,7 @@
   --enterprise-muted: 100 116 139;
 
   --font-serif: var(--font-serif-display), Georgia, "Times New Roman", serif;
-  --font-editorial: var(--font-editorial), Fraunces, Georgia, serif;
+  /* --font-editorial is set by next/font/local on <html> (src/app/layout.tsx). */
 
   /* Enterprise typography rhythm */
   --ent-tracking-tight: -0.02em;

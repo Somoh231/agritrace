@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { DM_Mono, DM_Serif_Display, Fraunces, Inter, Inter_Tight } from "next/font/google";
+import { DM_Mono, DM_Serif_Display, Inter, Inter_Tight } from "next/font/google";
+import localFont from "next/font/local";
 
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import ToastProvider from "@/components/shared/toast/ToastProvider";
@@ -37,11 +38,22 @@ const fontSerif = DM_Serif_Display({
   style: ["normal", "italic"],
 });
 
-const fontEditorial = Fraunces({
+/*
+ * Fraunces is self-hosted (src/fonts/fraunces, OFL): Google Fonts intermittently
+ * served it through extension-less URLs that next/font cannot parse, failing
+ * builds. Only the weights the application uses are shipped.
+ */
+const fontEditorial = localFont({
   variable: "--font-editorial",
-  subsets: ["latin"],
   preload: false,
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  src: [
+    { path: "../fonts/fraunces/fraunces-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/fraunces/fraunces-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/fraunces/fraunces-latin-600-normal.woff2", weight: "600", style: "normal" },
+  ],
+  fallback: ["Georgia", "serif"],
+  adjustFontFallback: "Times New Roman",
 });
 
 
