@@ -7,7 +7,13 @@ import { ENGAGEMENT_MODELS, STAGES } from "@/lib/site/content";
 
 /** Five engagement models; selecting one shows which of the six stages it covers. */
 export default function EngagementModels({ headingLevel = 2 }: { headingLevel?: 2 | 3 }) {
-  const [active, setActive] = useState(2);
+  // Fade only on user-initiated changes, never on first paint.
+  const [changed, setChanged] = useState(false);
+  const [active, setActiveRaw] = useState(2);
+  const setActive = (i: number) => {
+    setChanged(true);
+    setActiveRaw(i);
+  };
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const base = useId();
   const m = ENGAGEMENT_MODELS[active];
@@ -72,7 +78,7 @@ export default function EngagementModels({ headingLevel = 2 }: { headingLevel?: 
           aria-labelledby={`${base}-tab-${active}`}
           className="avs-surface-forest mt-4 grid gap-10 rounded-[var(--av-radius-lg)] p-6 sm:p-10 lg:grid-cols-12 lg:gap-12 lg:p-14"
         >
-          <div key={m.n} className="avs-fade-in lg:col-span-5">
+          <div key={m.n} className={`${changed ? "avs-fade-in" : ""} lg:col-span-5`}>
             <p className="avs-label text-[rgb(var(--av-gold))]">{m.kind}</p>
             <p className="avs-h2 mt-4 text-[clamp(2rem,3.4vw,3.25rem)]">{m.name}</p>
             <p className="mt-5 text-[1.0625rem] leading-relaxed text-white/80">{m.summary}</p>

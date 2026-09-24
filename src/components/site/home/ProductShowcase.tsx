@@ -18,7 +18,13 @@ const SCENE_FOR: Record<string, Scene> = {
 
 /** Products as an accessible vertical tab list (WAI-ARIA tabs, automatic activation). */
 export default function ProductShowcase() {
-  const [active, setActive] = useState(0);
+  // Fade only on user-initiated changes, never on first paint.
+  const [changed, setChanged] = useState(false);
+  const [active, setActiveRaw] = useState(0);
+  const setActive = (i: number) => {
+    setChanged(true);
+    setActiveRaw(i);
+  };
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const base = useId();
   const p = PRODUCTS[active];
@@ -93,7 +99,7 @@ export default function ProductShowcase() {
             tabIndex={0}
             className="relative overflow-hidden rounded-[var(--av-radius-lg)] bg-[rgb(var(--av-forest))] lg:col-span-8"
           >
-            <ImageFrame key={p.id} scene={SCENE_FOR[p.id]} alt="" ratio="auto" className="avs-fade-in absolute inset-0 h-full w-full" overlay={false} />
+            <ImageFrame key={p.id} scene={SCENE_FOR[p.id]} alt="" ratio="auto" className={`${changed ? "avs-fade-in" : ""} absolute inset-0 h-full w-full`} overlay={false} />
             <div
               aria-hidden="true"
               className="absolute inset-0"
@@ -101,7 +107,7 @@ export default function ProductShowcase() {
             />
             <div className="relative grid min-h-[620px] content-between gap-10 p-6 sm:p-8 lg:min-h-[680px] lg:p-11">
               {/* Illustrative record lineage */}
-              <div key={`lin-${p.id}`} className="avs-fade-in w-full max-w-[21rem] justify-self-end rounded-[16px] bg-[rgb(var(--av-paper)/0.96)] p-4 text-[rgb(var(--av-forest))] shadow-[0_24px_48px_-24px_rgba(0,0,0,0.5)] backdrop-blur">
+              <div key={`lin-${p.id}`} className={`${changed ? "avs-fade-in" : ""} w-full max-w-[21rem] justify-self-end rounded-[16px] bg-[rgb(var(--av-paper)/0.96)] p-4 text-[rgb(var(--av-forest))] shadow-[0_24px_48px_-24px_rgba(0,0,0,0.5)] backdrop-blur`}>
                 <div className="flex items-center justify-between border-b border-[rgb(var(--av-line)/0.12)] pb-2.5">
                   <p className="avs-label text-[0.6875rem] text-[rgb(var(--av-slate))]">Record lineage</p>
                   <p className="avs-sample">Sample</p>
@@ -131,7 +137,7 @@ export default function ProductShowcase() {
                 </ol>
               </div>
 
-              <div key={`copy-${p.id}`} className="avs-on-dark avs-fade-in text-[rgb(var(--av-paper))]">
+              <div key={`copy-${p.id}`} className={`avs-on-dark ${changed ? "avs-fade-in" : ""} text-[rgb(var(--av-paper))]`}>
                 <p className="avs-label text-[rgb(var(--av-gold))]">{active === 0 ? "Flagship product" : `Product ${p.code}`}</p>
                 <div className="mt-4 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
                   <div className="max-w-[36rem]">
