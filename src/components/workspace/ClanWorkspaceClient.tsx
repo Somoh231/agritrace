@@ -26,23 +26,38 @@ import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import { fieldReports } from "@/lib/demo/agriculture-pilot-data";
 import { demoSource, liveSource, offlineSource, resolveDisplaySource } from "@/lib/data/data-source";
 import { getPendingCount } from "@/lib/offline/sync-queue";
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 
-const TASKS = [
+const SAMPLE_TASKS = [
   { id: "1", title: "Land boundary mapping — Parcel 882", meta: "Gbarnga · 09:15", tone: "warning" as const, badge: "In progress" },
   { id: "2", title: "Farmer registration — Kollie family", meta: "Bong · 10:40", tone: "neutral" as const, badge: "Pending" },
   { id: "3", title: "Inspection follow-up — WH-04", meta: "Completed · 08:02", tone: "success" as const, badge: "Verified" },
 ];
 
-const RECENT = [
+const SAMPLE_RECENT = [
   { id: "a", title: "Boundary polygon captured", meta: "4 corners · ~2.1 ha", time: "11:02" },
   { id: "b", title: "Crop health photo attached", meta: "Rice plot · sector NW", time: "10:48" },
   { id: "c", title: "Farmer ID verified offline", meta: "Queued for DAO review", time: "09:30" },
 ];
 
+const SAMPLE_PROGRESS = [
+  { label: "Soil health analysis", pct: 78 },
+  { label: "Subsidy auditing", pct: 42 },
+  { label: "Warehouse validation", pct: 100 },
+];
+
+// Task assignment and capture history are not yet backed by live tables; show
+// them only in an explicitly illustrative training environment.
+const TASKS = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_TASKS : [];
+const RECENT = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_RECENT : [];
+const PROGRESS = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_PROGRESS : [];
+
+function EmptyLine({ children }: { children: React.ReactNode }) {
+  return <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-[12px] text-slate-600">{children}</p>;
+}
+
 export default function ClanWorkspaceClient() {
-  const [gpsOk] = React.useState(true);
   const [pending, setPending] = React.useState(0);
-  const [sessionId, setSessionId] = React.useState<string | null>(null);
   const [online, setOnline] = React.useState<boolean | null>(null);
 
   const pageSource = resolveDisplaySource([
@@ -51,7 +66,6 @@ export default function ClanWorkspaceClient() {
   ]);
 
   React.useEffect(() => {
-    setSessionId(`FIELD-${String(Date.now()).slice(-4)}`);
     setOnline(navigator.onLine);
     void getPendingCount().then(setPending);
     const syncOnline = () => setOnline(navigator.onLine);
@@ -83,14 +97,12 @@ export default function ClanWorkspaceClient() {
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-[12px] text-slate-700">
         <span className="inline-flex items-center gap-1.5">
           <Satellite className="h-3.5 w-3.5 text-forest-700" aria-hidden />
-          GPS {gpsOk ? "± 3m (Good)" : "Waiting for signal"}
+          GPS accuracy is measured when you capture a boundary
         </span>
-        <span className="text-slate-300">|</span>
+        <span className="text-slate-300" aria-hidden>|</span>
         <span>
           Network · {online === null ? "Checking…" : online ? "Online" : "Offline — drafts saved"}
         </span>
-        <span className="text-slate-300">|</span>
-        <span>Session · {sessionId ?? "—"}</span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -118,6 +130,9 @@ export default function ClanWorkspaceClient() {
         <div className="space-y-6">
           <DashboardPanel>
             <SectionHeader kicker="Today&apos;s work" title="Assigned field tasks" />
+            {TASKS.length === 0 ? (
+              <EmptyLine>No tasks are assigned to you. New registrations and captures start from the actions above.</EmptyLine>
+            ) : null}
             <ul className="mt-4 space-y-2">
               {TASKS.map((t) => (
                 <li
@@ -143,12 +158,9 @@ export default function ClanWorkspaceClient() {
 
           <DashboardPanel>
             <SectionHeader kicker="Workflow" title="Active workflow progress" />
+            {PROGRESS.length === 0 ? <EmptyLine>No active workflow campaigns are recorded for your area.</EmptyLine> : null}
             <div className="mt-4 space-y-4">
-              {[
-                { label: "Soil health analysis", pct: 78 },
-                { label: "Subsidy auditing", pct: 42 },
-                { label: "Warehouse validation", pct: 100 },
-              ].map((w) => (
+              {PROGRESS.map((w) => (
                 <div key={w.label}>
                   <div className="mb-1 flex justify-between text-[12px]">
                     <span className="font-medium text-slate-800">{w.label}</span>
@@ -167,6 +179,7 @@ export default function ClanWorkspaceClient() {
 
           <DashboardPanel>
             <SectionHeader kicker="Activity" title="Recent field reports" />
+            {fieldReports.length === 0 ? <EmptyLine>No field reports recorded yet.</EmptyLine> : null}
             <ul className="mt-3 space-y-2 text-[13px] text-slate-700">
               {fieldReports.slice(0, 4).map((r) => (
                 <li key={r.id} className="flex justify-between gap-2 border-b border-slate-100 pb-2 last:border-0">
@@ -186,7 +199,11 @@ export default function ClanWorkspaceClient() {
               subtitle="Data safely stored on device until connectivity returns."
             />
             <div className="mt-3 flex flex-wrap gap-2">
-              <StatusBadge tone="warning">Sync required</StatusBadge>
+              {pending > 0 ? (
+                <StatusBadge tone="warning">Sync required</StatusBadge>
+              ) : (
+                <StatusBadge tone="success">Up to date</StatusBadge>
+              )}
             </div>
             <Link
               href="/field/sync-queue"
@@ -199,7 +216,11 @@ export default function ClanWorkspaceClient() {
 
           <DashboardPanel>
             <SectionHeader kicker="Captures" title="Recent captures" />
-            <Timeline items={RECENT} className="mt-3" />
+            {RECENT.length === 0 ? (
+              <EmptyLine>No captures on this device yet.</EmptyLine>
+            ) : (
+              <Timeline items={RECENT} className="mt-3" />
+            )}
           </DashboardPanel>
 
           <AlertCard tone="success" title="Field guidelines">

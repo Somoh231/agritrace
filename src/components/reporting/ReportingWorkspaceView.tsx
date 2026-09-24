@@ -59,69 +59,71 @@ type ReportRegistryRow = {
   href: string;
 };
 
+// Reports are generated on demand from live, RLS-scoped records. There is no
+// scheduler, approval workflow or export history yet, so none is shown.
 const REPORT_REGISTRY: ReportRegistryRow[] = [
   {
     id: "rice_ministry",
     name: "Rice ministry summary",
-    status: "Ready",
-    lastGenerated: "2026-07-01 08:00",
-    nextScheduled: "2026-07-08 06:00",
+    status: "On demand",
+    lastGenerated: "Generated at download",
+    nextScheduled: "Not scheduled",
     owner: "Ministry analytics",
-    freshness: "< 24h",
-    approval: "Approved",
-    size: "1.2 MB",
+    freshness: "Live at download",
+    approval: "No approval workflow",
+    size: "—",
     queue: "Idle",
     href: "/api/reports/rice",
   },
   {
     id: "compliance_oversight",
     name: "Compliance oversight PDF",
-    status: "Ready",
-    lastGenerated: "2026-06-28 14:30",
-    nextScheduled: "2026-07-05 06:00",
+    status: "On demand",
+    lastGenerated: "Generated at download",
+    nextScheduled: "Not scheduled",
     owner: "Compliance desk",
-    freshness: "3 days",
-    approval: "Approved",
-    size: "890 KB",
+    freshness: "Live at download",
+    approval: "No approval workflow",
+    size: "—",
     queue: "Idle",
     href: "/api/reports/compliance-oversight",
   },
   {
     id: "donor_programme",
     name: "Donor programme dossier",
-    status: "Stale",
-    lastGenerated: "2026-06-20 11:00",
-    nextScheduled: "2026-07-03 09:00",
+    status: "On demand",
+    lastGenerated: "Generated at download",
+    nextScheduled: "Not scheduled",
     owner: "Donor relations",
-    freshness: "11 days",
-    approval: "Pending review",
-    size: "2.1 MB",
-    queue: "Scheduled",
+    freshness: "Live at download",
+    approval: "No approval workflow",
+    size: "—",
+    queue: "Idle",
     href: "/api/reports/donor-programme",
   },
   {
     id: "executive_briefing",
     name: "Executive briefing",
-    status: "Generating",
-    lastGenerated: "2026-07-02 07:15",
-    nextScheduled: "Daily 07:00",
+    status: "On demand",
+    lastGenerated: "Generated at download",
+    nextScheduled: "Not scheduled",
     owner: "Cabinet office",
-    freshness: "< 1h",
-    approval: "Approved",
-    size: "640 KB",
-    queue: "In progress",
+    freshness: "Live at download",
+    approval: "No approval workflow",
+    size: "—",
+    queue: "Idle",
     href: "/executive-briefing",
   },
   {
     id: "dds",
     name: "Due diligence statement",
-    status: "Ready",
-    lastGenerated: "2026-06-30 16:45",
-    nextScheduled: "On demand",
+    status: "On demand",
+    lastGenerated: "Generated at download",
+    nextScheduled: "Not scheduled",
     owner: "Export compliance",
-    freshness: "4 days",
-    approval: "Approved",
-    size: "420 KB",
+    freshness: "Live at download",
+    approval: "No approval workflow",
+    size: "—",
     queue: "Idle",
     href: "/api/reports/dds",
   },
@@ -203,15 +205,15 @@ export default function ReportingWorkspaceView({ tab }: { tab: ReportingTabId })
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Reports ready" value={String(REPORT_REGISTRY.filter((r) => r.status === "Ready").length)} hint="Approved for download" />
-        <KpiCard label="In queue" value={String(REPORT_REGISTRY.filter((r) => r.queue !== "Idle").length)} hint="Scheduled or generating" deltaTone="neutral" />
-        <KpiCard label="Avg freshness" value="< 48h" hint="Pilot SLA target" />
-        <KpiCard label="Exports this month" value="69" hint="Across all roles" />
+        <KpiCard label="Reports available" value={String(REPORT_REGISTRY.length)} hint="Generated on demand" />
+        <KpiCard label="Data freshness" value="Live" hint="Built from current records at download" deltaTone="neutral" />
+        <KpiCard label="Scheduling" value="Off" hint="No scheduled report runs configured" deltaTone="neutral" />
+        <KpiCard label="Access" value="Role-scoped" hint="Exports follow your role and geography" deltaTone="neutral" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <DashboardPanel className="lg:col-span-2">
-          <SectionHeader kicker="Registry" title="Report catalog & export status" subtitle="Generation status, freshness, approval, and download history" />
+          <SectionHeader kicker="Registry" title="Report catalog & export status" subtitle="Each report is generated from live records when downloaded" />
           <div className="mt-4 overflow-x-auto">
             <table className="enterprise-table w-full text-[13px]">
               <thead>

@@ -20,12 +20,15 @@ import { OpsStatusBadge } from "@/components/pilot/pilot-ui";
 import { dataQualityAlerts, nationalHeroMetrics, postHarvestLossAlerts } from "@/lib/demo/agriculture-pilot-data";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import { ministryWarehouseToSignalRow } from "@/lib/data/ministry-data-service";
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 
-const FEED = [
+const SAMPLE_FEED = [
   { id: "1", title: "Anomaly detected — grain storage moisture", meta: "WH-02 · critical", time: "12m ago", tone: "danger" as const },
   { id: "2", title: "Subsidy disbursement delay — Bong", meta: "DAO escalation", time: "45m ago", tone: "warning" as const },
   { id: "3", title: "Offline sync — 1,200 field agents", meta: "Queue cleared", time: "1h ago", tone: "success" as const },
 ];
+
+const FEED = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_FEED : [];
 
 /** Operational intelligence center — distinct presentation from executive command center. */
 export default function NationalOperationsIntelligence() {
@@ -55,9 +58,13 @@ export default function NationalOperationsIntelligence() {
       </AlertCard>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard label="Active programmes" value="14" delta="+2.4%" deltaTone="up" hint="National scope" />
-        <KpiCard label="Total throughput" value="1.2M MT" delta="-0.8%" deltaTone="down" hint="Season aggregate" />
-        <KpiCard label="Pending verifications" value={`${hero.offlinePendingSync + 42}`} hint="Queue + field" />
+        {ILLUSTRATIVE_DATA_ENABLED ? (
+          <>
+            <KpiCard label="Active programmes" value="14" delta="+2.4%" deltaTone="up" hint="National scope (illustrative)" />
+            <KpiCard label="Total throughput" value="1.2M MT" delta="-0.8%" deltaTone="down" hint="Season aggregate (illustrative)" />
+            <KpiCard label="Pending verifications" value={`${hero.offlinePendingSync + 42}`} hint="Queue + field (illustrative)" />
+          </>
+        ) : null}
         <KpiCard label="Active alerts" value={String(activeAlerts)} hint="Escalations & quality" />
       </div>
 
@@ -72,13 +79,22 @@ export default function NationalOperationsIntelligence() {
               title="Verification pipeline"
               subtitle="Field capture → QC audit → bureau review → cabinet"
             />
+            {ILLUSTRATIVE_DATA_ENABLED ? null : (
+              <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-[13px] text-slate-600">
+                Stage counts are not recorded separately yet. Open the{" "}
+                <a href="/verification-queue" className="font-medium text-forest-700 underline">verification queue</a> for live work.
+              </p>
+            )}
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {[
-                { stage: "Field capture", n: 428 },
-                { stage: "QC audit", n: 382, tag: "Bottleneck" },
-                { stage: "Bureau review", n: 124 },
-                { stage: "Cabinet", n: 20 },
-              ].map((s) => (
+              {(ILLUSTRATIVE_DATA_ENABLED
+                ? [
+                    { stage: "Field capture", n: 428 },
+                    { stage: "QC audit", n: 382, tag: "Bottleneck" },
+                    { stage: "Bureau review", n: 124 },
+                    { stage: "Cabinet", n: 20 },
+                  ]
+                : ([] as Array<{ stage: string; n: number; tag?: string }>)
+              ).map((s) => (
                 <div
                   key={s.stage}
                   className="rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-3 text-center"
@@ -97,7 +113,11 @@ export default function NationalOperationsIntelligence() {
 
           <DashboardPanel>
             <SectionHeader kicker="Live feed" title="Operational activity" />
-            <Timeline items={FEED} className="mt-4" />
+            {FEED.length === 0 ? (
+              <p className="mt-4 text-[13px] text-slate-600">No operational events recorded yet.</p>
+            ) : (
+              <Timeline items={FEED} className="mt-4" />
+            )}
             <div className="mt-4 flex flex-wrap gap-2">
               <Link href="/alerts" className="text-[13px] font-medium text-forest-700">
                 View escalations →

@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import {
   countyProductionPerformance,
   foodSecurityIndicators,
@@ -19,10 +20,11 @@ import {
   EnterpriseBarChart,
   InsightRibbon,
 } from "@/components/enterprise/analytics";
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 
 const nf = (n: number) => Intl.NumberFormat().format(n);
 
-export default function MinistryExecutiveAnalytics({ metrics }: { metrics: MinistryWorkspaceMetrics }) {
+function MinistryExecutiveAnalyticsIllustrative({ metrics }: { metrics: MinistryWorkspaceMetrics }) {
   const countyRank = [...countyProductionPerformance]
     .sort((a, b) => b.productionMt - a.productionMt)
     .slice(0, 8)
@@ -130,4 +132,13 @@ export default function MinistryExecutiveAnalytics({ metrics }: { metrics: Minis
       </div>
     </div>
   );
+}
+
+/**
+ * These analytics are built from illustrative series, not live records, so they
+ * render only in an explicitly illustrative training environment.
+ */
+export default function MinistryExecutiveAnalytics(props: React.ComponentProps<typeof MinistryExecutiveAnalyticsIllustrative>) {
+  if (!ILLUSTRATIVE_DATA_ENABLED) return null;
+  return <MinistryExecutiveAnalyticsIllustrative {...props} />;
 }

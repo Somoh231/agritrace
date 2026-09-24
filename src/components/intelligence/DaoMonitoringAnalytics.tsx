@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import {
   callCenterSubmissions,
   connectivityRiskByCounty,
@@ -21,8 +22,9 @@ import {
   InsightRibbon,
 } from "@/components/enterprise/analytics";
 import { illustrativeCaption } from "@/lib/data/illustrative-policy";
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 
-export default function DaoMonitoringAnalytics() {
+function DaoMonitoringAnalyticsIllustrative() {
   const reviewVelocity = [
     { day: "Mon", reviews: 28 },
     { day: "Tue", reviews: 34 },
@@ -131,4 +133,13 @@ export default function DaoMonitoringAnalytics() {
       </div>
     </div>
   );
+}
+
+/**
+ * These analytics are built from illustrative series, not live records, so they
+ * render only in an explicitly illustrative training environment.
+ */
+export default function DaoMonitoringAnalytics() {
+  if (!ILLUSTRATIVE_DATA_ENABLED) return null;
+  return <DaoMonitoringAnalyticsIllustrative />;
 }

@@ -17,6 +17,7 @@ import {
 import { inventoryTransfers, warehouses } from "@/lib/demo/agriculture-pilot-data";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import type { TransferOrderView } from "@/lib/logistics/types";
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 
 function deriveThroughput(transfers: TransferOrderView[]) {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -26,7 +27,7 @@ function deriveThroughput(transfers: TransferOrderView[]) {
   return days.map((d, i) => ({ day: d, tons: Math.round((base * (0.7 + (i % 3) * 0.15)) * 12) }));
 }
 
-export default function WarehouseCommandAnalytics({
+function WarehouseCommandAnalyticsIllustrative({
   transfers = [],
   warehouseRows,
 }: {
@@ -131,4 +132,13 @@ export default function WarehouseCommandAnalytics({
       </div>
     </div>
   );
+}
+
+/**
+ * These analytics are built from illustrative series, not live records, so they
+ * render only in an explicitly illustrative training environment.
+ */
+export default function WarehouseCommandAnalytics(props: React.ComponentProps<typeof WarehouseCommandAnalyticsIllustrative>) {
+  if (!ILLUSTRATIVE_DATA_ENABLED) return null;
+  return <WarehouseCommandAnalyticsIllustrative {...props} />;
 }

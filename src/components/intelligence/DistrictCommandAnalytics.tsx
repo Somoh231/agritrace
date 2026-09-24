@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import {
   fieldReports,
   fieldOfficers,
@@ -18,8 +19,9 @@ import {
   EnterpriseBarChart,
   InsightRibbon,
 } from "@/components/enterprise/analytics";
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 
-export default function DistrictCommandAnalytics({ online }: { online?: boolean }) {
+function DistrictCommandAnalyticsIllustrative({ online }: { online?: boolean }) {
   const submissionTrend = [
     { day: "Mon", subs: 42 },
     { day: "Tue", subs: 58 },
@@ -97,4 +99,13 @@ export default function DistrictCommandAnalytics({ online }: { online?: boolean 
       </div>
     </div>
   );
+}
+
+/**
+ * These analytics are built from illustrative series, not live records, so they
+ * render only in an explicitly illustrative training environment.
+ */
+export default function DistrictCommandAnalytics(props: React.ComponentProps<typeof DistrictCommandAnalyticsIllustrative>) {
+  if (!ILLUSTRATIVE_DATA_ENABLED) return null;
+  return <DistrictCommandAnalyticsIllustrative {...props} />;
 }

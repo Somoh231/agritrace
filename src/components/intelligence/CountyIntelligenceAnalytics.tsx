@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import {
   countyOperationsCards,
   countyProductionPerformance,
@@ -19,10 +20,11 @@ import {
   InsightRibbon,
 } from "@/components/enterprise/analytics";
 import { illustrativeCaption } from "@/lib/data/illustrative-policy";
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 
 const nf = (n: number) => Intl.NumberFormat().format(n);
 
-export default function CountyIntelligenceAnalytics({ county }: { county?: string | null }) {
+function CountyIntelligenceAnalyticsIllustrative({ county }: { county?: string | null }) {
   const scoped = county
     ? countyProductionPerformance.filter((c) => c.county.toLowerCase().includes((county ?? "").toLowerCase()))
     : countyProductionPerformance.slice(0, 8);
@@ -117,4 +119,13 @@ export default function CountyIntelligenceAnalytics({ county }: { county?: strin
       </DashboardPanel>
     </div>
   );
+}
+
+/**
+ * These analytics are built from illustrative series, not live records, so they
+ * render only in an explicitly illustrative training environment.
+ */
+export default function CountyIntelligenceAnalytics(props: React.ComponentProps<typeof CountyIntelligenceAnalyticsIllustrative>) {
+  if (!ILLUSTRATIVE_DATA_ENABLED) return null;
+  return <CountyIntelligenceAnalyticsIllustrative {...props} />;
 }

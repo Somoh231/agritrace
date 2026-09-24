@@ -15,6 +15,7 @@ import {
   postHarvestLossAlerts,
 } from "@/lib/demo/agriculture-pilot-data";
 import { safePct } from "@/lib/utils/rice";
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 
 const nf = (n: number) => Intl.NumberFormat().format(Math.round(n));
 
@@ -57,6 +58,9 @@ export default function MinistryCommandCenter() {
   );
 
   const countyRows = React.useMemo(() => {
+    // Farmer counts, verification rates and sign-off state are not recorded per county yet;
+    // the previous values were derived by formula, so only illustrative mode shows this roll-up.
+    if (!ILLUSTRATIVE_DATA_ENABLED) return [];
     return countiesRanked.slice(0, 9).map((c) => {
       const farmers = Math.max(900, Math.round(c.productionMt * 0.058));
       const verifiedPct =
@@ -84,26 +88,26 @@ export default function MinistryCommandCenter() {
     {
       label: "Rice production YTD",
       value: `${nf(prodMt)} MT`,
-      trend: "↓ 12.4% YoY",
+      trend: ILLUSTRATIVE_DATA_ENABLED ? "↓ 12.4% YoY" : "",
       hint: `${productionProgress.toFixed(0)}% of ${nf(targetMt)} MT season target`,
     },
     {
       label: "Import dependence",
       value: `${hero.importDependencyPct}%`,
-      trend: "↓ 6 pts",
-      hint: "National priority · from 82% (2022)",
+      trend: ILLUSTRATIVE_DATA_ENABLED ? "↓ 6 pts" : "",
+      hint: ILLUSTRATIVE_DATA_ENABLED ? "National priority · from 82% (2022)" : "From recorded food-security indicators",
     },
     {
       label: "Farmers registered",
       value: nf(live.farmersCount),
-      trend: `↑ ${nf(p.pendingVerification)} mo`,
+      trend: ILLUSTRATIVE_DATA_ENABLED ? `↑ ${nf(p.pendingVerification)} mo` : "",
       hint: `${nf(p.verified)} verified · ${p.geoTaggedPct}% geo-boundaried`,
     },
     {
       label: "Post-harvest loss",
       value: `${lossRate.toFixed(1)}%`,
-      trend: "↓ 1.8 pts",
-      hint: "Target < 10% by 2027",
+      trend: ILLUSTRATIVE_DATA_ENABLED ? "↓ 1.8 pts" : "",
+      hint: ILLUSTRATIVE_DATA_ENABLED ? "Target < 10% by 2027" : "From recorded production and loss records",
     },
   ];
 
@@ -119,30 +123,30 @@ export default function MinistryCommandCenter() {
   const programmes = [
     {
       label: "Voucher subsidies",
-      value: "$3.84M",
-      hint: "24,108 of 31,000 redeemed",
-      pct: safePct(24108, 31000),
+      value: ILLUSTRATIVE_DATA_ENABLED ? "$3.84M" : "—",
+      hint: ILLUSTRATIVE_DATA_ENABLED ? "24,108 of 31,000 redeemed" : "No voucher records yet",
+      pct: ILLUSTRATIVE_DATA_ENABLED ? safePct(24108, 31000) : 0,
       tone: "ok" as const,
     },
     {
       label: "Certified seed",
       value: `${nf(inputDistributionProgress.seedDistributedMt)} MT`,
-      hint: `NERICA-4 · ${seedPct.toFixed(0)}% of plan`,
+      hint: `${seedPct.toFixed(0)}% of plan`,
       pct: seedPct,
       tone: "ok" as const,
     },
     {
       label: "Fertilizer dispatched",
       value: `${nf(inputDistributionProgress.fertilizerDistributedMt)} MT`,
-      hint: "across 90 districts",
+      hint: `${fertPct.toFixed(0)}% of plan`,
       pct: fertPct,
       tone: "ok" as const,
     },
     {
       label: "Plots EUDR-checked",
-      value: nf(31890),
-      hint: "97.6% deforestation-clear",
-      pct: 97.6,
+      value: ILLUSTRATIVE_DATA_ENABLED ? nf(31890) : "—",
+      hint: ILLUSTRATIVE_DATA_ENABLED ? "97.6% deforestation-clear" : "No EUDR checks recorded yet",
+      pct: ILLUSTRATIVE_DATA_ENABLED ? 97.6 : 0,
       tone: "warn" as const,
     },
   ];
@@ -154,7 +158,7 @@ export default function MinistryCommandCenter() {
       tier: "Field",
       who: "Clan Technicians",
       badge: "Offline",
-      value: nf(hero.offlinePendingSync || 1840),
+      value: nf(hero.offlinePendingSync),
       valueLabel: "captures queued",
       meta: `${hero.activeFieldOfficers} techs`,
       accent: "text-[rgb(var(--ministry-gold-strong))]",
@@ -162,11 +166,11 @@ export default function MinistryCommandCenter() {
     {
       n: 2,
       stage: "DAO",
-      tier: "District · 90",
+      tier: "District",
       who: "District Officers",
       value: nf(p.pendingVerification),
       valueLabel: "awaiting review",
-      meta: "90 districts",
+      meta: "District review",
       accent: "text-emerald-700",
     },
     {
@@ -174,7 +178,7 @@ export default function MinistryCommandCenter() {
       stage: "CAC",
       tier: "County · 15",
       who: "County Coordinators",
-      value: String(countiesAwaiting * 12 + 14),
+      value: String(countiesAwaiting),
       valueLabel: "awaiting sign-off",
       meta: "15 counties",
       accent: "text-sky-700",
@@ -220,9 +224,11 @@ export default function MinistryCommandCenter() {
           <div key={k.label} className="gov-card px-5 py-5">
             <div className="gov-kicker">{k.label}</div>
             <div className="mt-3 font-serif-display text-[34px] leading-none tabular-nums text-slate-900">{k.value}</div>
-            <div className="mt-2.5 flex items-center gap-2">
-              <span className="font-mono text-[11px] font-medium text-emerald-700">{k.trend}</span>
-            </div>
+            {k.trend ? (
+              <div className="mt-2.5 flex items-center gap-2">
+                <span className="font-mono text-[11px] font-medium text-emerald-700">{k.trend}</span>
+              </div>
+            ) : null}
             <div className="mt-1.5 text-[11.5px] leading-snug text-slate-500">{k.hint}</div>
           </div>
         ))}
@@ -311,6 +317,13 @@ export default function MinistryCommandCenter() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
+                  {countyRows.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-5 py-6 text-[13px] text-slate-600">
+                        No county roll-up has been recorded yet. County figures appear here once CAC sign-offs are captured.
+                      </td>
+                    </tr>
+                  ) : null}
                   {countyRows.map((r) => {
                     const so = signOffMeta(r.signoff);
                     const vTone = r.verifiedPct >= 85 ? "ok" : r.verifiedPct >= 75 ? "warn" : "bad";
@@ -367,6 +380,9 @@ export default function MinistryCommandCenter() {
               <div className="mt-0.5 text-[11px] text-slate-500">Top producing counties this season</div>
             </div>
             <div className="space-y-3 p-4">
+              {countyRows.length === 0 ? (
+                <p className="text-[12px] text-slate-600">No county production has been recorded this season.</p>
+              ) : null}
               {countyRows.slice(0, 6).map((r) => (
                 <div key={r.county}>
                   <div className="flex items-center justify-between text-[12px]">

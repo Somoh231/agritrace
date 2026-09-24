@@ -23,6 +23,7 @@ import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import WorkspaceQueuePanel from "@/components/workspace/WorkspaceQueuePanel";
 import MinistryExecutiveAnalytics from "@/components/intelligence/MinistryExecutiveAnalytics";
 import { QueueRow, QueuePrimaryLink } from "@/components/enterprise";
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 
 export type MinistryWorkspaceMetrics = {
   registeredFarmers: number;
@@ -40,11 +41,13 @@ export type MinistryWorkspaceMetrics = {
 
 const nf = (n: number) => Intl.NumberFormat().format(n);
 
-const RECENT_ACTIVITY = [
+const SAMPLE_ACTIVITY = [
   { id: "1", title: "CAC-approved batch synced", meta: "Nimba · 42 submissions", time: "12m ago", tone: "success" as const },
   { id: "2", title: "Warehouse capacity alert", meta: "Bong WH-02 at 95%", time: "45m ago", tone: "warning" as const },
   { id: "3", title: "Offline reconcile complete", meta: "1,200 field agents", time: "1h ago", tone: "default" as const },
 ];
+
+const RECENT_ACTIVITY = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_ACTIVITY : [];
 
 export default function MinistryWorkspaceClient({ metrics }: { metrics: MinistryWorkspaceMetrics }) {
   return (
@@ -203,7 +206,11 @@ export default function MinistryWorkspaceClient({ metrics }: { metrics: Ministry
 
         <DashboardPanel>
           <SectionHeader kicker="Activity" title="Recent national activity" action={<BarChart3 className="h-4 w-4 text-slate-400" aria-hidden />} />
-          <Timeline items={RECENT_ACTIVITY} className="mt-4" />
+          {RECENT_ACTIVITY.length === 0 ? (
+            <p className="mt-4 text-[13px] text-slate-600">No national activity recorded yet. The activity center lists audited events.</p>
+          ) : (
+            <Timeline items={RECENT_ACTIVITY} className="mt-4" />
+          )}
           <Link href="/activity" className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-forest-700 hover:text-forest-600">
             <Activity className="h-3.5 w-3.5" aria-hidden />
             Open activity center →
