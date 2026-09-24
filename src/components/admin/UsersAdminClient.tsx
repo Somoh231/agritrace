@@ -177,10 +177,10 @@ export default function UsersAdminClient() {
               />
             </div>
 
-            <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+            <label className="block">
+              <span className="block font-mono text-[10px] uppercase tracking-widest text-gray-600 mb-1">
                 Role
-              </div>
+              </span>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as any)}
@@ -193,12 +193,12 @@ export default function UsersAdminClient() {
                   </option>
                 ))}
               </select>
-            </div>
+            </label>
 
-            <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+            <label className="block">
+              <span className="block font-mono text-[10px] uppercase tracking-widest text-gray-600 mb-1">
                 Status
-              </div>
+              </span>
               <select
                 value={active}
                 onChange={(e) => setActive(e.target.value as any)}
@@ -208,7 +208,7 @@ export default function UsersAdminClient() {
                 <option value="true">Active</option>
                 <option value="false">Deactivated</option>
               </select>
-            </div>
+            </label>
 
             <button
               type="button"

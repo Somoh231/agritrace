@@ -102,7 +102,11 @@ export default function OperationalActivityRail({ className }: { className?: str
           </div>
           <DataSourceBadge source={displaySource} theme="dark" />
         </div>
-        <ul className="mt-4 space-y-2.5 max-h-[min(62vh,560px)] overflow-y-auto pr-1">
+        <ul
+          tabIndex={0}
+          aria-label="Operational activity"
+          className="mt-4 space-y-2.5 max-h-[min(62vh,560px)] overflow-y-auto pr-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600"
+        >
           {items.map((it) => (
             <li key={it.id} className={`rounded-xl border px-3 py-2.5 ${toneClasses(it.tone)}`}>
               <div className="flex items-start justify-between gap-2">

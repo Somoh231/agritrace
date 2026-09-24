@@ -1,5 +1,5 @@
 import React from "react";
-import { Document, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
+import { Document, Page, StyleSheet, Text, View, pdf, type DocumentProps } from "@react-pdf/renderer";
 
 import {
   binaryResponse,
@@ -108,7 +108,7 @@ export async function GET(request: Request) {
     /* ignore */
   }
 
-  const instance = pdf(buildDonorDoc({ generatedAt, distributionCount, shipmentCount }));
+  const instance = pdf(buildDonorDoc({ generatedAt, distributionCount, shipmentCount }) as React.ReactElement<DocumentProps>);
   const blob = await instance.toBlob();
   const ab = await blob.arrayBuffer();
 

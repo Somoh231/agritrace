@@ -28,6 +28,7 @@ export default function LoginClient() {
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
 
   React.useEffect(() => {
     const reason = search.get("error");
@@ -107,7 +108,7 @@ export default function LoginClient() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 py-10 bg-[rgb(var(--ministry-workspace))]">
+    <main className="relative min-h-screen flex items-center justify-center px-4 py-10 bg-[rgb(var(--ministry-workspace))]">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
@@ -125,7 +126,7 @@ export default function LoginClient() {
           <div className="mt-2 font-serif-display text-[30px] leading-none text-white">
             AgriVault <span className="text-[rgb(var(--ministry-gold))]">Data</span>
           </div>
-          <div className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-emerald-200/50">
+          <div className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-emerald-200/70">
             National Agricultural Intelligence Platform
           </div>
         </div>
@@ -134,7 +135,7 @@ export default function LoginClient() {
           <div className="flex items-center gap-3">
             <MinistryBrandLogo variant="seal" size="lg" />
             <div className="min-w-0">
-              <div className="font-serif-display text-[17px] text-white leading-tight">Operator sign-in</div>
+              <h1 className="font-serif-display text-[17px] text-white leading-tight">Operator sign-in</h1>
               <div className="text-[11px] text-emerald-100/55">
                 Secure access · Role-based command views
               </div>
@@ -155,7 +156,7 @@ export default function LoginClient() {
             <div>
               <label
                 htmlFor="operator-email"
-                className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[rgb(var(--ministry-gold))]/70 mb-1.5"
+                className="block text-[12px] font-semibold tracking-wide text-emerald-50/90 mb-1.5"
               >
                 Email
               </label>
@@ -167,27 +168,37 @@ export default function LoginClient() {
                 inputMode="email"
                 autoComplete="email"
                 placeholder="name@organization.org"
-                className="h-11 w-full rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-workspace))]/60 px-3 text-[13px] text-emerald-50 placeholder:text-emerald-200/30 outline-none focus:border-[rgb(var(--ministry-gold))]/60"
+                className="h-11 w-full rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-workspace))]/60 px-3 text-[13px] text-emerald-50 placeholder:text-emerald-200/40 outline-none focus:border-[rgb(var(--ministry-gold))]/60 focus-visible:ring-2 focus-visible:ring-[rgb(var(--ministry-gold))]/50"
               />
             </div>
 
             <div>
               <label
                 htmlFor="operator-password"
-                className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[rgb(var(--ministry-gold))]/70 mb-1.5"
+                className="block text-[12px] font-semibold tracking-wide text-emerald-50/90 mb-1.5"
               >
                 Password
               </label>
-              <input
-                id="operator-password"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                type="password"
-                autoComplete="current-password"
-                placeholder="••••••••"
-                className="h-11 w-full rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-workspace))]/60 px-3 text-[13px] text-emerald-50 placeholder:text-emerald-200/30 outline-none focus:border-[rgb(var(--ministry-gold))]/60"
-              />
+              <div className="relative">
+                <input
+                  id="operator-password"
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  className="h-11 w-full rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-workspace))]/60 pl-3 pr-16 text-[13px] text-emerald-50 outline-none focus:border-[rgb(var(--ministry-gold))]/60 focus-visible:ring-2 focus-visible:ring-[rgb(var(--ministry-gold))]/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-pressed={showPassword}
+                  aria-controls="operator-password"
+                  className="absolute inset-y-0 right-1 my-1 rounded-md px-3 text-[12px] font-semibold text-emerald-100/85 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgb(var(--ministry-gold))]"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
 
             <button
@@ -208,10 +219,11 @@ export default function LoginClient() {
               </div>
             </div>
 
-            <div className="pt-1 text-[11px] text-emerald-100/40">
-              First-time users receive a secure invitation from an authorized AgriVault administrator.
-              Passwords are chosen privately and are never visible in the administration workspace.
-            </div>
+            <p className="pt-1 text-[12px] leading-relaxed text-emerald-100/70">
+              Accounts are issued by invitation from an authorized AgriVault administrator. Forgot your
+              password or locked out? Ask your administrator to send a secure reset link — administrators
+              never see or set your password.
+            </p>
           </form>
         </div>
 
@@ -219,6 +231,6 @@ export default function LoginClient() {
           Secure access · Role-based views · Audit-ready outputs
         </div>
       </div>
-    </div>
+    </main>
   );
 }

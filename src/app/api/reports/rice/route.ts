@@ -15,7 +15,7 @@ import { escapeCsvCell } from "@/lib/reports/csv";
 import { createClient } from "@/lib/supabase/server";
 
 import React from "react";
-import { Document, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
+import { Document, Page, StyleSheet, Text, View, pdf, type DocumentProps } from "@react-pdf/renderer";
 
 type ReqBody = {
   county?: string;
@@ -194,7 +194,7 @@ export async function POST(request: Request) {
   }
 
   const doc = buildRiceReportDoc({ title, generatedAt, rows });
-  const instance = pdf(doc);
+  const instance = pdf(doc as React.ReactElement<DocumentProps>);
   const buf = (await instance.toBuffer()) as unknown as Uint8Array;
   const ab = new ArrayBuffer(buf.byteLength);
   new Uint8Array(ab).set(buf);

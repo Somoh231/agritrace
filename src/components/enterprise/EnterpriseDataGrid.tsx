@@ -168,7 +168,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
     container: light ? "border-gray-200 bg-white" : "border-slate-700/80 bg-slate-900/50",
     bar: light ? "border-b border-gray-100 bg-gray-50" : "border-b border-slate-700/80 bg-slate-950/60",
     title: light ? "text-gray-400" : "text-slate-500",
-    titleMuted: light ? "text-gray-300" : "text-slate-600",
+    titleMuted: light ? "text-gray-500" : "text-slate-400",
     input: light
       ? "border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-forest-300 focus:ring-2 focus:ring-forest-50"
       : "border-slate-600 bg-slate-950 text-slate-100 placeholder:text-slate-600 focus:border-emerald-600",
@@ -352,18 +352,20 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
           <button
             type="button"
             disabled={safePage <= 0}
+            aria-label="Previous page"
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             className={`h-8 w-8 rounded-lg border disabled:opacity-40 inline-flex items-center justify-center ${T.pageBtn}`}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" aria-hidden />
           </button>
           <button
             type="button"
             disabled={safePage >= pages - 1}
+            aria-label="Next page"
             onClick={() => setPage((p) => Math.min(pages - 1, p + 1))}
             className={`h-8 w-8 rounded-lg border disabled:opacity-40 inline-flex items-center justify-center ${T.pageBtn}`}
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4" aria-hidden />
           </button>
         </div>
       </div>

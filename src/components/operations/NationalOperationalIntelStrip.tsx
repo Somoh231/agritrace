@@ -146,7 +146,11 @@ export default function NationalOperationalIntelStrip() {
           <p className="ent-label">Live operational feed</p>
           <span className="font-mono text-[10px] text-slate-500">pilot_operational_events</span>
         </div>
-        <ul className="max-h-[200px] divide-y divide-slate-100 overflow-y-auto bg-white">
+        <ul
+          tabIndex={0}
+          aria-label="Operational signals"
+          className="max-h-[200px] divide-y divide-slate-100 overflow-y-auto bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600"
+        >
           {feed.length ?
             feed.map((f) => (
               <li key={f.id} className="px-4 py-2.5 text-[13px] leading-snug">

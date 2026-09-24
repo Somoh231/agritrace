@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 import {
   clampStr,
   logApiError,
@@ -11,11 +13,16 @@ import {
 } from "@/lib/http/api-response";
 import { READ_POLICY } from "@/lib/http/rate-limit-policies";
 import { requireApiSession } from "@/lib/http/require-api-session";
+import { canAccessFarmersCooperativesProfiles } from "@/lib/auth/workspace-access";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   const auth = await requireApiSession(request);
   if (!auth.ok) return auth.response;
+  // Same role policy as the /farmers workspace: donor observers never receive farmer PII.
+  if (!canAccessFarmersCooperativesProfiles(auth.session.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const ctx = await beginApiRequestAsync(request, READ_POLICY, auth.session.userId);
   const blocked = rejectIfRateLimited(ctx);
   if (blocked) return blocked;

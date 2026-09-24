@@ -43,6 +43,8 @@
   --ministry-panel-border: 34 70 50;
   --ministry-gold: 201 162 75;
   --ministry-gold-strong: 176 132 45;
+  /* Gold for small text on light surfaces: >= 4.5:1 on white (WCAG AA). */
+  --ministry-gold-text: 133 96 22;
   --ministry-emerald: 52 211 153;
   --ministry-canvas: 244 245 241;
 
@@ -101,7 +103,7 @@
   line-height: 1.2;
   text-transform: uppercase;
   letter-spacing: var(--ent-tracking-label);
-  color: rgb(100 116 139);
+  color: rgb(71 85 105);
 }
 .ent-metric {
   font-family: var(--font-display);
@@ -201,10 +203,10 @@
   line-height: 1;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  color: rgb(100 116 139); /* slate-500 */
+  color: rgb(71 85 105); /* slate-600: >= 4.5:1 on the light workspace */
 }
 .gov-kicker-gold {
-  color: rgb(var(--ministry-gold-strong));
+  color: rgb(var(--ministry-gold-text));
 }
 .btn-gold {
   display: inline-flex;

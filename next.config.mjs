@@ -1,5 +1,21 @@
 /** @type {import('next').NextConfig} */
 
+/**
+ * Exact origin of the configured Supabase project. The CSP allows only this
+ * project (not every *.supabase.co tenant), so injected script cannot exfiltrate
+ * data to an attacker-owned Supabase project.
+ */
+function supabaseOrigins() {
+  try {
+    const url = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");
+    const ws = `${url.protocol === "http:" ? "ws:" : "wss:"}//${url.host}`;
+    return { http: url.origin, ws };
+  } catch {
+    return { http: "", ws: "" };
+  }
+}
+const supabase = supabaseOrigins();
+
 /** Production CSP — Mapbox + Supabase + Sentry + Next.js hydration allowances. */
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -7,21 +23,23 @@ const contentSecurityPolicy = [
   "form-action 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.mapbox.com https://*.supabase.co",
+  `img-src 'self' data: blob: https://*.mapbox.com ${supabase.http}`.trim(),
   "font-src 'self' data:",
   [
     "connect-src 'self'",
-    "https://*.supabase.co",
-    "wss://*.supabase.co",
+    supabase.http,
+    supabase.ws,
     "https://api.mapbox.com",
     "https://events.mapbox.com",
     "https://*.tiles.mapbox.com",
     "https://*.ingest.sentry.io",
     "https://*.ingest.us.sentry.io",
     "https://*.ingest.de.sentry.io",
-  ].join(" "),
+  ]
+    .filter(Boolean)
+    .join(" "),
   "worker-src 'self' blob:",
   "child-src 'self' blob:",
 ].join("; ");

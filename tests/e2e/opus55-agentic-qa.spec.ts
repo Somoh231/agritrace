@@ -1,0 +1,323 @@
+/**
+ * Claude Opus 5.5 agentic QA suite.
+ *
+ * Runs against any AgriVault deployment with individually provisioned QA
+ * operators (never shared credentials). Every credential comes from env:
+ *   QA55_<KEY>_EMAIL / QA_PASSWORD (one password for a disposable QA stack)
+ * Workflow-mutation tests additionally require QA_ALLOW_SYNTHETIC_MUTATIONS=true
+ * and refuse to run against production.
+ *
+ * Evidence (screenshots, per-page text digests) goes to QA_EVIDENCE_DIR when set.
+ */
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test, type Browser, type BrowserContext, type Page } from "@playwright/test";
+import fs from "node:fs";
+import path from "node:path";
+
+import { requireSafeSyntheticTarget, watchBrowserFailures } from "./rc1-test-support";
+
+type Operator = {
+  key: string;
+  landing: string;
+  routes: string[];
+  denied: string[];
+};
+
+const OPERATORS: Operator[] = [
+  {
+    key: "CLAN_BONG",
+    landing: "/district-dashboard",
+    routes: ["/workspace/clan", "/farmers", "/field/inspections", "/field/boundary-capture", "/field/sync-queue"],
+    denied: ["/command-center", "/admin/users", "/workspace/ministry", "/verification-queue"],
+  },
+  {
+    key: "DAO_BONG",
+    landing: "/district-dashboard",
+    routes: ["/workspace/dao", "/verification-queue", "/registration-approvals", "/farmers"],
+    denied: ["/command-center", "/admin/users", "/workspace/cac"],
+  },
+  {
+    key: "CAC_BONG",
+    landing: "/county-dashboard",
+    routes: ["/workspace/cac", "/verification-queue", "/farmers"],
+    denied: ["/command-center", "/admin/users", "/workspace/ministry"],
+  },
+  {
+    key: "MINISTRY",
+    landing: "/command-center",
+    routes: ["/workspace/ministry", "/national-operations", "/reporting/workspace", "/executive-briefing", "/map", "/transfers"],
+    denied: [],
+  },
+  {
+    key: "ADMIN",
+    landing: "/command-center",
+    routes: ["/admin/users", "/admin/organizations"],
+    denied: [],
+  },
+  {
+    key: "WAREHOUSE",
+    landing: "/inventory",
+    routes: ["/inventory", "/transfers"],
+    denied: ["/command-center", "/admin/users", "/workspace/clan"],
+  },
+  {
+    key: "AUDITOR",
+    landing: "/audit-tools",
+    routes: ["/audit-tools", "/compliance/audit-log"],
+    denied: ["/command-center", "/workspace/dao", "/admin/users"],
+  },
+  {
+    key: "DONOR",
+    landing: "/donor-dashboard",
+    routes: ["/donor-dashboard"],
+    denied: ["/farmers", "/command-center", "/verification-queue", "/admin/users"],
+  },
+];
+
+const password = process.env.QA_PASSWORD ?? "";
+const evidenceDir = process.env.QA_EVIDENCE_DIR ?? "";
+const emailFor = (key: string) => process.env[`QA55_${key}_EMAIL`] ?? "";
+const configured = (key: string) => Boolean(password && emailFor(key));
+
+const sessions = new Map<string, string>();
+const landings = new Map<string, string>();
+
+async function settle(page: Page) {
+  await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => undefined);
+}
+
+async function signIn(browser: Browser, key: string): Promise<BrowserContext> {
+  const cached = sessions.get(key);
+  if (cached) return browser.newContext({ storageState: JSON.parse(cached) });
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto("/login");
+  await page.getByLabel("Email", { exact: true }).fill(emailFor(key));
+  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByRole("button", { name: /Sign in/ }).click();
+  await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 30_000 });
+  await settle(page);
+  landings.set(key, new URL(page.url()).pathname);
+  sessions.set(key, JSON.stringify(await context.storageState()));
+  await page.close();
+  return context;
+}
+
+async function evidence(page: Page, name: string) {
+  if (!evidenceDir) return;
+  fs.mkdirSync(evidenceDir, { recursive: true });
+  const safe = name.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "");
+  await page.screenshot({ path: path.join(evidenceDir, `${safe}.png`), fullPage: true });
+  const text = await page.locator("body").innerText();
+  fs.writeFileSync(path.join(evidenceDir, `${safe}.txt`), text);
+}
+
+// ---------------------------------------------------------------------------
+// Lifecycle / fail-closed identity
+// ---------------------------------------------------------------------------
+test.describe("identity lifecycle", () => {
+  for (const [key, expected] of [
+    ["INACTIVE", /inactive/i],
+    ["NOROLE", /(authorized AgriVault role|access profile is incomplete)/i],
+  ] as const) {
+    test(`${key} operator is refused at sign-in`, async ({ page }) => {
+      test.skip(!configured(key), `Set QA55_${key}_EMAIL and QA_PASSWORD.`);
+      await page.goto("/login");
+      await page.getByLabel("Email", { exact: true }).fill(emailFor(key));
+      await page.getByLabel("Password", { exact: true }).fill(password);
+      await page.getByRole("button", { name: /Sign in/ }).click();
+      // Next.js also renders an (empty) route-announcer alert; target the sign-in banner.
+      await expect(page.getByRole("alert").filter({ hasText: expected })).toBeVisible({ timeout: 20_000 });
+      await expect(page).toHaveURL(/\/login/);
+      const protectedResponse = await page.goto("/farmers");
+      expect(new URL(page.url()).pathname).toBe("/login");
+      expect(protectedResponse?.status()).toBeLessThan(500);
+    });
+  }
+
+  test("invalid password fails without enumeration", async ({ page }) => {
+    test.skip(!configured("CLAN_BONG"), "Set QA55_CLAN_BONG_EMAIL and QA_PASSWORD.");
+    await page.goto("/login");
+    await page.getByLabel("Email", { exact: true }).fill(emailFor("CLAN_BONG"));
+    await page.getByLabel("Password", { exact: true }).fill(`${password}-wrong`);
+    await page.getByRole("button", { name: /Sign in/ }).click();
+    const banner = page.getByRole("alert").filter({ hasText: /\S/ });
+    const wrongPassword = await banner.innerText({ timeout: 20_000 });
+    await page.getByLabel("Email", { exact: true }).fill("nobody-registered@agrivault.test");
+    await page.getByRole("button", { name: /Sign in/ }).click();
+    await expect(banner).toHaveText(wrongPassword);
+    expect(wrongPassword).not.toMatch(/not (found|registered)|no (user|account)/i);
+  });
+
+  test("open redirect is neutralised after sign-in", async ({ browser }) => {
+    test.skip(!configured("MINISTRY"), "Set QA55_MINISTRY_EMAIL and QA_PASSWORD.");
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await page.goto("/login?redirectTo=%2F%2Fevil.example%2Fsteal");
+    await page.getByLabel("Email", { exact: true }).fill(emailFor("MINISTRY"));
+    await page.getByLabel("Password", { exact: true }).fill(password);
+    await page.getByRole("button", { name: /Sign in/ }).click();
+    await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 30_000 });
+    expect(new URL(page.url()).host).toBe(new URL(test.info().project.use.baseURL ?? page.url()).host);
+    await context.close();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Role matrix: landing, allowed routes (with axe), and denied routes
+// ---------------------------------------------------------------------------
+for (const operator of OPERATORS) {
+  test.describe(`${operator.key} role matrix`, () => {
+    test.skip(!configured(operator.key), `Set QA55_${operator.key}_EMAIL and QA_PASSWORD.`);
+
+    test(`${operator.key} lands on ${operator.landing}`, async ({ browser }) => {
+      sessions.delete(operator.key);
+      const context = await signIn(browser, operator.key);
+      expect(landings.get(operator.key), "post-login destination").toBe(operator.landing);
+      const page = await context.newPage();
+      await page.goto(operator.landing);
+      await settle(page);
+      await evidence(page, `${test.info().project.name}_${operator.key}_landing`);
+      await context.close();
+    });
+
+    for (const route of operator.routes) {
+      test(`${operator.key} can use ${route}`, async ({ browser }) => {
+        const context = await signIn(browser, operator.key);
+        const page = await context.newPage();
+        const failures = watchBrowserFailures(page);
+        const response = await page.goto(route);
+        await settle(page);
+        expect(response?.status()).toBeLessThan(400);
+        expect(new URL(page.url()).pathname).toBe(route);
+        await expect(page.locator("main")).toHaveCount(1);
+        await evidence(page, `${test.info().project.name}_${operator.key}${route}`);
+        const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+        const serious = axe.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+        test.info().annotations.push({
+          type: "axe",
+          description: serious.map((v) => `${v.id}(${v.nodes.length})`).join(", ") || "none",
+        });
+        expect(failures.consoleErrors, "console errors").toEqual([]);
+        expect(serious.map((v) => v.id), "serious/critical axe violations").toEqual([]);
+        await context.close();
+      });
+    }
+
+    for (const route of operator.denied) {
+      test(`${operator.key} is denied ${route}`, async ({ browser }) => {
+        const context = await signIn(browser, operator.key);
+        const page = await context.newPage();
+        await page.goto(route);
+        await settle(page);
+        expect(new URL(page.url()).pathname).not.toBe(route);
+        await context.close();
+      });
+    }
+  });
+}
+
+// ---------------------------------------------------------------------------
+// API authorization and exports
+// ---------------------------------------------------------------------------
+test.describe("export authorization", () => {
+  const cases: Array<[string, string, number]> = [
+    ["DONOR", "/api/reports/executive-briefing", 403],
+    ["CLAN_BONG", "/api/reports/dds", 403],
+    ["CLAN_BONG", "/api/reports/donor-programme", 403],
+    ["AUDITOR", "/api/reports/executive-briefing", 200],
+    ["MINISTRY", "/api/reports/executive-briefing", 200],
+    ["DONOR", "/api/reports/donor-programme", 200],
+  ];
+  for (const [key, route, status] of cases) {
+    test(`${key} ${route} -> ${status}`, async ({ browser }) => {
+      test.skip(!configured(key), `Set QA55_${key}_EMAIL and QA_PASSWORD.`);
+      const context = await signIn(browser, key);
+      const response = await context.request.get(route);
+      expect(response.status()).toBe(status);
+      if (status === 200) {
+        const body = await response.body();
+        const type = response.headers()["content-type"] ?? "";
+        if (type.includes("pdf")) expect(body.subarray(0, 5).toString()).toBe("%PDF-");
+        expect(response.headers()["content-disposition"] ?? "").toMatch(/attachment|inline/);
+      }
+      await context.close();
+    });
+  }
+
+  test("donor cannot pull farmer PII through the API", async ({ browser }) => {
+    test.skip(!configured("DONOR"), "Set QA55_DONOR_EMAIL and QA_PASSWORD.");
+    const context = await signIn(browser, "DONOR");
+    const response = await context.request.get("/api/farmers");
+    expect(response.status()).toBe(403);
+    await context.close();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// End-to-end approval chain through the real API + database RPCs
+// ---------------------------------------------------------------------------
+test.describe("workflow chain (synthetic mutations)", () => {
+  test.skip(
+    !["CLAN_BONG", "DAO_BONG", "DAO_NIMBA", "CAC_BONG", "MINISTRY"].every(configured),
+    "Requires CLAN_BONG, DAO_BONG, DAO_NIMBA, CAC_BONG and MINISTRY operators.",
+  );
+
+  test("CLAN -> DAO -> CAC -> Ministry with scope, legality and idempotency", async ({ browser, baseURL }) => {
+    requireSafeSyntheticTarget(baseURL ?? "");
+    const post = async (key: string, body: unknown) => {
+      const context = await signIn(browser, key);
+      const response = await context.request.post("/api/ops/workflows/submission", { data: body });
+      const json = await response.json();
+      await context.close();
+      return { status: response.status(), json };
+    };
+
+    const dedupeKey = `QA55-${Date.now()}`;
+    const create = {
+      action: "submit",
+      create: {
+        submissionType: "field_inspection",
+        title: `QA55 synthetic inspection ${dedupeKey}`,
+        county: "Nimba", // must be ignored/refused: CLAN is bound to Bong
+        metadata: { dedupe_key: dedupeKey, synthetic: true },
+      },
+    };
+    const refused = await post("CLAN_BONG", create);
+    expect(refused.status, "client-supplied out-of-scope county is refused").toBe(403);
+
+    const created = await post("CLAN_BONG", { ...create, create: { ...create.create, county: undefined } });
+    expect(created.status).toBe(200);
+    expect(created.json.submission.county).toBe("Bong");
+    const id = created.json.submission.id as string;
+
+    const replay = await post("CLAN_BONG", { ...create, create: { ...create.create, county: undefined } });
+    expect(replay.json.submission.id, "same dedupe key returns the same submission").toBe(id);
+    expect(replay.json.deduplicated).toBe(true);
+
+    expect((await post("CLAN_BONG", { action: "approve", submissionId: id })).status).toBe(403);
+    expect((await post("DAO_NIMBA", { action: "approve", submissionId: id })).status).toBeGreaterThanOrEqual(403);
+    expect((await post("CAC_BONG", { action: "approve", submissionId: id })).status, "CAC cannot skip DAO").toBe(422);
+
+    const dao = await post("DAO_BONG", { action: "approve", submissionId: id, note: "QA55 DAO approve" });
+    expect(dao.status).toBe(200);
+    expect(dao.json.submission.status).toBe("dao_approved");
+    const daoAgain = await post("DAO_BONG", { action: "approve", submissionId: id });
+    expect(daoAgain.status, "double submit of the same decision is rejected").toBeGreaterThanOrEqual(409);
+
+    const cac = await post("CAC_BONG", { action: "approve", submissionId: id });
+    expect(cac.json.submission.status).toBe("cac_approved");
+    const ministry = await post("MINISTRY", { action: "approve", submissionId: id });
+    expect(ministry.json.submission.status).toBe("ministry_approved");
+
+    const context = await signIn(browser, "MINISTRY");
+    const thread = await (await context.request.get(`/api/ops/workflows/submission?submissionId=${id}`)).json();
+    await context.close();
+    expect(thread.thread.actions.map((a: { toStatus: string }) => a.toStatus)).toEqual([
+      "submitted",
+      "dao_approved",
+      "cac_approved",
+      "ministry_approved",
+    ]);
+  });
+});

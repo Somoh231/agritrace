@@ -42,11 +42,15 @@ export function describeAuthFetchFailure(message: string): string {
     lowered.includes("network request failed") ||
     lowered.includes("load failed")
   ) {
-    return [
-      "Could not reach Supabase Auth (network error).",
-      "Confirm NEXT_PUBLIC_SUPABASE_URL is https://YOUR_PROJECT.supabase.co (not http, not the DB pooler URL), redeploy after changing env vars, and ensure the Supabase project is not paused.",
-      "Then retry — or open /health from the same device to compare server-side connectivity.",
-    ].join(" ");
+    // Operators get plain guidance; deployment diagnostics stay in the console / monitoring.
+    console.error("[auth] sign-in could not reach the identity service:", m);
+    return "AgriVault could not reach the sign-in service. Check your internet connection and try again. If the problem continues, contact your system administrator.";
+  }
+  if (lowered.includes("invalid login credentials")) {
+    return "The email or password is incorrect.";
+  }
+  if (lowered.includes("rate limit") || lowered.includes("too many")) {
+    return "Too many sign-in attempts. Wait a few minutes before trying again.";
   }
   return m;
 }

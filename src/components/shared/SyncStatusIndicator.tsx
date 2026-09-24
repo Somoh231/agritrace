@@ -123,7 +123,7 @@ export default function SyncStatusIndicator() {
         <StatusBadge tone="success" dot>
           Synced
         </StatusBadge>
-        <span className="font-mono text-[11px] text-slate-500">No pending sync</span>
+        <span className="font-mono text-[11px] text-slate-600">No pending sync</span>
       </div>
     );
   }

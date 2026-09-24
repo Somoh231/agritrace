@@ -66,7 +66,8 @@ export async function POST(request: Request) {
     return apiError(ctx, "payload too large", 400, { policy: ANALYTICS_POLICY });
   }
 
-  // Best-effort auth context (not required).
+  // AgriVault is a private system: only signed-in operators may cause a
+  // service-role write. Anonymous events are acknowledged and dropped.
   let userId: string | null = null;
   try {
     const supabase = await createClient();
@@ -77,6 +78,8 @@ export async function POST(request: Request) {
   } catch {
     userId = null;
   }
+
+  if (!userId) return analyticsNoContent(ctx, "disabled");
 
   // Use service role if configured; otherwise no-op.
   let admin;

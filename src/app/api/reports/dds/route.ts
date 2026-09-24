@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 
 // IMPORTANT: @react-pdf/renderer must only be imported server-side.
 import React from "react";
-import { Document, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
+import { Document, Page, StyleSheet, Text, View, pdf, type DocumentProps } from "@react-pdf/renderer";
 
 type ReqBody = { lotId: string };
 
@@ -277,7 +277,7 @@ export async function POST(request: Request) {
     plots: (plots as any[]) ?? [],
     generatedAt,
   });
-  const instance = pdf(doc);
+  const instance = pdf(doc as React.ReactElement<DocumentProps>);
 
   const buf = (await instance.toBuffer()) as unknown as Uint8Array;
   const ab = new ArrayBuffer(buf.byteLength);
