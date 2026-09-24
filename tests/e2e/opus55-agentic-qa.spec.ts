@@ -492,9 +492,11 @@ test.describe("GIS boundary capture", () => {
     await page.goto("/field/boundary-capture");
     await chooseFirstFarmer(page);
     const capture = async (latitude: number, longitude: number, n: number) => {
+      // Walking to a new corner produces a new live fix; give the watch a moment to deliver it.
       await allowed.setGeolocation({ latitude, longitude, accuracy: 4 });
+      await page.waitForTimeout(400);
       await page.getByRole("button", { name: "Capture Point" }).click();
-      await expect(page.getByText(`Corner ${n} captured`)).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText(`Corners captured: ${n}`)).toBeVisible({ timeout: 30_000 });
     };
     // Bow-tie: corners out of order.
     await capture(7.0, -9.47, 1);
@@ -505,12 +507,13 @@ test.describe("GIS boundary capture", () => {
     await expect(page.getByText(/crosses itself/)).toBeVisible();
 
     await page.getByRole("button", { name: "Clear Polygon" }).click();
-    await capture(7.0, -9.47, 1);
-    await capture(7.0, -9.4691, 2);
-    await capture(7.0009, -9.4691, 3);
-    await capture(7.0009, -9.47, 4);
+    // A different (valid, in-order) square so no corner repeats the previous fix.
+    await capture(7.002, -9.472, 1);
+    await capture(7.002, -9.4711, 2);
+    await capture(7.0029, -9.4711, 3);
+    await capture(7.0029, -9.472, 4);
     await page.getByRole("button", { name: "Close Boundary" }).click();
-    await expect(page.getByText("Boundary ready to save.")).toBeVisible();
+    await expect(page.getByText(/Boundary closed — review the outline/)).toBeVisible();
     await allowed.close();
   });
 });

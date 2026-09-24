@@ -367,6 +367,7 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
         setHint("Could not read GPS. Check location permissions and tap Capture Point again.");
         setBusy(false);
       },
+      // Always a fresh fix here: a cached one could silently record the previous corner.
       { enableHighAccuracy: true, maximumAge: 0, timeout: 25_000 },
     );
   };
