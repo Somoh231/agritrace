@@ -149,6 +149,19 @@ export async function processSyncQueue(): Promise<{ synced: number; failed: numb
     getUnsynced("pending_production_records"),
   ]);
 
+  // Offline forms may omit geography the operator is bound to; fill it from their
+  // own profile (never overriding what was captured) so RLS scope checks pass.
+  const { data: operatorProfile } = await supabase
+    .from("profiles")
+    .select("county,district")
+    .eq("id", operatorId)
+    .maybeSingle();
+  const withOperatorGeography = (row: Record<string, unknown>) => ({
+    ...row,
+    county: row.county ?? (operatorProfile as { county?: string | null } | null)?.county ?? null,
+    district: row.district ?? (operatorProfile as { district?: string | null } | null)?.district ?? null,
+  });
+
   const syncedFarmerIds = new Map<string, string>();
   for (const f of (await db.getAll("pending_farmers")) as Array<QueuedRecord & { server_id?: string }>) {
     if (f?.synced && f.server_id) syncedFarmerIds.set(f.client_id, f.server_id);
@@ -194,7 +207,7 @@ export async function processSyncQueue(): Promise<{ synced: number; failed: numb
     "pending_farmers",
     "farmers",
     farmers,
-    async (r) => ({ ...(r.data as Record<string, unknown>), registered_by: operatorId }),
+    async (r) => withOperatorGeography({ ...(r.data as Record<string, unknown>), registered_by: operatorId }),
     async (r, serverId) => {
       syncedFarmerIds.set(r.client_id, serverId);
       const d = r.data as Record<string, unknown>;

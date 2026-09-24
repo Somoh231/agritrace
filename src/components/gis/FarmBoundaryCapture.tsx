@@ -12,6 +12,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 
 import "mapbox-gl/dist/mapbox-gl.css";
+import RenderFallbackBoundary from "@/components/shared/RenderFallbackBoundary";
 
 const MapGL = dynamic(() => import("react-map-gl/mapbox").then((m) => m.default), { ssr: false });
 const Source = dynamic(() => import("react-map-gl/mapbox").then((m) => m.Source), { ssr: false });
@@ -549,6 +550,13 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
               <p className="text-[12px] text-slate-500">You can still capture points; coordinates list below after each capture.</p>
             </div>
           ) : (
+            <RenderFallbackBoundary
+              fallback={
+                <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-3 text-[12px] text-amber-900">
+                  The map could not load (offline or blocked). You can still capture corner points with GPS below.
+                </p>
+              }
+            >
             <MapGL
               ref={mapRef}
               mapboxAccessToken={token}
@@ -646,6 +654,7 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
                 </Source>
               ) : null}
             </MapGL>
+            </RenderFallbackBoundary>
           )}
           <button
             type="button"

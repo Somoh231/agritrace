@@ -32,6 +32,8 @@ export default function UserWorkspaceMenu({
   const signOut = async () => {
     const supabase = getSupabaseBrowserClient();
     await supabase.auth.signOut();
+    // Cached offline shells must not outlive the session on a shared device.
+    navigator.serviceWorker?.controller?.postMessage({ type: "CLEAR_PRIVATE_CACHE" });
     router.push("/login");
     router.refresh();
   };

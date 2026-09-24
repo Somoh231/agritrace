@@ -27,7 +27,7 @@ const OPERATORS: Operator[] = [
   {
     key: "CLAN_BONG",
     landing: "/district-dashboard",
-    routes: ["/workspace/clan", "/farmers", "/field/inspections", "/field/boundary-capture", "/field/sync-queue"],
+    routes: ["/workspace/clan", "/field", "/farmers", "/field/inspections", "/field/boundary-capture", "/field/sync-queue"],
     denied: ["/command-center", "/admin/users", "/workspace/ministry", "/verification-queue"],
   },
   {
@@ -319,5 +319,120 @@ test.describe("workflow chain (synthetic mutations)", () => {
       "cac_approved",
       "ministry_approved",
     ]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Offline capture -> persist -> reconnect -> replay -> dedupe -> cleanup
+// ---------------------------------------------------------------------------
+test.describe("offline field capture (synthetic mutations)", () => {
+  test.skip(!configured("CLAN_BONG"), "Requires CLAN_BONG operator.");
+
+  test("farmer captured offline replays once under the operator's scope and leaves no PII behind", async ({
+    browser,
+    baseURL,
+  }) => {
+    requireSafeSyntheticTarget(baseURL ?? "");
+    const context = await signIn(browser, "CLAN_BONG");
+    const page = await context.newPage();
+    const pendingFarmers = () =>
+      page.evaluate(
+        () =>
+          new Promise<number>((resolve) => {
+            const open = indexedDB.open("agrivault-offline");
+            open.onsuccess = () => {
+              const db = open.result;
+              if (!db.objectStoreNames.contains("pending_farmers")) return resolve(0);
+              const req = db.transaction("pending_farmers").objectStore("pending_farmers").getAll();
+              req.onsuccess = () => resolve((req.result as Array<{ synced?: boolean }>).filter((r) => !r.synced).length);
+              req.onerror = () => resolve(-1);
+            };
+            open.onerror = () => resolve(-1);
+          }),
+      );
+
+    await page.goto("/field");
+    await settle(page);
+    const name = `QA55 Offline Farmer ${Date.now()}`;
+    await context.setOffline(true);
+    await page.getByRole("button", { name: /Register Farmer/i }).click();
+    await page.getByPlaceholder("Full name").fill(name);
+    await page.getByPlaceholder(/National ID/).fill(`LBR-QA55-${Date.now()}`);
+    await page.getByRole("button", { name: /^Save$/ }).click();
+    await expect.poll(pendingFarmers, { message: "record queued in IndexedDB while offline" }).toBe(1);
+
+    // Survives a reload while still queued (reload online; offline navigation needs the service worker).
+    await context.setOffline(false);
+    await page.reload();
+    await settle(page);
+
+    // Replay (triggered by the online event / sync indicator) persists exactly one server row.
+    await expect.poll(pendingFarmers, { timeout: 30_000, message: "queue drained after reconnect" }).toBe(0);
+    const response = await context.request.get(`/api/farmers?limit=200`);
+    const farmers = ((await response.json()).farmers ?? []) as Array<{ full_name: string; county: string }>;
+    const matches = farmers.filter((f) => f.full_name === name);
+    expect(matches, "exactly one server record (idempotent replay)").toHaveLength(1);
+    expect(matches[0]?.county).toBe("Bong");
+
+    // Synced PII is purged from the device.
+    const stored = await page.evaluate(
+      () =>
+        new Promise<number>((resolve) => {
+          const open = indexedDB.open("agrivault-offline");
+          open.onsuccess = () => {
+            const req = open.result.transaction("pending_farmers").objectStore("pending_farmers").count();
+            req.onsuccess = () => resolve(req.result);
+          };
+        }),
+    );
+    expect(stored, "synced farmer PII purged from IndexedDB").toBe(0);
+    await context.close();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Service worker never serves live data from cache
+// ---------------------------------------------------------------------------
+test.describe("service worker data freshness (synthetic mutations)", () => {
+  test.skip(!["CLAN_BONG", "DAO_BONG"].every(configured), "Requires CLAN_BONG and DAO_BONG operators.");
+
+  test("verification queue shows a submission created after the first visit; no API/RSC responses cached", async ({
+    browser,
+    baseURL,
+  }) => {
+    requireSafeSyntheticTarget(baseURL ?? "");
+    const dao = await signIn(browser, "DAO_BONG");
+    const page = await dao.newPage();
+    await page.goto("/verification-queue");
+    await settle(page);
+    await page.waitForFunction(() => Boolean(navigator.serviceWorker?.controller), undefined, { timeout: 20_000 }).catch(() => undefined);
+    await page.reload();
+    await settle(page);
+
+    const title = `QA55 freshness ${Date.now()}`;
+    const clan = await signIn(browser, "CLAN_BONG");
+    const created = await clan.request.post("/api/ops/workflows/submission", {
+      data: { action: "submit", create: { submissionType: "field_inspection", title, metadata: { synthetic: true } } },
+    });
+    expect(created.status()).toBe(200);
+    const reference = (await created.json()).submission.referenceCode as string;
+    await clan.close();
+
+    await page.reload();
+    await settle(page);
+    await expect(page.getByText(reference).first()).toBeVisible({ timeout: 20_000 });
+
+    const cachedLiveData = await page.evaluate(async () => {
+      const hits: string[] = [];
+      for (const key of await caches.keys()) {
+        for (const req of await (await caches.open(key)).keys()) {
+          const u = new URL(req.url);
+          if (u.pathname.startsWith("/api/") || u.searchParams.has("_rsc")) hits.push(u.pathname);
+        }
+      }
+      return hits;
+    });
+    expect(cachedLiveData, "no API or RSC responses in Cache Storage").toEqual([]);
+    await dao.close();
   });
 });

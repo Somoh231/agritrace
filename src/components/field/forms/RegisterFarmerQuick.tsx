@@ -12,13 +12,16 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { PILOT_COUNTIES } from "@/lib/utils/pilot-config";
 import { PILOT_MODE } from "@/lib/utils/pilot-config";
 import { processSyncQueue, queueFarmer, queuePlot } from "@/lib/offline/sync-queue";
+import { useOperationalActor } from "@/lib/ops/operational-actor-context";
 
 export default function RegisterFarmerQuick({ onDone }: { onDone: () => void }) {
   const toast = useToast();
   const [fullName, setFullName] = React.useState("");
   const [nationalId, setNationalId] = React.useState("");
   const [phone, setPhone] = React.useState("");
-  const [county, setCounty] = React.useState<string>(PILOT_COUNTIES[0] ?? "Nimba");
+  // Default to the operator's assigned county: RLS only accepts registrations inside it.
+  const actor = useOperationalActor();
+  const [county, setCounty] = React.useState<string>(actor.county ?? PILOT_COUNTIES[0] ?? "Nimba");
   const [village, setVillage] = React.useState("");
   const [gps, setGps] = React.useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
   const [busy, setBusy] = React.useState(false);
