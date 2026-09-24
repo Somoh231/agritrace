@@ -68,14 +68,16 @@ export default function Topbar({
             <Menu className="h-5 w-5" />
           </button>
         ) : null}
-        <div className="text-[12px] min-w-0 border-l-[3px] border-[rgb(var(--ministry-gold))]/60 pl-3.5">
+        <div className="text-[12px] min-w-[11rem] max-w-[24rem] shrink-0 border-l-[3px] border-[rgb(var(--ministry-gold))]/60 pl-3.5">
           <div className="ent-label gov-kicker-gold truncate">{kicker}</div>
           <div className="mt-1.5 ent-editorial text-[16px] leading-tight text-slate-900 truncate">{title}</div>
           {scopeLabel ? (
-            <div className="font-mono text-[9px] tracking-wide text-slate-500 truncate mt-1.5">Jurisdiction · {scopeLabel}</div>
+            <div className="font-mono text-[10px] tracking-wide text-slate-600 truncate mt-1.5" title={`Jurisdiction · ${scopeLabel}`}>
+              Jurisdiction · {scopeLabel}
+            </div>
           ) : null}
         </div>
-        <div className="hidden lg:flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 shrink-0">
+        <div className="hidden xl:flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 shrink-0">
           <SyncStatusIndicator />
         </div>
       </div>
@@ -94,14 +96,10 @@ export default function Topbar({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search registry, warehouses, reports…"
-            className="h-9 w-[240px] lg:w-[280px] rounded-lg border border-slate-200 bg-slate-50 px-3 text-[12px] text-ink-900 placeholder:text-slate-400 outline-none focus:border-forest-400 focus:ring-2 focus:ring-forest-100"
+            className="h-9 w-[200px] xl:w-[260px] rounded-lg border border-slate-200 bg-slate-50 px-3 text-[12px] text-ink-900 placeholder:text-slate-400 outline-none focus:border-forest-400 focus:ring-2 focus:ring-forest-100"
             aria-label="Global search"
           />
         </form>
-        <div className="hidden lg:flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden />
-          <span className="font-mono text-[10px] text-emerald-800">System live</span>
-        </div>
         <div className="sm:hidden flex items-center pr-1">
           <SyncStatusIndicator />
         </div>

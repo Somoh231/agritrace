@@ -110,7 +110,18 @@ export async function middleware(request: NextRequest) {
   const url = normalizeHttpUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
-  if (!url || !anonKey) return response;
+  if (!url || !anonKey) {
+    // Fail closed: without identity configuration no protected surface may render.
+    if (isProtectedPath(pathname)) {
+      const unavailable = new NextResponse("AgriVault is temporarily unavailable. Contact your system administrator.", {
+        status: 503,
+        headers: { "content-type": "text/plain; charset=utf-8", "retry-after": "300" },
+      });
+      unavailable.headers.set(REQUEST_ID_HEADER, requestId);
+      return unavailable;
+    }
+    return response;
+  }
 
   const supabase = createServerClient(url, anonKey, {
     cookies: {

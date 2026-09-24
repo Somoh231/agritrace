@@ -15,30 +15,16 @@ export default async function DashboardLayout({
   try {
     supabase = await createClient();
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "Supabase is not configured.";
+    console.error("[dashboard] identity service is not configured", e instanceof Error ? e.message : e);
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <main className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-xl mx-auto bg-white border border-gray-200 rounded-xl p-5">
-          <div className="font-display text-lg text-gray-900">Setup required</div>
-          <div className="mt-2 text-[12px] text-gray-600 leading-relaxed">
-            {message} Add real values to <span className="font-mono">.env.local</span>:
-            <div className="mt-3 rounded-lg bg-gray-50 border border-gray-200 p-3 font-mono text-[11px] text-gray-700">
-              NEXT_PUBLIC_SUPABASE_URL=https://…<br />
-              NEXT_PUBLIC_SUPABASE_ANON_KEY=…<br />
-              SUPABASE_SERVICE_ROLE_KEY=… (seed script only)
-            </div>
-          </div>
-          <div className="mt-4 flex gap-2">
-            <a
-              href="/login"
-              className="h-9 px-3 rounded-md bg-forest-700 text-white text-[12px] hover:bg-forest-800 inline-flex items-center"
-            >
-              Go to login
-            </a>
-          </div>
+          <h1 className="font-display text-lg text-gray-900">AgriVault is temporarily unavailable</h1>
+          <p className="mt-2 text-[13px] text-gray-700 leading-relaxed">
+            The sign-in service cannot be reached. Try again shortly, or contact your system administrator.
+          </p>
         </div>
-      </div>
+      </main>
     );
   }
   const {

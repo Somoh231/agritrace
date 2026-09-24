@@ -21,12 +21,35 @@ export default function BoundaryCaptureStandalone() {
   }, [farmerFromUrl]);
   const farmerId = farmerInput.trim();
   const toast = useToast();
+  const [farmers, setFarmers] = React.useState<Array<{ id: string; label: string }>>([]);
+
+  // Farmers visible to this operator under RLS (their county/district scope).
+  React.useEffect(() => {
+    let cancelled = false;
+    void getSupabaseBrowserClient()
+      .from("farmers")
+      .select("id,full_name,village,registry_public_id")
+      .order("full_name", { ascending: true })
+      .limit(500)
+      .then(({ data }: { data: Array<Record<string, string | null>> | null }) => {
+        if (cancelled || !data) return;
+        setFarmers(
+          data.map((f) => ({
+            id: String(f.id),
+            label: [f.full_name, f.village, f.registry_public_id].filter(Boolean).join(" · "),
+          })),
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [boundary, setBoundary] = React.useState<OperationalFarmBoundary | null>(null);
   const [saving, setSaving] = React.useState(false);
 
   const queueFarmBoundary = async () => {
     if (!farmerId) {
-      toast.error("Farmer ID required", "Add the farmer UUID to the address bar: ?farmer=…");
+      toast.error("Choose a farmer", "Select the farmer whose boundary you are capturing.");
       return;
     }
     if (!boundary) {
@@ -84,16 +107,31 @@ export default function BoundaryCaptureStandalone() {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[rgb(var(--ministry-gold))]/15 px-3 py-2.5 md:px-4">
         <div className="min-w-0">
           <div className="cmd-kicker">Field GIS · Boundary capture</div>
-          <div className="mt-0.5 font-serif-display text-[16px] leading-none text-white">Capture farm boundary</div>
+          <h1 className="mt-0.5 font-serif-display text-[16px] leading-none text-white">Capture farm boundary</h1>
         </div>
         <label className="flex min-w-0 flex-1 items-center gap-2 sm:max-w-[420px]">
-          <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.16em] text-emerald-200/55">Farmer</span>
+          <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-100/85">Farmer</span>
+          {farmers.length > 0 ? (
+            <select
+              value={farmers.some((f) => f.id === farmerId) ? farmerId : ""}
+              onChange={(e) => setFarmerInput(e.target.value)}
+              className="h-9 w-full min-w-0 rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-panel))] px-2 text-[12px] text-emerald-50 outline-none focus:border-[rgb(var(--ministry-gold))]/60"
+            >
+              <option value="">Choose a farmer in your area…</option>
+              {farmers.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
+          ) : (
           <input
             value={farmerInput}
             onChange={(e) => setFarmerInput(e.target.value)}
-            placeholder="Paste farmer UUID or use ?farmer="
+            placeholder="No farmers loaded — register the farmer first, or paste their ID"
             className="h-9 w-full min-w-0 rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-panel))]/50 px-3 font-mono text-[11px] text-emerald-50 placeholder:text-emerald-200/35 outline-none focus:border-[rgb(var(--ministry-gold))]/60"
           />
+          )}
         </label>
         <div className="ml-auto flex items-center gap-3">
           <div className="cmd-surface px-2 py-1">
