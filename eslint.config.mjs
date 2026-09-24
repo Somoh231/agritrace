@@ -20,6 +20,7 @@ const eslintConfig = [
       "public/sw.js",
       "playwright-report/**",
       "test-results/**",
+      "vendor/**",
     ],
   },
 ];
