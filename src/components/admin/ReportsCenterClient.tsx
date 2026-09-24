@@ -207,7 +207,7 @@ export default function ReportsCenterClient() {
           )}
 
           <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">Export intent</div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">Export intent</div>
             <div className="mt-2 text-[12px] text-gray-700">
               Template: <span className="font-mono">{selected?.id}</span>
               <br />
@@ -230,7 +230,7 @@ export default function ReportsCenterClient() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">{label}</div>
+      <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">{label}</div>
       {children}
     </div>
   );

@@ -123,7 +123,7 @@ export default function OrganizationsAdminClient() {
             </div>
           </div>
         ) : (
-          <div className="max-h-[70vh] overflow-auto">
+          <div className="max-h-[70vh] overflow-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600" tabIndex={0} role="region" aria-label="Organizations table">
             <table className="min-w-[860px] w-full text-[12px]">
               <thead className="sticky top-0 z-10 bg-gray-50 text-gray-600 shadow-[0_1px_0_rgba(0,0,0,0.06)]">
                 <tr>

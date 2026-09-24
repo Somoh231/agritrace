@@ -11,7 +11,7 @@ export default function MarketPricesPage() {
         </p>
       </header>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-700 bg-slate-950/60">
+      <div tabIndex={0} role="region" aria-label="Scrollable table" className="overflow-x-auto rounded-xl border border-slate-700 bg-slate-950/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
         <table className="w-full min-w-[560px] text-left text-[13px]">
           <thead className="font-mono text-[10px] uppercase tracking-wider text-slate-500 border-b border-slate-800">
             <tr>

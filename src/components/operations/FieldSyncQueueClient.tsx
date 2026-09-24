@@ -12,12 +12,12 @@ export default function FieldSyncQueueClient() {
       description="Browser-backed offline capture replay for extension teams — inspect queue depth before pushing reconciliations."
       actions={<SyncStatusIndicator />}
     >
-      <div className="rounded-xl border border-slate-700 bg-slate-900/40 px-5 py-6 text-[13px] text-slate-300 leading-relaxed space-y-4">
-        <p>
+      <div className="rounded-xl border border-slate-700 bg-slate-900 px-5 py-6 text-[13px] text-slate-300 leading-relaxed space-y-4">
+        <p className="text-slate-300">
           IndexedDB batches reconcile through the service worker bridge. Use the field agents console for device-level diagnostics and
           forced retries.
         </p>
-        <Link href="/field-agents" className="inline-flex text-emerald-400 hover:text-emerald-300 font-medium">
+        <Link href="/field-agents" className="inline-flex text-emerald-300 hover:text-emerald-200 font-medium">
           Open field agents console →
         </Link>
       </div>

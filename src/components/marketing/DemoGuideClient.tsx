@@ -56,7 +56,7 @@ export default function DemoGuideClient() {
           <Link href="/" className="text-[12px] text-forest-700 hover:underline underline-offset-2">
             ← Back to home
           </Link>
-          <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
             Executive demo mode
           </div>
           <Link

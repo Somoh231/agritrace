@@ -165,7 +165,7 @@ export default function UsersAdminClient() {
               Invite user
             </button>
             <div className="relative">
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
                 Search
               </div>
               <Search className="h-4 w-4 text-gray-400 absolute left-3 top-[34px]" />
@@ -265,7 +265,7 @@ export default function UsersAdminClient() {
             </div>
           </div>
         ) : (
-          <div className="max-h-[70vh] overflow-auto">
+          <div className="max-h-[70vh] overflow-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600" tabIndex={0} role="region" aria-label="Workforce users table">
             <table className="min-w-[860px] w-full text-[12px]">
               <thead className="sticky top-0 z-10 bg-gray-50 text-gray-600 shadow-[0_1px_0_rgba(0,0,0,0.06)]">
                 <tr>
@@ -482,7 +482,7 @@ function UserEditor({
           <WorkforceFields form={form} set={set} orgs={orgs} warehouses={warehouses} emailReadOnly />
           <div className="mt-5 grid gap-4 border-t border-gray-100 pt-4 lg:grid-cols-2">
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400">Access status</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600">Access status</div>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <StatusChip tone={profile.is_active ? "ok" : "danger"}>
                   {profile.account_status}
@@ -518,7 +518,7 @@ function UserEditor({
               </p>
             </div>
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400">Access history</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600">Access history</div>
               <div className="mt-2 max-h-36 space-y-1 overflow-auto rounded-lg border border-gray-100 p-2">
                 {user.access_history.length ? (
                   user.access_history.map((event) => (
@@ -742,7 +742,7 @@ function Modal({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">{label}</div>
+      <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">{label}</div>
       {children}
     </div>
   );

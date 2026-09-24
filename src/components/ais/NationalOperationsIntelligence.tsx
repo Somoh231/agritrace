@@ -138,7 +138,7 @@ export default function NationalOperationsIntelligence() {
                 </Link>
               }
             />
-            <div className="mt-4 overflow-x-auto">
+            <div tabIndex={0} role="region" aria-label="County operations table" className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600 mt-4 overflow-x-auto">
               <table className="enterprise-table min-w-[520px]">
                 <thead>
                   <tr>

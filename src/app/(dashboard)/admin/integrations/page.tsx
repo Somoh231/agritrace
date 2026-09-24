@@ -56,7 +56,7 @@ export default function IntegrationsPage() {
       </section>
 
       <section className={`${ADMIN_CARD} overflow-hidden`}>
-        <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-400">
+        <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-600">
           Connected systems status
         </div>
         <div className="divide-y divide-gray-100">

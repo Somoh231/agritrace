@@ -131,7 +131,7 @@ function LedgerView({ isLoading, rows }: { isLoading: boolean; rows: MovementRow
     <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
       <div className="grid grid-cols-[150px_1fr_80px_80px_110px_90px] gap-0 border-b border-gray-100 px-3.5 py-2">
         {["Lot ID", "From → To", "Disp.", "Recv.", "Variance", "Status"].map((h) => (
-          <div key={h} className="font-mono text-[9px] uppercase tracking-[1px] text-gray-400">
+          <div key={h} className="font-mono text-[9px] uppercase tracking-[1px] text-gray-600">
             {h}
           </div>
         ))}
@@ -241,19 +241,19 @@ function DisputesView({ rows }: { rows: MovementRow[] }) {
 
                 <div className="mt-3 grid grid-cols-2 gap-3 text-[12px] text-gray-700">
                   <div>
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                    <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
                       Dispatched
                     </div>
                     <div className="mt-1 font-mono">{formatWeight(r.weight_dispatched)}</div>
                   </div>
                   <div>
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                    <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
                       Received
                     </div>
                     <div className="mt-1 font-mono">{r.weight_received == null ? "—" : formatWeight(received)}</div>
                   </div>
                   <div>
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                    <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
                       Variance
                     </div>
                     <div className="mt-1 font-mono text-red-700">
@@ -261,7 +261,7 @@ function DisputesView({ rows }: { rows: MovementRow[] }) {
                     </div>
                   </div>
                   <div>
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                    <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
                       Driver
                     </div>
                     <div className="mt-1">{r.driver_name ?? "—"} {r.vehicle_id ? `· ${r.vehicle_id}` : ""}</div>
@@ -331,7 +331,7 @@ function LogMovementForm({ onSaved }: { onSaved: () => void }) {
       {error ? <div className="mb-3 text-[12px] text-red-700">{error}</div> : null}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="sm:col-span-2">
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Lot</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">Lot</div>
           <select value={lotId} onChange={(e) => setLotId(e.target.value)} className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]">
             {lots.map((l) => (
               <option key={l.id} value={l.id}>
@@ -341,7 +341,7 @@ function LogMovementForm({ onSaved }: { onSaved: () => void }) {
           </select>
         </div>
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">From</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">From</div>
           <select value={fromId} onChange={(e) => setFromId(e.target.value)} className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]">
             {locations.map((l) => (
               <option key={l.id} value={l.id}>
@@ -351,7 +351,7 @@ function LogMovementForm({ onSaved }: { onSaved: () => void }) {
           </select>
         </div>
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">To</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">To</div>
           <select value={toId} onChange={(e) => setToId(e.target.value)} className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]">
             {locations.map((l) => (
               <option key={l.id} value={l.id}>
@@ -361,7 +361,7 @@ function LogMovementForm({ onSaved }: { onSaved: () => void }) {
           </select>
         </div>
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Transport</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">Transport</div>
           <select value={mode} onChange={(e) => setMode(e.target.value)} className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]">
             {["Truck", "Motorbike", "Boat", "Foot"].map((m) => (
               <option key={m}>{m}</option>
@@ -369,7 +369,7 @@ function LogMovementForm({ onSaved }: { onSaved: () => void }) {
           </select>
         </div>
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Weight dispatched (kg)</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">Weight dispatched (kg)</div>
           <input value={weight} onChange={(e) => setWeight(e.target.value)} inputMode="decimal" className="h-9 w-full rounded-md border border-gray-200 px-2 text-[12px]" />
           {selectedLot ? (
             <div className="mt-1 text-[11px] text-gray-500">
@@ -378,19 +378,19 @@ function LogMovementForm({ onSaved }: { onSaved: () => void }) {
           ) : null}
         </div>
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Driver</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">Driver</div>
           <input value={driver} onChange={(e) => setDriver(e.target.value)} className="h-9 w-full rounded-md border border-gray-200 px-2 text-[12px]" />
         </div>
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Vehicle ID</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">Vehicle ID</div>
           <input value={vehicle} onChange={(e) => setVehicle(e.target.value)} className="h-9 w-full rounded-md border border-gray-200 px-2 text-[12px]" />
         </div>
         <div className="sm:col-span-2">
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Dispatch timestamp</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">Dispatch timestamp</div>
           <input type="datetime-local" value={dispatchAt} onChange={(e) => setDispatchAt(e.target.value)} className="h-9 w-full rounded-md border border-gray-200 px-2 text-[12px]" />
         </div>
         <div className="sm:col-span-2">
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Notes</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">Notes</div>
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="min-h-20 w-full rounded-md border border-gray-200 px-2 py-2 text-[12px]" />
         </div>
       </div>

@@ -24,9 +24,9 @@ function MiniCard({
   body: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4">
+    <div className="rounded-xl border border-slate-700/70 bg-slate-950 p-4">
       <div className="font-display text-[14px] font-semibold text-white">{title}</div>
-      <p className="mt-1 text-[11px] text-slate-500 leading-relaxed">{body}</p>
+      <p className="mt-1 text-[11px] text-slate-300 leading-relaxed">{body}</p>
     </div>
   );
 }
@@ -132,7 +132,7 @@ export default function AuditToolsClient() {
       actions={
         <a
           href="/api/reports/compliance-oversight"
-          className="h-10 rounded-lg border border-emerald-700/45 bg-emerald-950/40 px-4 text-[12px] text-emerald-100 hover:bg-emerald-950/60 inline-flex items-center"
+          className="h-10 rounded-lg border border-emerald-700 bg-emerald-900 px-4 text-[12px] text-emerald-100 hover:bg-emerald-800 inline-flex items-center"
         >
           PDF compliance report
         </a>
@@ -199,7 +199,7 @@ export default function AuditToolsClient() {
         </div>
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4">
+          <div className="rounded-xl border border-slate-700/70 bg-slate-950 p-4">
             <div className="font-display text-[14px] font-semibold text-white">DAO submission history (field_reports)</div>
             <div className="mt-3">
               <LiveQueryGrid
@@ -218,7 +218,7 @@ export default function AuditToolsClient() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4">
+          <div className="rounded-xl border border-slate-700/70 bg-slate-950 p-4">
             <div className="font-display text-[14px] font-semibold text-white">Subsidy verification chain (distribution_logs)</div>
             <div className="mt-3">
               <LiveQueryGrid
@@ -241,7 +241,7 @@ export default function AuditToolsClient() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4">
+          <div className="rounded-xl border border-slate-700/70 bg-slate-950 p-4">
             <div className="font-display text-[14px] font-semibold text-white">Warehouse transaction history (warehouse_transfer_orders)</div>
             <div className="mt-3">
               <LiveQueryGrid
@@ -262,9 +262,9 @@ export default function AuditToolsClient() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4">
+          <div className="rounded-xl border border-slate-700/70 bg-slate-950 p-4">
             <div className="font-display text-[14px] font-semibold text-white">Audit log (audit_log)</div>
-            <p className="mt-1 text-[11px] text-slate-500">Immutable audit stream (RLS governs visibility by role).</p>
+            <p className="mt-1 text-[11px] text-slate-300">Immutable audit stream (RLS governs visibility by role).</p>
             <div className="mt-3">
               <LiveQueryGrid
                 table="audit_log"

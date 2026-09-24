@@ -40,7 +40,7 @@ export default async function CapabilitiesPage() {
   return (
     <div className="space-y-4 max-w-6xl">
       <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">System capabilities</div>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">System capabilities</div>
         <h1 className="mt-2 font-display text-[24px] text-gray-900">Operational capabilities for ministry delivery</h1>
         <p className="mt-2 text-[13px] text-gray-600 max-w-3xl">
           This layer demonstrates end-to-end operational readiness: registry, mapping, intelligence, programme
@@ -80,7 +80,7 @@ export default async function CapabilitiesPage() {
 function Kpi({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">{label}</div>
+      <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">{label}</div>
       <div className="mt-2 font-display text-[24px] text-gray-900">{value}</div>
     </div>
   );

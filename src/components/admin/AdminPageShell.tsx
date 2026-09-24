@@ -25,7 +25,7 @@ export default function AdminPageShell({
       <header className="flex flex-col gap-3 border-b border-gray-200 pb-4 md:flex-row md:items-end md:justify-between">
         <div className="min-w-0">
           {kicker ? (
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-gray-400">{kicker}</div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-gray-600">{kicker}</div>
           ) : null}
           <h1 className="mt-1.5 font-display text-[22px] leading-tight text-gray-900">{title}</h1>
           {description ? <p className="mt-1.5 max-w-3xl text-[13px] text-gray-600">{description}</p> : null}

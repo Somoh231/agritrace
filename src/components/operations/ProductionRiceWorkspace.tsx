@@ -7,7 +7,7 @@ import MinistryPageShell from "@/components/operations/MinistryPageShell";
 const ProductionRecordsTable = dynamic(() => import("@/components/rice/ProductionRecordsTable"), {
   ssr: false,
   loading: () => (
-    <div className="min-h-[240px] rounded-xl border border-slate-700 bg-slate-900/40 animate-pulse" />
+    <div className="min-h-[240px] rounded-xl border border-slate-700 bg-slate-900 animate-pulse" />
   ),
 });
 

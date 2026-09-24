@@ -167,7 +167,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
   const T = {
     container: light ? "border-gray-200 bg-white" : "border-slate-700/80 bg-slate-900/50",
     bar: light ? "border-b border-gray-100 bg-gray-50" : "border-b border-slate-700/80 bg-slate-950/60",
-    title: light ? "text-gray-400" : "text-slate-500",
+    title: light ? "text-gray-600" : "text-slate-300",
     titleMuted: light ? "text-gray-500" : "text-slate-400",
     input: light
       ? "border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-forest-300 focus:ring-2 focus:ring-forest-50"
@@ -227,7 +227,10 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
       </div>
 
       <div
-        className={`overflow-x-auto ${scrollMaxHeightClass ? `${scrollMaxHeightClass} overflow-y-auto overscroll-contain` : ""}`}
+        tabIndex={0}
+        role="region"
+        aria-label={`${title ?? "Data"} table`}
+        className={`overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600 ${scrollMaxHeightClass ? `${scrollMaxHeightClass} overflow-y-auto overscroll-contain` : ""}`}
       >
         <table className={`min-w-full text-left ${rowText}`}>
           <thead className={stickyHeader ? "sticky top-0 z-20" : undefined}>

@@ -214,7 +214,7 @@ export default function ReportingWorkspaceView({ tab }: { tab: ReportingTabId })
       <div className="grid gap-4 lg:grid-cols-3">
         <DashboardPanel className="lg:col-span-2">
           <SectionHeader kicker="Registry" title="Report catalog & export status" subtitle="Each report is generated from live records when downloaded" />
-          <div className="mt-4 overflow-x-auto">
+          <div tabIndex={0} role="region" aria-label="Scrollable table" className="mt-4 overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
             <table className="enterprise-table w-full text-[13px]">
               <thead>
                 <tr>

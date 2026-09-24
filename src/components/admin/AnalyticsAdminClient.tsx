@@ -126,7 +126,7 @@ export default function AnalyticsAdminClient() {
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-400">
+            <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-600">
               Most visited pages
             </div>
             <div className="p-3">
@@ -146,7 +146,7 @@ export default function AnalyticsAdminClient() {
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-400">
+            <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-600">
               Experiment variants (hero)
             </div>
             <div className="p-3">
@@ -166,10 +166,10 @@ export default function AnalyticsAdminClient() {
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-400">
+            <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-600">
               Recent events
             </div>
-            <div className="overflow-x-auto">
+            <div tabIndex={0} role="region" aria-label="Scrollable table" className="overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
               <table className="min-w-[900px] w-full text-[12px]">
                 <thead className="bg-gray-50 text-gray-600">
                   <tr>
@@ -203,7 +203,7 @@ export default function AnalyticsAdminClient() {
 function Kpi({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">{label}</div>
+      <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">{label}</div>
       <div className="mt-2 font-display text-[22px] text-gray-900">{value}</div>
     </div>
   );

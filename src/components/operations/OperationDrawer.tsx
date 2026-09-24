@@ -34,7 +34,7 @@ export default function OperationDrawer({
       <button
         type="button"
         aria-label="Close drawer"
-        className="absolute inset-0 bg-slate-900/40"
+        className="absolute inset-0 bg-slate-900"
         onClick={onClose}
       />
       <div

@@ -221,7 +221,7 @@ export default function SettingsAdminClient() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">{label}</div>
+      <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">{label}</div>
       {children}
     </div>
   );

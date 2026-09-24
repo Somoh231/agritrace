@@ -213,7 +213,7 @@ export default function LotRegisterTable() {
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
               <div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+                <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
                   Status
                 </div>
                 <select
@@ -230,7 +230,7 @@ export default function LotRegisterTable() {
                 </select>
               </div>
               <div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+                <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
                   Compliance
                 </div>
                 <select
@@ -274,20 +274,20 @@ export default function LotRegisterTable() {
           {selected ? (
             <div className="space-y-3 text-[12px] text-gray-700">
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
                   Lot
                 </div>
                 <div className="mt-1 font-mono text-[12px] text-blue-700">{selected.lot_code}</div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
                     Created
                   </div>
                   <div className="mt-1">{formatDate(selected.created_at)}</div>
                 </div>
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
                     Origin
                   </div>
                   <div className="mt-1">{selected.origin_name}</div>
@@ -329,7 +329,7 @@ export default function LotRegisterTable() {
 
         {isLoading ? (
           <div className="rounded-xl border border-gray-200 bg-white p-4">
-            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400">
+            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600">
               Loading
             </div>
             <div className="mt-3 space-y-2">
@@ -370,7 +370,7 @@ function CreateLotForm({
     <div className="space-y-3">
       {error ? <div className="text-[12px] text-red-700">{error}</div> : null}
       <div>
-        <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+        <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
           Origin location
         </div>
         <select
@@ -387,7 +387,7 @@ function CreateLotForm({
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
             Weight in (kg)
           </div>
           <input
@@ -398,7 +398,7 @@ function CreateLotForm({
           />
         </div>
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
             Moisture (%)
           </div>
           <input
@@ -411,7 +411,7 @@ function CreateLotForm({
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
             Grade
           </div>
           <select
@@ -425,7 +425,7 @@ function CreateLotForm({
           </select>
         </div>
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
             Season
           </div>
           <input
@@ -436,7 +436,7 @@ function CreateLotForm({
         </div>
       </div>
       <div>
-        <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+        <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
           Notes
         </div>
         <textarea

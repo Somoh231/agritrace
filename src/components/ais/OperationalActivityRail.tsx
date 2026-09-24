@@ -22,7 +22,7 @@ function toneClasses(tone: FeedItem["tone"]) {
     case "rose":
       return "border-rose-500/25 bg-rose-950/35 text-rose-50";
     default:
-      return "border-slate-500/25 bg-slate-950/40 text-slate-100";
+      return "border-slate-500/25 bg-slate-950 text-slate-100";
   }
 }
 

@@ -503,7 +503,7 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
         <span className="text-[11px] text-slate-500">|</span>
         <span className="text-[12px] text-slate-300">
           Accuracy: <span className="font-medium text-emerald-200/90">{accLabel.tier}</span>{" "}
-          <span className="text-slate-500">({accLabel.detail})</span>
+          <span className="text-slate-400">({accLabel.detail})</span>
         </span>
         <button
           type="button"

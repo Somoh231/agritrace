@@ -52,7 +52,7 @@ function Card({
         : tone === "rose"
           ? "bg-rose-950/15"
           : tone === "slate"
-            ? "bg-slate-950/40"
+            ? "bg-slate-950"
             : "bg-emerald-950/15";
   return (
     <div className={`rounded-xl border ${ring} ${glow} px-4 py-3`}>
@@ -159,7 +159,7 @@ export default function DonorDashboardClient() {
         <div className="flex flex-wrap gap-2">
           <a
             href="/api/reports/donor-programme"
-            className="h-10 rounded-lg border border-emerald-700/45 bg-emerald-950/40 px-4 text-[12px] text-emerald-100 hover:bg-emerald-950/60 inline-flex items-center"
+            className="h-10 rounded-lg border border-emerald-700 bg-emerald-900 px-4 text-[12px] text-emerald-100 hover:bg-emerald-800 inline-flex items-center"
           >
             PDF donor report
           </a>
@@ -196,11 +196,11 @@ export default function DonorDashboardClient() {
         </div>
 
         <section className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4 lg:col-span-2">
+          <div className="rounded-xl border border-slate-700/70 bg-slate-950 p-4 lg:col-span-2">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <div className="font-display text-[14px] font-semibold text-white">County comparisons</div>
-                <p className="mt-1 text-[11px] text-slate-500">Production index, food risk, DAO compliance, and subsidy footprint by county.</p>
+                <p className="mt-1 text-[11px] text-slate-300">Production index, food risk, DAO compliance, and subsidy footprint by county.</p>
               </div>
             </div>
             <div className="mt-3">
@@ -208,9 +208,9 @@ export default function DonorDashboardClient() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4">
+          <div className="rounded-xl border border-slate-700/70 bg-slate-950 p-4">
             <div className="font-display text-[14px] font-semibold text-white">Warehouse allocation</div>
-            <p className="mt-1 text-[11px] text-slate-500">{illustrativeCaption("Read-only warehouse disposition from live records.", "Read-only warehouse disposition snapshot (canonical), with live DB grids below.")}</p>
+            <p className="mt-1 text-[11px] text-slate-300">{illustrativeCaption("Read-only warehouse disposition from live records.", "Read-only warehouse disposition snapshot (canonical), with live DB grids below.")}</p>
             <ul className="mt-3 space-y-2 text-[12px] text-slate-300">
               {MINISTRY_WAREHOUSES.slice(0, 8).map((w) => (
                 <li key={w.ministryCode} className="rounded-lg border border-slate-800 bg-black/25 px-3 py-2">
@@ -223,16 +223,16 @@ export default function DonorDashboardClient() {
                 </li>
               ))}
             </ul>
-            <Link href="/map" className="mt-4 inline-flex text-[12px] font-medium text-emerald-400 hover:text-emerald-300">
+            <Link href="/map" className="mt-4 inline-flex text-[12px] font-medium text-emerald-300 hover:text-emerald-200">
               Open operational map →
             </Link>
           </div>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4">
+          <div className="rounded-xl border border-slate-700/70 bg-slate-950 p-4">
             <div className="font-display text-[14px] font-semibold text-white">Distribution progress (distribution_logs)</div>
-            <p className="mt-1 text-[11px] text-slate-500">Verified subsidy deliveries posted by DAO workflows. Read-only for donor_partner role.</p>
+            <p className="mt-1 text-[11px] text-slate-300">Verified subsidy deliveries posted by DAO workflows. Read-only for donor_partner role.</p>
             <div className="mt-3">
               <LiveQueryGrid
                 table="distribution_logs"
@@ -251,9 +251,9 @@ export default function DonorDashboardClient() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4">
+          <div className="rounded-xl border border-slate-700/70 bg-slate-950 p-4">
             <div className="font-display text-[14px] font-semibold text-white">Donor shipments (donor_shipments)</div>
-            <p className="mt-1 text-[11px] text-slate-500">Receipts mapped to inventory items and warehouses. Read-only for donor_partner/auditor.</p>
+            <p className="mt-1 text-[11px] text-slate-300">Receipts mapped to inventory items and warehouses. Read-only for donor_partner/auditor.</p>
             <div className="mt-3">
               <LiveQueryGrid
                 table="donor_shipments"
@@ -274,13 +274,13 @@ export default function DonorDashboardClient() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4">
+        <section className="rounded-xl border border-slate-700/70 bg-slate-950 p-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <div className="font-display text-[14px] font-semibold text-white">Delivery verification</div>
-              <p className="mt-1 text-[11px] text-slate-500">Workflow transfers used for corridor-level verification (TRF) — read-only view.</p>
+              <p className="mt-1 text-[11px] text-slate-300">Workflow transfers used for corridor-level verification (TRF) — read-only view.</p>
             </div>
-            <Link href="/inventory/transfers" className="text-[12px] text-emerald-400 hover:text-emerald-300">
+            <Link href="/inventory/transfers" className="text-[12px] text-emerald-300 hover:text-emerald-200">
               View ministry transfer workspace →
             </Link>
           </div>

@@ -132,7 +132,7 @@ export default function ProductionRecordsTable() {
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
               <div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+                <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
                   County
                 </div>
                 <CountySelect
@@ -144,7 +144,7 @@ export default function ProductionRecordsTable() {
                 />
               </div>
               <div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+                <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
                   Season
                 </div>
                 <select
@@ -199,7 +199,7 @@ export default function ProductionRecordsTable() {
           {selected ? (
             <div className="space-y-2 text-[12px] text-gray-700">
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
                   Farmer
                 </div>
                 <div className="mt-1 font-medium text-gray-900">{selected.farmer_name}</div>
@@ -207,13 +207,13 @@ export default function ProductionRecordsTable() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
                     Expected
                   </div>
                   <div className="mt-1">{Intl.NumberFormat("en-US").format(selected.expected_kg)} kg</div>
                 </div>
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
                     Actual
                   </div>
                   <div className="mt-1">{Intl.NumberFormat("en-US").format(selected.actual_kg)} kg</div>

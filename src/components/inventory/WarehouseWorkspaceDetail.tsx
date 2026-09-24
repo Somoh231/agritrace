@@ -503,7 +503,7 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
           <div className="border-b border-slate-100 px-5 py-3">
             <SectionHeader kicker="Outbound" title="Farmer-facing distributions" />
           </div>
-          <div className="overflow-x-auto">
+          <div tabIndex={0} role="region" aria-label="Scrollable table" className="overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
             <table className="enterprise-table min-w-[480px]">
               <thead>
                 <tr>
@@ -541,7 +541,7 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
             Open transfer workflow →
           </Link>
         </div>
-        <div className="overflow-x-auto p-2">
+        <div tabIndex={0} role="region" aria-label="Scrollable table" className="overflow-x-auto p-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
           <table className="enterprise-table min-w-[980px]">
             <thead>
               <tr>
@@ -650,7 +650,7 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
         <div className="border-b border-slate-100 px-5 py-3">
           <SectionHeader kicker="Programmes" title="Donor shipments" />
         </div>
-        <div className="overflow-x-auto p-2">
+        <div tabIndex={0} role="region" aria-label="Scrollable table" className="overflow-x-auto p-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
           <table className="enterprise-table min-w-[560px]">
             <thead>
               <tr>
@@ -687,7 +687,7 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
           <SectionHeader kicker="Ledger" title="Inventory movement timeline" subtitle="Transfers · receipts · distributions" />
           <span className="font-mono text-[10px] text-slate-500 self-center">{warehouseUuid ? "Scoped to hub UUID" : "Fixture scope"}</span>
         </div>
-        <div className="overflow-x-auto p-2">
+        <div tabIndex={0} role="region" aria-label="Scrollable table" className="overflow-x-auto p-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
           <table className="enterprise-table min-w-[800px]">
             <thead>
               <tr>

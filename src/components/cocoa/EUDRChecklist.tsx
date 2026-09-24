@@ -230,7 +230,7 @@ export default function EUDRChecklist({ lotId }: { lotId?: string }) {
               <div className="text-[12px] text-gray-500">Per-lot due diligence status.</div>
             </div>
             <div className="w-full sm:w-[320px]">
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Lot</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">Lot</div>
               <select
                 value={activeLotId}
                 onChange={(e) => setActiveLotId(e.target.value)}

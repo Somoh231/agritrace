@@ -125,7 +125,7 @@ export default function ImportCenterClient() {
 
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Dataset</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">Dataset</div>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as any)}
@@ -137,7 +137,7 @@ export default function ImportCenterClient() {
               </select>
             </div>
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">CSV file</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">CSV file</div>
               <label className="h-9 w-full rounded-md border border-gray-200 bg-white px-3 text-[12px] text-gray-700 hover:bg-gray-50 inline-flex items-center gap-2 cursor-pointer">
                 <FileUp className="h-4 w-4" />
                 <span className="truncate">{filename ?? "Choose file…"}</span>
@@ -157,7 +157,7 @@ export default function ImportCenterClient() {
           </div>
 
           <div className="mt-4">
-            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
               CSV content (paste supported)
             </div>
             <textarea
@@ -241,7 +241,7 @@ export default function ImportCenterClient() {
                 </div>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div tabIndex={0} role="region" aria-label="Scrollable table" className="overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
                 <table className="min-w-[520px] w-full text-[11px]">
                   <thead className="bg-gray-50 text-gray-600">
                     <tr>
@@ -286,7 +286,7 @@ export default function ImportCenterClient() {
                   ) : null}
                   {Array.isArray(result.errors) && result.errors.length ? (
                     <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-                      <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                      <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
                         Errors (first 10)
                       </div>
                       <ul className="mt-2 space-y-1 text-[11px] text-gray-700">

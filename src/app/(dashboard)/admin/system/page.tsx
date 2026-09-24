@@ -134,7 +134,7 @@ export default async function SystemDiagnosticsPage() {
 
       <section className={`${ADMIN_CARD} p-5 space-y-3`}>
         <div className="font-semibold text-[13px] text-gray-900">Table row counts (service role)</div>
-        <div className="overflow-x-auto">
+        <div tabIndex={0} role="region" aria-label="Scrollable table" className="overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
           <table className="min-w-full text-[11px] font-mono border-collapse">
             <thead>
               <tr className="border-b border-gray-200 text-left text-gray-500">

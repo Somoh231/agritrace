@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { StatusBadge } from "@/components/enterprise";
 import { getPendingCount, getSyncErrors, processSyncQueue, recordQueueClearTimestamp } from "@/lib/offline/sync-queue";
 
-export default function SyncStatusIndicator() {
+export default function SyncStatusIndicator({ tone = "light" }: { tone?: "light" | "dark" } = {}) {
   const [online, setOnline] = React.useState<boolean>(() => (typeof navigator !== "undefined" ? navigator.onLine : true));
   const [pendingCount, setPendingCount] = React.useState<number>(0);
   const [errors, setErrors] = React.useState<string[]>([]);
@@ -80,7 +80,7 @@ export default function SyncStatusIndicator() {
         </button>
 
         {reviewOpen ?
-          <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-900 px-4">
             <div className="w-full max-w-[640px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
               <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
                 <div className="min-w-0">
@@ -123,7 +123,7 @@ export default function SyncStatusIndicator() {
         <StatusBadge tone="success" dot>
           Synced
         </StatusBadge>
-        <span className="font-mono text-[11px] text-slate-600">No pending sync</span>
+        <span className={`font-mono text-[11px] ${tone === "dark" ? "text-emerald-100/85" : "text-slate-600"}`}>No pending sync</span>
       </div>
     );
   }

@@ -60,7 +60,7 @@ export default function LogisticsMovementTimelineSection({ limit = 60 }: { limit
           <EmptyState title="No movements recorded" description="Receipts, transfers, and distributions will appear here as they are posted." />
         </div>
       ) : (
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+        <div tabIndex={0} role="region" aria-label="Scrollable table" className="mt-4 overflow-x-auto rounded-xl border border-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
           <table className="enterprise-table min-w-[960px]">
             <thead>
               <tr>

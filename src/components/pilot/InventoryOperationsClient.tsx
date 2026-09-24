@@ -92,7 +92,7 @@ export default function InventoryOperationsClient() {
         <div className="border-b border-slate-100 px-5 py-4">
           <SectionHeader title="Warehouse stock summary" />
         </div>
-        <div className="overflow-x-auto p-2">
+        <div tabIndex={0} role="region" aria-label="Inventory table" className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600 overflow-x-auto p-2">
           <table className="enterprise-table min-w-[720px]">
             <thead>
               <tr>

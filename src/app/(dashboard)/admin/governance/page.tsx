@@ -19,7 +19,7 @@ export default async function GovernancePage() {
   return (
     <div className="space-y-4 max-w-6xl">
       <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">Data governance</div>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">Data governance</div>
         <h1 className="mt-2 font-display text-[24px] text-gray-900">Governance and data ownership center</h1>
         <p className="mt-2 text-[13px] text-gray-600 max-w-3xl">
           Government owns the data. AgriVault provides controlled access, auditability, and institutional operations
@@ -90,7 +90,7 @@ export default async function GovernancePage() {
 function Kpi({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">{label}</div>
+      <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">{label}</div>
       <div className="mt-2 font-display text-[24px] text-gray-900">{value}</div>
     </div>
   );

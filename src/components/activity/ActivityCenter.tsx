@@ -174,7 +174,7 @@ export default function ActivityCenter() {
       <div className={`${ADMIN_CARD} p-4`}>
         <div className="grid grid-cols-2 md:flex items-end gap-2">
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Module</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">Module</div>
               <select
                 value={moduleFilter}
                 onChange={(e) => setModuleFilter(e.target.value as any)}
@@ -188,7 +188,7 @@ export default function ActivityCenter() {
             </div>
 
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Role</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">Role</div>
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value as any)}
@@ -217,7 +217,7 @@ export default function ActivityCenter() {
             </div>
 
             <div className="col-span-2 md:col-span-1">
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">User / action</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">User / action</div>
               <input
                 value={userQuery}
                 onChange={(e) => setUserQuery(e.target.value)}
@@ -227,7 +227,7 @@ export default function ActivityCenter() {
             </div>
 
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">Range</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">Range</div>
               <select
                 value={range}
                 onChange={(e) => setRange(e.target.value as any)}

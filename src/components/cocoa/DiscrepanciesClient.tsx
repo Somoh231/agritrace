@@ -183,7 +183,7 @@ export default function DiscrepanciesClient() {
             </div>
             <VarianceSuggest onCreated={load} />
           </div>
-          <div className="overflow-x-auto">
+          <div tabIndex={0} role="region" aria-label="Scrollable table" className="overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
             <table className="min-w-[900px] w-full text-[12px]">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
@@ -249,7 +249,7 @@ export default function DiscrepanciesClient() {
             <div className="text-[11px] text-gray-500 font-mono">{selected.id}</div>
 
             <div>
-              <label className="font-mono text-[9px] uppercase tracking-widest text-gray-400">Assign to</label>
+              <label className="font-mono text-[9px] uppercase tracking-widest text-gray-600">Assign to</label>
               <select
                 value={assignTo}
                 onChange={(e) => setAssignTo(e.target.value)}
@@ -265,7 +265,7 @@ export default function DiscrepanciesClient() {
             </div>
 
             <div>
-              <label className="font-mono text-[9px] uppercase tracking-widest text-gray-400">Notes</label>
+              <label className="font-mono text-[9px] uppercase tracking-widest text-gray-600">Notes</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -274,7 +274,7 @@ export default function DiscrepanciesClient() {
             </div>
 
             <div>
-              <label className="font-mono text-[9px] uppercase tracking-widest text-gray-400">Resolution</label>
+              <label className="font-mono text-[9px] uppercase tracking-widest text-gray-600">Resolution</label>
               <textarea
                 value={resolution}
                 onChange={(e) => setResolution(e.target.value)}

@@ -130,7 +130,7 @@ export default function FarmerRegistryTable() {
             <div className="text-[12px] text-gray-500">Registration + mapping coverage.</div>
           </div>
           <div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">County</div>
+            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">County</div>
             <CountySelect
               value={county}
               onChange={setCounty}
@@ -200,7 +200,7 @@ function RegisterFarmerForm() {
 
       <div className="mt-4 space-y-4">
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-2">Personal information</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-2">Personal information</div>
           <div className="space-y-2">
             <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name" className="h-10 w-full rounded-md border border-gray-200 px-3 text-[12px]" />
             <input value={nationalId} onChange={(e) => setNationalId(e.target.value)} placeholder="National ID (LBR-XXXXXXXX)" className="h-10 w-full rounded-md border border-gray-200 px-3 text-[12px]" />
@@ -216,7 +216,7 @@ function RegisterFarmerForm() {
         </div>
 
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-2">Location</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-2">Location</div>
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <CountySelect
@@ -249,7 +249,7 @@ function RegisterFarmerForm() {
 
         {PILOT_MODE ? (
           <div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-2">
+            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-2">
               Rice pilot fields
             </div>
             <div className="space-y-2">
@@ -303,7 +303,7 @@ function RegisterFarmerForm() {
         ) : null}
 
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-2">GPS location</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-2">GPS location</div>
           <div className="space-y-2">
             <input
               readOnly

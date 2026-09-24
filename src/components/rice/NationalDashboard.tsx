@@ -240,7 +240,7 @@ export default function NationalDashboard() {
           </div>
 
           <div className="mt-5 h-[220px]">
-            <div className="font-mono text-[9px] uppercase tracking-[2px] text-gray-400 mb-2">
+            <div className="font-mono text-[9px] uppercase tracking-[2px] text-gray-600 mb-2">
               Production by county (MT)
             </div>
             <div className="h-[190px]">
@@ -270,7 +270,7 @@ export default function NationalDashboard() {
               </div>
             </div>
             <div className="mt-4 rounded-lg bg-gray-50 border border-gray-200 p-3">
-              <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+              <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
                 Import spend saved (est.)
               </div>
               <div className="mt-1 font-display text-xl text-gray-900">

@@ -104,7 +104,7 @@ export default function OperationsRail({
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <span className="text-[11px] text-slate-400">Sync health</span>
-            <SyncStatusIndicator />
+            <SyncStatusIndicator tone="dark" />
           </div>
           {!online ? (
             <p className="mt-2 text-[10px] leading-snug text-amber-100/90">

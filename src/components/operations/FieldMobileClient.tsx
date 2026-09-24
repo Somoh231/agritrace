@@ -36,7 +36,7 @@ export default function FieldMobileClient() {
           <div className="font-semibold text-white">Pest & disease</div>
           <div className="mt-2 text-slate-400">Structured submissions routed to national analysts.</div>
         </Link>
-        <div className="rounded-xl border border-dashed border-slate-600 bg-slate-950/40 px-4 py-5 text-[13px] text-slate-400 md:col-span-2">
+        <div className="rounded-xl border border-dashed border-slate-600 bg-slate-950 px-4 py-5 text-[13px] text-slate-400 md:col-span-2">
           <div className="font-semibold text-slate-200">Photo & attachment uploads</div>
           <p className="mt-2 leading-relaxed">
             Attachments pipeline plugs into Supabase Storage buckets — enable bucket policies in dashboard, then bind capture IDs to{" "}

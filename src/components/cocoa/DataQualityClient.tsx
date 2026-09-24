@@ -133,7 +133,7 @@ export default function DataQualityClient() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6">
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 text-center">
-              <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">Score</div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">Score</div>
               <div className="mt-2 font-display text-5xl text-gray-900">{score}</div>
               <div className="mt-1 text-[11px] text-gray-500">out of 100</div>
             </div>

@@ -195,7 +195,7 @@ export default async function CocoaPilotReadinessPage() {
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-        <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-400">
+        <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-600">
           Checklist
         </div>
         <ul className="divide-y divide-gray-100">

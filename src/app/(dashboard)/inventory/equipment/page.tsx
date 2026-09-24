@@ -12,7 +12,7 @@ export default function EquipmentInventoryPage() {
         </p>
       </header>
 
-      <div className="rounded-xl border border-dashed border-slate-600 bg-slate-950/40 px-5 py-8 text-center text-[13px] text-slate-400">
+      <div className="rounded-xl border border-dashed border-slate-600 bg-slate-950 px-5 py-8 text-center text-[13px] text-slate-400">
         Equipment SKU catalog ties into national inventory once ministry catalogue rows are synchronized from procurement.
         <div className="mt-4 flex justify-center gap-3">
           <Link href="/inventory" className="text-emerald-400 hover:text-emerald-300 text-[13px] font-medium">

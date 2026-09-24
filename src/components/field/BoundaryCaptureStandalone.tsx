@@ -97,7 +97,7 @@ export default function BoundaryCaptureStandalone() {
         </label>
         <div className="ml-auto flex items-center gap-3">
           <div className="cmd-surface px-2 py-1">
-            <SyncStatusIndicator />
+            <SyncStatusIndicator tone="dark" />
           </div>
           <button
             type="button"

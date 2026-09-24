@@ -163,7 +163,7 @@ export default async function LaunchReadinessPage() {
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-        <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-400">
+        <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-600">
           Checks
         </div>
         <div className="divide-y divide-gray-100">
@@ -188,7 +188,7 @@ export default async function LaunchReadinessPage() {
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white p-5">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">Launch notes</div>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">Launch notes</div>
         <div className="mt-2 text-[12px] text-gray-700 leading-relaxed">
           - Run all SQL files in Supabase before final cutover.
           <br />- Verify demo and analytics endpoints by submitting a demo request and loading `/demo`.

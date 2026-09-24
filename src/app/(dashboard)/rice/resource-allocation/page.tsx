@@ -8,7 +8,7 @@ export default function ResourceAllocationPage() {
   return (
     <div className="space-y-4 max-w-5xl">
       <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">Resource allocation</div>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">Resource allocation</div>
         <h1 className="mt-2 font-display text-[24px] text-gray-900">County resource deployment tracker</h1>
         <p className="mt-2 text-[13px] text-gray-600">
           Tracks personnel and device allocation readiness for field operations and collection coverage.
@@ -16,7 +16,7 @@ export default function ResourceAllocationPage() {
       </section>
 
       <section className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-        <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-400">
+        <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-600">
           Allocation snapshot
         </div>
         <div className="divide-y divide-gray-100">

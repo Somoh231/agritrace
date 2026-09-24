@@ -251,7 +251,7 @@ export default function InventoryLedgerClient() {
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div tabIndex={0} role="region" aria-label="Scrollable table" className="overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
             <table className="min-w-[920px] w-full text-[12px]">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
@@ -307,7 +307,7 @@ export default function InventoryLedgerClient() {
               {editOpening.location_id} · {editOpening.commodity}
             </div>
             <div className="mt-4">
-              <label className="font-mono text-[9px] uppercase tracking-widest text-gray-400">Opening (kg)</label>
+              <label className="font-mono text-[9px] uppercase tracking-widest text-gray-600">Opening (kg)</label>
               <input
                 value={openingInput}
                 onChange={(e) => setOpeningInput(e.target.value)}
@@ -342,7 +342,7 @@ export default function InventoryLedgerClient() {
 function FilterField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">{label}</div>
+      <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">{label}</div>
       {children}
     </div>
   );

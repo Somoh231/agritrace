@@ -92,7 +92,7 @@ export default async function HealthPage() {
 
         <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+            <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
               Checks
             </div>
             {setupEnabled ? (
@@ -130,7 +130,7 @@ export default async function HealthPage() {
         </div>
 
         <div className="rounded-2xl border border-gray-200 bg-white p-5">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
             Notes
           </div>
           <div className="mt-2 text-[12px] text-gray-700 leading-relaxed">

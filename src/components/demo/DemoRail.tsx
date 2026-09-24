@@ -74,7 +74,7 @@ export default function DemoRail() {
       <div className="rounded-2xl border border-gray-200 bg-white shadow-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 flex items-start justify-between gap-3">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+            <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">
               Guided demo
             </div>
             <div className="mt-1 font-display text-[16px] text-gray-900">{step.title}</div>

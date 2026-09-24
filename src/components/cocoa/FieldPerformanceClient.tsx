@@ -129,7 +129,7 @@ export default function FieldPerformanceClient() {
         ) : rows.length === 0 ? (
           <div className="p-10 text-center text-[12px] text-gray-600">No attributed activity yet.</div>
         ) : (
-          <div className="overflow-x-auto">
+          <div tabIndex={0} role="region" aria-label="Scrollable table" className="overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
             <table className="min-w-[760px] w-full text-[12px]">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>

@@ -174,7 +174,7 @@ function InquiryCard({
 
       <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-end">
         <div className="flex-1">
-          <label className="block font-mono text-[10px] uppercase tracking-widest text-gray-400 mb-1">Status</label>
+          <label className="block font-mono text-[10px] uppercase tracking-widest text-gray-600 mb-1">Status</label>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as DemoInquiryStatus)}
@@ -188,7 +188,7 @@ function InquiryCard({
           </select>
         </div>
         <div className="flex-[2] min-w-0">
-          <label className="block font-mono text-[10px] uppercase tracking-widest text-gray-400 mb-1">
+          <label className="block font-mono text-[10px] uppercase tracking-widest text-gray-600 mb-1">
             Internal notes
           </label>
           <textarea

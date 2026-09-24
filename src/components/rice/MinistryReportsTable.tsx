@@ -134,7 +134,7 @@ export default function MinistryReportsTable() {
         />
 
         <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <div className="font-mono text-[9px] uppercase tracking-[2px] text-gray-400">
+          <div className="font-mono text-[9px] uppercase tracking-[2px] text-gray-600">
             Export
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -188,7 +188,7 @@ export default function MinistryReportsTable() {
             This creates a draft report record. PDF/CSV generation is implemented in Phase 4.
           </div>
           <div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
               Report type
             </div>
             <select className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-[12px]">
@@ -200,20 +200,20 @@ export default function MinistryReportsTable() {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
                 From
               </div>
               <input type="date" className="h-9 w-full rounded-md border border-gray-200 px-2 text-[12px]" />
             </div>
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
                 To
               </div>
               <input type="date" className="h-9 w-full rounded-md border border-gray-200 px-2 text-[12px]" />
             </div>
           </div>
           <div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-1">
+            <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mb-1">
               Notes
             </div>
             <textarea className="min-h-20 w-full rounded-md border border-gray-200 px-2 py-2 text-[12px]" />

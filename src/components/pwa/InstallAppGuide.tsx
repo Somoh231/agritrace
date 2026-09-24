@@ -76,7 +76,7 @@ export default function InstallAppGuide({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[140] flex items-end justify-center bg-slate-900/40 p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="install-guide-title">
+    <div className="fixed inset-0 z-[140] flex items-end justify-center bg-slate-900 p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="install-guide-title">
       <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-slate-200 bg-white shadow-2xl sm:rounded-2xl">
         <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 sm:px-5">
           <div className="min-w-0">

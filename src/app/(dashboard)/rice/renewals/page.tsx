@@ -8,7 +8,7 @@ export default function RiceRenewalsPage() {
   return (
     <div className="space-y-4 max-w-5xl">
       <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">Annual recertification</div>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-gray-600">Annual recertification</div>
         <h1 className="mt-2 font-display text-[24px] text-gray-900">Farmer renewal and recertification flow</h1>
         <p className="mt-2 text-[13px] text-gray-600">
           Tracks annual farmer profile refresh, compliance recertification, and county follow-up workload.
@@ -16,10 +16,10 @@ export default function RiceRenewalsPage() {
       </section>
 
       <section className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-        <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-400">
+        <div className="px-4 py-2.5 border-b border-gray-100 font-mono text-[10px] uppercase tracking-widest text-gray-600">
           Renewal status by county
         </div>
-        <div className="overflow-x-auto">
+        <div tabIndex={0} role="region" aria-label="Scrollable table" className="overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest-600">
           <table className="min-w-[760px] w-full text-[12px]">
             <thead className="bg-gray-50 text-gray-600">
               <tr>
