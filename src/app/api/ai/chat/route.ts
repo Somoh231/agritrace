@@ -3,7 +3,6 @@ import Anthropic from "@anthropic-ai/sdk";
 import {
   API_ERROR_GENERIC,
   API_ERROR_INVALID_JSON,
-  API_ERROR_UNAUTHORIZED,
   logApiError,
   requestBodyTooLarge,
 } from "@/lib/http/api-security";
@@ -14,8 +13,9 @@ import {
   rejectIfRateLimited,
 } from "@/lib/http/api-response";
 import { AI_CHAT_POLICY } from "@/lib/http/rate-limit-policies";
+import { requireApiSession } from "@/lib/http/require-api-session";
 import { createClient } from "@/lib/supabase/server";
-import type { Profile, UserRole } from "@/lib/supabase/types";
+import type { UserRole } from "@/lib/supabase/types";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -210,7 +210,7 @@ function describeAnthropicStreamError(e: unknown): { logLine: string; streamNoti
   ) {
     return {
       logLine: `[ai/chat] Model unavailable or denied for model=${ANTHROPIC_MODEL}: ${message}`,
-      streamNotice: `\n\n[AI unavailable] Model "${ANTHROPIC_MODEL}" is not enabled for this Anthropic account. Set ANTHROPIC_MODEL to an enabled model (default: claude-3-haiku-20240307).\n`,
+      streamNotice: `\n\n[AI unavailable] Model "${ANTHROPIC_MODEL}" is not enabled for this Anthropic account. Set ANTHROPIC_MODEL to a current, enabled model.\n`,
     };
   }
   if (status >= 400 && status < 500) {
@@ -240,22 +240,12 @@ export async function POST(req: Request) {
     return apiError(ctx, "Payload too large.", 413, { policy: AI_CHAT_POLICY });
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return apiError(ctx, API_ERROR_UNAUTHORIZED, 401, { policy: AI_CHAT_POLICY });
-  }
-
-  const { data: profileRow } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>();
-  if (!profileRow?.role || profileRow.is_active === false) {
-    return apiError(ctx, "An active operator profile is required.", 403, {
-      policy: AI_CHAT_POLICY,
-      userId: user.id,
-    });
-  }
-  const serverRole = profileRow.role;
+  // Same fail-closed readiness gate as every other operational API (active status,
+  // explicit role assignment, completed transition, geography prerequisites).
+  const auth = await requireApiSession(req);
+  if (!auth.ok) return auth.response;
+  const user = { id: auth.session.userId };
+  const serverRole = auth.session.role;
 
   try {
     const body = (await req.json()) as ReqBody;

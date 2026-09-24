@@ -1,6 +1,7 @@
 import type { DaoOversightRow } from "@/lib/ais/county-dao-demo";
 import type { WarehouseRow } from "@/lib/demo/agriculture-pilot-data";
 import type { CaoDistrictCard } from "@/lib/cao/cao-district-cards";
+import { escapeCsvCell } from "@/lib/reports/csv";
 
 export function downloadTextFile(filename: string, body: string) {
   const blob = new Blob([body], { type: "text/plain;charset=utf-8" });
@@ -50,12 +51,14 @@ export function buildWeeklyCountyBriefing(params: {
 }
 
 export function buildDaoComplianceExport(params: { countyLabel: string; daoRows: DaoOversightRow[] }): string {
-  const header = ["dao_id", "dao_name", "district", "assigned_farmers", "reports", "overdue", "visits", "subsidy_verify_n", "gps_pct", "sync", "risk_score", "risk_band"].join(",");
+  const header = ["dao_id", "dao_name", "district", "assigned_farmers", "reports", "overdue", "visits", "subsidy_verify_n", "gps_pct", "sync", "risk_score", "risk_band"]
+    .map(escapeCsvCell)
+    .join(",");
   const rows = params.daoRows.map((r) =>
     [
       r.daoId,
-      `"${r.daoName.replace(/"/g, '""')}"`,
-      `"${r.district.replace(/"/g, '""')}"`,
+      r.daoName,
+      r.district,
       r.assignedFarmers,
       r.reportsSubmitted,
       r.overdueReports,
@@ -65,7 +68,9 @@ export function buildDaoComplianceExport(params: { countyLabel: string; daoRows:
       r.syncStatus,
       r.riskScore,
       r.riskStatus,
-    ].join(","),
+    ]
+      .map(escapeCsvCell)
+      .join(","),
   );
   return [header, ...rows].join("\n");
 }
@@ -83,11 +88,13 @@ export function buildSubsidyUtilizationSummary(countyLabel: string, warehouses: 
 }
 
 export function buildDistrictComparisonReport(countyLabel: string, cards: CaoDistrictCard[]): string {
-  const header = ["district", "production_idx", "farmer_reg_pct", "subsidy_pct", "dao_activity", "food_risk", "reporting_pct"].join(",");
+  const header = ["district", "production_idx", "farmer_reg_pct", "subsidy_pct", "dao_activity", "food_risk", "reporting_pct"]
+    .map(escapeCsvCell)
+    .join(",");
   const rows = cards.map((c) =>
-    [c.district, c.productionIndex, c.farmerRegProgressPct, c.subsidyCompletionPct, c.daoActivityScore, `"${c.foodSecurityRisk}"`, c.reportingCompliancePct].join(
-      ",",
-    ),
+    [c.district, c.productionIndex, c.farmerRegProgressPct, c.subsidyCompletionPct, c.daoActivityScore, c.foodSecurityRisk, c.reportingCompliancePct]
+      .map(escapeCsvCell)
+      .join(","),
   );
-  return [`District comparison — ${countyLabel}`, header, ...rows].join("\n");
+  return [escapeCsvCell(`District comparison — ${countyLabel}`), header, ...rows].join("\n");
 }
