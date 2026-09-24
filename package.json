@@ -38,7 +38,7 @@
     "idb": "^8.0.3",
     "lucide-react": "^1.9.0",
     "mapbox-gl": "^3.22.0",
-    "next": "^15.5.21",
+    "next": "^15.5.26",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-map-gl": "^8.1.1",
@@ -56,10 +56,10 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.20",
-    "brace-expansion": "1.1.17",
+    "brace-expansion": "1.1.21",
     "dotenv": "^17.4.2",
     "eslint": "9.39.3",
-    "eslint-config-next": "15.5.21",
+    "eslint-config-next": "15.5.26",
     "postcss": "^8.5.25",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.21.0",
@@ -70,16 +70,16 @@
       "ws": "8.21.0"
     },
     "@typescript-eslint/typescript-estree": {
-      "brace-expansion": "5.0.8"
+      "brace-expansion": "5.0.12"
     },
     "eslint": {
-      "js-yaml": "4.3.0"
+      "js-yaml": "4.3.2"
     },
     "minimatch@3.1.5": {
-      "brace-expansion": "1.1.17"
+      "brace-expansion": "1.1.21"
     },
     "postcss": "$postcss",
-    "sharp": "0.35.0",
+    "sharp": "0.35.4",
     "tsx": {
       "esbuild": "0.28.1"
     }
