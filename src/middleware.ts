@@ -55,15 +55,20 @@ function isProtectedPath(pathname: string): boolean {
     "/workspace",
     "/admin",
     "/dashboard",
+    "/app",
   ];
   return roots.some((p) => matchesProtectedRoute(pathname, p));
 }
 
+/**
+ * Legacy marketing routes from the previous public site. They stay 404 so old
+ * links do not resolve to unreviewed content. The current public site lives in
+ * the (site) route group: /, /what-we-do, /products, /programmes, /how-we-work,
+ * /governments, /security, /about and /contact.
+ */
 const RETIRED_PUBLIC_ROUTES = [
-  "/about",
   "/africa",
   "/capabilities",
-  "/contact",
   "/demo",
   "/docs",
   "/governance",
@@ -88,15 +93,6 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next({ request });
   response.headers.set(REQUEST_ID_HEADER, requestId);
   const pathname = request.nextUrl.pathname;
-
-  if (pathname === "/") {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    loginUrl.search = "";
-    const redirect = NextResponse.redirect(loginUrl);
-    redirect.headers.set(REQUEST_ID_HEADER, requestId);
-    return redirect;
-  }
 
   if (isRetiredPublicRoute(pathname)) {
     const notFoundUrl = request.nextUrl.clone();

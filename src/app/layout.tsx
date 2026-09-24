@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "@/styles/public-marketing.css";
 import { DM_Mono, DM_Serif_Display, Fraunces, Inter, Inter_Tight } from "next/font/google";
 
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
@@ -12,24 +11,28 @@ import PwaRegistrar from "@/components/pwa/PwaRegistrar";
 const fontHeading = Inter_Tight({
   variable: "--font-display",
   subsets: ["latin"],
+  preload: false,
   weight: ["400", "500", "600", "700"],
 });
 
 const fontBody = Inter({
   variable: "--font-body",
   subsets: ["latin"],
+  preload: false,
   weight: ["300", "400", "500", "600"],
 });
 
 const fontMono = DM_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+  preload: false,
   weight: ["400", "500"],
 });
 
 const fontSerif = DM_Serif_Display({
   variable: "--font-serif-display",
   subsets: ["latin"],
+  preload: false,
   weight: ["400"],
   style: ["normal", "italic"],
 });
@@ -37,26 +40,12 @@ const fontSerif = DM_Serif_Display({
 const fontEditorial = Fraunces({
   variable: "--font-editorial",
   subsets: ["latin"],
+  preload: false,
   weight: ["400", "500", "600", "700"],
 });
 
-const agrivaultDisplay = Inter_Tight({
-  variable: "--font-av-display",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
 
-const agrivaultBody = Inter({
-  variable: "--font-av-body",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-});
 
-const agrivaultMono = DM_Mono({
-  variable: "--font-av-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-});
 
 const FALLBACK_METADATA_BASE = "https://agritrace.app";
 
@@ -87,42 +76,43 @@ function resolveMetadataBase(): URL {
   return new URL(FALLBACK_METADATA_BASE);
 }
 
+const SITE_DESCRIPTION =
+  "AgriVault Data is an agricultural systems, technology and advisory company. We design and deploy the data systems, field operations and reporting infrastructure agricultural institutions run on.";
+
 export function generateMetadata(): Metadata {
   return {
     metadataBase: resolveMetadataBase(),
     title: {
-      default: "Agrivault",
-      template: "%s · Agrivault",
+      default: "AgriVault Data — Agricultural systems, technology and advisory",
+      template: "%s · AgriVault Data",
     },
-    description: "Agricultural traceability platform for Liberia · rice visibility · cocoa chain of custody · compliance",
-    applicationName: "Agrivault",
+    description: SITE_DESCRIPTION,
+    applicationName: "AgriVault",
     keywords: [
-      "Liberia",
-      "agriculture",
+      "agricultural systems",
+      "agricultural technology",
+      "programme implementation",
+      "farmer registry",
+      "GIS",
       "traceability",
-      "EUDR",
-      "cocoa",
-      "rice",
-      "supply chain",
-      "audit",
-      "compliance",
+      "government agriculture",
+      "development partners",
     ],
     icons: {
-      icon: [{ url: "/favicon.ico" }],
+      icon: [{ url: "/favicon.ico", sizes: "any" }, { url: "/icon.svg", type: "image/svg+xml" }],
+      apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
     },
     openGraph: {
       type: "website",
-      title: "Agrivault",
-      description:
-        "Pilot-ready agricultural traceability for Liberia: production visibility, chain of custody, discrepancy resolution, compliance reporting.",
-      siteName: "Agrivault",
-      images: [{ url: "/og.svg", width: 1200, height: 630, alt: "Agrivault — Liberia traceability" }],
+      title: "AgriVault Data",
+      description: SITE_DESCRIPTION,
+      siteName: "AgriVault Data",
+      // Image: src/app/opengraph-image.tsx (file convention).
     },
     twitter: {
       card: "summary_large_image",
-      title: "Agrivault",
-      description: "Agricultural traceability platform · Liberia",
-      images: ["/og.svg"],
+      title: "AgriVault Data",
+      description: SITE_DESCRIPTION,
     },
   };
 }
@@ -135,7 +125,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} ${fontSerif.variable} ${fontEditorial.variable} ${agrivaultDisplay.variable} ${agrivaultBody.variable} ${agrivaultMono.variable} h-full antialiased`}
+      className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} ${fontSerif.variable} ${fontEditorial.variable} h-full antialiased`}
     >
       <body className="h-full bg-[rgb(var(--surface))] text-[rgb(var(--text))]">
         <AnalyticsProvider>
