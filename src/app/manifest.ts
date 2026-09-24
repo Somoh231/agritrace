@@ -2,15 +2,14 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Agrivault Data",
-    short_name: "Agrivault",
-    description:
-      "Ministry of Agriculture operational reporting and traceability platform (offline-capable).",
-    start_url: "/",
+    name: "AgriVault",
+    short_name: "AgriVault",
+    description: "AgriVault operations platform: field capture, verification and reporting (offline-capable).",
+    start_url: "/app",
     scope: "/",
     display: "standalone",
-    background_color: "#0b1220",
-    theme_color: "#0b1220",
+    background_color: "#07152D",
+    theme_color: "#07152D",
     icons: [
       {
         src: "/icons/pwa-192.png",

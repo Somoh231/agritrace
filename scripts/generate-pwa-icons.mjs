@@ -1,94 +1,115 @@
 /**
- * Generates PWA manifest icons from the official MOA seal asset.
- * Falls back to solid brand color when sips is unavailable (non-macOS CI).
+ * Generates the AgriVault application icons from the approved corporate mark
+ * (three nested chevrons cut by a band, over an emerald base triangle).
+ *
+ * Outputs:
+ *   public/icons/pwa-192.png, pwa-512.png      manifest "any" (rounded navy tile)
+ *   public/icons/pwa-512-maskable.png           manifest "maskable" (full bleed, mark in safe zone)
+ *   public/icons/apple-touch-icon.png           180×180, full bleed (iOS applies its own mask)
+ *   public/icon.svg                             SVG favicon
+ *   src/app/favicon.ico                         16/32/48 PNG-in-ICO
+ *
+ * The Ministry of Agriculture seal is never used here: it is programme context,
+ * not AgriVault identity.
  */
-import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
-import zlib from "zlib";
 import { fileURLToPath } from "url";
+import sharp from "sharp";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
-const outDir = path.join(root, "public", "icons");
-const sealSrc = path.join(root, "public", "logos", "moa-seal.jpeg");
+const iconsDir = path.join(root, "public", "icons");
 
-function crc32(buf) {
-  let c = 0xffffffff;
-  for (let i = 0; i < buf.length; i++) {
-    c ^= buf[i];
-    for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1;
+const NAVY = "#07152D";
+const PAPER = "#F7F7F2";
+const EMERALD = "#0FA36B";
+
+/** Mark geometry in a 100×100 box. `small` = optical variant for ≤32px (heavier stroke, no band). */
+function markGroup({ small }) {
+  const stroke = small ? 10 : 7;
+  const body = `
+    <path d="M6 92L50 6L94 92" fill="none" stroke="${PAPER}" stroke-width="${stroke}" stroke-linejoin="miter"/>
+    <path d="M21 92L50 35.3L79 92" fill="none" stroke="${PAPER}" stroke-width="${stroke}" stroke-linejoin="miter"/>
+    <path d="M36 92L50 64.6L64 92Z" fill="${EMERALD}"/>`;
+  if (small) return `<g>${body}</g>`;
+  return `
+    <mask id="band" maskUnits="userSpaceOnUse" x="-20" y="-20" width="140" height="140">
+      <rect x="-20" y="-20" width="140" height="140" fill="#fff"/>
+      <path d="M53 49H100V58H0V49Z" fill="#000"/>
+    </mask>
+    <g mask="url(#band)">${body}</g>`;
+}
+
+/**
+ * @param {object} o
+ * @param {number} o.markScale  fraction of the tile occupied by the 100-unit mark box
+ * @param {number} o.radius     corner radius as a fraction of the tile (0 = full bleed)
+ * @param {boolean} o.small     optical small variant
+ */
+function iconSvg({ markScale, radius, small }) {
+  const size = 100 / markScale;
+  const offset = (size - 100) / 2;
+  // Optical centring: the mark's visual mass sits low (wide base), so lift it slightly.
+  const lift = size * 0.02;
+  const r = radius * size;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}">
+  <rect width="${size}" height="${size}" rx="${r}" fill="${NAVY}"/>
+  <g transform="translate(${offset} ${offset - lift})">${markGroup({ small })}</g>
+</svg>`;
+}
+
+async function png(svg, px) {
+  return sharp(Buffer.from(svg), { density: 72 * Math.max(1, px / 64) })
+    .resize(px, px)
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+}
+
+/** ICO container holding PNG-encoded images (supported by all current browsers). */
+function ico(images) {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(images.length, 4);
+  const entries = [];
+  let offset = 6 + images.length * 16;
+  for (const { size, data } of images) {
+    const e = Buffer.alloc(16);
+    e.writeUInt8(size >= 256 ? 0 : size, 0);
+    e.writeUInt8(size >= 256 ? 0 : size, 1);
+    e.writeUInt8(0, 2);
+    e.writeUInt8(0, 3);
+    e.writeUInt16LE(1, 4);
+    e.writeUInt16LE(32, 6);
+    e.writeUInt32LE(data.length, 8);
+    e.writeUInt32LE(offset, 12);
+    offset += data.length;
+    entries.push(e);
   }
-  return (c ^ 0xffffffff) >>> 0;
+  return Buffer.concat([header, ...entries, ...images.map((i) => i.data)]);
 }
 
-function chunk(type, data) {
-  const len = Buffer.alloc(4);
-  len.writeUInt32BE(data.length, 0);
-  const t = Buffer.from(type, "binary");
-  const body = Buffer.concat([t, data]);
-  const crc = Buffer.alloc(4);
-  crc.writeUInt32BE(crc32(body), 0);
-  return Buffer.concat([len, body, crc]);
-}
+fs.mkdirSync(iconsDir, { recursive: true });
 
-function encodePng(width, height, rgba) {
-  const signature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(width, 0);
-  ihdr.writeUInt32BE(height, 4);
-  ihdr[8] = 8;
-  ihdr[9] = 6;
-  ihdr[10] = 0;
-  ihdr[11] = 0;
-  ihdr[12] = 0;
-  const rawLen = height * (1 + width * 4);
-  const raw = Buffer.alloc(rawLen);
-  let o = 0;
-  for (let y = 0; y < height; y++) {
-    raw[o++] = 0;
-    for (let x = 0; x < width; x++) {
-      raw[o++] = rgba[0];
-      raw[o++] = rgba[1];
-      raw[o++] = rgba[2];
-      raw[o++] = rgba[3];
-    }
-  }
-  const idat = zlib.deflateSync(raw, { level: 9 });
-  return Buffer.concat([signature, chunk("IHDR", ihdr), chunk("IDAT", idat), chunk("IEND", Buffer.alloc(0))]);
-}
+const tile = iconSvg({ markScale: 0.62, radius: 0.22, small: false });
+const bleed = iconSvg({ markScale: 0.62, radius: 0, small: false });
+// Maskable safe zone is the central 80% circle; keep the mark well inside it.
+const maskable = iconSvg({ markScale: 0.5, radius: 0, small: false });
+const favSmall = iconSvg({ markScale: 0.72, radius: 0.2, small: true });
 
-function writeSolidFallback(size, filename) {
-  const brand = [11, 34, 21, 255]; // ministry forest
-  fs.writeFileSync(path.join(outDir, filename), encodePng(size, size, brand));
-}
+fs.writeFileSync(path.join(iconsDir, "pwa-192.png"), await png(tile, 192));
+fs.writeFileSync(path.join(iconsDir, "pwa-512.png"), await png(tile, 512));
+fs.writeFileSync(path.join(iconsDir, "pwa-512-maskable.png"), await png(maskable, 512));
+fs.writeFileSync(path.join(iconsDir, "apple-touch-icon.png"), await png(bleed, 180));
+fs.writeFileSync(path.join(root, "public", "icon.svg"), favSmall);
+fs.writeFileSync(
+  path.join(root, "src", "app", "favicon.ico"),
+  ico([
+    { size: 16, data: await png(favSmall, 16) },
+    { size: 32, data: await png(favSmall, 32) },
+    { size: 48, data: await png(iconSvg({ markScale: 0.66, radius: 0.2, small: false }), 48) },
+  ]),
+);
 
-function writeFromSeal(size, filename) {
-  const out = path.join(outDir, filename);
-  execSync(`sips -s format png -z ${size} ${size} "${sealSrc}" --out "${out}"`, { stdio: "pipe" });
-}
-
-fs.mkdirSync(outDir, { recursive: true });
-
-const canUseSeal = process.platform === "darwin" && fs.existsSync(sealSrc);
-
-try {
-  if (canUseSeal) {
-    writeFromSeal(192, "pwa-192.png");
-    writeFromSeal(512, "pwa-512.png");
-    writeFromSeal(512, "pwa-512-maskable.png");
-    console.log("Wrote PWA icons from public/logos/moa-seal.jpeg");
-  } else {
-    writeSolidFallback(192, "pwa-192.png");
-    writeSolidFallback(512, "pwa-512.png");
-    writeSolidFallback(512, "pwa-512-maskable.png");
-    console.log("Wrote solid-color PWA icons (MOA seal asset or sips unavailable)");
-  }
-} catch (e) {
-  console.warn("[generate-pwa-icons] seal resize failed, using fallback:", e);
-  writeSolidFallback(192, "pwa-192.png");
-  writeSolidFallback(512, "pwa-512.png");
-  writeSolidFallback(512, "pwa-512-maskable.png");
-}
-
-console.log("Wrote public/icons/pwa-192.png, pwa-512.png, pwa-512-maskable.png");
+console.log("Wrote AgriVault icons: public/icons/{pwa-192,pwa-512,pwa-512-maskable,apple-touch-icon}.png, public/icon.svg, src/app/favicon.ico");

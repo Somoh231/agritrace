@@ -10,8 +10,8 @@
  * responses and RSC payloads cache-first, which served stale queues).
  */
 
-const CACHE = "agrivault-offline-v3";
-const CORE = ["/offline", "/favicon.ico", "/og.svg", "/icons/pwa-192.png", "/icons/pwa-512.png", "/icons/pwa-512-maskable.png"];
+const CACHE = "agrivault-offline-v4";
+const CORE = ["/offline", "/favicon.ico", "/icons/pwa-192.png", "/icons/pwa-512.png", "/icons/pwa-512-maskable.png"];
 const OFFLINE_SHELLS = ["/field", "/field/mobile", "/field/boundary-capture", "/field/sync-queue", "/workspace/clan"];
 
 self.addEventListener("install", (event) => {

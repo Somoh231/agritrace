@@ -1,8 +1,10 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import * as React from "react";
 
 import { usePwaInstall } from "@/components/pwa/install-prompt-context";
+import { isPublicSitePath } from "@/lib/site/routes";
 
 function bool(n: boolean | null | undefined) {
   if (n === true) return "yes";
@@ -14,6 +16,7 @@ function bool(n: boolean | null | undefined) {
  * Shown only in production builds. Collapsed by default; for pilot PWA verification (Chrome Application tab).
  */
 export default function PwaDiagnosticsPanel() {
+  const pathname = usePathname();
   const { deferredPrompt, beforeInstallPromptCaptured, installed } = usePwaInstall();
   const [open, setOpen] = React.useState(false);
   const [manifestOk, setManifestOk] = React.useState<boolean | null>(null);
@@ -85,6 +88,8 @@ export default function PwaDiagnosticsPanel() {
   else installability = "Waiting (HTTPS, manifest icons, SW, engagement criteria)";
 
   if (process.env.NODE_ENV !== "production") return null;
+  // Pilot diagnostics belong to the application, not the public corporate site.
+  if (isPublicSitePath(pathname)) return null;
 
   return (
     <div className="fixed bottom-3 right-3 z-[200] font-mono text-[10px] text-slate-200">

@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { useToast } from "@/components/shared/toast/ToastProvider";
+import { isPublicSitePath } from "@/lib/site/routes";
 
 const SW_URL = "/sw.js";
 const SW_SCOPE = "/";
@@ -48,7 +49,10 @@ export default function PwaRegistrar() {
         window.addEventListener("focus", pingUpdate);
       } catch (e) {
         console.error("[PWA] service worker registration failed", e);
-        toast.info("Offline mode", "Service worker registration failed — offline caching may be limited.");
+        // Offline capture is an application concern; public-site visitors are not told about it.
+        if (!isPublicSitePath(window.location.pathname)) {
+          toast.info("Offline mode", "Service worker registration failed — offline caching may be limited.");
+        }
       }
     })();
 
