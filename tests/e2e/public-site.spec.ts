@@ -137,8 +137,16 @@ test.describe("public site: quality gates", () => {
   test("no horizontal overflow and no console errors on any public route", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(String(e)));
+    // Failed requests are checked by URL below; the generic console line carries no URL.
     page.on("console", (m) => {
-      if (m.type() === "error" && !m.text().includes("[PWA]")) errors.push(m.text());
+      if (m.type() === "error" && !m.text().includes("[PWA]") && !m.text().startsWith("Failed to load resource")) errors.push(m.text());
+    });
+    page.on("response", (r) => {
+      if (r.status() < 400) return;
+      const { pathname } = new URL(r.url());
+      // The analytics rate limit (120/min per IP) is expected to trip when a whole suite runs from one IP.
+      if (pathname === "/api/analytics" && r.status() === 429) return;
+      errors.push(`${r.status()} ${pathname}`);
     });
     for (const route of PUBLIC_ROUTES) {
       await page.goto(route, { waitUntil: "load" });
