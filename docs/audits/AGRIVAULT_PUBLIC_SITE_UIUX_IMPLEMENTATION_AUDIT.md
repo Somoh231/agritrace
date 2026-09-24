@@ -93,3 +93,57 @@ three.js on any route except an explicitly lazy, viewport-gated spatial moment.
   native `backdrop-filter` with a solid fallback.
 * **React Three Fiber / ShaderGradient** — see final report for whether a spatial moment earned its
   cost.
+
+## 9. Implementation results (2026-09-24)
+
+Branch `feat/agrivault-corporate-site-redesign`. Not merged; no migrations,
+RLS or auth-logic changes (`git diff c41a347 -- supabase` is empty; the
+LoginClient sign-in logic is byte-identical to the base commit).
+
+### Routes
+`/`, `/what-we-do`, `/products`, `/programmes`, `/programmes/liberia`,
+`/how-we-work`, `/governments`, `/security`, `/about`, `/contact` — all static.
+The role-based signed-in entry moved from `/` to `/app` (protected). Other
+legacy marketing routes remain 404.
+
+### Build and tests
+| Check | Result |
+| --- | --- |
+| `tsc --noEmit`, `eslint` (whole repo) | clean |
+| `next build` | passes; public routes 107–127 kB first-load JS (budget 130 kB) |
+| `test:workflow` / `test:gis` | 17/17, 5/5 |
+| `test:rls:rc1`, `test:workflow:parity` (static) | pass (66 rules) |
+| Playwright `public-site.spec.ts` + `rc1-preview.spec.ts`, desktop + mobile | 102 passed, 64 skipped (authenticated suites need QA credentials) |
+| Viewport sweep 1440/1280/1024/768/390/360 × 11 routes | no overflow, no console errors, no undersized targets (inline-text links exempt, WCAG 2.5.8) |
+| axe WCAG 2.2 AA (1440 and 390, every route) | 0 violations |
+| Reduced motion | all content visible without scrolling; no animation |
+
+### Performance (cold, 400 ms RTT, ~400 kbps, 4× CPU, 390 px; median of 3)
+| Page | Before (base) | After |
+| --- | --- | --- |
+| `/` | redirect to `/login`: LCP 11.2 s, 445 kB | LCP 3.5 s, 396 kB (fonts 102 kB) |
+| `/login` | LCP 10.8 s, blank until JS | FCP 3.4 s with complete page; LCP 7.8 s (hydration re-paint of an already-visible paragraph) |
+| Inner pages | — | LCP 3.4–3.5 s, 303–388 kB |
+
+### Decisions recorded
+- **Newsreader** ships as static 400 normal + italic (the variable opsz build
+  was ~273 kB). Large italics lose the high optical-size cut.
+- **No three.js / R3F / ShaderGradient / liquid-glass** on any route. The
+  static county SVG carries the Liberia story without a 150 kB+ runtime.
+  The dependencies from commit e668b85 remain installed but unused.
+- **scroll-world** used as principles only (native-scroll stage rail, sticky
+  outcome card, reduced-motion final state); no generated video.
+- **Contact** composes an email in the visitor's mail client; nothing is sent
+  to or stored by the site (the old `/api/demo-inquiry` was an empty directory).
+- **App fonts** (Inter, Inter Tight, DM Mono, DM Serif, Fraunces) are no longer
+  preloaded on every route.
+
+### Open items before launch
+1. Replace GADM-derived county geometry (non-commercial licence) with
+   geoBoundaries or Natural Earth — needs a data download.
+2. Commission photography (`public/photography/README.md`).
+3. Privacy and terms pages (legal text required).
+4. Confirm `partnerships@agrivaultdata.com` is a live mailbox.
+5. `next dev` cannot run client JS because the production CSP (no
+   `unsafe-eval`) also applies in development; QA used production builds.
+6. Remove the unused visual-library dependencies if not planned.
