@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { beginApiRequestAsync, rejectIfRateLimited, type ApiRequestContext } from "@/lib/http/api-response";
 import { ADMIN_MUTATION_POLICY, READ_POLICY } from "@/lib/http/rate-limit-policies";
+import { canProvisionUsers } from "@/lib/admin/user-provisioning";
 import { requireAdminConsole } from "@/lib/supabase/require-admin-console";
 import type { UserRole } from "@/lib/supabase/types";
 
@@ -26,6 +27,14 @@ export async function guardAdminApiRequest(
     return {
       ok: false,
       response: NextResponse.json({ error: guard.message }, { status: guard.status }),
+    };
+  }
+  // Admin-console roles may read; only workforce administrators may mutate through
+  // these service-role-backed endpoints (import, organizations, settings, content, users).
+  if (kind === "mutation" && !canProvisionUsers(guard.role)) {
+    return {
+      ok: false,
+      response: NextResponse.json({ error: "System administrator access required." }, { status: 403 }),
     };
   }
 

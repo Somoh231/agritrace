@@ -20,6 +20,7 @@
     "test:gis": "tsx src/lib/gis/__tests__/boundary.spec.ts",
     "test:rls:rc1": "node scripts/verify-rc1-rls-hardening.mjs",
     "test:rls:behavior": "bash scripts/run-rls-behavior.sh",
+    "test:rls:p0": "PG_MIN_MESSAGES=notice bash scripts/run-p0-containment.sh",
     "test:workflow:parity": "tsx scripts/verify-workflow-transition-parity.ts",
     "test:identity:rc1": "node scripts/verify-workforce-identity.mjs",
     "test:private:rc1": "node scripts/verify-private-cutover.mjs",

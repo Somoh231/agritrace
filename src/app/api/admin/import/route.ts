@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
     const admin = getSupabaseAdminClient();
 
-    // Keep imports safe for demo: cap rows.
+    // Bounded batch size per request.
     const rows = body.rows.slice(0, 2000);
     const errors: Array<{ row: number; message: string }> = [];
 
@@ -60,6 +60,7 @@ export async function POST(request: Request) {
             latitude: r.latitude ? asNum(r.latitude, "latitude") : null,
             longitude: r.longitude ? asNum(r.longitude, "longitude") : null,
             notes: String(r.notes ?? r["notes"] ?? "").trim() || null,
+            registered_by: gate.userId,
           });
         } catch (e) {
           errors.push({ row: idx + 1, message: e instanceof Error ? e.message : "Invalid row." });

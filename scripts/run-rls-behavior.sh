@@ -23,7 +23,7 @@ for _ in $(seq 1 60); do
 done
 sleep 3
 
-psql_run() { docker exec -i -e PGOPTIONS=--client-min-messages=warning "$NAME" psql -U postgres -h 127.0.0.1 -v ON_ERROR_STOP=1 -q "$@"; }
+psql_run() { docker exec -i -e PGOPTIONS=--client-min-messages=${PG_MIN_MESSAGES:-warning} "$NAME" psql -U postgres -h 127.0.0.1 -v ON_ERROR_STOP=1 -q "$@"; }
 
 # The image bootstrap auth.uid() only reads request.jwt.claim.sub; hosted GoTrue
 # reads both forms. The suite sets both, so no shim is required.
@@ -37,4 +37,4 @@ for f in "$ROOT"/supabase/migrations/*.sql; do
   psql_run < "$f"
 done
 
-psql_run < "$ROOT/supabase/tests/rls_behavior.sql"
+psql_run < "$ROOT/${RLS_SUITE:-supabase/tests/rls_behavior.sql}"

@@ -245,6 +245,26 @@ test.describe("export authorization", () => {
     });
   }
 
+  test("ministry officer may read admin data but cannot mutate via service-role admin APIs", async ({ browser }) => {
+    test.skip(!configured("MINISTRY") || !configured("ADMIN"), "Requires MINISTRY and ADMIN operators.");
+    const officer = await signIn(browser, "MINISTRY");
+    expect((await officer.request.get("/api/admin/organizations")).status()).toBe(200);
+    for (const [method, path] of [
+      ["post", "/api/admin/organizations"],
+      ["post", "/api/admin/import"],
+      ["patch", "/api/admin/settings"],
+      ["patch", "/api/admin/content"],
+      ["post", "/api/admin/users"],
+    ] as const) {
+      const response = await officer.request[method](path, { data: {} });
+      expect(response.status(), `${method.toUpperCase()} ${path}`).toBe(403);
+    }
+    await officer.close();
+    const admin = await signIn(browser, "ADMIN");
+    expect((await admin.request.get("/api/admin/users")).status()).toBe(200);
+    await admin.close();
+  });
+
   test("donor cannot pull farmer PII through the API", async ({ browser }) => {
     test.skip(!configured("DONOR"), "Set QA55_DONOR_EMAIL and QA_PASSWORD.");
     const context = await signIn(browser, "DONOR");
