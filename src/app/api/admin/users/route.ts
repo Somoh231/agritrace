@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import {
+  canAssignProvisionedRole,
   canProvisionUsers,
   normalizeWorkEmail,
   validateProvisioningInput,
@@ -29,6 +30,7 @@ const HISTORY_ACTIONS = [
   "ACCOUNT_DEACTIVATED",
   "PASSWORD_RESET_INITIATED",
   "ADMIN_PROVISIONING_FAILURE",
+  "ROLE_ASSIGNMENTS_REPLACED",
 ];
 
 function isProvisioningSchemaUnavailable(error: { code?: string; message?: string } | null | undefined) {
@@ -363,9 +365,10 @@ export async function PATCH(request: Request) {
 
   const admin = getSupabaseAdminClient();
   try {
-    const [profileResult, authResult] = await Promise.all([
+    const [profileResult, authResult, heldRolesResult] = await Promise.all([
       admin.from("profiles").select(PROFILE_COLUMNS).eq("id", body.userId).maybeSingle(),
       admin.auth.admin.getUserById(body.userId),
+      admin.from("profile_role_assignments").select("role").eq("profile_id", body.userId).is("ended_at", null),
     ]);
     if (profileResult.error && isProvisioningSchemaUnavailable(profileResult.error)) {
       return safeFailure(
@@ -379,6 +382,15 @@ export async function PATCH(request: Request) {
     }
 
     const currentProfile = profileResult.data as any;
+    // Never let an administrator modify, re-scope or deactivate someone they could not have
+    // provisioned (e.g. a ministry administrator acting on a system administrator).
+    const heldRoles = new Set<UserRole>([
+      currentProfile.role as UserRole,
+      ...((heldRolesResult.data ?? []) as Array<{ role: UserRole }>).map((row) => row.role),
+    ]);
+    if (heldRolesResult.error || [...heldRoles].some((role) => !canAssignProvisionedRole(gate.role, role))) {
+      return safeFailure("You cannot modify an account that holds a higher administrative role.", 403, headers);
+    }
     const validation = validateProvisioningInput(
       {
         ...body,
@@ -424,7 +436,35 @@ export async function PATCH(request: Request) {
       expected_authorization_version: currentProfile.authorization_version,
       assigned_warehouse_ids: input.warehouse_ids,
     });
-    if (roleUpdate.error) throw roleUpdate.error;
+    if (roleUpdate.error) {
+      // Restore the pre-request profile so a rejected role change leaves no partial scope or status change.
+      const restore = await admin
+        .from("profiles")
+        .update({
+          full_name: currentProfile.full_name,
+          organization_id: currentProfile.organization_id,
+          county: currentProfile.county,
+          district: currentProfile.district,
+          clan_or_field_area: currentProfile.clan_or_field_area,
+          phone: currentProfile.phone,
+          employee_or_staff_id: currentProfile.employee_or_staff_id,
+          job_title: currentProfile.job_title,
+          department: currentProfile.department,
+          is_active: currentProfile.is_active,
+          account_status: currentProfile.account_status,
+          activated_at: currentProfile.activated_at,
+          deactivated_at: currentProfile.deactivated_at,
+        } as any)
+        .eq("id", body.userId);
+      if (restore.error) {
+        console.error("Profile restore after rejected role change failed", {
+          requestId: gate.ctx.requestId,
+          userId: body.userId,
+          error: restore.error,
+        });
+      }
+      throw roleUpdate.error;
+    }
 
     if (body.is_active === false) {
       const ban = await admin.auth.admin.updateUserById(body.userId, { ban_duration: "876000h" });

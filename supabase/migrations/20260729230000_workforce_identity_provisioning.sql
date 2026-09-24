@@ -1119,6 +1119,26 @@ begin
     raise exception 'stale authorization version';
   end if;
 
+  -- An administrator may only manage identities they could have provisioned:
+  -- a ministry administrator cannot demote or re-scope a system administrator.
+  if (
+       (target_role in ('super_admin', 'admin') and actor_role <> 'super_admin')
+       or (target_role = 'ministry_admin' and actor_role not in ('super_admin', 'admin'))
+     )
+     or exists (
+       select 1
+       from public.profile_role_assignments held
+       where held.profile_id = target_profile_id
+         and held.ended_at is null
+         and (
+           (held.role in ('super_admin', 'admin') and actor_role <> 'super_admin')
+           or (held.role = 'ministry_admin' and actor_role not in ('super_admin', 'admin'))
+         )
+     )
+  then
+    raise exception 'target holds a role the actor is not permitted to administer';
+  end if;
+
   if assigned_roles is null
      or pg_catalog.cardinality(assigned_roles) = 0
      or selected_primary_role is null
@@ -1127,7 +1147,7 @@ begin
     raise exception 'a non-empty, null-free role set and primary role are required';
   end if;
 
-  select pg_catalog.array_agg(distinct candidate order by candidate::text)
+  select pg_catalog.array_agg(distinct candidate order by candidate)
   into normalized_roles
   from pg_catalog.unnest(assigned_roles) candidate;
 

@@ -17,9 +17,9 @@ create table if not exists rls_test.results (
   detail text
 );
 truncate rls_test.results;
-grant usage on schema rls_test to authenticated;
-grant insert, select on rls_test.results to authenticated;
-grant usage on sequence rls_test.results_seq_seq to authenticated;
+grant usage on schema rls_test to authenticated, service_role;
+grant insert, select on rls_test.results to authenticated, service_role;
+grant usage on sequence rls_test.results_seq_seq to authenticated, service_role;
 
 create or replace function rls_test.login(uid uuid)
 returns void
@@ -58,6 +58,26 @@ begin
     case when err is not null then not expect_rows else (n > 0) = expect_rows end,
     coalesce(err, 'rows=' || n)
   );
+end;
+$$;
+
+-- statement must fail with an error whose message contains `expected`
+create or replace function rls_test.probe_error(label text, stmt text, expected text)
+returns void
+language plpgsql
+as $$
+declare
+  err text;
+begin
+  begin
+    execute stmt;
+    raise exception using errcode = 'RT003', message = 'statement succeeded';
+  exception
+    when others then
+      err := sqlstate || ' ' || sqlerrm;
+  end;
+  insert into rls_test.results(label, ok, detail)
+  values (label, err not like 'RT003%' and position(expected in err) > 0, err || ' | expected: ' || expected);
 end;
 $$;
 
@@ -101,8 +121,8 @@ begin
 end;
 $$;
 
-grant usage on schema rls_test to authenticated;
-grant execute on all functions in schema rls_test to authenticated;
+grant usage on schema rls_test to authenticated, service_role;
+grant execute on all functions in schema rls_test to authenticated, service_role;
 
 -- ---------------------------------------------------------------------------
 -- Fixtures (as database owner, emulating the audited service-role provisioning path)
@@ -135,7 +155,10 @@ insert into fx values
   ('auditor',     'a1000000-0000-4000-8000-000000000007', 'auditor', null, null, true),
   ('bong_wh',     'a1000000-0000-4000-8000-000000000008', 'warehouse_manager', 'Bong', null, true),
   ('legacy_fa',   'a1000000-0000-4000-8000-000000000009', 'field_agent', 'Bong', null, true),
-  ('inactive',    'a1000000-0000-4000-8000-000000000010', 'clan_technician', 'Bong', 'Jorquelleh', false);
+  ('inactive',    'a1000000-0000-4000-8000-000000000010', 'clan_technician', 'Bong', 'Jorquelleh', false),
+  ('super1',      'a1000000-0000-4000-8000-000000000020', 'super_admin', null, null, true),
+  ('super2',      'a1000000-0000-4000-8000-000000000021', 'super_admin', null, null, true),
+  ('madmin',      'a1000000-0000-4000-8000-000000000022', 'ministry_admin', null, null, true);
 
 insert into auth.users(id, instance_id, aud, role, email, raw_user_meta_data, created_at, updated_at)
 select id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
@@ -163,6 +186,9 @@ where p.id = fx.id;
 insert into public.profile_role_assignments(profile_id, role, is_primary, provenance)
 select id, role, true, 'admin_assigned' from fx
 on conflict do nothing;
+-- bong_dao also holds a secondary, non-primary county role
+insert into public.profile_role_assignments(profile_id, role, is_primary, provenance)
+values ('a1000000-0000-4000-8000-000000000002', 'county_officer', false, 'admin_assigned');
 
 -- Operational fixtures
 insert into public.farmers(id, full_name, county, district, national_id, phone, registered_by, verification_status) values
@@ -219,6 +245,33 @@ commit;
 begin; select rls_test.login('a1000000-0000-4000-8000-000000000010');
 select rls_test.probe('ID-09 deactivated operator reads no farmers', 'select 1 from public.farmers', false);
 select rls_test.probe('ID-10 deactivated operator reads no submissions', 'select 1 from public.operational_submissions', false);
+commit;
+
+begin; select rls_test.login('a1000000-0000-4000-8000-000000000002');
+select rls_test.probe_value('ID-16 multi-role operator selects an assigned secondary role',
+  $q$select public.select_active_workforce_role('county_officer')::text$q$, 'county_officer');
+select rls_test.probe_error('ID-17 operator cannot select an unassigned role',
+  $q$select public.select_active_workforce_role('super_admin')$q$, 'current explicit role assignment required');
+commit;
+
+-- Administrator path (service_role only; actor authority re-verified in SQL)
+begin;
+set local role service_role;
+select rls_test.probe_error('ID-11 ministry admin cannot demote a super admin',
+  $q$select public.replace_workforce_role_assignments('a1000000-0000-4000-8000-000000000020', array['ministry_officer']::public.user_role[], 'ministry_officer', 'a1000000-0000-4000-8000-000000000022')$q$,
+  'not permitted to administer');
+select rls_test.probe_error('ID-12 ministry admin cannot grant super admin',
+  $q$select public.replace_workforce_role_assignments('a1000000-0000-4000-8000-000000000005', array['super_admin']::public.user_role[], 'super_admin', 'a1000000-0000-4000-8000-000000000022')$q$,
+  'requires super administrator');
+select rls_test.probe('ID-13 super admin can re-scope a ministry admin',
+  $q$select public.replace_workforce_role_assignments('a1000000-0000-4000-8000-000000000022', array['ministry_officer']::public.user_role[], 'ministry_officer', 'a1000000-0000-4000-8000-000000000020')$q$, true);
+select rls_test.probe_error('ID-14 administrators cannot change their own roles',
+  $q$select public.replace_workforce_role_assignments('a1000000-0000-4000-8000-000000000020', array['super_admin']::public.user_role[], 'super_admin', 'a1000000-0000-4000-8000-000000000020')$q$,
+  'self role changes');
+commit;
+begin; select rls_test.login('a1000000-0000-4000-8000-000000000022');
+select rls_test.probe('ID-15 role replacement is not callable by end users',
+  $q$select public.replace_workforce_role_assignments('a1000000-0000-4000-8000-000000000001', array['dao_officer']::public.user_role[], 'dao_officer', 'a1000000-0000-4000-8000-000000000022')$q$, false);
 commit;
 
 -- ---------------------------------------------------------------------------
