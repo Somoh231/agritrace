@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { ImageFrame } from "@/components/site/ImageFrame";
-import { LiberiaMap } from "@/components/site/LiberiaMap";
+import { LiberiaMap, LiberiaMapCredit } from "@/components/site/LiberiaMap";
 import { CtaBand } from "@/components/site/page/CtaBand";
 import { PageHero, SectionIntro } from "@/components/site/page/PageHero";
 import { LIBERIA, PRODUCTS } from "@/lib/site/content";
@@ -42,6 +42,7 @@ export default function LiberiaProgrammePage() {
               <span className="avs-meta uppercase tracking-[0.1em] text-white/75">Pilot counties · Nimba, Bong, Lofa</span>
               <span className="avs-chip border-white/25 text-[rgb(var(--av-gold))]">{LIBERIA.status}</span>
             </figcaption>
+            <LiberiaMapCredit tone="dark" className="mt-3" />
           </figure>
         }
       />

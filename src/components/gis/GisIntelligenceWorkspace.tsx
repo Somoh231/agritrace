@@ -21,6 +21,7 @@ import {
   warehouseDistricts,
   warehouseInventory,
 } from "@/lib/gis/gis-intelligence-data";
+import { BOUNDARY_ATTRIBUTION } from "@/lib/gis/boundary-attribution";
 import { fetchLiberiaCountiesGeoJSON } from "@/lib/gis/liberia-county-geo";
 import { useTransferOrders } from "@/features/transfers/hooks/use-transfer-orders";
 import type { TransferOrderView } from "@/lib/logistics/types";
@@ -706,7 +707,7 @@ export default function GisIntelligenceWorkspace() {
           </div>
           <div className="text-[10px] leading-snug text-slate-600">
             County polygons: <span className="font-mono text-slate-500">public/data/liberia-counties.geojson</span> (ADM1, CRS84). Missing file
-            falls back to centroid intelligence until districts or farm parcels are added as sibling layers.
+            falls back to centroid intelligence until districts or farm parcels are added as sibling layers. {BOUNDARY_ATTRIBUTION}.
           </div>
         </aside>
       </div>

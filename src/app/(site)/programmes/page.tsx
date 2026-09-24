@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ArrowRight } from "@/components/site/icons";
-import { LiberiaMap } from "@/components/site/LiberiaMap";
+import { LiberiaMap, LiberiaMapCredit } from "@/components/site/LiberiaMap";
 import { CtaBand } from "@/components/site/page/CtaBand";
 import { PageHero, SectionIntro } from "@/components/site/page/PageHero";
 import { LIBERIA, MARKETS } from "@/lib/site/content";
@@ -107,6 +107,8 @@ export default function ProgrammesPage() {
             </div>
             <div className="bg-[rgb(var(--av-navy-2))] p-8 md:col-span-5">
               <LiberiaMap tone="dark" titleId="prog-lbr-map" className="mx-auto h-auto w-full max-w-[22rem]" />
+              {/* Above the card's stretched link so the licence link stays clickable. */}
+              <LiberiaMapCredit tone="dark" className="relative z-10 mt-3 text-center" />
             </div>
           </div>
         </div>

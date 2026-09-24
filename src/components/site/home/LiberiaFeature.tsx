@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { ArrowRight } from "@/components/site/icons";
 import { ImageFrame } from "@/components/site/ImageFrame";
-import { LiberiaMap } from "@/components/site/LiberiaMap";
+import { LiberiaMap, LiberiaMapCredit } from "@/components/site/LiberiaMap";
 import { LIBERIA } from "@/lib/site/content";
 
 /** Starting market. Status language is fixed: a pilot being validated — no results are claimed. */
@@ -67,6 +67,7 @@ export default function LiberiaFeature() {
               <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] border border-[rgb(var(--av-emerald-ink))] bg-[rgb(var(--av-emerald)/0.2)]" />
               Pilot counties · Nimba, Bong, Lofa
             </figcaption>
+            <LiberiaMapCredit className="relative mt-2" />
           </figure>
         </div>
 

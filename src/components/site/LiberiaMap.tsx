@@ -1,8 +1,10 @@
+import { BOUNDARY_ATTRIBUTION, BOUNDARY_LICENSE_URL } from "@/lib/gis/boundary-attribution";
 import { LIBERIA_COUNTIES, LIBERIA_VIEWBOX } from "@/lib/site/liberia-geo";
 
 /**
- * Liberia's 15 counties from real boundary geometry (see
- * scripts/build-liberia-geo.mjs). Pilot counties are highlighted; everything
+ * Liberia's 15 counties from real boundary geometry (geoBoundaries,
+ * CC BY 3.0 IGO — see data/geo/geoboundaries/SOURCE.md). Always render
+ * <LiberiaMapCredit /> near the map. Pilot counties are highlighted; everything
  * else is context. Static SVG — no map library, no network requests.
  */
 export function LiberiaMap({
@@ -66,5 +68,18 @@ export function LiberiaMap({
         </g>
       ) : null}
     </svg>
+  );
+}
+
+/** Licence-required credit for the county boundaries. */
+export function LiberiaMapCredit({ tone = "light", className = "" }: { tone?: "light" | "dark"; className?: string }) {
+  return (
+    <p className={`text-[0.6875rem] leading-snug ${tone === "dark" ? "text-white/65" : "text-[rgb(var(--av-slate))]"} ${className}`}>
+      {BOUNDARY_ATTRIBUTION.replace(" (CC BY 3.0 IGO)", "")} (
+      <a href={BOUNDARY_LICENSE_URL} className="underline underline-offset-2" rel="license noopener" target="_blank">
+        CC BY 3.0 IGO
+      </a>
+      )
+    </p>
   );
 }

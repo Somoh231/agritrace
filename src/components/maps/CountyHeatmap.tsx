@@ -8,6 +8,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { MINISTRY_COUNTY_METRICS } from "@/lib/data/ministry-canonical-data";
 import { buildCountyMetricPointsGeoJSON, countyKey, enrichCountyPolygons } from "@/lib/gis/gis-intelligence-data";
+import { BOUNDARY_ATTRIBUTION } from "@/lib/gis/boundary-attribution";
 import { fetchLiberiaCountiesGeoJSON } from "@/lib/gis/liberia-county-geo";
 import { LIBERIA_CENTER, LIBERIA_ZOOM, mapboxToken } from "@/lib/mapbox/config";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -226,6 +227,12 @@ export default function CountyHeatmap({
               <dd className="text-right">{hover.daoPct}%</dd>
             </dl>
           </div>
+        ) : null}
+
+        {!boundaryMissing ? (
+          <p className="absolute bottom-1 right-1.5 z-[5] rounded bg-white/85 px-1.5 py-0.5 text-[10px] leading-none text-slate-700">
+            {BOUNDARY_ATTRIBUTION}
+          </p>
         ) : null}
 
         {boundaryMissing ? (
