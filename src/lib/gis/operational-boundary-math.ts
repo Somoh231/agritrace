@@ -5,6 +5,52 @@ import type { Polygon, Position } from "geojson";
 import type { OperationalBoundaryPoint, OperationalFarmBoundary } from "./operational-boundary-types";
 
 const SQ_M_PER_HA = 10_000;
+/** Smallest plausible farm polygon; anything smaller is GPS jitter or duplicate corners. */
+export const MIN_BOUNDARY_SQ_M = 25;
+/** Generous Liberia envelope (WGS84) used to reject GPS garbage such as 0,0. */
+const LIBERIA_BOUNDS = { minLat: 4.0, maxLat: 8.8, minLng: -11.8, maxLng: -7.0 };
+
+function segmentsCross(a: Position, b: Position, c: Position, d: Position): boolean {
+  const orient = (p: Position, q: Position, r: Position) => (q[0]! - p[0]!) * (r[1]! - p[1]!) - (q[1]! - p[1]!) * (r[0]! - p[0]!);
+  const d1 = orient(c, d, a);
+  const d2 = orient(c, d, b);
+  const d3 = orient(a, b, c);
+  const d4 = orient(a, b, d);
+  return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
+}
+
+/**
+ * Returns a field-readable reason when corner points cannot form a usable farm
+ * boundary, or null when they can. Rejects too few distinct corners, points
+ * outside Liberia, self-intersecting ("bow-tie") outlines and near-zero area.
+ */
+export function boundaryValidationError(points: OperationalBoundaryPoint[]): string | null {
+  const distinct = new Set(points.map((p) => `${p.latitude.toFixed(6)},${p.longitude.toFixed(6)}`));
+  if (distinct.size < 3) return "Capture at least three different corners.";
+  const outside = points.some(
+    (p) =>
+      !Number.isFinite(p.latitude) ||
+      !Number.isFinite(p.longitude) ||
+      p.latitude < LIBERIA_BOUNDS.minLat ||
+      p.latitude > LIBERIA_BOUNDS.maxLat ||
+      p.longitude < LIBERIA_BOUNDS.minLng ||
+      p.longitude > LIBERIA_BOUNDS.maxLng,
+  );
+  if (outside) return "A corner is outside Liberia. Recapture it once GPS has a fix.";
+  const ring = ringFromPoints(points);
+  const edges = ring.length - 1;
+  for (let i = 0; i < edges; i += 1) {
+    for (let j = i + 1; j < edges; j += 1) {
+      if (j === i + 1 || (i === 0 && j === edges - 1)) continue; // adjacent edges share a vertex
+      if (segmentsCross(ring[i]!, ring[i + 1]!, ring[j]!, ring[j + 1]!)) {
+        return "The outline crosses itself. Walk the corners in order around the farm.";
+      }
+    }
+  }
+  const poly = polygonFromPoints(points);
+  if (!poly || area(poly) < MIN_BOUNDARY_SQ_M) return "The outline is too small. Check that the corners are far enough apart.";
+  return null;
+}
 const SQ_M_PER_ACRE = 4046.8564224;
 
 /** Build closed ring from corner points (no duplicate closing pt in input). */
@@ -126,6 +172,7 @@ export function buildOperationalBoundaryRecord(params: {
   points: OperationalBoundaryPoint[];
   officerProfileId?: string | null;
 }): OperationalFarmBoundary | null {
+  if (boundaryValidationError(params.points)) return null;
   const geometry = polygonFromPoints(params.points);
   if (!geometry) return null;
   const { hectares, acres } = estimateAreasSqm(geometry);

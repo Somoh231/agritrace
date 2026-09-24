@@ -17,6 +17,7 @@
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
     "seed:ministry": "tsx src/lib/supabase/seed-ministry-canonical.ts",
     "test:workflow": "tsx src/lib/workflow/__tests__/workflow.spec.ts && tsx src/lib/http/__tests__/security.spec.ts",
+    "test:gis": "tsx src/lib/gis/__tests__/boundary.spec.ts",
     "test:rls:rc1": "node scripts/verify-rc1-rls-hardening.mjs",
     "test:rls:behavior": "bash scripts/run-rls-behavior.sh",
     "test:workflow:parity": "tsx scripts/verify-workflow-transition-parity.ts",

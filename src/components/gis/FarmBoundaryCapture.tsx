@@ -6,7 +6,7 @@ import type { Feature, FeatureCollection, LineString, Point, Polygon } from "geo
 import type { MapRef } from "react-map-gl/mapbox";
 
 import { LIBERIA_CENTER, optionalMapboxToken } from "@/lib/mapbox/config";
-import { buildOperationalBoundaryRecord, polygonFromPoints } from "@/lib/gis/operational-boundary-math";
+import { boundaryValidationError, buildOperationalBoundaryRecord, polygonFromPoints } from "@/lib/gis/operational-boundary-math";
 import type { OperationalBoundaryPoint, OperationalFarmBoundary } from "@/lib/gis/operational-boundary-types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
@@ -112,7 +112,7 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
   const [busy, setBusy] = React.useState(false);
   const [hint, setHint] = React.useState<string | null>(null);
   const [lastAccuracy, setLastAccuracy] = React.useState<number | null>(null);
-  const [liveGps, setLiveGps] = React.useState<{ latitude: number; longitude: number; accuracyM: number | null } | null>(
+  const [liveGps, setLiveGps] = React.useState<{ latitude: number; longitude: number; accuracyM: number | null; at: number } | null>(
     null,
   );
   const [gpsWatchFailed, setGpsWatchFailed] = React.useState(false);
@@ -267,6 +267,7 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
           accuracyM: acc,
+          at: Date.now(),
         });
         setGpsWatchFailed(false);
       },
@@ -297,9 +298,7 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
       setBusy(false);
       return;
     }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const acc = pos.coords.accuracy != null && Number.isFinite(pos.coords.accuracy) ? pos.coords.accuracy : null;
+    const acceptFix = (latitude: number, longitude: number, acc: number | null) => {
         setLastAccuracy(acc);
         if (acc != null && acc > ACC_EXTREME_M) {
           setHint(
@@ -309,8 +308,8 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
           return;
         }
         const pt: OperationalBoundaryPoint = {
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
+          latitude,
+          longitude,
           timestamp: new Date().toISOString(),
           accuracyM: acc,
         };
@@ -350,7 +349,20 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
         });
         setClosed(false);
         setBusy(false);
-      },
+    };
+    // A fresh fix from the live watch is as good as a new one-shot read and avoids
+    // waiting up to 25 s per corner for a brand-new position on weak signal.
+    if (liveGps && !gpsWatchFailed && Date.now() - liveGps.at <= 5_000) {
+      acceptFix(liveGps.latitude, liveGps.longitude, liveGps.accuracyM);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) =>
+        acceptFix(
+          pos.coords.latitude,
+          pos.coords.longitude,
+          pos.coords.accuracy != null && Number.isFinite(pos.coords.accuracy) ? pos.coords.accuracy : null,
+        ),
       () => {
         setHint("Could not read GPS. Check location permissions and tap Capture Point again.");
         setBusy(false);
@@ -362,6 +374,11 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
   const closePolygon = () => {
     if (draftPoints.length < 3) {
       setHint("Walk at least three corners before closing the boundary.");
+      return;
+    }
+    const invalid = boundaryValidationError(draftPoints);
+    if (invalid) {
+      setHint(invalid);
       return;
     }
     setClosed(true);
@@ -395,7 +412,7 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
       officerProfileId: user?.id ?? null,
     });
     if (!record) {
-      setHint("Boundary is not valid yet.");
+      setHint(boundaryValidationError(draftPoints) ?? "Boundary is not valid yet.");
       return;
     }
     onChange(record);

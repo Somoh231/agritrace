@@ -436,3 +436,61 @@ test.describe("service worker data freshness (synthetic mutations)", () => {
     await dao.close();
   });
 });
+
+// ---------------------------------------------------------------------------
+// GIS boundary capture with real browser geolocation (no data is saved)
+// ---------------------------------------------------------------------------
+async function chooseFirstFarmer(page: Page) {
+  const picker = page.getByRole("combobox").first();
+  await expect(picker, "farmer picker lists in-scope farmers (run the offline test first on an empty stack)").toBeVisible({
+    timeout: 15_000,
+  });
+  await picker.selectOption({ index: 1 });
+}
+test.describe("GIS boundary capture", () => {
+  test.skip(!configured("CLAN_BONG"), "Requires CLAN_BONG operator.");
+
+  test("GPS denied explains the problem; bow-tie is rejected; a valid square closes", async ({ browser }) => {
+    const signedIn = await signIn(browser, "CLAN_BONG");
+    const storageState = await signedIn.storageState();
+    await signedIn.close();
+
+    const denied = await browser.newContext({ storageState, permissions: [] });
+    const deniedPage = await denied.newPage();
+    await deniedPage.goto("/field/boundary-capture");
+    await chooseFirstFarmer(deniedPage);
+    await deniedPage.getByRole("button", { name: "Capture Point" }).click();
+    await expect(deniedPage.getByText(/Could not read GPS/)).toBeVisible({ timeout: 15_000 });
+    await denied.close();
+
+    const allowed = await browser.newContext({
+      storageState,
+      permissions: ["geolocation"],
+      geolocation: { latitude: 7.05, longitude: -9.45, accuracy: 4 },
+    });
+    const page = await allowed.newPage();
+    await page.goto("/field/boundary-capture");
+    await chooseFirstFarmer(page);
+    const capture = async (latitude: number, longitude: number, n: number) => {
+      await allowed.setGeolocation({ latitude, longitude, accuracy: 4 });
+      await page.getByRole("button", { name: "Capture Point" }).click();
+      await expect(page.getByText(`Corner ${n} captured`)).toBeVisible({ timeout: 15_000 });
+    };
+    // Bow-tie: corners out of order.
+    await capture(7.0, -9.47, 1);
+    await capture(7.0009, -9.4691, 2);
+    await capture(7.0, -9.4691, 3);
+    await capture(7.0009, -9.47, 4);
+    await page.getByRole("button", { name: "Close Boundary" }).click();
+    await expect(page.getByText(/crosses itself/)).toBeVisible();
+
+    await page.getByRole("button", { name: "Clear Polygon" }).click();
+    await capture(7.0, -9.47, 1);
+    await capture(7.0, -9.4691, 2);
+    await capture(7.0009, -9.4691, 3);
+    await capture(7.0009, -9.47, 4);
+    await page.getByRole("button", { name: "Close Boundary" }).click();
+    await expect(page.getByText("Boundary ready to save.")).toBeVisible();
+    await allowed.close();
+  });
+});
