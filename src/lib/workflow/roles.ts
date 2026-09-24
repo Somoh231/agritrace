@@ -79,6 +79,9 @@ export type WorkflowPermissionInput = {
   action: WorkflowAction;
   actorCounty: string | null | undefined;
   submissionCounty: string | null | undefined;
+  /** DAO/CLAN are district-bound when the submission carries a district (mirrors wf_stage_in_scope). */
+  actorDistrict?: string | null;
+  submissionDistrict?: string | null;
   /** For non-create actions: whether the actor is the submission author. */
   isAuthor?: boolean;
 };
@@ -90,8 +93,22 @@ export type WorkflowPermissionResult = { ok: true } | { ok: false; reason: strin
  * Combine with `computeSubmissionTransition` for full legality:
  *   permitted = checkWorkflowPermission(...).ok && computeSubmissionTransition(...).ok
  */
+export function actorDistrictMatches(
+  stage: WorkflowStage,
+  actorDistrict: string | null | undefined,
+  submissionDistrict: string | null | undefined,
+): boolean {
+  if (stage !== "dao" && stage !== "clan") return true;
+  const s = normCounty(submissionDistrict);
+  if (!s) return true;
+  return normCounty(actorDistrict) === s;
+}
+
 export function checkWorkflowPermission(input: WorkflowPermissionInput): WorkflowPermissionResult {
   const { stage, action, actorCounty, submissionCounty, isAuthor } = input;
+  const inScope =
+    actorCountyMatches(stage, actorCounty, submissionCounty) &&
+    actorDistrictMatches(stage, input.actorDistrict, input.submissionDistrict);
 
   if (isReadOnlyStage(stage)) {
     return { ok: false, reason: "Read-only role (auditor/donor) cannot perform workflow mutations." };
@@ -102,7 +119,7 @@ export function checkWorkflowPermission(input: WorkflowPermissionInput): Workflo
     if (!canCreateSubmission(stage)) {
       return { ok: false, reason: "This role cannot create or submit submissions." };
     }
-    if (stageIsCountyBound(stage) && !isAuthor && !actorCountyMatches(stage, actorCounty, submissionCounty)) {
+    if (stageIsCountyBound(stage) && !isAuthor && !inScope) {
       return { ok: false, reason: "Submission is outside your county scope." };
     }
     return { ok: true };
@@ -111,7 +128,7 @@ export function checkWorkflowPermission(input: WorkflowPermissionInput): Workflo
   // comment: any non-read-only stage within county scope (or author).
   if (action === "comment") {
     if (isAuthor) return { ok: true };
-    if (!actorCountyMatches(stage, actorCounty, submissionCounty)) {
+    if (!inScope) {
       return { ok: false, reason: "Comment is outside your county scope." };
     }
     return { ok: true };
@@ -121,7 +138,7 @@ export function checkWorkflowPermission(input: WorkflowPermissionInput): Workflo
   if (stage === "clan") {
     return { ok: false, reason: "CLAN field operators cannot review submissions." };
   }
-  if (!actorCountyMatches(stage, actorCounty, submissionCounty)) {
+  if (!inScope) {
     return { ok: false, reason: "Submission is outside your county scope." };
   }
   return { ok: true };

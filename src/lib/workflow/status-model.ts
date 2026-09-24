@@ -83,7 +83,7 @@ type Transition = {
  * state and is handled separately. Resubmission after corrections re-enters
  * the pipeline at `submitted`.
  */
-const TRANSITIONS: readonly Transition[] = [
+export const WORKFLOW_TRANSITIONS: readonly Transition[] = [
   // ---- submit / resubmit (authors) ----
   { from: ["draft"], action: "submit", stage: ["clan", "dao", "cac", "ministry"], to: "submitted" },
   {
@@ -140,13 +140,13 @@ export function computeSubmissionTransition(
     return { ok: true, nextStatus: current, changed: false };
   }
 
-  const match = TRANSITIONS.find(
+  const match = WORKFLOW_TRANSITIONS.find(
     (t) => t.action === action && t.from.includes(current) && t.stage.includes(stage),
   );
 
   if (!match) {
     // Distinguish "wrong stage" from "wrong state" for clearer operator messaging.
-    const existsForAction = TRANSITIONS.some((t) => t.action === action && t.from.includes(current));
+    const existsForAction = WORKFLOW_TRANSITIONS.some((t) => t.action === action && t.from.includes(current));
     if (existsForAction) {
       return { ok: false, error: `Your role cannot perform "${action}" at stage "${current}".` };
     }

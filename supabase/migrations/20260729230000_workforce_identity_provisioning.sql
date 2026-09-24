@@ -62,8 +62,8 @@ select
   manifest.reviewed_by,
   manifest.transition_expires_at
 from pg_catalog.jsonb_to_recordset(
-  pg_catalog.coalesce(
-    pg_catalog.nullif(
+  coalesce(
+    nullif(
       pg_catalog.current_setting('app.workforce_bootstrap_manifest', true),
       ''
     )::jsonb,
@@ -161,11 +161,11 @@ begin
           'field_agent',
           'warehouse_manager'
         )
-        and pg_catalog.nullif(pg_catalog.btrim(p.county), '') is null
+        and nullif(pg_catalog.btrim(p.county), '') is null
       )
       or (
         m.role in ('dao_officer', 'district_officer', 'clan_technician')
-        and pg_catalog.nullif(pg_catalog.btrim(p.district), '') is null
+        and nullif(pg_catalog.btrim(p.district), '') is null
       )
       or (
         m.role = 'warehouse_manager'
@@ -243,10 +243,10 @@ set
     else 'complete'
   end,
   activated_at = case
-    when p.is_active then pg_catalog.coalesce(p.created_at, pg_catalog.now())
+    when p.is_active then coalesce(p.created_at, pg_catalog.now())
     else null
   end,
-  updated_at = pg_catalog.coalesce(p.created_at, pg_catalog.now()),
+  updated_at = coalesce(p.created_at, pg_catalog.now()),
   authorization_version = 1
 from workforce_bootstrap_manifest m
 where m.profile_id = p.id;
@@ -255,7 +255,7 @@ update public.profiles p
 set
   account_status = 'inactive',
   access_transition_status = 'complete',
-  updated_at = pg_catalog.coalesce(p.created_at, pg_catalog.now()),
+  updated_at = coalesce(p.created_at, pg_catalog.now()),
   authorization_version = 1
 where not p.is_active;
 
@@ -528,12 +528,12 @@ as $$
       and (not c.requires_organization or p.organization_id is not null)
       and (
         not c.requires_county
-        or pg_catalog.nullif(pg_catalog.btrim(p.county), '') is not null
+        or nullif(pg_catalog.btrim(p.county), '') is not null
       )
       and (
         not c.requires_district
         or (
-          pg_catalog.nullif(pg_catalog.btrim(p.district), '') is not null
+          nullif(pg_catalog.btrim(p.district), '') is not null
           and exists (
             select 1
             from public.districts d
@@ -545,7 +545,7 @@ as $$
       )
       and (
         not c.requires_clan_or_field_area
-        or pg_catalog.nullif(pg_catalog.btrim(p.clan_or_field_area), '') is not null
+        or nullif(pg_catalog.btrim(p.clan_or_field_area), '') is not null
       )
       and (
         not c.requires_warehouse_assignment
@@ -776,7 +776,7 @@ as $$
     or (
       target_county is not null
       and pg_catalog.lower(target_county) =
-        pg_catalog.lower(pg_catalog.coalesce(public.profile_county(), ''))
+        pg_catalog.lower(coalesce(public.profile_county(), ''))
     );
 $$;
 
@@ -934,12 +934,12 @@ begin
   values (
     new.id,
     pg_catalog.lower(new.email),
-    pg_catalog.coalesce(
-      pg_catalog.nullif(
+    coalesce(
+      nullif(
         pg_catalog.btrim(new.raw_user_meta_data->>'full_name'),
         ''
       ),
-      pg_catalog.split_part(pg_catalog.coalesce(new.email, ''), '@', 1),
+      pg_catalog.split_part(coalesce(new.email, ''), '@', 1),
       'User'
     ),
     'field_agent'::public.user_role,
@@ -951,8 +951,8 @@ begin
   on conflict (id) do update
   set
     email = excluded.email,
-    full_name = pg_catalog.coalesce(
-      pg_catalog.nullif(public.profiles.full_name, ''),
+    full_name = coalesce(
+      nullif(public.profiles.full_name, ''),
       excluded.full_name
     );
   return new;
@@ -1308,7 +1308,7 @@ begin
       selected_primary_role,
       'remediated',
       'complete',
-      pg_catalog.coalesce(audit_request_id, 'administrator-remediation'),
+      coalesce(audit_request_id, 'administrator-remediation'),
       actor_profile_id::text,
       pg_catalog.statement_timestamp()
     );
@@ -1430,12 +1430,12 @@ using (
       'auditor'
     )
     and pg_catalog.lower(county) =
-      pg_catalog.lower(pg_catalog.coalesce(public.profile_county(), ''))
+      pg_catalog.lower(coalesce(public.profile_county(), ''))
     and (
       public.profile_role() not in ('dao_officer', 'district_officer')
       or district is null
       or pg_catalog.lower(district) =
-        pg_catalog.lower(pg_catalog.coalesce(public.profile_district(), ''))
+        pg_catalog.lower(coalesce(public.profile_district(), ''))
     )
   )
 );
@@ -1450,12 +1450,12 @@ using (
   or (
     county is not null
     and pg_catalog.lower(county) =
-      pg_catalog.lower(pg_catalog.coalesce(public.profile_county(), ''))
+      pg_catalog.lower(coalesce(public.profile_county(), ''))
     and (
       public.profile_role() not in ('dao_officer', 'district_officer')
       or district is null
       or pg_catalog.lower(district) =
-        pg_catalog.lower(pg_catalog.coalesce(public.profile_district(), ''))
+        pg_catalog.lower(coalesce(public.profile_district(), ''))
     )
   )
 );
@@ -1468,7 +1468,7 @@ using (
   public.is_ministry_wide()
   or public.profile_role() in ('auditor', 'donor_observer', 'donor_partner')
   or pg_catalog.lower(county) =
-    pg_catalog.lower(pg_catalog.coalesce(public.profile_county(), ''))
+    pg_catalog.lower(coalesce(public.profile_county(), ''))
 );
 
 -- A restrictive guard is ANDed with every existing permissive operational

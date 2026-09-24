@@ -79,8 +79,69 @@ export async function queuePlot(data: Partial<Plot>): Promise<string> {
   return client_id;
 }
 
+const MAX_SYNC_ATTEMPTS = 5;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+type ReplayOutcome = { ok: true; serverId: string } | { ok: false; error: string };
+
+function queuedOwner(r: QueuedRecord): string | null {
+  const d = r.data as Record<string, unknown>;
+  const owner = d.registered_by ?? d.recorded_by;
+  return typeof owner === "string" && owner ? owner : null;
+}
+
+/**
+ * Replays one queued row through the operator's own session so RLS, geography
+ * scope and attribution apply exactly as for an online write. `client_id` is
+ * unique server-side, so a retried upsert after a lost response is idempotent.
+ */
+async function replayRow(
+  table: "farmers" | "plots" | "rice_production_records",
+  r: QueuedRecord,
+  row: Record<string, unknown>,
+): Promise<ReplayOutcome> {
+  const supabase = getSupabaseBrowserClient();
+  const { data, error } = await supabase
+    .from(table)
+    .upsert({ ...row, client_id: r.client_id }, { onConflict: "client_id", ignoreDuplicates: false })
+    .select("id")
+    .single();
+  if (error || !data) return { ok: false, error: error?.message ?? "not persisted" };
+  return { ok: true, serverId: String((data as { id: string }).id) };
+}
+
+/** Offline plots reference the farmer's device client_id until that farmer has a server id. */
+async function resolveFarmerId(
+  farmerRef: string,
+  syncedFarmerIds: Map<string, string>,
+): Promise<string | null> {
+  const mapped = syncedFarmerIds.get(farmerRef);
+  if (mapped) return mapped;
+  if (!UUID_RE.test(farmerRef)) return null;
+  const supabase = getSupabaseBrowserClient();
+  const { data } = await supabase
+    .from("farmers")
+    .select("id")
+    .or(`id.eq.${farmerRef},client_id.eq.${farmerRef}`)
+    .limit(1)
+    .maybeSingle();
+  return data ? String((data as { id: string }).id) : null;
+}
+
 export async function processSyncQueue(): Promise<{ synced: number; failed: number; errors: string[] }> {
   const db = await getDB();
+  const supabase = getSupabaseBrowserClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const operatorId = session?.user?.id ?? null;
+
+  let synced = 0;
+  let failed = 0;
+  const errors: string[] = [];
+  if (!operatorId) {
+    return { synced, failed, errors: ["auth:Sign in to replay the offline queue."] };
+  }
 
   const [farmers, plots, records] = await Promise.all([
     getUnsynced("pending_farmers"),
@@ -88,123 +149,127 @@ export async function processSyncQueue(): Promise<{ synced: number; failed: numb
     getUnsynced("pending_production_records"),
   ]);
 
-  let synced = 0;
-  let failed = 0;
-  const errors: string[] = [];
-
-  // Batch sync via Supabase Edge Function (more reliable than one-by-one).
-  const supabase = getSupabaseBrowserClient();
-
-  const flaggedFarmers = farmers.filter((r) => (r.sync_attempts ?? 0) >= 5);
-  const flaggedPlots = plots.filter((r) => (r.sync_attempts ?? 0) >= 5);
-  const flaggedRecords = records.filter((r) => (r.sync_attempts ?? 0) >= 5);
-  for (const r of [...flaggedFarmers, ...flaggedPlots, ...flaggedRecords]) {
-    failed += 1;
-    errors.push(`manual_review:${r.client_id} exceeded retry limit (manual review).`);
+  const syncedFarmerIds = new Map<string, string>();
+  for (const f of (await db.getAll("pending_farmers")) as Array<QueuedRecord & { server_id?: string }>) {
+    if (f?.synced && f.server_id) syncedFarmerIds.set(f.client_id, f.server_id);
   }
 
-  const batchFarmers = farmers
-    .filter((r) => (r.sync_attempts ?? 0) < 5)
-    .map((r) => ({ ...(r.data as any), client_id: r.client_id }));
-  const batchPlots = plots
-    .filter((r) => (r.sync_attempts ?? 0) < 5)
-    .map((r) => ({ ...(r.data as any), client_id: r.client_id }));
-  const batchRecords = records
-    .filter((r) => (r.sync_attempts ?? 0) < 5)
-    .map((r) => ({ ...(r.data as any), client_id: r.client_id }));
-
-  if (batchFarmers.length || batchPlots.length || batchRecords.length) {
-    const { data, error } = await supabase.functions.invoke("sync-batch", {
-      body: {
-        farmers: batchFarmers,
-        plots: batchPlots,
-        production_records: batchRecords,
-      },
-    });
-
-    if (error) {
-      const msg = error.message ?? "sync-batch failed";
-      // Increment attempts for all sent records.
-      for (const r of farmers.filter((r) => (r.sync_attempts ?? 0) < 5)) {
-        await db.put("pending_farmers", { ...r, sync_attempts: (r.sync_attempts ?? 0) + 1 } as any);
+  async function process(
+    store: QueueStoreName,
+    table: "farmers" | "plots" | "rice_production_records",
+    queued: QueuedRecord[],
+    prepare: (r: QueuedRecord) => Promise<Record<string, unknown> | string>,
+    onSynced?: (r: QueuedRecord, serverId: string) => Promise<void>,
+  ) {
+    for (const r of queued) {
+      if ((r.sync_attempts ?? 0) >= MAX_SYNC_ATTEMPTS) {
+        failed += 1;
+        errors.push(`manual_review:${r.client_id} exceeded retry limit (manual review).`);
+        continue;
       }
-      for (const r of plots.filter((r) => (r.sync_attempts ?? 0) < 5)) {
-        await db.put("pending_plots", { ...r, sync_attempts: (r.sync_attempts ?? 0) + 1 } as any);
+      const owner = queuedOwner(r);
+      if (owner && owner !== operatorId) {
+        // Never re-attribute another operator's capture to whoever is signed in on a shared device.
+        failed += 1;
+        errors.push(`${table}:${r.client_id} was captured by another operator; sign in as that operator to sync it.`);
+        continue;
       }
-      for (const r of records.filter((r) => (r.sync_attempts ?? 0) < 5)) {
-        await db.put("pending_production_records", { ...r, sync_attempts: (r.sync_attempts ?? 0) + 1 } as any);
-      }
-      failed += batchFarmers.length + batchPlots.length + batchRecords.length;
-      errors.push(`sync-batch:${msg}`);
-    } else {
-      const rf = (data as any)?.farmers;
-      const rp = (data as any)?.plots;
-      const rr = (data as any)?.production_records;
-
-      const farmersOk = !(rf?.errors?.length);
-      const plotsOk = !(rp?.errors?.length);
-      const recordsOk = !(rr?.errors?.length);
-
-      if (farmersOk) {
-        for (const r of farmers.filter((r) => (r.sync_attempts ?? 0) < 5)) {
-          await db.put("pending_farmers", { ...r, synced: true } as any);
-        }
-        synced += batchFarmers.length;
+      const prepared = await prepare(r);
+      const outcome: ReplayOutcome =
+        typeof prepared === "string" ? { ok: false, error: prepared } : await replayRow(table, r, prepared);
+      if (outcome.ok) {
+        await db.put(store, { ...r, synced: true, server_id: outcome.serverId } as any);
+        synced += 1;
+        if (onSynced) await onSynced(r, outcome.serverId);
       } else {
-        for (const r of farmers.filter((r) => (r.sync_attempts ?? 0) < 5)) {
-          await db.put("pending_farmers", { ...r, sync_attempts: (r.sync_attempts ?? 0) + 1 } as any);
-        }
-        failed += batchFarmers.length;
-        for (const e of (rf?.errors ?? []) as string[]) errors.push(`farmers:${e}`);
-      }
-
-      if (plotsOk) {
-        for (const r of plots.filter((r) => (r.sync_attempts ?? 0) < 5)) {
-          await db.put("pending_plots", { ...r, synced: true } as any);
-          const plotData = r.data as Record<string, unknown>;
-          const farmerId = String(plotData.farmer_id ?? "").trim();
-          if (farmerId) {
-            await ensureOperationalSubmission({
-              kind: "farm_boundary_capture",
-              payload: plotData,
-              entityRefs: {
-                farmer_id: farmerId,
-                plot_client_id: String(r.client_id),
-                captured_at: String(
-                  (plotData.polygon_geojson as Record<string, unknown> | undefined)?.properties &&
-                    typeof (plotData.polygon_geojson as Record<string, unknown>).properties === "object"
-                    ? ((plotData.polygon_geojson as Record<string, unknown>).properties as Record<string, unknown>).captured_at
-                    : new Date().toISOString(),
-                ),
-              },
-            });
-          }
-        }
-        synced += batchPlots.length;
-      } else {
-        for (const r of plots.filter((r) => (r.sync_attempts ?? 0) < 5)) {
-          await db.put("pending_plots", { ...r, sync_attempts: (r.sync_attempts ?? 0) + 1 } as any);
-        }
-        failed += batchPlots.length;
-        for (const e of (rp?.errors ?? []) as string[]) errors.push(`plots:${e}`);
-      }
-
-      if (recordsOk) {
-        for (const r of records.filter((r) => (r.sync_attempts ?? 0) < 5)) {
-          await db.put("pending_production_records", { ...r, synced: true } as any);
-        }
-        synced += batchRecords.length;
-      } else {
-        for (const r of records.filter((r) => (r.sync_attempts ?? 0) < 5)) {
-          await db.put("pending_production_records", { ...r, sync_attempts: (r.sync_attempts ?? 0) + 1 } as any);
-        }
-        failed += batchRecords.length;
-        for (const e of (rr?.errors ?? []) as string[]) errors.push(`production_records:${e}`);
+        await db.put(store, { ...r, sync_attempts: (r.sync_attempts ?? 0) + 1 } as any);
+        failed += 1;
+        errors.push(`${table}:${outcome.error}`);
       }
     }
   }
 
+  // Farmers first: plots and production records depend on their server ids.
+  await process(
+    "pending_farmers",
+    "farmers",
+    farmers,
+    async (r) => ({ ...(r.data as Record<string, unknown>), registered_by: operatorId }),
+    async (r, serverId) => {
+      syncedFarmerIds.set(r.client_id, serverId);
+      const d = r.data as Record<string, unknown>;
+      await ensureOperationalSubmission({
+        kind: "register_farmer",
+        payload: d,
+        entityRefs: { farmer_id: serverId, farmer_client_id: r.client_id },
+      });
+    },
+  );
+
+  await process(
+    "pending_plots",
+    "plots",
+    plots,
+    async (r) => {
+      const d = { ...(r.data as Record<string, unknown>) };
+      const farmerRef = String(d.farmer_id ?? "").trim();
+      const farmerId = farmerRef ? await resolveFarmerId(farmerRef, syncedFarmerIds) : null;
+      if (!farmerId) return "farmer for this boundary has not synced yet";
+      return { ...d, farmer_id: farmerId, registered_by: operatorId };
+    },
+    async (r) => {
+      const plotData = r.data as Record<string, unknown>;
+      const farmerRef = String(plotData.farmer_id ?? "").trim();
+      const farmerId = syncedFarmerIds.get(farmerRef) ?? farmerRef;
+      const props = (plotData.polygon_geojson as { properties?: Record<string, unknown> } | undefined)?.properties;
+      await ensureOperationalSubmission({
+        kind: "farm_boundary_capture",
+        payload: plotData,
+        entityRefs: {
+          farmer_id: farmerId,
+          plot_client_id: String(r.client_id),
+          captured_at: String(props?.captured_at ?? r.created_at),
+        },
+      });
+    },
+  );
+
+  await process(
+    "pending_production_records",
+    "rice_production_records",
+    records,
+    async (r) => {
+      const d = { ...(r.data as Record<string, unknown>) };
+      const farmerRef = String(d.farmer_id ?? "").trim();
+      const farmerId = farmerRef ? await resolveFarmerId(farmerRef, syncedFarmerIds) : null;
+      if (!farmerId) return "farmer for this production record has not synced yet";
+      return { ...d, farmer_id: farmerId, recorded_by: operatorId };
+    },
+  );
+
+  await purgeSyncedRecords();
   return { synced, failed, errors };
+}
+
+/**
+ * Synced captures contain farmer PII; keep them on the device only while an
+ * unsynced dependent still needs the farmer's server id.
+ */
+async function purgeSyncedRecords(): Promise<void> {
+  const db = await getDB();
+  const pendingPlots = await getUnsynced("pending_plots");
+  const pendingRecords = await getUnsynced("pending_production_records");
+  const referenced = new Set(
+    [...pendingPlots, ...pendingRecords].map((r) => String((r.data as Record<string, unknown>).farmer_id ?? "")),
+  );
+  for (const store of ["pending_plots", "pending_production_records"] as const) {
+    for (const r of (await db.getAll(store)) as QueuedRecord[]) {
+      if (r?.synced) await db.delete(store, r.client_id);
+    }
+  }
+  for (const r of (await db.getAll("pending_farmers")) as QueuedRecord[]) {
+    if (r?.synced && !referenced.has(r.client_id)) await db.delete("pending_farmers", r.client_id);
+  }
 }
 
 export async function getPendingCount(): Promise<number> {

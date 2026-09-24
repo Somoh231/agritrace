@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 
-import type { SupabaseClient } from "@supabase/supabase-js";
-
 import { beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-response";
 import { clampStr, parseJsonObject } from "@/lib/http/api-security";
 import { WORKFLOW_MUTATION_POLICY } from "@/lib/http/rate-limit-policies";
 import { requireWorkflowPrincipal } from "@/lib/ops/server-permissions";
-import { persistWorkflowAuditLog } from "@/lib/ops/server-workflow-io";
 import { checkWorkflowPermission, workflowStageForRole } from "@/lib/workflow/roles";
 import {
   computeSubmissionTransition,
@@ -23,17 +20,6 @@ import type {
 } from "@/lib/workflow/types";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-function refCode(): string {
-  return `SUB-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
-}
-
-function roleScopeForStatus(status: WorkflowStatus): string {
-  if (status === "dao_review") return "dao";
-  if (status === "cac_review") return "cac";
-  if (status === "ministry_review") return "ministry";
-  return "review";
-}
 
 function mapSubmission(r: Record<string, unknown>): OperationalSubmission {
   return {
@@ -126,7 +112,8 @@ export async function POST(req: Request) {
   const note = clampStr(body.note, 4_000);
 
   // -------------------------------------------------------------------------
-  // Create + submit (no submissionId, has `create`)
+  // Create + submit (no submissionId, has `create`). The database derives
+  // county/district/organization from the operator profile (wf_create_submission).
   // -------------------------------------------------------------------------
   if (action === "submit" && !body.submissionId) {
     const c = body.create;
@@ -138,94 +125,35 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    const county = (c.county ?? profile.county) ?? null;
-    const perm = checkWorkflowPermission({ stage, action: "submit", actorCounty: profile.county, submissionCounty: county, isAuthor: true });
+    const perm = checkWorkflowPermission({
+      stage,
+      action: "submit",
+      actorCounty: profile.county,
+      submissionCounty: c.county ?? profile.county,
+      isAuthor: false,
+    });
     if (!perm.ok) {
       return NextResponse.json({ ok: false, code: "forbidden", message: perm.reason }, { status: 403 });
     }
 
-    const dedupeKey =
-      typeof c.metadata?.dedupe_key === "string" ? clampStr(c.metadata.dedupe_key, 200) : "";
-    if (dedupeKey) {
-      const { data: existing } = await supabase
-        .from("operational_submissions")
-        .select(SELECT_SUBMISSION)
-        .contains("metadata", { dedupe_key: dedupeKey })
-        .neq("status", "archived")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (existing) {
-        return NextResponse.json({
-          ok: true,
-          submission: mapSubmission(existing),
-          persisted: false,
-          deduplicated: true,
-        });
-      }
-    }
-
-    const tr = computeSubmissionTransition("draft", "submit", stage);
-    const nextStatus = tr.ok ? tr.nextStatus : "submitted";
-    const insertRow = {
-      reference_code: refCode(),
-      submission_type: submissionType,
-      title,
-      summary: clampStr(c.summary, 4_000) || null,
-      status: nextStatus,
-      actor_id: userId,
-      organization_id: c.organizationId ?? profile.organization_id ?? null,
-      county,
-      district: (c.district ?? profile.district) ?? null,
-      metadata: c.metadata ?? {},
-    };
-    const { data: created, error: insErr } = await supabase
-      .from("operational_submissions")
-      .insert(insertRow)
-      .select(SELECT_SUBMISSION)
-      .single();
-    if (insErr || !created) {
-      console.error("[workflow] submission create failed", insErr?.message);
-      return NextResponse.json({ ok: false, code: "persist_failed", message: "Could not create submission." }, { status: 422 });
-    }
-
-    const submission = mapSubmission(created);
-    const { error: actionInsertError } = await supabase.from("workflow_actions").insert({
-      submission_id: submission.id,
-      actor_id: userId,
-      action: "submit",
-      from_status: "draft",
-      to_status: nextStatus,
-      county: submission.county,
-      district: submission.district,
-      note: note || null,
+    const { data, error } = await supabase.rpc("wf_create_submission", {
+      p_submission_type: submissionType,
+      p_title: title,
+      p_summary: clampStr(c.summary, 4_000) || null,
+      p_county: c.county ?? null,
+      p_district: c.district ?? null,
+      p_metadata: c.metadata ?? {},
+      p_note: note || null,
+      p_request_id: ctx.requestId,
     });
-    if (actionInsertError) {
-      console.error("[workflow] initial action ledger insert failed", actionInsertError.message);
-      await supabase
-        .from("operational_submissions")
-        .update({ status: "draft" })
-        .eq("id", submission.id)
-        .eq("status", nextStatus);
-      return NextResponse.json(
-        {
-          ok: false,
-          code: "audit_persist_failed",
-          message: "Submission was not finalized because its decision ledger could not be written.",
-        },
-        { status: 422 },
-      );
-    }
-    await persistWorkflowAuditLog({
-      supabase,
-      userId,
-      action: "workflow_submit",
-      tableHint: "operational_submissions",
-      recordRef: submission.referenceCode,
-      detail: { submission_id: submission.id, to_status: nextStatus, type: submission.submissionType },
+    if (error || !data) return workflowRpcError(error, "Could not create submission.");
+    const result = data as { submission: Record<string, unknown>; deduplicated: boolean };
+    return NextResponse.json({
+      ok: true,
+      submission: mapSubmission(result.submission),
+      persisted: !result.deduplicated,
+      ...(result.deduplicated ? { deduplicated: true } : {}),
     });
-
-    return NextResponse.json({ ok: true, submission: { ...submission, status: nextStatus }, persisted: true });
   }
 
   // -------------------------------------------------------------------------
@@ -250,27 +178,26 @@ export async function POST(req: Request) {
   }
 
   const submission = mapSubmission(row);
-  const isAuthor = submission.actorId === userId;
 
-  // 1) Role / scope authorization
+  // Fast, well-worded pre-checks. The database re-validates everything inside
+  // wf_transition under a row lock, so these are not the security boundary.
   const perm = checkWorkflowPermission({
     stage,
     action,
     actorCounty: profile.county,
     submissionCounty: submission.county,
-    isAuthor,
+    actorDistrict: profile.district,
+    submissionDistrict: submission.district,
+    isAuthor: submission.actorId === userId,
   });
   if (!perm.ok) {
     return NextResponse.json({ ok: false, code: "forbidden", message: perm.reason }, { status: 403 });
   }
-
-  // 2) Transition legality
   const tr = computeSubmissionTransition(submission.status, action, stage);
   if (!tr.ok) {
     return NextResponse.json({ ok: false, code: "invalid_transition", message: tr.error }, { status: 422 });
   }
 
-  // assign_reviewer needs a target
   let assigneeId: string | null = null;
   if (action === "assign_reviewer") {
     assigneeId = typeof body.assigneeId === "string" ? body.assigneeId.trim() : "";
@@ -279,169 +206,40 @@ export async function POST(req: Request) {
     }
   }
 
-  // 3) Persist submission state
-  const patch: Record<string, unknown> = {};
-  if (tr.changed) patch.status = tr.nextStatus;
-  if (action === "assign_reviewer" && assigneeId) patch.current_assignee_id = assigneeId;
-
-  if (Object.keys(patch).length > 0) {
-    const { data: updated, error: updErr } = await supabase
-      .from("operational_submissions")
-      .update(patch)
-      .eq("id", submission.id)
-      .eq("status", submission.status)
-      .select("id")
-      .maybeSingle();
-    if (updErr) {
-      console.error("[workflow] submission update failed", updErr.message);
-      return NextResponse.json(
-        { ok: false, code: "persist_failed", message: "Could not persist workflow decision — verify permissions and scope." },
-        { status: 422 },
-      );
-    }
-    if (!updated) {
-      return NextResponse.json(
-        {
-          ok: false,
-          code: "concurrent_transition",
-          message: "This submission changed in another session. Reload before applying a new decision.",
-        },
-        { status: 409 },
-      );
-    }
-  }
-
-  // 4) Append-only action ledger entry
-  const { error: actionErr } = await supabase.from("workflow_actions").insert({
-    submission_id: submission.id,
-    actor_id: userId,
-    action,
-    from_status: submission.status,
-    to_status: tr.nextStatus,
-    county: submission.county,
-    district: submission.district,
-    note: note || null,
+  // State change, ledger, comment, assignment, notification and audit row
+  // commit or roll back together.
+  const { data, error } = await supabase.rpc("wf_transition", {
+    p_submission_id: submission.id,
+    p_action: action,
+    p_note: note || null,
+    p_assignee_id: assigneeId,
+    p_request_id: ctx.requestId,
   });
-  if (actionErr) {
-    console.error("[workflow] action ledger insert failed", actionErr.message);
-    if (tr.changed) {
-      await supabase
-        .from("operational_submissions")
-        .update({ status: submission.status })
-        .eq("id", submission.id)
-        .eq("status", tr.nextStatus);
-    }
-    return NextResponse.json(
-      {
-        ok: false,
-        code: "audit_persist_failed",
-        message: "Decision was reverted because its append-only action record could not be written.",
-      },
-      { status: 422 },
-    );
-  }
-
-  // 5) Comments / correction requests
-  if (action === "request_corrections" || (action === "comment" && note)) {
-    await supabase.from("workflow_comments").insert({
-      submission_id: submission.id,
-      actor_id: userId,
-      body: note || "Corrections requested.",
-      is_correction_request: action === "request_corrections",
-      county: submission.county,
-    });
-  }
-
-  // 6) Assignment record
-  if (action === "assign_reviewer" && assigneeId) {
-    await supabase.from("workflow_assignments").insert({
-      submission_id: submission.id,
-      assigned_by: userId,
-      assignee_id: assigneeId,
-      role_scope: roleScopeForStatus(tr.nextStatus),
-      status: "active",
-      county: submission.county,
-      district: submission.district,
-      note: note || null,
-    });
-  }
-
-  // 7) Directed notification (best-effort; never blocks the decision)
-  await maybeNotify({ supabase, userId, action, submission, assigneeId, nextStatus: tr.nextStatus, note });
-
-  // 8) Audit log
-  await persistWorkflowAuditLog({
-    supabase,
-    userId,
-    action: `workflow_${action}`,
-    tableHint: "operational_submissions",
-    recordRef: submission.referenceCode,
-    detail: {
-      submission_id: submission.id,
-      from_status: submission.status,
-      to_status: tr.nextStatus,
-      note: note || null,
-      assignee_id: assigneeId,
-    },
-  });
-
-  return NextResponse.json({
-    ok: true,
-    submission: {
-      ...submission,
-      status: tr.nextStatus,
-      currentAssigneeId: assigneeId ?? submission.currentAssigneeId,
-    },
-    persisted: true,
-  });
+  if (error || !data) return workflowRpcError(error, "Could not persist workflow decision.");
+  const result = data as { submission: Record<string, unknown> };
+  return NextResponse.json({ ok: true, submission: mapSubmission(result.submission), persisted: true });
 }
 
-async function maybeNotify(args: {
-  supabase: SupabaseClient;
-  userId: string;
-  action: string;
-  submission: OperationalSubmission;
-  assigneeId: string | null;
-  nextStatus: WorkflowStatus;
-  note: string;
-}): Promise<void> {
-  const { supabase, userId, action, submission, assigneeId, nextStatus, note } = args;
-
-  let recipient: string | null = null;
-  let kind = "decision";
-  let title = "";
-
-  if (action === "assign_reviewer" && assigneeId) {
-    recipient = assigneeId;
-    kind = "assignment";
-    title = `Assigned for review: ${submission.title}`;
-  } else if (action === "request_corrections") {
-    recipient = submission.actorId;
-    kind = "correction_request";
-    title = `Corrections requested: ${submission.title}`;
-  } else if (action === "escalate") {
-    recipient = submission.actorId;
-    kind = "escalation";
-    title = `Escalated: ${submission.title}`;
-  } else if (action === "approve" || action === "reject") {
-    recipient = submission.actorId;
-    kind = "decision";
-    title = `${action === "approve" ? "Advanced" : "Rejected"}: ${submission.title}`;
+/** Maps database-enforced workflow errors to stable API responses without leaking internals. */
+function workflowRpcError(
+  error: { code?: string; message?: string } | null,
+  fallback: string,
+): NextResponse {
+  const code = error?.code ?? "";
+  if (code === "42501") {
+    return NextResponse.json({ ok: false, code: "forbidden", message: "This action is outside your role or scope." }, { status: 403 });
   }
-
-  // Don't notify yourself.
-  if (!recipient || recipient === userId) return;
-
-  const { error } = await supabase.from("workflow_notifications").insert({
-    submission_id: submission.id,
-    recipient_id: recipient,
-    created_by: userId,
-    kind,
-    title,
-    body: note || `Status is now ${nextStatus.replace(/_/g, " ")}.`,
-    county: submission.county,
-  });
-  if (error) console.error("[workflow] notification insert failed", error.message);
+  if (code === "P0002") {
+    return NextResponse.json({ ok: false, code: "not_found", message: "Submission not found or outside your scope." }, { status: 404 });
+  }
+  if (code === "22023" || code === "22001") {
+    return NextResponse.json(
+      { ok: false, code: "invalid_transition", message: "This submission changed or the request is invalid. Reload and try again." },
+      { status: 409 },
+    );
+  }
+  console.error("[workflow] rpc failed", code, error?.message);
+  return NextResponse.json({ ok: false, code: "persist_failed", message: fallback }, { status: 422 });
 }
 
 // ===========================================================================
@@ -488,7 +286,8 @@ export async function GET(req: Request) {
   if (type) q = q.eq("submission_type", type);
   const { data, error } = await q;
   if (error) {
-    return NextResponse.json({ ok: false, code: "load_failed", message: error.message }, { status: 422 });
+    console.error("[workflow] submission list failed", error.message);
+    return NextResponse.json({ ok: false, code: "load_failed", message: "Could not load submissions." }, { status: 422 });
   }
   return NextResponse.json({ ok: true, submissions: (data ?? []).map(mapSubmission) });
 }

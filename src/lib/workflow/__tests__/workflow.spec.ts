@@ -146,6 +146,25 @@ check("Ministry is not county-bound", () => {
   assert.equal(r.ok, true);
 });
 
+check("DAO cannot decide another district's submission in the same county", () => {
+  const base = { stage: "dao" as const, action: "approve" as const, actorCounty: "Bong", submissionCounty: "Bong" };
+  assert.equal(checkWorkflowPermission({ ...base, actorDistrict: "Jorquelleh", submissionDistrict: "Jorquelleh" }).ok, true);
+  assert.equal(checkWorkflowPermission({ ...base, actorDistrict: "Suakoko", submissionDistrict: "Jorquelleh" }).ok, false);
+  assert.equal(checkWorkflowPermission({ ...base, actorDistrict: "Suakoko", submissionDistrict: null }).ok, true);
+});
+
+check("CAC is county-wide, not district-bound", () => {
+  const r = checkWorkflowPermission({
+    stage: "cac",
+    action: "approve",
+    actorCounty: "Bong",
+    submissionCounty: "Bong",
+    actorDistrict: null,
+    submissionDistrict: "Jorquelleh",
+  });
+  assert.equal(r.ok, true);
+});
+
 check("author can comment on own out-of-county submission", () => {
   const r = checkWorkflowPermission({ stage: "clan", action: "comment", actorCounty: "Bong", submissionCounty: "Lofa", isAuthor: true });
   assert.equal(r.ok, true);
