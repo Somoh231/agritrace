@@ -42,9 +42,7 @@ export default async function globalSetup(config: FullConfig) {
       await page
         .getByLabel("Password", { exact: true })
         .fill(credentials.password);
-      await page.getByRole("button", {
-        name: "Sign in to command center",
-      }).click();
+      await page.getByRole("button", { name: "Sign in", exact: true }).click();
       await page.waitForURL((url) => !url.pathname.startsWith("/login"), {
         timeout: 20_000,
       });

@@ -90,7 +90,7 @@ test.describe("protected preview core", () => {
 
   test("login exposes no shared role credentials or demo sign-in controls", async ({ page }) => {
     await page.goto("/login", { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("First-time users receive a secure invitation")).toBeVisible();
+    await expect(page.getByText("Accounts are issued by invitation from an authorised AgriVault administrator")).toBeVisible();
     await expect(page.getByText("Demo access profiles")).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText("DemoPass");
     await expect(page.locator("body")).not.toContainText("@agritrace.demo");
@@ -111,7 +111,8 @@ test.describe("protected preview core", () => {
     expect(new URL(page.url()).searchParams.get("redirectTo")).toBe(
       "/command-center",
     );
-    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(0);
+    // Only the sign-in heading renders; nothing from the protected page does.
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(["Sign in"]);
   });
 
   test("public critical routes have no serious axe findings", async ({ page }) => {
