@@ -1,3 +1,6 @@
+-- LEGACY / DO NOT APPLY. Superseded by supabase/migrations/*.sql.
+-- Applying this file recreates permissive pre-hardening policies (audit OPS-DOC-02).
+
 -- AgriTrace — Data integrity + pilot workflow hardening
 -- Run AFTER schema.sql and schema.enterprise.sql
 

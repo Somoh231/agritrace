@@ -1,3 +1,6 @@
+-- LEGACY / DO NOT APPLY. Superseded by supabase/migrations/*.sql.
+-- Applying this file recreates permissive pre-hardening policies (audit OPS-DOC-02).
+
 create table if not exists public.public_content_blocks (
   key text not null,
   locale text not null default 'en',

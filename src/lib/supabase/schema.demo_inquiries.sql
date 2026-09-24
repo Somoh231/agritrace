@@ -1,3 +1,6 @@
+-- LEGACY / DO NOT APPLY. Superseded by supabase/migrations/*.sql.
+-- Applying this file recreates permissive pre-hardening policies (audit OPS-DOC-02).
+
 -- Demo / contact inquiries (CRM-lite). Run after schema.sql.
 -- Inserts are performed via API route using the service role (no public insert policy).
 

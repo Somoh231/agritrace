@@ -11,7 +11,7 @@
 2. [Design constraints](#design-constraints)
 3. [IndexedDB schema](#indexeddb-schema)
 4. [Sync queue](#sync-queue)
-5. [Edge Function sync-batch](#edge-function-sync-batch)
+5. [Replay path (Edge Function removed)](#replay-path-edge-function-removed)
 6. [DAO workflow queue](#dao-workflow-queue)
 7. [PWA architecture](#pwa-architecture)
 8. [Retry and error handling](#retry-and-error-handling)
@@ -170,63 +170,36 @@ LocalStorage key `av_offline_queue_clear_at` records the last queue clear timest
 
 ---
 
-## Edge Function sync-batch
+## Replay path (Edge Function removed)
 
-**Path:** `supabase/functions/sync-batch/index.ts`  
-**Runtime:** Deno (Supabase Edge Functions)
+> **Changed in the Opus 5.5 audit (2026-09-23).** The former `sync-batch` Edge Function
+> upserted farmers, plots and production records with the **service-role key and no
+> caller authentication**, bypassing RLS. It was never deployed (the offline queue
+> therefore could not sync) and has been deleted.
 
-### Environment variables
+Offline records now replay **through the signed-in operator's own session**
+(`processSyncQueue()` in `src/lib/offline/sync-queue.ts`):
 
-| Variable | Purpose |
-|----------|---------|
-| `SUPABASE_URL` | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role for bypassing RLS on upsert |
+1. Farmers first, then plots and production records (which reference the farmer's
+   server id; offline records carry the farmer's device `client_id`, remapped on replay).
+2. Each row is upserted on its unique `client_id`, so a retried replay after a lost
+   response is idempotent.
+3. RLS, geography scope and attribution apply exactly as for an online write.
+   Missing county/district is filled from the operator's own profile (never overriding
+   what was captured). `registered_by` / `recorded_by` is the syncing operator.
+4. Records captured by another operator on a shared device are **not** replayed under
+   the current session; the operator is told to sign in as the capturer.
+5. Each replayed farmer and boundary creates its workflow submission (deduplicated).
+6. Synced records are purged from IndexedDB (farmer PII does not linger on the device),
+   except a farmer still referenced by an unsynced plot or production record.
+7. After 5 failed attempts a record is held for manual review.
 
-### Request
+The service worker (`public/sw.js`) never caches `/api/*` or React Server Component
+payloads; only hashed static assets and a small allowlist of field-capture shells are
+available offline. Sign-out clears cached shells.
 
-```http
-POST /functions/v1/sync-batch
-Content-Type: application/json
-Authorization: Bearer <anon-or-user-jwt>
-
-{
-  "farmers": [
-    {
-      "client_id": "550e8400-e29b-41d4-a716-446655440000",
-      "full_name": "James Kollie",
-      "county": "Bong",
-      "district": "Salala",
-      "registered_by": "<user-uuid>"
-    }
-  ],
-  "plots": [
-    {
-      "client_id": "660e8400-e29b-41d4-a716-446655440001",
-      "farmer_id": "550e8400-e29b-41d4-a716-446655440000",
-      "polygon_geojson": { "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [...] } },
-      "area_hectares": 1.2,
-      "county": "Bong"
-    }
-  ],
-  "production_records": []
-}
-```
-
-### Response
-
-```json
-{
-  "farmers": { "synced": 1, "failed": 0, "errors": [] },
-  "plots": { "synced": 1, "failed": 0, "errors": [] },
-  "production_records": { "synced": 0, "failed": 0, "errors": [] }
-}
-```
-
-Upsert uses `onConflict: "client_id"` — re-syncing the same record is idempotent.
-
-After plot sync, the client calls `ensureOperationalSubmission({ kind: "farm_boundary_capture", ... })` to create the workflow record. Dedupe key `farm_boundary:{plot_client_id}` prevents duplicate workflow rows on re-sync.
-
----
+Evidence: `tests/e2e/opus55-agentic-qa.spec.ts` → "offline field capture" and
+"service worker data freshness".
 
 ## DAO workflow queue
 

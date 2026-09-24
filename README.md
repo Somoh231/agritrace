@@ -24,29 +24,37 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 Notes:
-- `SUPABASE_SERVICE_ROLE_KEY` is required for seed scripts and server-side inserts used by `/request-demo` and analytics.
-- Mapbox is required for `/map` views.
+- `SUPABASE_SERVICE_ROLE_KEY` is used only server-side (admin provisioning, account
+  activation, analytics). Never expose it to the browser.
+- Mapbox is required for `/map` and boundary capture.
+- `NEXT_PUBLIC_ILLUSTRATIVE_DATA=enabled` shows illustrative/training datasets. Leave it
+  **unset** on any deployment real operators use (see `src/lib/data/illustrative-policy.ts`).
 
-### 3) Apply Supabase schema (in order)
+### 3) Apply the database schema (migrations only)
 
-Open Supabase → **SQL Editor** and run these files in order:
+The schema is defined **only** by `supabase/migrations/*.sql`, applied in filename order
+(`supabase db push`, or the SQL editor for a disposable project). Do **not** run the legacy
+`src/lib/supabase/schema*.sql` files: they recreate permissive pre-hardening policies.
 
-1. `src/lib/supabase/schema.sql`
-2. `src/lib/supabase/schema.enterprise.sql`
-3. `src/lib/supabase/schema.integrity.sql`
-4. `src/lib/supabase/schema.demo_inquiries.sql`
-5. `src/lib/supabase/schema.analytics.sql`
-6. `src/lib/supabase/schema.notifications.sql`
+Pending migrations and their approval order are in
+`docs/audits/CLAUDE_OPUS_55_RELEASE_GATE.md`. Always prove a migration set first on a
+disposable database:
 
-### 4) Bootstrap the first super admin
+```bash
+npm run test:rls:behavior   # all migrations + 66 authorization probes (needs Docker)
+npm run test:rls:p0         # live-equivalent schema + P0 containment
+```
 
-Visit `http://localhost:3000/setup` to generate a copy/paste SQL snippet for the currently signed-in Supabase Auth user.
+### 4) Bootstrap the first administrator
+
+There is no public setup page. Follow `docs/audits/BOOTSTRAP_ADMIN_TRANSITION_PLAN.md`
+(an operator-approved manifest applied with the workforce identity migration).
 
 ### 5) Provision workforce users
 
-Sign in as the approved bootstrap administrator, open `/admin/users`, and invite
-each unique workforce or QA identity. Users choose their own passwords from
-Supabase invitation links; shared role accounts are disabled.
+Sign in as the approved administrator, open `/admin/users`, and invite each unique
+workforce or QA identity. Users choose their own passwords from Supabase invitation
+links; shared role accounts are disabled. Public sign-up must be disabled in Supabase Auth.
 
 ### 6) Run the app (dev)
 
@@ -55,34 +63,23 @@ cd agritrace
 npm run dev
 ```
 
-Open:
-- Public homepage: `http://localhost:3000/`
-- Executive demo launcher: `http://localhost:3000/demo`
-- Login: `http://localhost:3000/login`
-- Health: `http://localhost:3000/health`
-- Setup: `http://localhost:3000/setup`
+Open `http://localhost:3000/login` (`/` redirects there). `/api/health` reports
+configuration and identity-service reachability. Former public pages (`/setup`, `/demo`,
+`/request-demo`, marketing pages) return 404.
 
 ## NPM scripts
 
-- **dev**: `next dev` (with polling enabled for file watching)
-- **build**: production build
-- **start**: serve production build
-- **lint**: run ESLint
-- **seed**: seed baseline data (service role key required)
-
-## Test checklist (local)
-
-```bash
-cd agritrace
-npm run build
-```
-
-Manual smoke test:
-- `/` renders public homepage
-- `/request-demo` submits successfully (requires `demo_inquiries` table + service role key)
-- `/demo` deep-links to dashboards in presentation mode
-- `/login` accepts individually provisioned users and rejects incomplete profiles
-- `/admin/launch-readiness` shows checks and DB table presence
+- **dev** / **build** / **start** / **lint**
+- **test:workflow** — workflow state machine, permissions, data-source policy, security helpers
+- **test:workflow:parity** — TypeScript vs SQL workflow transition table
+- **test:gis** — farm boundary geometry validation
+- **test:rls:behavior** / **test:rls:p0** — behavioral RLS suites on a disposable Postgres (Docker)
+- **test:rls:rc1** / **test:identity:rc1** — migration contract checks
+- **test:e2e:rc1** — Playwright suites (`tests/e2e`), including `opus55-agentic-qa.spec.ts`
+  (set `PREVIEW_BASE_URL`, `QA55_*_EMAIL`, `QA_PASSWORD`; synthetic mutations additionally
+  need `QA_ALLOW_SYNTHETIC_MUTATIONS=true` and never run against production)
+- **seed** / **seed:ministry** — synthetic staging data only; refuse to run unless
+  `SEED_TARGET_IS_DISPOSABLE=yes` and `SEED_TARGET_PROJECT_REF` matches the target
 
 ## Deploy (Vercel)
 
@@ -94,7 +91,8 @@ Manual smoke test:
    - `NEXT_PUBLIC_MAPBOX_TOKEN`
    - `NEXT_PUBLIC_APP_URL` (set to your production URL, e.g. `https://<project>.vercel.app`)
 3. Deploy.
-4. In Supabase, apply all schema files (order above) to the production project.
+4. In Supabase, apply the reviewed `supabase/migrations` set (never the legacy
+   `src/lib/supabase/schema*.sql` files) and disable public sign-ups.
 5. Provision unique users through `/admin/users`; never seed shared credentials
    against production.
 

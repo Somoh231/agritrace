@@ -1,3 +1,6 @@
+-- LEGACY / DO NOT APPLY. Superseded by supabase/migrations/*.sql.
+-- Applying this file recreates permissive pre-hardening policies (audit OPS-DOC-02).
+
 -- AgriTrace Liberia — Supabase schema (MVP)
 -- Run in Supabase SQL editor.
 

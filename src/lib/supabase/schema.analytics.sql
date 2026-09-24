@@ -1,3 +1,6 @@
+-- LEGACY / DO NOT APPLY. Superseded by supabase/migrations/*.sql.
+-- Applying this file recreates permissive pre-hardening policies (audit OPS-DOC-02).
+
 -- Lightweight analytics (optional). Run after schema.sql.
 -- Inserts are done via API (service role). No client insert policy.
 
