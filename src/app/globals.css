@@ -1,3 +1,6 @@
+/* Public-site design system (avs-*). Inlined first so Tailwind utilities override it. */
+@import "../styles/site.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
