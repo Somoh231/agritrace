@@ -19,6 +19,9 @@ export default function SiteNav() {
   const triggers = useRef<Record<string, HTMLButtonElement | null>>({});
   const headerRef = useRef<HTMLElement>(null);
   const hoverTimer = useRef<number | undefined>(undefined);
+  // How the current menu was opened. A click on a hover-opened menu pins it open
+  // instead of toggling it shut (hover-intent can fire just before the click lands).
+  const openedBy = useRef<"hover" | "click">("click");
   const panelId = useId();
 
   useEffect(() => {
@@ -59,13 +62,17 @@ export default function SiteNav() {
 
   const scheduleHover = (id: string | null, delay: number) => {
     window.clearTimeout(hoverTimer.current);
-    hoverTimer.current = window.setTimeout(() => setOpen(id), delay);
+    hoverTimer.current = window.setTimeout(() => {
+      openedBy.current = "hover";
+      setOpen(id);
+    }, delay);
   };
 
   const onTriggerKey = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft" && e.key !== "ArrowDown") return;
     e.preventDefault();
     if (e.key === "ArrowDown") {
+      openedBy.current = "click";
       setOpen(NAV[index].id);
       window.requestAnimationFrame(() => {
         document.querySelector<HTMLAnchorElement>(`#${CSS.escape(panelId)} a`)?.focus();
@@ -110,7 +117,12 @@ export default function SiteNav() {
                       type="button"
                       aria-expanded={isOpen}
                       aria-controls={isOpen ? panelId : undefined}
-                      onClick={() => setOpen(isOpen ? null : group.id)}
+                      onClick={() => {
+                        window.clearTimeout(hoverTimer.current);
+                        const pinHoverOpened = isOpen && openedBy.current === "hover";
+                        openedBy.current = "click";
+                        setOpen(isOpen && !pinHoverOpened ? null : group.id);
+                      }}
                       onMouseEnter={() => scheduleHover(group.id, open ? 0 : HOVER_OPEN_MS)}
                       onKeyDown={(e) => onTriggerKey(e, i)}
                       className={`group inline-flex h-10 items-center gap-1.5 rounded-full px-3 text-[0.9375rem] transition-colors ${
