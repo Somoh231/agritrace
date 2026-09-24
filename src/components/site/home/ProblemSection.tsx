@@ -34,7 +34,6 @@ export default function ProblemSection() {
         <h2
           id="problem-title"
           className="avs-serif avs-reveal mt-6 max-w-[22ch] text-[clamp(2.125rem,5vw,4.75rem)] leading-[1.02] tracking-[-0.025em]"
-          style={{ fontVariationSettings: '"opsz" 72' }}
         >
           Agricultural programmes often operate across{" "}
           <em className="avs-accent text-[rgb(var(--av-rust))]">disconnected</em> field records, spreadsheets, GIS

@@ -63,7 +63,7 @@ export default function HowWeWorkPage() {
                 className="avs-reveal grid scroll-mt-[calc(var(--av-header-h)+24px)] gap-6 border-t border-[rgb(var(--av-line)/0.14)] py-10 md:grid-cols-12 md:gap-8"
               >
                 <div className="flex items-baseline gap-4 md:col-span-3 md:flex-col md:gap-2">
-                  <span className="avs-serif text-[clamp(3rem,5vw,4.5rem)] leading-none text-[rgb(var(--av-gold-ink))]" style={{ fontVariationSettings: '"opsz" 72' }}>
+                  <span className="avs-serif text-[clamp(3rem,5vw,4.5rem)] leading-none text-[rgb(var(--av-gold-ink))]">
                     {s.n}
                   </span>
                   <span className={`avs-label ${PHASE_TONE[s.phase]}`}>{s.phase}</span>

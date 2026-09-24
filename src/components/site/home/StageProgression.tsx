@@ -107,7 +107,7 @@ export default function StageProgression() {
             className="flex w-[min(84vw,27rem)] shrink-0 snap-start flex-col rounded-[var(--av-radius)] border border-white/10 bg-[rgb(var(--av-navy-2))] p-7 lg:w-[29rem]"
           >
             <div className="flex items-start justify-between">
-              <p className="avs-serif text-[clamp(3.5rem,6vw,5.5rem)] leading-[0.9] text-[rgb(var(--av-gold))]" style={{ fontVariationSettings: '"opsz" 72' }}>
+              <p className="avs-serif text-[clamp(3.5rem,6vw,5.5rem)] leading-[0.9] text-[rgb(var(--av-gold))]">
                 {s.n}
               </p>
               <span className="avs-chip border-white/25 text-white/80">{s.phase}</span>

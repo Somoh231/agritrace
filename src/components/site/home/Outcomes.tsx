@@ -22,7 +22,7 @@ export default function Outcomes() {
             <li key={o.title} className="avs-reveal grid grid-cols-[3rem_1fr] gap-x-4 border-t border-[rgb(var(--av-line)/0.16)] py-8 last:border-b sm:grid-cols-[4rem_1fr]">
               <p className="avs-meta pt-3 text-[rgb(var(--av-emerald-ink))]">{String(i + 1).padStart(2, "0")}</p>
               <div>
-                <h3 className="avs-serif text-[clamp(1.75rem,3.2vw,2.75rem)] leading-[1.08]" style={{ fontVariationSettings: '"opsz" 60' }}>
+                <h3 className="avs-serif text-[clamp(1.75rem,3.2vw,2.75rem)] leading-[1.08]">
                   {o.title}
                 </h3>
                 <p className="avs-body mt-3 max-w-[36rem]">{o.body}</p>

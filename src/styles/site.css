@@ -160,14 +160,12 @@ html:has(.avs) {
   font-style: italic;
   font-weight: 400;
   letter-spacing: -0.02em;
-  font-variation-settings: "opsz" 72;
 }
 .avs-editorial {
   font-family: var(--av-font-serif);
   font-size: clamp(1.625rem, 2.6vw, 2.5rem);
   line-height: 1.18;
   letter-spacing: -0.015em;
-  font-variation-settings: "opsz" 48;
   text-wrap: pretty;
 }
 .avs-lead {

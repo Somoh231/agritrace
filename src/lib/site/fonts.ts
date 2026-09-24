@@ -7,11 +7,15 @@ export const geist = Geist({
   display: "swap",
 });
 
+/*
+ * Static 400 cuts only. The variable opsz build was ~273 kB for both styles;
+ * the site uses a single weight, and payload matters on rural 3G.
+ */
 export const newsreader = Newsreader({
   subsets: ["latin"],
   variable: "--font-newsreader",
+  weight: "400",
   style: ["normal", "italic"],
-  axes: ["opsz"],
   display: "swap",
 });
 
