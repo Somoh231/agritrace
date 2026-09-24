@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import { formatRoleLabel } from "@/lib/display/role-labels";
-import MinistryBrandLogo from "@/components/brand/MinistryBrandLogo";
+import { AgriVaultMark } from "@/components/site/AgriVaultMark";
 import { navIconForHref } from "@/lib/navigation/ministry-nav-icons";
 import { ministryNavForRole, normalizeMinistryNavRole } from "@/lib/navigation/ministry-nav";
 import type { UserRole } from "@/lib/supabase/types";
@@ -50,13 +50,16 @@ export default function MinistrySidebar({
     <aside className="ministry-shell-sidebar h-full w-full shrink-0 flex flex-col text-[rgb(var(--ministry-sidebar-fg))]">
       <div className="px-4 py-4 border-b border-white/[0.08]">
         <div className="flex items-center gap-3">
-          <MinistryBrandLogo variant="seal" size="md" priority />
+          {/* Product identity is the AgriVault mark; the Ministry appears only as programme context below. */}
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center">
+            <AgriVaultMark size={30} tone="light" />
+          </span>
           <div className="min-w-0">
             <div className="ent-editorial text-[17px] leading-tight font-medium text-white">
               AgriVault <span className="text-[rgb(var(--ministry-gold))]">Data</span>
             </div>
             <div className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-200/55 leading-none">
-              Ministry of Agriculture · Liberia
+              Programme · Ministry of Agriculture, Liberia
             </div>
           </div>
         </div>
