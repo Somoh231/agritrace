@@ -138,12 +138,33 @@ legacy marketing routes remain 404.
 - **App fonts** (Inter, Inter Tight, DM Mono, DM Serif, Fraunces) are no longer
   preloaded on every route.
 
-### Open items before launch
-1. Replace GADM-derived county geometry (non-commercial licence) with
-   geoBoundaries or Natural Earth — needs a data download.
-2. Commission photography (`public/photography/README.md`).
-3. Privacy and terms pages (legal text required).
-4. Confirm `partnerships@agrivaultdata.com` is a live mailbox.
-5. `next dev` cannot run client JS because the production CSP (no
-   `unsafe-eval`) also applies in development; QA used production builds.
-6. Remove the unused visual-library dependencies if not planned.
+### Open items before launch (updated 2026-09-24)
+
+Resolved on this branch:
+- ~~GADM county geometry~~ — replaced by geoBoundaries LBR-ADM1 (UNMIL / OCHA,
+  CC BY 3.0 IGO) for both the site SVG and `public/data/liberia-counties.geojson`;
+  provenance in `data/geo/geoboundaries/SOURCE.md`; attribution shown with
+  every map.
+- ~~Node 20 runtime~~ — pinned to 22.x (`package.json`, lockfile, `.nvmrc`).
+- ~~Fraunces build failures~~ — self-hosted with `next/font/local`
+  (`src/fonts/fraunces`, OFL); two clean builds made no Google request for it.
+
+Still open — the site is **not production-ready** until these close:
+1. Commission real photography (`public/photography/README.md`).
+2. Privacy page (legal text required).
+3. Terms page (legal text required).
+4. Confirm `partnerships@agrivaultdata.com` is a monitored mailbox.
+5. Run the credential-gated authenticated-role Playwright suites.
+6. Protected Vercel preview smoke test (needs an authenticated browser
+   session or an automation bypass secret).
+
+Risks noted, not yet addressed:
+- Seven families (Geist, Geist Mono, Newsreader, Inter, Inter Tight, DM Mono,
+  DM Serif Display) are still fetched from Google Fonts at build time; only
+  Fraunces was observed returning unparseable URLs. Self-host them the same
+  way if builds must be fully offline.
+- Application Mapbox maps set `attributionControl={false}`, hiding the
+  Mapbox / OpenStreetMap credits their terms require (pre-existing).
+- `next dev` cannot run client JS because the production CSP (no
+  `unsafe-eval`) also applies in development.
+- Unused visual-library dependencies from commit e668b85.
