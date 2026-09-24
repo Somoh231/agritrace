@@ -193,6 +193,8 @@ export default function CountyHeatmap({
           mapboxAccessToken={mapboxToken()}
           initialViewState={{ ...LIBERIA_CENTER, zoom: LIBERIA_ZOOM }}
           mapStyle="mapbox://styles/mapbox/light-v11"
+          // Appended to Mapbox's own attribution control (Mapbox / OpenStreetMap credits stay).
+          customAttribution={BOUNDARY_ATTRIBUTION}
           style={{ width: "100%", height: "100%" }}
           interactiveLayerIds={geojson?.features?.length ? ["counties-fill"] : []}
           onMouseMove={onMove}
@@ -227,12 +229,6 @@ export default function CountyHeatmap({
               <dd className="text-right">{hover.daoPct}%</dd>
             </dl>
           </div>
-        ) : null}
-
-        {!boundaryMissing ? (
-          <p className="absolute bottom-1 right-1.5 z-[5] rounded bg-white/85 px-1.5 py-0.5 text-[10px] leading-none text-slate-700">
-            {BOUNDARY_ATTRIBUTION}
-          </p>
         ) : null}
 
         {boundaryMissing ? (

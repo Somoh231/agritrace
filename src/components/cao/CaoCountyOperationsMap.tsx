@@ -112,7 +112,6 @@ export default function CaoCountyOperationsMap({
           initialViewState={initialView}
           mapStyle="mapbox://styles/mapbox/light-v11"
           style={{ width: "100%", height: "100%" }}
-          attributionControl={false}
         >
           {markers.map((m) => (
             <Marker key={m.id} longitude={m.lng} latitude={m.lat} anchor="bottom">

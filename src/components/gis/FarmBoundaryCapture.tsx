@@ -588,7 +588,6 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
               }}
               mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
               style={{ width: "100%", height: "100%", minHeight: 260 }}
-              attributionControl={false}
               onDragEnd={() => {
                 if (!programmaticMoveRef.current) userAdjustedViewRef.current = true;
               }}
@@ -676,7 +675,7 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
           )}
           <button
             type="button"
-            className="absolute bottom-2 right-2 z-10 rounded-lg border border-slate-600/90 bg-slate-950/90 px-2.5 py-1.5 text-[11px] font-medium text-slate-100 shadow backdrop-blur-sm hover:bg-slate-900"
+            className="absolute bottom-10 right-2 z-10 rounded-lg border border-slate-600/90 bg-slate-950/90 px-2.5 py-1.5 text-[11px] font-medium text-slate-100 shadow backdrop-blur-sm hover:bg-slate-900"
             onClick={() => {
               userAdjustedViewRef.current = false;
               fitToOperationalArea();

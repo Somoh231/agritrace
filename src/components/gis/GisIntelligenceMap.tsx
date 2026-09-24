@@ -7,6 +7,7 @@ import MapGL, { Layer, Source, type MapRef } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import type { CountyHoverDetail, CountySurfaceMode, GisOverlayToggles } from "@/lib/gis/gis-intelligence-data";
+import { BOUNDARY_ATTRIBUTION } from "@/lib/gis/boundary-attribution";
 import { LIBERIA_CENTER, LIBERIA_ZOOM } from "@/lib/mapbox/config";
 
 type MapGeoPayload = Record<string, unknown>;
@@ -313,7 +314,8 @@ export default function GisIntelligenceMap({
       initialViewState={{ ...LIBERIA_CENTER, zoom: LIBERIA_ZOOM }}
       mapStyle="mapbox://styles/mapbox/dark-v11"
       style={{ width: "100%", height: "100%" }}
-      attributionControl={false}
+      // Mapbox / OpenStreetMap credits (default control) plus the county-boundary licence credit.
+      customAttribution={BOUNDARY_ATTRIBUTION}
       interactiveLayerIds={interactiveIds}
       onClick={onClick}
       onMouseMove={onMouseMove}

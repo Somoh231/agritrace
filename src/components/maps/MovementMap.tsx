@@ -129,7 +129,7 @@ export default function MovementMap({
         ) : null}
       </MapGL>
       {!loading && geo?.features?.length === 0 ? (
-        <div className="absolute inset-x-4 bottom-4 z-[5] rounded-lg border border-slate-200 bg-white/95 px-3 py-2 text-center text-[12px] text-slate-600">
+        <div className="absolute inset-x-4 bottom-10 z-[5] rounded-lg border border-slate-200 bg-white/95 px-3 py-2 text-center text-[12px] text-slate-600">
           No movement traces in scope for the current filter.
         </div>
       ) : null}

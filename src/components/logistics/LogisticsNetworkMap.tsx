@@ -85,7 +85,6 @@ export default function LogisticsNetworkMap() {
           initialViewState={{ ...LIBERIA_CENTER, zoom: LIBERIA_ZOOM }}
           mapStyle="mapbox://styles/mapbox/dark-v11"
           style={{ width: "100%", height: "100%" }}
-          attributionControl={false}
         >
           <Source id="routes-src" type="geojson" data={routeGeoJson}>
             <Layer
