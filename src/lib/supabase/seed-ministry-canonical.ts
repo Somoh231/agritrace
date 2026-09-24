@@ -8,7 +8,10 @@ import "dotenv/config";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-import {
+import { SAMPLE_DATASET } from "@/lib/data/ministry-canonical-data";
+
+// Explicit staging seed: uses the raw sample records, independent of the runtime illustrative-data policy.
+const {
   MINISTRY_DAO_OFFICERS,
   MINISTRY_FARMERS,
   MINISTRY_INVENTORY_LINES,
@@ -16,7 +19,8 @@ import {
   MINISTRY_COUNTY_METRICS,
   MINISTRY_OPERATIONAL_EVENTS,
   MINISTRY_WAREHOUSES,
-} from "@/lib/data/ministry-canonical-data";
+} = SAMPLE_DATASET;
+import { assertDisposableSeedTarget } from "@/lib/supabase/seed-guard";
 
 function requiredEnv(name: string): string {
   const v = process.env[name];
@@ -38,6 +42,7 @@ function verificationDb(v: string): "verified" | "pending" | "flagged" {
 
 async function main() {
   const url = requiredEnv("NEXT_PUBLIC_SUPABASE_URL");
+  assertDisposableSeedTarget(url);
   const key = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
   const supabase: SupabaseClient = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },

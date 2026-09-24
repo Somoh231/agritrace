@@ -43,6 +43,7 @@ import { isCountyCoordinatorRole, isMinistryNationalRole } from "@/lib/auth/oper
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { MoaOperationalSurveyKind } from "@/lib/reporting/moa-operational-payload";
 import type { UserRole } from "@/lib/supabase/types";
+import { illustrativeCaption } from "@/lib/data/illustrative-policy";
 
 function daoWorkflowBindings(
   wf: ReturnType<typeof useDaoWorkflowQueue>,
@@ -231,7 +232,7 @@ export default function CountyOfficerDashboard({
 
         {!assignmentGap && county ? (
           <AlertCard tone="info" title="Scope lock">
-            County = <span className="font-mono font-medium">{county}</span> · districts and DAO rows derive from pilot_dao_officers / canonical fallback · warehouses filtered by county allocation signals.
+            County = <span className="font-mono font-medium">{county}</span> · {illustrativeCaption("districts and DAO rows come from live pilot_dao_officers records · warehouses filtered by county.", "districts and DAO rows derive from pilot_dao_officers / canonical fallback · warehouses filtered by county allocation signals.")}
           </AlertCard>
         ) : null}
 

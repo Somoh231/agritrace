@@ -6,6 +6,7 @@ import { DashboardPanel, DataSourceNotice, SectionHeader, StatusBadge } from "@/
 import { farmerRegistrationPipeline } from "@/lib/demo/agriculture-pilot-data";
 import { MINISTRY_INVENTORY_MOVEMENTS } from "@/lib/data/ministry-canonical-data";
 import { demoSource, pilotSource, resolveDisplaySource } from "@/lib/data/data-source";
+import { illustrativeCaption } from "@/lib/data/illustrative-policy";
 
 /**
  * Read-only illustration of how operational artefacts flow through the ministry stack.
@@ -40,7 +41,7 @@ export default function OperationalWorkflowPipeline() {
       label: "CAC county verification",
       detail: "County Agriculture Coordinator",
       queue: Math.max(2, Math.round(p.pendingVerification / 4)),
-      hint: "County attest backlog (illustrative)",
+      hint: illustrativeCaption("County attest backlog"),
       href: "/county-dashboard",
       tone: "info" as const,
     },

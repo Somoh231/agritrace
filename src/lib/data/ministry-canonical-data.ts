@@ -1,3 +1,5 @@
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
+
 /**
  * Canonical ministry-grade pilot dataset aligned with:
  * “Agrivault Ministry Grade Farmer Registry Sample Dataset” (IDs NIM-0001, WH-NIM-001, DAO-NIM-001, EVT-*, INV-*).
@@ -96,7 +98,7 @@ export type MinistryInventoryMovementRecord = {
 };
 
 /** Farmer registry rows (ministry ID convention). */
-export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
+const SAMPLE_MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   {
     registryPublicId: "NIM-0001",
     fullName: "Kumba Kollie",
@@ -479,7 +481,7 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
 ];
 
-export const MINISTRY_DAO_OFFICERS: MinistryDaoOfficerRecord[] = [
+const SAMPLE_MINISTRY_DAO_OFFICERS: MinistryDaoOfficerRecord[] = [
   {
     daoCode: "DAO-NIM-001",
     fullName: "Joseph Yarkpawolo",
@@ -542,7 +544,7 @@ export const MINISTRY_DAO_OFFICERS: MinistryDaoOfficerRecord[] = [
   },
 ];
 
-export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
+const SAMPLE_MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   {
     ministryCode: "WH-NIM-001",
     name: "Nimba Central Warehouse",
@@ -714,7 +716,7 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
 ];
 
-export const MINISTRY_INVENTORY_LINES: MinistryInventoryLineRecord[] = [
+const SAMPLE_MINISTRY_INVENTORY_LINES: MinistryInventoryLineRecord[] = [
   {
     inventoryCode: "INV-0001",
     sku: "RICE-SEED-001",
@@ -761,7 +763,7 @@ export const MINISTRY_INVENTORY_LINES: MinistryInventoryLineRecord[] = [
   },
 ];
 
-export const MINISTRY_OPERATIONAL_EVENTS: MinistryOperationalEventRecord[] = [
+const SAMPLE_MINISTRY_OPERATIONAL_EVENTS: MinistryOperationalEventRecord[] = [
   {
     eventCode: "EVT-0001",
     occurredAt: "2026-05-05T09:12:00Z",
@@ -805,7 +807,7 @@ export const MINISTRY_OPERATIONAL_EVENTS: MinistryOperationalEventRecord[] = [
 ];
 
 /** County intelligence signal centers (Mapbox point layer + dashboards). */
-export const MINISTRY_COUNTY_METRICS: MinistryCountyMetricRecord[] = [
+const SAMPLE_MINISTRY_COUNTY_METRICS: MinistryCountyMetricRecord[] = [
   { county: "Nimba", productionIndex: 82, foodRisk: "Low", daoCompliance: 94, lng: -8.7064, lat: 7.3621 },
   { county: "Bong", productionIndex: 74, foodRisk: "Moderate", daoCompliance: 89, lng: -9.4723, lat: 6.9951 },
   { county: "Lofa", productionIndex: 68, foodRisk: "Elevated", daoCompliance: 91, lng: -9.7512, lat: 8.4212 },
@@ -818,7 +820,7 @@ export const MINISTRY_COUNTY_METRICS: MinistryCountyMetricRecord[] = [
   { county: "River Cess", productionIndex: 64, foodRisk: "Low", daoCompliance: 87, lng: -9.5811, lat: 5.9022 },
 ];
 
-export const MINISTRY_INVENTORY_MOVEMENTS: MinistryInventoryMovementRecord[] = [
+const SAMPLE_MINISTRY_INVENTORY_MOVEMENTS: MinistryInventoryMovementRecord[] = [
   {
     id: "MOV-001",
     sku: "FERT-NPK-001",
@@ -878,7 +880,7 @@ export type MinistryCountyIntelligenceGeoJSON = {
 export function ministryCountyIntelligenceGeoJSON(): MinistryCountyIntelligenceGeoJSON {
   return {
     type: "FeatureCollection",
-    features: MINISTRY_COUNTY_METRICS.map((c) => ({
+    features: SAMPLE_MINISTRY_COUNTY_METRICS.map((c) => ({
       type: "Feature",
       properties: {
         county: c.county,
@@ -890,3 +892,18 @@ export function ministryCountyIntelligenceGeoJSON(): MinistryCountyIntelligenceG
     })),
   };
 }
+
+// ---------------------------------------------------------------------------
+// Runtime exports. Illustrative data is empty unless explicitly enabled for a
+// training environment (see src/lib/data/illustrative-policy.ts).
+// ---------------------------------------------------------------------------
+export const MINISTRY_FARMERS: MinistryFarmerRecord[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_MINISTRY_FARMERS : [];
+export const MINISTRY_DAO_OFFICERS: MinistryDaoOfficerRecord[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_MINISTRY_DAO_OFFICERS : [];
+export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_MINISTRY_WAREHOUSES : [];
+export const MINISTRY_INVENTORY_LINES: MinistryInventoryLineRecord[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_MINISTRY_INVENTORY_LINES : [];
+export const MINISTRY_OPERATIONAL_EVENTS: MinistryOperationalEventRecord[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_MINISTRY_OPERATIONAL_EVENTS : [];
+export const MINISTRY_COUNTY_METRICS: MinistryCountyMetricRecord[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_MINISTRY_COUNTY_METRICS : [];
+export const MINISTRY_INVENTORY_MOVEMENTS: MinistryInventoryMovementRecord[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_MINISTRY_INVENTORY_MOVEMENTS : [];
+
+/** Raw sample records for explicit staging seed scripts only. Never render these directly. */
+export const SAMPLE_DATASET = { MINISTRY_FARMERS: SAMPLE_MINISTRY_FARMERS, MINISTRY_DAO_OFFICERS: SAMPLE_MINISTRY_DAO_OFFICERS, MINISTRY_WAREHOUSES: SAMPLE_MINISTRY_WAREHOUSES, MINISTRY_INVENTORY_LINES: SAMPLE_MINISTRY_INVENTORY_LINES, MINISTRY_OPERATIONAL_EVENTS: SAMPLE_MINISTRY_OPERATIONAL_EVENTS, MINISTRY_COUNTY_METRICS: SAMPLE_MINISTRY_COUNTY_METRICS, MINISTRY_INVENTORY_MOVEMENTS: SAMPLE_MINISTRY_INVENTORY_MOVEMENTS };

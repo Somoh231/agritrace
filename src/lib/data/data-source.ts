@@ -7,6 +7,8 @@
  * DEMO    — Illustrative national figures (`agriculture-pilot-data`)
  */
 
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
+
 export type DataSourceKind = "live" | "pilot" | "offline" | "demo";
 
 export type DataSourceMeta = {
@@ -58,11 +60,16 @@ export function liveSource(detail?: string): DataSourceMeta {
   return dataSourceMeta("live", detail);
 }
 
+/** With illustrative data disabled, fixture fallbacks are empty, so the section is live (possibly empty). */
+const LIVE_EMPTY_DETAIL = "Live records in your scope; empty until operational data is captured.";
+
 export function pilotSource(detail?: string): DataSourceMeta {
+  if (!ILLUSTRATIVE_DATA_ENABLED) return dataSourceMeta("live", LIVE_EMPTY_DETAIL);
   return dataSourceMeta("pilot", detail ?? "Canonical ministry fixtures");
 }
 
 export function demoSource(detail?: string): DataSourceMeta {
+  if (!ILLUSTRATIVE_DATA_ENABLED) return dataSourceMeta("live", LIVE_EMPTY_DETAIL);
   return dataSourceMeta("demo", detail ?? "Illustrative pilot dataset");
 }
 

@@ -20,6 +20,7 @@ import {
   EnterpriseBarChart,
   InsightRibbon,
 } from "@/components/enterprise/analytics";
+import { illustrativeCaption } from "@/lib/data/illustrative-policy";
 
 export default function DaoMonitoringAnalytics() {
   const reviewVelocity = [
@@ -78,7 +79,7 @@ export default function DaoMonitoringAnalytics() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <DashboardPanel>
-          <SectionHeader kicker="Velocity" title="Review throughput" subtitle="Daily DAO decisions (illustrative)" />
+          <SectionHeader kicker="Velocity" title="Review throughput" subtitle={illustrativeCaption("Daily DAO decisions")} />
           <div className="mt-4">
             <EnterpriseAreaChart data={reviewVelocity} xKey="day" yKey="reviews" name="Reviews" color={CHART_COLORS.navy} height={220} />
           </div>

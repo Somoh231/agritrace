@@ -18,6 +18,7 @@ import {
 } from "@/lib/data/ministry-data-service";
 import { buildNationalOperationalNarratives } from "@/lib/ops/national-operational-narratives";
 import { safePct } from "@/lib/utils/rice";
+import { illustrativeCaption } from "@/lib/data/illustrative-policy";
 
 function narrativeTone(tone: "emerald" | "amber" | "rose" | "slate"): "success" | "warning" | "danger" | "neutral" {
   if (tone === "emerald") return "success";
@@ -114,7 +115,7 @@ export default function NationalOperationalIntelStrip() {
         <SectionHeader
           kicker="Operational intelligence"
           title="National situation — narratives, not noise"
-          subtitle="Synthesized from pilot operational tables and canonical ministry signals."
+          subtitle={illustrativeCaption("From live pilot operational tables in your scope.", "Synthesized from pilot operational tables and canonical ministry signals.")}
         />
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           <DataSourceBadge source={stripSource} />

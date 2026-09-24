@@ -1,3 +1,5 @@
+import { ILLUSTRATIVE_DATA_ENABLED, zeroedIllustrative } from "@/lib/data/illustrative-policy";
+
 /**
  * Illustrative pilot dataset for Liberia ministry demos — not official government statistics.
  * All figures are clearly synthetic for UX demonstration while live Ministry data is configured.
@@ -27,7 +29,7 @@ export const PILOT_COUNTIES_ACTIVE = ["Nimba", "Bong", "Lofa"] as const;
 
 export type PilotStatus = "healthy" | "warning" | "critical";
 
-export const nationalHeroMetrics = {
+const SAMPLE_nationalHeroMetrics = {
   registeredFarmers: 48_620,
   domesticRiceProductionMt: 298_400,
   nationalProductionTargetMt: 340_000,
@@ -52,7 +54,7 @@ export type CountyProductionRow = {
   farmersRegistered: number;
 };
 
-export const countyProductionPerformance: CountyProductionRow[] = [
+const SAMPLE_countyProductionPerformance: CountyProductionRow[] = [
   { county: "Nimba", productionMt: 62_100, targetMt: 68_000, lossPct: 10.1, status: "healthy", farmersRegistered: 11_200 },
   { county: "Bong", productionMt: 44_800, targetMt: 52_000, lossPct: 12.4, status: "warning", farmersRegistered: 8_400 },
   { county: "Lofa", productionMt: 51_200, targetMt: 55_000, lossPct: 9.8, status: "healthy", farmersRegistered: 9_100 },
@@ -73,7 +75,7 @@ export const countyProductionPerformance: CountyProductionRow[] = [
   })),
 ];
 
-export const farmerRegistrationPipeline = {
+const SAMPLE_farmerRegistrationPipeline = {
   verified: 41_200,
   pendingVerification: 4_120,
   flagged: 892,
@@ -81,7 +83,7 @@ export const farmerRegistrationPipeline = {
   lastSyncHoursAgo: 2,
 };
 
-export const inputDistributionProgress = {
+const SAMPLE_inputDistributionProgress = {
   fertilizerAllocatedMt: 18_400,
   fertilizerDistributedMt: 14_200,
   seedAllocatedMt: 9_800,
@@ -100,7 +102,7 @@ export type WarehouseRow = {
   donorTaggedPct: number;
 };
 
-export const warehouses: WarehouseRow[] = [
+const SAMPLE_warehouses: WarehouseRow[] = [
   { id: "wh-001", name: "Central Hub · Ganta", county: "Nimba", riceSeedTons: 420, fertilizerTons: 310, pesticideTons: 42, stockRisk: "healthy", donorTaggedPct: 55 },
   { id: "wh-002", name: "County Store · Gbarnga", county: "Bong", riceSeedTons: 280, fertilizerTons: 240, pesticideTons: 28, stockRisk: "warning", donorTaggedPct: 40 },
   { id: "wh-003", name: "Voinjama Depot", county: "Lofa", riceSeedTons: 315, fertilizerTons: 265, pesticideTons: 31, stockRisk: "healthy", donorTaggedPct: 62 },
@@ -117,7 +119,7 @@ export type InventoryTransfer = {
   date: string;
 };
 
-export const inventoryTransfers: InventoryTransfer[] = [
+const SAMPLE_inventoryTransfers: InventoryTransfer[] = [
   { id: "tr-1", from: "Monrovia Strategic Reserve", to: "Gbarnga · Bong", commodity: "Urea", qtyTons: 45, status: "in_transit", date: "2026-05-04" },
   { id: "tr-2", from: "Ganta Hub", to: "District 3 · Nimba", commodity: "NERICA seed", qtyTons: 12, status: "completed", date: "2026-05-03" },
   { id: "tr-3", from: "Voinjama Depot", to: "Kolahun · Lofa", commodity: "NPK", qtyTons: 18, status: "scheduled", date: "2026-05-06" },
@@ -142,7 +144,7 @@ export type FarmerRegistryDemoRow = {
   lastFieldVisit: string;
 };
 
-export const farmerRegistrySample: FarmerRegistryDemoRow[] = [
+const SAMPLE_farmerRegistrySample: FarmerRegistryDemoRow[] = [
   { id: "F-10492", fullName: "James W. Toe", county: "Nimba", district: "Sanniquellie-Mahn", cooperative: "Nimba Highlands Cooperative", gpsStatus: "verified", acreage: 3.2, mainCrop: "Rice", productionHistorySeasons: 4, subsidyEligible: true, verification: "verified", lastFieldVisit: "2026-05-01" },
   { id: "F-21883", fullName: "Mary Suah", county: "Bong", district: "Fuamah", cooperative: "Bong Central Farmers Union", gpsStatus: "pending", acreage: 2.1, mainCrop: "Rice", productionHistorySeasons: 2, subsidyEligible: true, verification: "pending", lastFieldVisit: "2026-04-28" },
   { id: "F-33021", fullName: "Mohammed Kamara", county: "Lofa", district: "Voinjama", cooperative: "Lofa Rice Alliance", gpsStatus: "verified", acreage: 4.8, mainCrop: "Rice", productionHistorySeasons: 6, subsidyEligible: false, verification: "verified", lastFieldVisit: "2026-05-02" },
@@ -159,7 +161,7 @@ export type FieldReportDemo = {
   submittedAt: string;
 };
 
-export const fieldReports: FieldReportDemo[] = [
+const SAMPLE_fieldReports: FieldReportDemo[] = [
   { id: "R-9081", officer: "S. Kollie", county: "Nimba", summary: "Moisture readings elevated · drying advisory issued", channel: "offline", submittedAt: "2026-05-06T08:40:00Z" },
   { id: "R-9082", officer: "A. Sumo", county: "Bong", summary: "Input voucher redemption verified · 42 farmers", channel: "online", submittedAt: "2026-05-06T07:15:00Z" },
   { id: "R-9078", officer: "Call desk · ext 204", county: "Lofa", summary: "Voice-assisted registration completed · 3 parcels", channel: "call_center", submittedAt: "2026-05-05T16:22:00Z" },
@@ -173,7 +175,7 @@ export type OfflineQueueItem = {
   county: string;
 };
 
-export const offlineSyncQueue: OfflineQueueItem[] = [
+const SAMPLE_offlineSyncQueue: OfflineQueueItem[] = [
   { id: "q-1", deviceId: "TAB-NIM-042", records: 8, oldestAgeMinutes: 35, county: "Nimba" },
   { id: "q-2", deviceId: "TAB-BONG-019", records: 5, oldestAgeMinutes: 120, county: "Bong" },
   { id: "q-3", deviceId: "TAB-LOF-007", records: 10, oldestAgeMinutes: 18, county: "Lofa" },
@@ -188,7 +190,7 @@ export type CallCenterSubmission = {
   time: string;
 };
 
-export const callCenterSubmissions: CallCenterSubmission[] = [
+const SAMPLE_callCenterSubmissions: CallCenterSubmission[] = [
   { id: "cc-1", topic: "Subsidy eligibility clarification", county: "Nimba", agent: "J. Flomo", resolved: true, time: "2026-05-06 09:12" },
   { id: "cc-2", topic: "Duplicate farmer merge request", county: "Bong", agent: "R. Johnson", resolved: false, time: "2026-05-06 08:55" },
   { id: "cc-3", topic: "Warehouse stock discrepancy", county: "Montserrado", agent: "P. Mensah", resolved: false, time: "2026-05-05 17:40" },
@@ -201,7 +203,7 @@ export type DataQualityAlertDemo = {
   county?: string;
 };
 
-export const dataQualityAlerts: DataQualityAlertDemo[] = [
+const SAMPLE_dataQualityAlerts: DataQualityAlertDemo[] = [
   { id: "dq-1", severity: "warning", title: "12% of farmer GPS reads older than 180 days", county: "Margibi" },
   { id: "dq-2", severity: "critical", title: "County submission gap · no sync in 36h", county: "Grand Gedeh" },
   { id: "dq-3", severity: "healthy", title: "Pilot counties meeting completeness SLA" },
@@ -214,7 +216,7 @@ export type LossAlertDemo = {
   driver: string;
 };
 
-export const postHarvestLossAlerts: LossAlertDemo[] = [
+const SAMPLE_postHarvestLossAlerts: LossAlertDemo[] = [
   { id: "ph-1", county: "Margibi", lossPct: 14.5, driver: "Moisture / storage" },
   { id: "ph-2", county: "Sinoe", lossPct: 15.1, driver: "Transport delay" },
 ];
@@ -227,7 +229,7 @@ export type SubsidyRecordDemo = {
   period: string;
 };
 
-export const subsidyDistributionRecords: SubsidyRecordDemo[] = [
+const SAMPLE_subsidyDistributionRecords: SubsidyRecordDemo[] = [
   { id: "sub-1", county: "Nimba", farmersPaid: 820, amountUsd: 164_000, period: "Apr 2026 · tranche 2" },
   { id: "sub-2", county: "Bong", farmersPaid: 540, amountUsd: 108_000, period: "Apr 2026 · tranche 2" },
   { id: "sub-3", county: "Lofa", farmersPaid: 610, amountUsd: 122_000, period: "Apr 2026 · tranche 2" },
@@ -240,14 +242,14 @@ export type DonorInventoryDemo = {
   warehouse: string;
 };
 
-export const donorInventoryRecords: DonorInventoryDemo[] = [
+const SAMPLE_donorInventoryRecords: DonorInventoryDemo[] = [
   { donor: "Illustrative donor · Programme A", sku: "NERICA seed", tons: "640 t", warehouse: "Monrovia Strategic Reserve" },
   { donor: "Illustrative donor · Programme B", sku: "Urea", tons: "420 t", warehouse: "Ganta Hub" },
 ];
 
-export const foodSecurityIndicators = {
+const SAMPLE_foodSecurityIndicators = {
   riceDemandMt: 650_000,
-  domesticProductionMt: nationalHeroMetrics.domesticRiceProductionMt,
+  domesticProductionMt: SAMPLE_nationalHeroMetrics.domesticRiceProductionMt,
   importDependencyTrend: "+1.2 ppt vs prior quarter (illustrative)",
   emergencyAlerts: 2,
   marketPriceWatch: "Stable · illustrative pilot band",
@@ -257,33 +259,33 @@ export const foodSecurityIndicators = {
 
 export type OfficerDemo = { id: string; name: string; county: string; activeSubmissions7d: number };
 
-export const fieldOfficers: OfficerDemo[] = [
+const SAMPLE_fieldOfficers: OfficerDemo[] = [
   { id: "fo-1", name: "Samuel Kollie", county: "Nimba", activeSubmissions7d: 38 },
   { id: "fo-2", name: "Alice Sumo", county: "Bong", activeSubmissions7d: 31 },
   { id: "fo-3", name: "Joseph Cooper", county: "Lofa", activeSubmissions7d: 29 },
 ];
 
-export const countyAgOfficers: OfficerDemo[] = PILOT_COUNTIES_FULL.slice(0, 15).map((county, i) => ({
+const SAMPLE_countyAgOfficers: OfficerDemo[] = PILOT_COUNTIES_FULL.slice(0, 15).map((county, i) => ({
   id: `cac-${i}`,
   name: `County Ag Officer · ${county}`,
   county,
   activeSubmissions7d: 12 + (i % 8),
 }));
 
-export const districtAgOfficersSample: OfficerDemo[] = [
+const SAMPLE_districtAgOfficersSample: OfficerDemo[] = [
   { id: "dao-1", name: "DAO · Sanniquellie-Mahn", county: "Nimba", activeSubmissions7d: 14 },
   { id: "dao-2", name: "DAO · Fuamah", county: "Bong", activeSubmissions7d: 11 },
 ];
 
 export type ConnectivityRiskRow = { county: string; riskScore: number; note: string };
 
-export const connectivityRiskByCounty: ConnectivityRiskRow[] = [
+const SAMPLE_connectivityRiskByCounty: ConnectivityRiskRow[] = [
   { county: "Grand Gedeh", riskScore: 78, note: "Sparse coverage · offline-first advised" },
   { county: "River Gee", riskScore: 71, note: "SMS backup channel active" },
   { county: "Nimba", riskScore: 42, note: "Mixed coverage · pilot hardened" },
 ];
 
-export const countyOperationsCards = [
+const SAMPLE_countyOperationsCards = [
   { county: "Nimba", pendingVerification: 212, inputProgressPct: 82, fieldReports7d: 156, diseaseAlerts: 1, warehouseRequests: 2, dqIssues: 3 },
   { county: "Bong", pendingVerification: 318, inputProgressPct: 71, fieldReports7d: 122, diseaseAlerts: 0, warehouseRequests: 4, dqIssues: 5 },
   { county: "Lofa", pendingVerification: 164, inputProgressPct: 88, fieldReports7d: 134, diseaseAlerts: 2, warehouseRequests: 1, dqIssues: 2 },
@@ -298,3 +300,28 @@ export const governanceFraming = {
     "Designed for transition to government-controlled infrastructure",
   ],
 };
+
+// ---------------------------------------------------------------------------
+// Runtime exports. Illustrative data is empty unless explicitly enabled for a
+// training environment (see src/lib/data/illustrative-policy.ts).
+// ---------------------------------------------------------------------------
+export const countyProductionPerformance: CountyProductionRow[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_countyProductionPerformance : [];
+export const warehouses: WarehouseRow[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_warehouses : [];
+export const inventoryTransfers: InventoryTransfer[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_inventoryTransfers : [];
+export const farmerRegistrySample: FarmerRegistryDemoRow[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_farmerRegistrySample : [];
+export const fieldReports: FieldReportDemo[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_fieldReports : [];
+export const offlineSyncQueue: OfflineQueueItem[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_offlineSyncQueue : [];
+export const callCenterSubmissions: CallCenterSubmission[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_callCenterSubmissions : [];
+export const dataQualityAlerts: DataQualityAlertDemo[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_dataQualityAlerts : [];
+export const postHarvestLossAlerts: LossAlertDemo[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_postHarvestLossAlerts : [];
+export const subsidyDistributionRecords: SubsidyRecordDemo[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_subsidyDistributionRecords : [];
+export const donorInventoryRecords: DonorInventoryDemo[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_donorInventoryRecords : [];
+export const fieldOfficers: OfficerDemo[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_fieldOfficers : [];
+export const countyAgOfficers: OfficerDemo[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_countyAgOfficers : [];
+export const districtAgOfficersSample: OfficerDemo[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_districtAgOfficersSample : [];
+export const connectivityRiskByCounty: ConnectivityRiskRow[] = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_connectivityRiskByCounty : [];
+export const nationalHeroMetrics: typeof SAMPLE_nationalHeroMetrics = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_nationalHeroMetrics : zeroedIllustrative(SAMPLE_nationalHeroMetrics);
+export const farmerRegistrationPipeline: typeof SAMPLE_farmerRegistrationPipeline = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_farmerRegistrationPipeline : zeroedIllustrative(SAMPLE_farmerRegistrationPipeline);
+export const inputDistributionProgress: typeof SAMPLE_inputDistributionProgress = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_inputDistributionProgress : zeroedIllustrative(SAMPLE_inputDistributionProgress);
+export const foodSecurityIndicators: typeof SAMPLE_foodSecurityIndicators = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_foodSecurityIndicators : zeroedIllustrative(SAMPLE_foodSecurityIndicators);
+export const countyOperationsCards: typeof SAMPLE_countyOperationsCards = ILLUSTRATIVE_DATA_ENABLED ? SAMPLE_countyOperationsCards : zeroedIllustrative(SAMPLE_countyOperationsCards);

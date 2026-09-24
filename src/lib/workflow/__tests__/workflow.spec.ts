@@ -11,8 +11,10 @@ import { checkWorkflowPermission, workflowStageForRole } from "../roles";
 import { allowedActionsFor, computeSubmissionTransition } from "../status-model";
 import { buildWorkflowDedupeKey } from "../submission-bridge";
 import { OPERATIONAL_SUBMISSION_TYPES } from "../submission-types";
-import { demoSource, liveSource, pilotSource, resolveDisplaySource } from "../../data/data-source";
+import { dataSourceMeta, demoSource, liveSource, pilotSource, resolveDisplaySource } from "../../data/data-source";
 import { checkRateLimit } from "../../http/rate-limit";
+import { MINISTRY_FARMERS, MINISTRY_WAREHOUSES, SAMPLE_DATASET } from "../../data/ministry-canonical-data";
+import { countyProductionPerformance, nationalHeroMetrics } from "../../demo/agriculture-pilot-data";
 
 let passed = 0;
 function check(name: string, fn: () => void) {
@@ -207,7 +209,7 @@ check("missing entity refs yield null dedupe key", () => {
 console.log("data source layer — taxonomy & merge");
 
 check("resolveDisplaySource picks demo over live when mixed", () => {
-  const r = resolveDisplaySource([liveSource("farmers"), demoSource("hero metrics")]);
+  const r = resolveDisplaySource([liveSource("farmers"), dataSourceMeta("demo", "hero metrics")]);
   assert.equal(r.kind, "demo");
   assert.ok(r.mixed?.includes("live"));
 });
@@ -217,8 +219,19 @@ check("live-only source requires no banner disclosure", () => {
   assert.equal(r.kind, "live");
 });
 
-check("pilot fallback is distinct from demo", () => {
-  assert.notEqual(pilotSource().kind, demoSource().kind);
+check("fixture sources never masquerade as demo/pilot when illustrative data is disabled", () => {
+  // Default policy (NEXT_PUBLIC_ILLUSTRATIVE_DATA unset): fixture fallbacks are empty, sections are live.
+  assert.equal(process.env.NEXT_PUBLIC_ILLUSTRATIVE_DATA, undefined);
+  assert.equal(pilotSource().kind, "live");
+  assert.equal(demoSource().kind, "live");
+});
+
+check("illustrative datasets are empty and metrics zeroed by default", () => {
+  assert.equal(MINISTRY_FARMERS.length, 0);
+  assert.equal(MINISTRY_WAREHOUSES.length, 0);
+  assert.equal(nationalHeroMetrics.registeredFarmers, 0);
+  assert.equal(countyProductionPerformance.length, 0);
+  assert.ok(SAMPLE_DATASET.MINISTRY_FARMERS.length > 0, "raw sample kept for explicit staging seeds");
 });
 
 console.log("http rate limit — enforcement");

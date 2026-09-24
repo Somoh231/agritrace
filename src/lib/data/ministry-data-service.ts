@@ -57,12 +57,13 @@ export function enrichDaoOversightMetrics(
   },
   daoCode: string,
 ): DaoOversightRow {
+  // Only recorded values: no counts are inferred from other metrics.
   const farmers = MINISTRY_FARMERS.filter((f) => f.daoCode === daoCode);
-  const assignedFarmers = farmers.length > 0 ? farmers.length : Math.max(8, Math.round(base.farmVisits / 7));
+  const assignedFarmers = farmers.length;
   const gpsVerified = farmers.filter((f) => f.verification === "Verified").length;
   const gpsVerificationRate =
-    farmers.length > 0 ? Math.round((100 * gpsVerified) / farmers.length) : Math.min(99, base.verificationRate + 2);
-  const subsidyVerifications = Math.round(base.reportsSubmitted * 0.55 + base.farmVisits * 0.09);
+    farmers.length > 0 ? Math.round((100 * gpsVerified) / farmers.length) : base.verificationRate;
+  const subsidyVerifications = 0;
 
   let syncStatus: DaoSyncStatus = "synced";
   if (base.overdueReports >= 3) syncStatus = "at_risk";

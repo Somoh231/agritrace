@@ -1,3 +1,4 @@
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 import { MINISTRY_WAREHOUSES } from "@/lib/data/ministry-canonical-data";
 import type { TransferOrderView, TransferWorkflowStatus } from "@/lib/logistics/types";
 
@@ -77,6 +78,7 @@ const demo: Array<{
 ];
 
 export function canonicalTransferOrders(): TransferOrderView[] {
+  if (!ILLUSTRATIVE_DATA_ENABLED) return [];
   return demo.map((d, i) => ({
     id: `canonical-trf-${i}`,
     transferCode: d.transferCode,

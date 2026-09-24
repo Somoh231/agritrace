@@ -11,6 +11,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import { LIBERIA_COUNTIES } from "@/lib/utils/liberia";
 import { PILOT_COUNTIES, PILOT_SEASON } from "@/lib/utils/pilot-config";
+import { assertDisposableSeedTarget } from "@/lib/supabase/seed-guard";
 
 function requiredEnv(name: string): string {
   const v = process.env[name];
@@ -64,6 +65,7 @@ async function ensureWarehouse(
 
 async function main() {
   const url = requiredEnv("NEXT_PUBLIC_SUPABASE_URL");
+  assertDisposableSeedTarget(url);
   const key = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
   const ministryOperatorEmail = requiredEnv("SEED_MINISTRY_OPERATOR_EMAIL").trim().toLowerCase();
   const fieldOperatorEmail = requiredEnv("SEED_FIELD_OPERATOR_EMAIL").trim().toLowerCase();

@@ -21,6 +21,7 @@ import {
 import { RegistryKpiStrip } from "@/components/registry";
 import { demoSource } from "@/lib/data/data-source";
 import ProgressBar from "@/components/shared/ProgressBar";
+import { illustrativeCaption } from "@/lib/data/illustrative-policy";
 
 function stockRiskTone(status: string): "success" | "warning" | "danger" {
   if (status === "healthy") return "success";
@@ -139,7 +140,7 @@ export default function InventoryOperationsClient() {
         </DashboardPanel>
 
         <DashboardPanel>
-          <SectionHeader title="Donor-funded inventory" subtitle="Illustrative programme stock" />
+          <SectionHeader title="Donor-funded inventory" subtitle={illustrativeCaption("Programme stock", "Illustrative programme stock")} />
           <ul className="mt-3 space-y-2">
             {donorInventoryRecords.map((d, i) => (
               <li key={i} className="rounded-xl border border-slate-100 px-3 py-2 text-[12px] text-slate-800">

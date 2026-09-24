@@ -23,6 +23,7 @@ import { ministryWarehouseToSignalRow } from "@/lib/data/ministry-data-service";
 import { listTransferOrders } from "@/lib/logistics/transfer-repository";
 import type { TransferOrderView } from "@/lib/logistics/types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { illustrativeCaption } from "@/lib/data/illustrative-policy";
 
 type StockLine = {
   sku: string;
@@ -535,7 +536,7 @@ export default function WarehouseWorkspaceDetail({ code }: { code: string }) {
 
       <DashboardPanel padding="none">
         <div className="border-b border-slate-100 px-5 py-3 flex flex-wrap justify-between gap-2">
-          <SectionHeader kicker="Custody" title="Inventory by SKU" subtitle="warehouse_stock · canonical fallback" />
+          <SectionHeader kicker="Custody" title="Inventory by SKU" subtitle={illustrativeCaption("Live warehouse stock", "warehouse_stock · canonical fallback")} />
           <Link href="/transfers" className="text-[12px] font-medium text-forest-700 hover:text-forest-600 self-center">
             Open transfer workflow →
           </Link>

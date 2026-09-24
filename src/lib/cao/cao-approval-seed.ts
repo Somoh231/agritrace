@@ -1,3 +1,4 @@
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 import { normalizeCountyKey } from "@/lib/data/ministry-data-service";
 
 export type CaoApprovalQueueKind =
@@ -28,6 +29,7 @@ export type CaoApprovalItem = {
 };
 
 export function seedCaoApprovalItems(county: string | null): CaoApprovalItem[] {
+  if (!ILLUSTRATIVE_DATA_ENABLED) return [];
   const label = county?.trim() || "Pilot county";
   const nk = normalizeCountyKey(county);
   const isNimba = nk.includes("nimba");

@@ -19,6 +19,7 @@ import {
 import { downloadLogisticsCsv } from "@/lib/logistics/logistics-reporting";
 import { listTransferOrders } from "@/lib/logistics/transfer-repository";
 import type { TransferOrderView } from "@/lib/logistics/types";
+import { illustrativeCaption } from "@/lib/data/illustrative-policy";
 
 function Card({
   kicker,
@@ -209,7 +210,7 @@ export default function DonorDashboardClient() {
 
           <div className="rounded-xl border border-slate-700/70 bg-slate-950/40 p-4">
             <div className="font-display text-[14px] font-semibold text-white">Warehouse allocation</div>
-            <p className="mt-1 text-[11px] text-slate-500">Read-only warehouse disposition snapshot (canonical), with live DB grids below.</p>
+            <p className="mt-1 text-[11px] text-slate-500">{illustrativeCaption("Read-only warehouse disposition from live records.", "Read-only warehouse disposition snapshot (canonical), with live DB grids below.")}</p>
             <ul className="mt-3 space-y-2 text-[12px] text-slate-300">
               {MINISTRY_WAREHOUSES.slice(0, 8).map((w) => (
                 <li key={w.ministryCode} className="rounded-lg border border-slate-800 bg-black/25 px-3 py-2">

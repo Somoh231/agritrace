@@ -5,6 +5,7 @@ import * as React from "react";
 import { countyAgOfficers, countyOperationsCards, dataQualityAlerts } from "@/lib/demo/agriculture-pilot-data";
 
 import { OpsCard, OpsMetric, OpsSectionTitle, OpsStatusBadge, PilotDatasetNotice } from "@/components/pilot/pilot-ui";
+import { illustrativeCaption } from "@/lib/data/illustrative-policy";
 
 export default function CountyOperationsClient() {
   return (
@@ -51,7 +52,7 @@ export default function CountyOperationsClient() {
       </OpsCard>
 
       <OpsCard>
-        <div className="font-display text-[15px] font-semibold text-slate-900">County Agricultural Officers (illustrative roster)</div>
+        <div className="font-display text-[15px] font-semibold text-slate-900">{illustrativeCaption("County Agricultural Officers", "County Agricultural Officers (illustrative roster)")}</div>
         <div className="mt-3 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           {countyAgOfficers.slice(0, 9).map((o) => (
             <div key={o.id} className="rounded-lg border border-slate-100 px-3 py-2 text-[12px] text-slate-800">

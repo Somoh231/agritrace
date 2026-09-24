@@ -1,11 +1,14 @@
 import { daoQueueGetAll, daoQueuePut } from "@/lib/dao/dao-workflow-db";
 import type { DaoWorkflowRecord } from "@/lib/dao/dao-workflow-types";
 import { MINISTRY_FARMERS } from "@/lib/data/ministry-canonical-data";
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 
 const SAMPLE_SESSION_KEY = "agrivault_dao_sample_queue_seeded";
 
 /** Seed the offline queue once per browser session when empty (realistic DAO rehearsal data). */
 export async function injectSampleDaoQueueIfEmpty(): Promise<void> {
+  // Never place fabricated drafts in a real operator's queue: one tap would persist them.
+  if (!ILLUSTRATIVE_DATA_ENABLED) return;
   if (typeof window === "undefined") return;
   const existing = await daoQueueGetAll();
   if (existing.length > 0) return;
@@ -74,6 +77,7 @@ export function sampleDaoTasksForJurisdiction(county: string | null, district: s
   visits: DaoTaskVisit[];
   reports: DaoTaskReport[];
 } {
+  if (!ILLUSTRATIVE_DATA_ENABLED) return { visits: [], reports: [] };
   const nc = (county ?? "").trim().toLowerCase();
   const nd = (district ?? "").trim().toLowerCase();
 

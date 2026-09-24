@@ -18,6 +18,7 @@ import {
   EnterpriseBarChart,
   InsightRibbon,
 } from "@/components/enterprise/analytics";
+import { illustrativeCaption } from "@/lib/data/illustrative-policy";
 
 const nf = (n: number) => Intl.NumberFormat().format(n);
 
@@ -72,7 +73,7 @@ export default function CountyIntelligenceAnalytics({ county }: { county?: strin
         </DashboardPanel>
 
         <DashboardPanel>
-          <SectionHeader kicker="Verification" title="Pending verification trend" subtitle="Weekly backlog trajectory (illustrative)" />
+          <SectionHeader kicker="Verification" title="Pending verification trend" subtitle={illustrativeCaption("Weekly backlog trajectory")} />
           <div className="mt-4">
             <EnterpriseAreaChart data={verificationTrend} xKey="week" yKey="pending" name="Pending" color={CHART_COLORS.amber} height={240} />
           </div>

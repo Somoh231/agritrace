@@ -43,6 +43,7 @@ import {
   offlineSyncQueue,
   postHarvestLossAlerts,
 } from "@/lib/demo/agriculture-pilot-data";
+import { illustrativeCaption } from "@/lib/data/illustrative-policy";
 
 type ReportRegistryRow = {
   id: string;
@@ -145,7 +146,7 @@ export default function ReportingWorkspaceView({ tab }: { tab: ReportingTabId })
   const draftRecords = offlineSyncQueue.reduce((s, q) => s + q.records, 0);
   const reportingSource = resolveDisplaySource([
     demoSource("fieldReports + nationalHeroMetrics + pipeline"),
-    offlineSource("offlineSyncQueue counts are illustrative — use /field/sync-queue for real IndexedDB"),
+    offlineSource(illustrativeCaption("Device queue — see /field/sync-queue", "offlineSyncQueue counts are illustrative — use /field/sync-queue for real IndexedDB")),
   ]);
 
   const submissionTrend = [
@@ -380,7 +381,7 @@ export default function ReportingWorkspaceView({ tab }: { tab: ReportingTabId })
         </DashboardPanel>
 
         <DashboardPanel>
-          <SectionHeader kicker="Activity" title="Latest field submissions" subtitle="Illustrative pilot cadence from DAO capture channels" />
+          <SectionHeader kicker="Activity" title="Latest field submissions" subtitle={illustrativeCaption("Recent submissions from DAO capture channels", "Illustrative pilot cadence from DAO capture channels")} />
           <Timeline
             className="mt-4"
             items={fieldReports.map((r) => ({

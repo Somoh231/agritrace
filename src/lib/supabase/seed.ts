@@ -3,6 +3,7 @@ import "dotenv/config";
 import { createClient } from "@supabase/supabase-js";
 
 import { generateLotCode } from "@/lib/utils/lot-codes";
+import { assertDisposableSeedTarget } from "@/lib/supabase/seed-guard";
 
 function requiredEnv(name: string) {
   const v = process.env[name];
@@ -24,6 +25,7 @@ function jitter(n: number, amount: number) {
 
 async function main() {
   const url = requiredEnv("NEXT_PUBLIC_SUPABASE_URL");
+  assertDisposableSeedTarget(url);
   const serviceRoleKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
 
   const supabase = createClient(url, serviceRoleKey, {

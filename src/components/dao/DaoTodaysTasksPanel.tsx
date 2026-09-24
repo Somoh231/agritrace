@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { sampleDaoTasksForJurisdiction } from "@/lib/dao/dao-sample-workflow";
+import { ILLUSTRATIVE_DATA_ENABLED } from "@/lib/data/illustrative-policy";
 
 export default function DaoTodaysTasksPanel({
   county,
@@ -18,14 +19,21 @@ export default function DaoTodaysTasksPanel({
     <section id="dao-todays-tasks" className="scroll-mt-24 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
         <h2 className="text-[15px] font-semibold text-ink-900">Today&apos;s DAO tasks</h2>
-        <p className="text-[11px] text-slate-500">
-          Route samples align to your county / district scope when provided — verify against live ministry assignments on network.
+        <p className="text-[11px] text-slate-600">
+          {ILLUSTRATIVE_DATA_ENABLED
+            ? "Training environment: illustrative visits, not live assignments."
+            : "Visit scheduling is not yet connected to live assignments. Use the verification queue for work that needs action."}
         </p>
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <div>
           <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-forest-700">Assigned farmer visits</h3>
+          {visits.length === 0 ? (
+            <p className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-[12px] text-slate-600">
+              No farmer visits are scheduled for you.
+            </p>
+          ) : null}
           <ul className="mt-2 space-y-2">
             {visits.map((v) => (
               <li
@@ -38,7 +46,7 @@ export default function DaoTodaysTasksPanel({
                   <span className="font-medium text-ink-900">{v.farmerName}</span>
                   {v.registryHint ? <span className="font-mono text-[10px] text-slate-500">{v.registryHint}</span> : null}
                 </div>
-                <div className="mt-1 text-[11px] text-slate-400">
+                <div className="mt-1 text-[11px] text-slate-600">
                   {v.county} · {v.district}
                 </div>
                 <div className="mt-1 text-[11px] text-slate-500">{v.dueLabel}</div>
@@ -62,7 +70,7 @@ export default function DaoTodaysTasksPanel({
               </ul>
             </div>
           ) : (
-            <p className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-[12px] text-slate-600">No overdue DAO reports in this sample set.</p>
+            <p className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-[12px] text-slate-600">No overdue DAO reports.</p>
           )}
           <ul className="mt-3 space-y-2">
             {reports.map((r) => (

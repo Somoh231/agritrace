@@ -30,6 +30,7 @@ import {
   foodSecurityIndicators,
   postHarvestLossAlerts,
 } from "@/lib/demo/agriculture-pilot-data";
+import { illustrativeCaption } from "@/lib/data/illustrative-policy";
 
 export default function FoodSecurityClient() {
   const fi = foodSecurityIndicators;
@@ -190,7 +191,7 @@ export default function FoodSecurityClient() {
       </DashboardPanel>
 
       <DashboardPanel>
-        <SectionHeader kicker="Recent activity" title="Market intelligence brief" subtitle="Illustrative pilot price watch band" />
+        <SectionHeader kicker="Recent activity" title="Market intelligence brief" subtitle={illustrativeCaption("Market price watch", "Illustrative pilot price watch band")} />
         <div className="mt-4 flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-700 ring-1 ring-forest-100">
             <Wheat className="h-5 w-5" aria-hidden />
