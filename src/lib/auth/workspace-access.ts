@@ -215,6 +215,10 @@ export function needsPilotRoleGate(pathname: string): boolean {
     "/activity",
     "/search",
     "/dashboard",
+    "/audit-tools",
+    "/county-operations",
+    "/donor-dashboard",
+    "/reports",
   ];
   return roots.some((r) => p === r || p.startsWith(`${r}/`));
 }
@@ -267,6 +271,11 @@ const PILOT_ROUTE_RULES: PilotRule[] = [
   { prefix: "/activity", canAccess: (r) => canAccessActivitySearchDashboard(r) },
   { prefix: "/search", canAccess: (r) => canAccessActivitySearchDashboard(r) },
   { prefix: "/dashboard", canAccess: (r) => canAccessActivitySearchDashboard(r) },
+  { prefix: "/audit-tools", canAccess: (r) => r === "auditor" || isMinistryNationalRole(r) },
+  { prefix: "/county-operations", canAccess: (r) => canAccessCountyDashboard(r) },
+  { prefix: "/donor-dashboard", canAccess: (r) => isDonorObserverRole(r) || isMinistryNationalRole(r) || r === "auditor" },
+  { prefix: "/reports/donor", canAccess: (r) => isDonorObserverRole(r) || isMinistryNationalRole(r) || r === "auditor" },
+  { prefix: "/reports", canAccess: (r) => canAccessReportingHub(r) || r === "auditor" || isDonorObserverRole(r) },
 ];
 
 const PILOT_RULES_SORTED = [...PILOT_ROUTE_RULES].sort((a, b) => b.prefix.length - a.prefix.length);

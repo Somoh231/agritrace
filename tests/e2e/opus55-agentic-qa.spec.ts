@@ -28,7 +28,7 @@ const OPERATORS: Operator[] = [
     key: "CLAN_BONG",
     landing: "/district-dashboard",
     routes: ["/workspace/clan", "/field", "/farmers", "/field/inspections", "/field/boundary-capture", "/field/sync-queue"],
-    denied: ["/command-center", "/admin/users", "/workspace/ministry", "/verification-queue"],
+    denied: ["/command-center", "/admin/users", "/workspace/ministry", "/verification-queue", "/donor-dashboard", "/audit-tools", "/reports/donor"],
   },
   {
     key: "DAO_BONG",
