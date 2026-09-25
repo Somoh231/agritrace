@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { Check } from "@/components/site/icons";
 import { ENGAGEMENT_MODELS, STAGES } from "@/lib/site/content";
@@ -15,7 +15,21 @@ export default function EngagementModels({ headingLevel = 2 }: { headingLevel?: 
     setActiveRaw(i);
   };
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const tabList = useRef<HTMLDivElement>(null);
   const base = useId();
+
+  // Keep the selected tab visible when the tab row scrolls sideways (phones).
+  // Scrolls the row only, never the page.
+  useEffect(() => {
+    const list = tabList.current;
+    const tab = tabs.current[active];
+    if (!list || !tab || list.scrollWidth <= list.clientWidth) return;
+    const pad = 16;
+    const left = tab.offsetLeft - list.offsetLeft;
+    if (left < list.scrollLeft + pad || left + tab.offsetWidth > list.scrollLeft + list.clientWidth - pad) {
+      list.scrollTo({ left: Math.max(0, left - pad), behavior: changed ? "smooth" : "auto" });
+    }
+  }, [active, changed]);
   const m = ENGAGEMENT_MODELS[active];
   const Heading = headingLevel === 2 ? "h2" : "h3";
 
@@ -43,7 +57,7 @@ export default function EngagementModels({ headingLevel = 2 }: { headingLevel?: 
           </p>
         </div>
 
-        <div role="tablist" aria-label="Engagement models" className="avs-no-scrollbar -mx-[var(--av-gutter)] mt-10 flex gap-2 overflow-x-auto px-[var(--av-gutter)] pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
+        <div ref={tabList} role="tablist" aria-label="Engagement models" className="avs-no-scrollbar -mx-[var(--av-gutter)] mt-10 flex gap-2 overflow-x-auto px-[var(--av-gutter)] pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
           {ENGAGEMENT_MODELS.map((em, i) => {
             const on = i === active;
             return (
@@ -107,10 +121,13 @@ export default function EngagementModels({ headingLevel = 2 }: { headingLevel?: 
                       <span>{s.n}</span>
                       {inc ? (
                         <span className="inline-flex items-center gap-1 text-[rgb(var(--av-mint))]">
-                          <Check className="h-3.5 w-3.5" /> Included
+                          <Check className="h-3.5 w-3.5" /> <span className="max-sm:sr-only">Included</span>
                         </span>
                       ) : (
-                        <span>Not included</span>
+                        <span>
+                          <span aria-hidden="true" className="sm:hidden">—</span>
+                          <span className="max-sm:sr-only">Not included</span>
+                        </span>
                       )}
                     </p>
                     <p className="text-[1.0625rem] font-medium leading-tight">{s.name}</p>
