@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import * as React from "react";
 
 import { usePwaInstall } from "@/components/pwa/install-prompt-context";
+import { useClearOfMapControls } from "@/components/pwa/use-clear-of-map-controls";
 import { isPublicSitePath } from "@/lib/site/routes";
 
 function bool(n: boolean | null | undefined) {
@@ -24,6 +25,10 @@ export default function PwaDiagnosticsPanel() {
   const [iconChecks, setIconChecks] = React.useState<Record<string, "ok" | "fail" | "pending">>({});
   const [swReg, setSwReg] = React.useState(false);
   const [controlling, setControlling] = React.useState(false);
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const visible = process.env.NODE_ENV === "production" && !isPublicSitePath(pathname);
+  // Never sit on Mapbox attribution, the wordmark or map controls: lift clear of them instead.
+  const lift = useClearOfMapControls(rootRef, visible);
 
   const refresh = React.useCallback(async () => {
     if (process.env.NODE_ENV !== "production") return;
@@ -92,7 +97,16 @@ export default function PwaDiagnosticsPanel() {
   if (isPublicSitePath(pathname)) return null;
 
   return (
-    <div className="fixed bottom-3 right-3 z-[200] font-mono text-[10px] text-slate-200">
+    <div
+      ref={rootRef}
+      data-pwa-diagnostics
+      className="fixed z-[200] font-mono text-[10px] text-slate-200 transition-transform duration-150 motion-reduce:transition-none"
+      style={{
+        bottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))",
+        right: "calc(0.75rem + env(safe-area-inset-right, 0px))",
+        transform: lift ? `translateY(-${lift}px)` : undefined,
+      }}
+    >
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -101,9 +115,10 @@ export default function PwaDiagnosticsPanel() {
         PWA
       </button>
       {open ? (
-        <div className="mt-1 max-h-[min(70vh,420px)] w-[min(92vw,320px)] overflow-auto rounded-lg border border-slate-600 bg-slate-950/98 p-2 text-left shadow-xl">
+        <div className="mt-1 max-h-[min(70vh,420px)] w-[min(92vw,320px)] overflow-auto rounded-lg border border-slate-600 bg-slate-950/95 p-2 text-left shadow-xl">
           <div className="text-emerald-400/90">Production diagnostics</div>
-          <ul className="mt-2 space-y-1 text-slate-300">
+          {/* The app base layer styles bare <li> (grey, 16px); set colour and size on the items. */}
+          <ul className="mt-2 space-y-1 [&>li]:text-[10px] [&>li]:text-slate-300">
             <li>manifest fetch: {bool(manifestOk)}</li>
             <li>manifest content-type: {manifestMime ?? "—"}</li>
             <li>service worker registered: {bool(swReg)}</li>
@@ -111,12 +126,12 @@ export default function PwaDiagnosticsPanel() {
             <li>beforeinstallprompt received: {bool(beforeInstallPromptCaptured)}</li>
             <li>deferred prompt in memory: {bool(deferredPrompt != null)}</li>
             <li>standalone display mode: {bool(standalone)}</li>
-            <li className="border-t border-slate-800 pt-1 text-slate-200">installability: {installability}</li>
+            <li className="border-t border-slate-800 pt-1 !text-slate-200">installability: {installability}</li>
           </ul>
           {Object.keys(iconChecks).length ? (
             <div className="mt-2 border-t border-slate-800 pt-2 text-slate-400">
-              <div className="text-slate-500">icons</div>
-              <ul className="mt-1 space-y-0.5 break-all">
+              <div className="text-slate-400">icons</div>
+              <ul className="mt-1 space-y-0.5 break-all [&>li]:text-[10px] [&>li]:text-slate-400">
                 {Object.entries(iconChecks).map(([src, st]) => (
                   <li key={src}>
                     {st === "ok" ? "✓" : st === "fail" ? "✗" : "…"} {src}
