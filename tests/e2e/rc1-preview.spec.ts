@@ -85,7 +85,10 @@ test.describe("protected preview core", () => {
     await page.getByLabel("Password", { exact: true }).fill("invalid");
     await page.getByLabel("Password", { exact: true }).press("Enter");
     await expect(page.getByRole("alert")).toBeVisible();
-    expect(failures.consoleErrors).toEqual([]);
+    // "Failed to load resource" console lines are checked by URL below. The only exemption is the
+    // analytics rate limit (120/min per IP), which a full suite run from one IP is expected to trip.
+    expect(failures.consoleErrors.filter((e) => !e.startsWith("Failed to load resource"))).toEqual([]);
+    expect(failures.badResponses.filter((r) => r !== "429 /api/analytics")).toEqual([]);
   });
 
   test("login exposes no shared role credentials or demo sign-in controls", async ({ page }) => {

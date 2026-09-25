@@ -52,6 +52,8 @@ export function requireSafeSyntheticTarget(baseURL: string) {
 export function watchBrowserFailures(page: Page) {
   const consoleErrors: string[] = [];
   const failedRequests: string[] = [];
+  /** HTTP responses >= 400 as "<status> <pathname>" (console lines for these carry no URL). */
+  const badResponses: string[] = [];
 
   page.on("console", (message) => {
     if (message.type() === "error") {
@@ -67,7 +69,11 @@ export function watchBrowserFailures(page: Page) {
     );
   });
 
-  return { consoleErrors, failedRequests };
+  page.on("response", (response) => {
+    if (response.status() >= 400) badResponses.push(`${response.status()} ${new URL(response.url()).pathname}`);
+  });
+
+  return { consoleErrors, failedRequests, badResponses };
 }
 
 export function isVercelAuthPage(url: string) {
