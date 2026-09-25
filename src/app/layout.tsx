@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { DM_Mono, DM_Serif_Display, Inter, Inter_Tight } from "next/font/google";
 import localFont from "next/font/local";
 
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
@@ -9,39 +8,61 @@ import { PwaInstallProvider } from "@/components/pwa/install-prompt-context";
 import PwaDiagnosticsPanel from "@/components/pwa/PwaDiagnosticsPanel";
 import PwaRegistrar from "@/components/pwa/PwaRegistrar";
 
-const fontHeading = Inter_Tight({
+/*
+ * Application fonts, self-hosted (src/fonts, SIL OFL; see src/fonts/README.md)
+ * so builds make no request to Google Fonts. Latin subset only; not preloaded,
+ * because public-site pages never render them.
+ */
+const fontHeading = localFont({
+  src: "../fonts/inter-tight/inter-tight-latin-wght.woff2",
+  weight: "100 900",
+  style: "normal",
   variable: "--font-display",
-  subsets: ["latin"],
   preload: false,
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  fallback: ["ui-sans-serif", "system-ui", "sans-serif"],
+  adjustFontFallback: "Arial",
 });
 
-const fontBody = Inter({
+const fontBody = localFont({
+  src: "../fonts/inter/inter-latin-wght.woff2",
+  weight: "100 900",
+  style: "normal",
   variable: "--font-body",
-  subsets: ["latin"],
   preload: false,
-  weight: ["300", "400", "500", "600"],
+  display: "swap",
+  fallback: ["ui-sans-serif", "system-ui", "sans-serif"],
+  adjustFontFallback: "Arial",
 });
 
-const fontMono = DM_Mono({
+const fontMono = localFont({
+  src: [
+    { path: "../fonts/dm-mono/dm-mono-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/dm-mono/dm-mono-latin-500-normal.woff2", weight: "500", style: "normal" },
+  ],
   variable: "--font-mono",
-  subsets: ["latin"],
   preload: false,
-  weight: ["400", "500"],
+  display: "swap",
+  fallback: ["ui-monospace", "SFMono-Regular", "monospace"],
+  adjustFontFallback: "Arial",
 });
 
-const fontSerif = DM_Serif_Display({
+// Regular only: .font-serif-display is never set in italic.
+const fontSerif = localFont({
+  src: "../fonts/dm-serif-display/dm-serif-display-latin-400-normal.woff2",
+  weight: "400",
+  style: "normal",
   variable: "--font-serif-display",
-  subsets: ["latin"],
   preload: false,
-  weight: ["400"],
-  style: ["normal", "italic"],
+  display: "swap",
+  fallback: ["Georgia", "serif"],
+  adjustFontFallback: "Times New Roman",
 });
 
 /*
- * Fraunces is self-hosted (src/fonts/fraunces, OFL): Google Fonts intermittently
- * served it through extension-less URLs that next/font cannot parse, failing
- * builds. Only the weights the application uses are shipped.
+ * Fraunces: Google Fonts intermittently served it through extension-less URLs
+ * that next/font cannot parse, failing builds. Only the weights the
+ * application uses are shipped.
  */
 const fontEditorial = localFont({
   variable: "--font-editorial",
@@ -55,9 +76,6 @@ const fontEditorial = localFont({
   fallback: ["Georgia", "serif"],
   adjustFontFallback: "Times New Roman",
 });
-
-
-
 
 const FALLBACK_METADATA_BASE = "https://agritrace.app";
 
