@@ -3,19 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "WATCHPACK_POLLING=true next dev",
     "build": "node scripts/generate-pwa-icons.mjs && next build",
     "postbuild": "node scripts/postbuild-fix-nft-manifests.mjs",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "next lint --dir src",
+    "typecheck": "tsc --noEmit",
     "seed": "tsx src/lib/supabase/seed.ts",
     "seed:demo": "tsx src/lib/supabase/seed-demo.ts",
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
     "seed:ministry": "tsx src/lib/supabase/seed-ministry-canonical.ts",
-    "test:workflow": "tsx src/lib/workflow/__tests__/workflow.spec.ts && tsx src/lib/http/__tests__/security.spec.ts"
+    "test:workflow": "tsx src/lib/workflow/__tests__/workflow.spec.ts && tsx src/lib/http/__tests__/security.spec.ts",
+    "test:auth": "tsx src/lib/auth/__tests__/profile-access.spec.ts",
+    "test:e2e:site": "playwright test --config=playwright.config.ts tests/e2e/public-site.spec.ts",
+    "test:e2e:auth": "playwright test --config=playwright.auth.config.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",
@@ -31,7 +35,7 @@
     "idb": "^8.0.3",
     "lucide-react": "^1.9.0",
     "mapbox-gl": "^3.22.0",
-    "next": "14.2.25",
+    "next": "14.2.35",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-map-gl": "^8.1.1",
@@ -43,14 +47,18 @@
     "workbox-window": "^7.4.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.62.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.20",
     "dotenv": "^17.4.2",
     "eslint": "^8.57.1",
-    "eslint-config-next": "14.2.25",
+    "eslint-config-next": "14.2.35",
     "postcss": "^8.4.49",
+    "postcss-import": "^15.1.0",
+    "sharp": "0.35.4",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.21.0",
     "typescript": "^5"

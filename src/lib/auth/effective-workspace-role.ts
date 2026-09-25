@@ -1,13 +1,17 @@
+import { roleFromProfile } from "@/lib/auth/profile-access";
 import { parseWorkspaceDemoRole } from "@/lib/auth/workspace-demo-role";
-import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
 import type { Profile, UserRole } from "@/lib/supabase/types";
 
-/** Database-backed role merged with optional workspace preview cookie (server-side). */
+/**
+ * Database-backed role merged with optional workspace preview cookie (server-side).
+ * Returns `null` when the user has no usable profile; the preview cookie never
+ * stands in for a missing profile.
+ */
 export function resolveEffectiveWorkspaceRole(
   profile: Pick<Profile, "role"> | null | undefined,
-  authUser: { id: string; email?: string | null },
   cookieValue: string | null | undefined,
-): UserRole {
-  const base = resolveUserRoleWithDemoFallback(profile ?? undefined, authUser);
+): UserRole | null {
+  const base = roleFromProfile(profile);
+  if (!base) return null;
   return parseWorkspaceDemoRole(cookieValue) ?? base;
 }

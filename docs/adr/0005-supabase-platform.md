@@ -32,7 +32,7 @@ Session managed via `@supabase/ssr` cookie refresh in `src/middleware.ts`.
 
 - Supabase Auth handles signup/login; `handle_new_user()` trigger creates `profiles` row.
 - Middleware calls `supabase.auth.getUser()` on every request; unauthenticated users redirect to `/login?redirectTo=...`.
-- Profile role loaded from `profiles.role`; demo fallback via `buildDemoProfileForAuthUser()`.
+- Profile role loaded from `profiles.role`; a missing or deactivated profile is denied (no fallback role).
 
 ### Row Level Security
 

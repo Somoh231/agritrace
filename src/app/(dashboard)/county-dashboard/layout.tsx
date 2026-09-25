@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { resolveEffectiveWorkspaceRole } from "@/lib/auth/effective-workspace-role";
+import { ACCOUNT_UNAVAILABLE_PATH } from "@/lib/auth/profile-access";
 import { mayAccessCountyDashboard, postLoginHomeForRole } from "@/lib/auth/post-login-home";
 import { WORKSPACE_DEMO_ROLE_COOKIE } from "@/lib/auth/workspace-demo-role";
 import { createClient } from "@/lib/supabase/server";
@@ -21,7 +22,8 @@ export default async function CountyDashboardLayout({ children }: { children: Re
     .maybeSingle<Pick<Profile, "role">>();
 
   const cookieStore = await cookies();
-  const role = resolveEffectiveWorkspaceRole(profile, user, cookieStore.get(WORKSPACE_DEMO_ROLE_COOKIE)?.value);
+  const role = resolveEffectiveWorkspaceRole(profile, cookieStore.get(WORKSPACE_DEMO_ROLE_COOKIE)?.value);
+  if (!role) redirect(ACCOUNT_UNAVAILABLE_PATH);
   if (!mayAccessCountyDashboard(role)) {
     redirect(postLoginHomeForRole(role));
   }

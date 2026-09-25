@@ -101,7 +101,7 @@ Key prefixes: `/gis-intelligence` (Ministry + CAC), `/workspace/ministry` (Minis
 ### Negative
 
 - Four layers require synchronized updates when adding routes or roles.
-- Demo profile fallback (`buildDemoProfileForAuthUser`) must be disabled before production GA.
+- The demo profile fallback has been removed: a missing profile is denied, never given a role.
 - Middleware skips auth when Supabase env unset — deployment checklist critical.
 - RLS policy debugging requires SQL expertise and Supabase logs.
 

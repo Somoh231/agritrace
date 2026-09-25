@@ -1,15 +1,16 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import AlertBanner from "@/components/shared/AlertBanner";
-import MinistryBrandLogo from "@/components/brand/MinistryBrandLogo";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
+import { LoginAccountNote, LoginShell } from "@/app/(auth)/login/LoginShell";
 import { postLoginHomeForRole } from "@/lib/auth/post-login-home";
+import { ACCOUNT_UNAVAILABLE_PATH, roleFromProfile } from "@/lib/auth/profile-access";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { describeAuthFetchFailure } from "@/lib/supabase/env";
-import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
 import { track } from "@/lib/analytics/client";
 
 export default function LoginClient() {
@@ -45,7 +46,8 @@ export default function LoginClient() {
         } = await supabase.auth.getUser();
         if (user) {
           const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-          destination = postLoginHomeForRole(resolveUserRoleWithDemoFallback(prof, user));
+          const role = roleFromProfile(prof);
+          destination = role ? postLoginHomeForRole(role) : ACCOUNT_UNAVAILABLE_PATH;
         }
       }
       router.push(destination ?? "/command-center");
@@ -58,181 +60,80 @@ export default function LoginClient() {
     }
   };
 
+  // Presentation only below.
+  const field =
+    "block h-12 w-full rounded-[12px] border border-[rgb(var(--av-line)/0.22)] bg-white px-4 text-[1rem] text-[rgb(var(--av-forest))] outline-none transition-colors placeholder:text-[rgb(var(--av-slate)/0.7)] focus:border-[rgb(var(--av-emerald-ink))] focus:ring-2 focus:ring-[rgb(var(--av-emerald)/0.25)]";
+
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 py-10 bg-[rgb(var(--ministry-workspace))]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(900px 500px at 50% -10%, rgba(52,211,153,0.10), transparent 60%), radial-gradient(700px 400px at 50% 110%, rgba(201,162,75,0.08), transparent 60%)",
+    <LoginShell>
+      <form
+        className="mt-8 space-y-5"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void onSignIn();
         }}
-      />
-      <div className="relative w-full max-w-[400px]">
-        <div className="text-center mb-5">
-          <div className="mx-auto mb-4 flex justify-center">
-            <MinistryBrandLogo variant="brand" className="mx-auto" priority />
-          </div>
-          <div className="cmd-kicker">Ministry of Agriculture · Liberia</div>
-          <div className="mt-2 font-serif-display text-[30px] leading-none text-white">
-            AgriVault <span className="text-[rgb(var(--ministry-gold))]">Data</span>
-          </div>
-          <div className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-emerald-200/50">
-            National Agricultural Intelligence Platform
-          </div>
+      >
+        {error ? <AlertBanner severity="danger" message={error} /> : null}
+
+        <div>
+          <label htmlFor="operator-email" className="mb-2 block text-[0.9375rem] font-medium">
+            Email
+          </label>
+          <input
+            id="operator-email"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            inputMode="email"
+            autoComplete="email"
+            placeholder="name@organization.org"
+            className={field}
+          />
         </div>
 
-        <div className="rounded-2xl border border-[rgb(var(--ministry-gold))]/15 bg-[rgb(var(--ministry-panel))]/55 backdrop-blur-sm p-6 sm:p-7 shadow-2xl">
-          <div className="flex items-center gap-3">
-            <MinistryBrandLogo variant="seal" size="lg" />
-            <div className="min-w-0">
-              <div className="font-serif-display text-[17px] text-white leading-tight">Operator sign-in</div>
-              <div className="text-[11px] text-emerald-100/55">
-                Secure access · Role-based command views
-              </div>
-            </div>
-          </div>
-
-          <div className="cmd-rule my-4" aria-hidden />
-
-          <div className="space-y-3">
-            {error ? <AlertBanner severity="danger" message={error} /> : null}
-
-            <div>
-              <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[rgb(var(--ministry-gold))]/70 mb-1.5">
-                Email
-              </label>
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                inputMode="email"
-                autoComplete="email"
-                placeholder="name@organization.org"
-                className="h-11 w-full rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-workspace))]/60 px-3 text-[13px] text-emerald-50 placeholder:text-emerald-200/30 outline-none focus:border-[rgb(var(--ministry-gold))]/60"
-              />
-            </div>
-
-            <div>
-              <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[rgb(var(--ministry-gold))]/70 mb-1.5">
-                Password
-              </label>
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                type="password"
-                autoComplete="current-password"
-                placeholder="••••••••"
-                className="h-11 w-full rounded-lg border border-[rgb(var(--ministry-panel-border))]/80 bg-[rgb(var(--ministry-workspace))]/60 px-3 text-[13px] text-emerald-50 placeholder:text-emerald-200/30 outline-none focus:border-[rgb(var(--ministry-gold))]/60"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={() => onSignIn()}
-              disabled={isLoading || !email || !password}
-              className="h-12 w-full rounded-lg bg-gradient-to-b from-emerald-600 to-emerald-700 text-white text-[13px] font-semibold shadow-lg ring-1 ring-[rgb(var(--ministry-gold))]/30 hover:from-emerald-500 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            >
-              {isLoading ? "Signing in…" : "Sign in to command center"}
-            </button>
-
-            <div className="pt-2">
-              <div className="cmd-kicker mb-2">
-                Demo access profiles
-              </div>
-              <div className="grid grid-cols-1 gap-2">
-                <DemoRoleButton
-                  title="Ministry Officer"
-                  subtitle="National command center"
-                  onClick={() =>
-                    onSignIn({
-                      email: "demo-ministry@agritrace.demo",
-                      password: "DemoPass!2026",
-                      redirect: "/command-center",
-                    })
-                  }
-                />
-                <DemoRoleButton
-                  title="Exporter"
-                  subtitle="Lots, movements, EUDR"
-                  onClick={() =>
-                    onSignIn({
-                      email: "demo-exporter@agritrace.demo",
-                      password: "DemoPass!2026",
-                      redirect: "/cocoa/lots",
-                    })
-                  }
-                />
-                <DemoRoleButton
-                  title="Cooperative Manager"
-                  subtitle="Farmers + lots operations"
-                  onClick={() =>
-                    onSignIn({
-                      email: "demo-coop@agritrace.demo",
-                      password: "DemoPass!2026",
-                      redirect: "/cocoa/farmers",
-                    })
-                  }
-                />
-                <DemoRoleButton
-                  title="District Agriculture Officer (DAO)"
-                  subtitle="District operations hub"
-                  onClick={() =>
-                    onSignIn({
-                      email: "demo-field@agritrace.demo",
-                      password: "DemoPass!2026",
-                      redirect: "/district-dashboard",
-                    })
-                  }
-                />
-              </div>
-              <div className="mt-2 text-[11px] text-emerald-100/40">
-                Run <span className="font-mono text-emerald-100/60">npm run seed:demo</span> to create these demo users.
-              </div>
-            </div>
-
-            <div className="cmd-surface px-4 py-4">
-              <div className="text-[13px] font-semibold text-white">Using AgriVault in the field?</div>
-              <p className="mt-1.5 text-[12px] leading-relaxed text-emerald-100/55">
-                Install the app on this device for offline reporting and GPS capture. Drafts stay on the device until you are back online.
-              </p>
-              <div className="mt-3">
-                <InstallAppButton variant="primary" label="Install for Offline Use" className="w-full justify-center" />
-              </div>
-            </div>
-
-            <div className="pt-1 text-[11px] text-emerald-100/40">
-              For first-time setup: create a user in Supabase Auth, then insert a matching row
-              in <span className="font-mono text-emerald-100/60">profiles</span>.
-            </div>
-          </div>
+        <div>
+          <label htmlFor="operator-password" className="mb-2 block text-[0.9375rem] font-medium">
+            Password
+          </label>
+          <input
+            id="operator-password"
+            name="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            type="password"
+            autoComplete="current-password"
+            className={field}
+          />
         </div>
 
-        <div className="mt-4 text-center text-[10px] text-emerald-200/40 font-mono uppercase tracking-[0.18em]">
-          Secure access · Role-based views · Audit-ready outputs
+        <button
+          type="submit"
+          disabled={isLoading || !email || !password}
+          className="avs-btn avs-btn-primary w-full disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isLoading ? "Signing in…" : "Sign in"}
+        </button>
+      </form>
+
+      <LoginAccountNote />
+
+      <div className="avs-surface-sand mt-8 rounded-[var(--av-radius)] p-5">
+        <p className="font-medium">Using AgriVault in the field?</p>
+        <p className="avs-body mt-1.5 text-[0.9375rem]">
+          Install the app on this device for offline reporting and GPS capture. Drafts stay on the device until you are
+          back online.
+        </p>
+        <div className="mt-4">
+          <InstallAppButton variant="primary" label="Install for offline use" className="w-full justify-center" />
         </div>
       </div>
-    </div>
+
+      <p className="mt-8 text-[0.9375rem] text-[rgb(var(--av-slate))]">
+        New to AgriVault?{" "}
+        <Link href="/" className="avs-link text-[rgb(var(--av-forest))]">
+          Visit the AgriVault Data website
+        </Link>
+      </p>
+    </LoginShell>
   );
 }
-
-function DemoRoleButton({
-  title,
-  subtitle,
-  onClick,
-}: {
-  title: string;
-  subtitle: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group w-full text-left rounded-lg border border-[rgb(var(--ministry-panel-border))]/70 bg-[rgb(var(--ministry-workspace))]/40 px-3 py-2.5 hover:border-[rgb(var(--ministry-gold))]/40 hover:bg-[rgb(var(--ministry-panel))]/60 transition"
-    >
-      <div className="text-[12px] font-medium text-white">{title}</div>
-      <div className="text-[11px] text-emerald-100/50">{subtitle}</div>
-    </button>
-  );
-}
-

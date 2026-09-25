@@ -1,9 +1,9 @@
+import { roleFromProfile } from "@/lib/auth/profile-access";
 import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
 import { createClient } from "@/lib/supabase/server";
-import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
-import type { UserRole } from "@/lib/supabase/types";
+import type { Profile, UserRole } from "@/lib/supabase/types";
 
-/** Guards `/admin` APIs — ministry console roles + TEMP DEMO synthetic `admin`. */
+/** Guards `/admin` APIs — ministry console roles from an active profile row only. */
 export async function requireAdminConsole(): Promise<
   | { ok: true; userId: string; role: UserRole }
   | { ok: false; status: number; message: string }
@@ -14,10 +14,14 @@ export async function requireAdminConsole(): Promise<
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, status: 401, message: "Not authenticated." };
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, is_active")
+    .eq("id", user.id)
+    .maybeSingle<Pick<Profile, "role" | "is_active">>();
 
-  const role = resolveUserRoleWithDemoFallback(profile as { role: UserRole } | null, user);
-  if (!isAdminConsoleRole(role)) {
+  const role = roleFromProfile(profile);
+  if (!role || !isAdminConsoleRole(role)) {
     return { ok: false, status: 403, message: "Administrator access required." };
   }
 
