@@ -138,33 +138,45 @@ legacy marketing routes remain 404.
 - **App fonts** (Inter, Inter Tight, DM Mono, DM Serif, Fraunces) are no longer
   preloaded on every route.
 
-### Open items before launch (updated 2026-09-24)
+### Open items before launch (updated 2026-09-24, second pass)
 
 Resolved on this branch:
-- ~~GADM county geometry~~ — replaced by geoBoundaries LBR-ADM1 (UNMIL / OCHA,
-  CC BY 3.0 IGO) for both the site SVG and `public/data/liberia-counties.geojson`;
-  provenance in `data/geo/geoboundaries/SOURCE.md`; attribution shown with
-  every map.
-- ~~Node 20 runtime~~ — pinned to 22.x (`package.json`, lockfile, `.nvmrc`).
-- ~~Fraunces build failures~~ — self-hosted with `next/font/local`
-  (`src/fonts/fraunces`, OFL); two clean builds made no Google request for it.
+- ~~GADM county geometry~~ — geoBoundaries LBR-ADM1 (UNMIL / OCHA, CC BY 3.0
+  IGO) for the site SVG and `public/data/liberia-counties.geojson`;
+  provenance in `data/geo/geoboundaries/SOURCE.md`; credited on every map.
+- ~~Node 20 runtime~~ — 22.x (`package.json`, lockfile, `.nvmrc`).
+- ~~Google Fonts build dependency~~ — every family self-hosted with
+  `next/font/local` (`src/fonts`, OFL, provenance in `src/fonts/README.md`).
+  Clean builds make zero requests to fonts.googleapis.com / fonts.gstatic.com
+  and pass with all proxies pointed at a dead port.
+- ~~Hidden Mapbox attribution~~ — all seven Mapbox maps show Mapbox's own
+  attribution control (Mapbox / OpenStreetMap, Maxar on satellite); county
+  credit appended via `customAttribution` on polygon maps.
 
 Still open — the site is **not production-ready** until these close:
-1. Commission real photography (`docs/photography/REPLACEMENT_CHECKLIST.md`).
-2. Privacy page (legal text required).
-3. Terms page (legal text required).
-4. Confirm `partnerships@agrivaultdata.com` is a monitored mailbox.
-5. Run the credential-gated authenticated-role Playwright suites.
+1. Real photography — 8 photographs to commission; slot-by-slot sizes,
+   crops, releases and sign-off in `docs/photography/REPLACEMENT_CHECKLIST.md`.
+   No approved photography exists in the repository.
+2. Privacy page — structure live at `/privacy` (draft notice, noindex);
+   counsel-approved text required (`src/lib/site/legal.ts`,
+   `docs/legal/COUNSEL_FACTS.md`).
+3. Terms page — same, at `/terms`.
+4. Confirm `partnerships@agrivaultdata.com` is a monitored mailbox. It is
+   defined once (`CONTACT_EMAIL`, `src/lib/site/content.ts`) and used by the
+   contact form (mailto), the contact page, the footer, the security page's
+   vulnerability-report link and the legal pages' draft notice.
+5. Credential-gated authenticated-role Playwright suites (64 tests skip
+   without QA credentials).
 6. Protected Vercel preview smoke test (needs an authenticated browser
-   session or an automation bypass secret).
+   session; no automation bypass secret is used without authorisation).
 
 Risks noted, not yet addressed:
-- Seven families (Geist, Geist Mono, Newsreader, Inter, Inter Tight, DM Mono,
-  DM Serif Display) are still fetched from Google Fonts at build time; only
-  Fraunces was observed returning unparseable URLs. Self-host them the same
-  way if builds must be fully offline.
-- Application Mapbox maps set `attributionControl={false}`, hiding the
-  Mapbox / OpenStreetMap credits their terms require (pre-existing).
+- `src/lib/growth/content.ts` holds a named person's contact details
+  (email, phone, locations) used by `/api/admin/content` (returns 401 when
+  unauthenticated). Owner to decide whether it belongs in source.
+- The app-wide "PWA" diagnostics button (fixed, bottom-right) can sit over a
+  map's compact attribution control when that map's corner meets the
+  viewport corner.
 - `next dev` cannot run client JS because the production CSP (no
   `unsafe-eval`) also applies in development.
 - Unused visual-library dependencies from commit e668b85.
