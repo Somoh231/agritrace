@@ -191,11 +191,11 @@ function MegaPanel({
       onMouseEnter={onMouseEnter}
       className="avs-megamenu absolute inset-x-0 top-full hidden border-b border-white/10 bg-[rgb(7_21_45/0.98)] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.6)] backdrop-blur-xl xl:block"
     >
-      <div className="avs-container grid grid-cols-12 gap-8 py-10">
+      <div className="avs-container grid grid-cols-12 gap-8 py-8">
         <div className="col-span-3 border-r border-white/10 pr-8">
           <p className="avs-label text-[rgb(var(--av-gold))]">{group.label}</p>
-          <p className="mt-4 text-[1.0625rem] leading-relaxed text-white/80">{group.intro}</p>
-          <Link href={group.href} onClick={onNavigate} className="avs-arrow-link mt-6 text-[0.9375rem]">
+          <p className="mt-3 text-[1rem] leading-relaxed text-white/75">{group.intro}</p>
+          <Link href={group.href} onClick={onNavigate} className="avs-arrow-link mt-5 text-[0.9375rem]">
             Overview <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -209,7 +209,7 @@ function MegaPanel({
                     <Link
                       href={item.href}
                       onClick={onNavigate}
-                      className="group -mx-3 block rounded-xl px-3 py-3 transition-colors hover:bg-white/[0.06]"
+                      className="group -mx-3 block rounded-xl px-3 py-2.5 transition-colors hover:bg-white/[0.06]"
                     >
                       <span className="flex items-center gap-2 text-[0.975rem] font-medium text-white">
                         {item.label}
@@ -232,7 +232,7 @@ function MegaPanel({
             className="group relative col-span-3 overflow-hidden rounded-2xl border border-white/10 bg-[rgb(var(--av-forest))] p-6"
           >
             <span className="avs-label block text-[rgb(var(--av-gold))]">{group.feature.eyebrow}</span>
-            <span className="mt-8 block text-[1.375rem] font-medium leading-tight tracking-[-0.02em] text-white">{group.feature.title}</span>
+            <span className="mt-6 block text-[1.25rem] font-medium leading-tight tracking-[-0.02em] text-white">{group.feature.title}</span>
             <span className="mt-3 block text-[0.9rem] leading-snug text-white/75">{group.feature.body}</span>
             <span className="avs-arrow-link mt-6 text-[0.9rem]">
               {group.feature.cta} <ArrowRight className="h-4 w-4" />
@@ -332,6 +332,14 @@ function MobileNav({ onClose }: { onClose: () => void }) {
                         </Link>
                       </li>
                     ))}
+                    {group.feature ? (
+                      <li>
+                        <Link href={group.feature.href} onClick={onClose} className="block py-2.5 text-[1rem] text-white/80">
+                          <span className="avs-label mr-2 text-[0.6875rem] text-[rgb(var(--av-gold))]">{group.feature.eyebrow}</span>
+                          <span className="block">{group.feature.title}</span>
+                        </Link>
+                      </li>
+                    ) : null}
                   </ul>
                 ) : null}
               </li>

@@ -424,11 +424,11 @@ export const NAV: NavGroup[] = [
       },
     ],
     feature: {
-      eyebrow: "Starting market",
-      title: "Liberia Agricultural Intelligence Programme",
-      body: "Three pilot counties, a field-to-national workflow and a phased path to expansion.",
-      href: "/programmes/liberia",
-      cta: "Read the programme",
+      eyebrow: "How engagements start",
+      title: "Most programmes combine several practices.",
+      body: "We start with a diagnostic and scope only what the programme needs.",
+      href: "/how-we-work",
+      cta: "How we work",
     },
   },
   {
@@ -460,26 +460,36 @@ export const NAV: NavGroup[] = [
         title: "Programmes",
         items: [
           { label: "Programme-led delivery", href: "/programmes", description: "How we design, deploy and measure programmes." },
-          { label: "Liberia Agricultural Intelligence Programme", href: "/programmes/liberia", description: "Starting market · pilot being validated." },
+          { label: "Governments & ministries", href: "/governments", description: "Institutional engagement with ministries and agencies." },
         ],
       },
     ],
+    feature: {
+      eyebrow: "Starting market",
+      title: "Liberia Agricultural Intelligence Programme",
+      body: "Three pilot counties, a field-to-national workflow and a phased path to expansion.",
+      href: "/programmes/liberia",
+      cta: "Read the programme",
+    },
   },
   {
     id: "how-we-work",
     label: "How We Work",
     href: "/how-we-work",
-    intro: "Six stages from diagnosis to handover, and five ways to engage.",
+    intro: "Six stages from diagnosis to handover, delivered by one accountable team.",
     columns: [
       {
         title: "Methodology",
         items: STAGES.map((s) => ({ label: `${s.n} · ${s.name}`, href: `/how-we-work#${s.name.toLowerCase().split(" ")[0]}` })),
       },
-      {
-        title: "Engagement models",
-        items: ENGAGEMENT_MODELS.map((m) => ({ label: m.name, href: "/how-we-work#engagement-models" })),
-      },
     ],
+    feature: {
+      eyebrow: "Engagement models",
+      title: "Five ways to work with us.",
+      body: "From a diagnostic engagement to managed operations and capacity transfer.",
+      href: "/how-we-work#engagement-models",
+      cta: "Compare models",
+    },
   },
   {
     id: "governments",
@@ -491,23 +501,29 @@ export const NAV: NavGroup[] = [
         title: "Institutional partners",
         items: [
           { label: "Governments & ministries", href: "/governments", description: "Operational visibility, interoperability and continuity." },
-          { label: "Security & governance", href: "/security", description: "Access, audit, approvals and data ownership." },
-          { label: "Engagement models", href: "/how-we-work#engagement-models", description: "Advisory, deployment, implementation, operations, handover." },
+          { label: "Data ownership & control", href: "/governments#control-title", description: "The operational record belongs to the institution." },
+          { label: "Starting an engagement", href: "/governments#engage-title", description: "Begin with a diagnostic, not a software procurement." },
         ],
       },
     ],
+    feature: {
+      eyebrow: "Security & governance",
+      title: "Built to hold up to review.",
+      body: "Role-based access, approval chains and an append-only decision ledger.",
+      href: "/security",
+      cta: "Security & governance",
+    },
   },
   {
     id: "company",
     label: "Company",
     href: "/about",
-    intro: "An agricultural systems, technology and advisory company.",
+    intro: "An independent agricultural systems, technology, advisory and implementation company.",
     columns: [
       {
         title: "Company",
         items: [
           { label: "About", href: "/about", description: "Why AgriVault exists and how we work." },
-          { label: "Security & governance", href: "/security", description: "How the platform protects institutional data." },
           { label: "Contact", href: "/contact", description: "Start a conversation about a programme." },
         ],
       },
