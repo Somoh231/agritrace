@@ -11,9 +11,9 @@ import type { Profile, UserRole } from "@/lib/supabase/types";
 /** Literal demo identity spec (auth user id still comes from Supabase Auth). */
 export const DEMO_PROFILE_FALLBACK = {
   id: "demo-admin",
-  email: "msdonzo@agrivaultdata.com",
+  email: "",
   role: "admin",
-  full_name: "Demo Admin",
+  full_name: "AgriVault administrator",
 } as const;
 
 export function buildDemoProfileForAuthUser(authUser: { id: string; email?: string | null }): Profile {
