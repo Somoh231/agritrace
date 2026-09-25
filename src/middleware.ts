@@ -53,6 +53,7 @@ function isProtectedPath(pathname: string): boolean {
     "/workspace",
     "/admin",
     "/dashboard",
+    "/app",
   ];
   return roots.some((p) => matchesProtectedRoute(pathname, p));
 }
@@ -62,17 +63,6 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next({ request });
   response.headers.set(REQUEST_ID_HEADER, requestId);
   const pathname = request.nextUrl.pathname;
-
-  if (pathname === "/" && !request.cookies.get("av_exp_home_hero")) {
-    if (process.env.NEXT_PUBLIC_ENABLE_HOMEPAGE_EXPERIMENT !== "false") {
-      const variant = Math.random() < 0.5 ? "control" : "authority";
-      response.cookies.set("av_exp_home_hero", variant, {
-        path: "/",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 90,
-      });
-    }
-  }
 
   const url = normalizeHttpUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
