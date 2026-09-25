@@ -108,9 +108,17 @@ export default function SiteFooter() {
 
         <div className="flex flex-col gap-3 border-t border-white/10 py-8 text-[0.875rem] text-white/60 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} AgriVault Data. An independent, privately held company.</p>
-          <a href={`mailto:${CONTACT_EMAIL}`} className="inline-flex min-h-[44px] items-center text-white/75 transition-colors hover:text-white">
-            {CONTACT_EMAIL}
-          </a>
+          <div className="flex flex-wrap items-center gap-x-6">
+            <Link href="/privacy" className="inline-flex min-h-[44px] items-center text-white/75 transition-colors hover:text-white">
+              Privacy
+            </Link>
+            <Link href="/terms" className="inline-flex min-h-[44px] items-center text-white/75 transition-colors hover:text-white">
+              Terms
+            </Link>
+            <a href={`mailto:${CONTACT_EMAIL}`} className="inline-flex min-h-[44px] items-center text-white/75 transition-colors hover:text-white">
+              {CONTACT_EMAIL}
+            </a>
+          </div>
         </div>
       </div>
     </footer>

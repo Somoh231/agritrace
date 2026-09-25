@@ -10,6 +10,8 @@ export const PUBLIC_SITE_ROUTES = [
   "/security",
   "/about",
   "/contact",
+  "/privacy",
+  "/terms",
 ] as const;
 
 export function isPublicSitePath(pathname: string | null | undefined): boolean {

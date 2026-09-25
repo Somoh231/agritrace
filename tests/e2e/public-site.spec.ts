@@ -16,6 +16,8 @@ const PUBLIC_ROUTES = [
   "/security",
   "/about",
   "/contact",
+  "/privacy",
+  "/terms",
 ];
 
 const RETIRED_ROUTES = ["/platform", "/pricing", "/request-demo", "/liberia", "/news", "/partners", "/demo"];
@@ -106,6 +108,24 @@ test.describe("public site: navigation", () => {
     await expect(tabs.nth(1)).toBeFocused();
     await page.keyboard.press("End");
     await expect(tabs.last()).toHaveAttribute("aria-selected", "true");
+  });
+});
+
+test.describe("public site: legal pages", () => {
+  for (const route of ["/privacy", "/terms"]) {
+    test(`${route} is a clearly marked draft and not indexed`, async ({ page }) => {
+      await page.goto(route, { waitUntil: "domcontentloaded" });
+      await expect(page.getByRole("note")).toContainText("Draft — not yet in effect");
+      await expect(page.getByText("Legal text pending — counsel review").first()).toBeVisible();
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    });
+  }
+
+  test("footer links to Privacy and Terms", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const footer = page.getByRole("contentinfo");
+    await expect(footer.getByRole("link", { name: "Privacy", exact: true })).toHaveAttribute("href", "/privacy");
+    await expect(footer.getByRole("link", { name: "Terms", exact: true })).toHaveAttribute("href", "/terms");
   });
 });
 
