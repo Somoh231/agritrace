@@ -8,7 +8,7 @@ import { FRAGMENTS } from "@/lib/site/content";
 type View = "today" | "with";
 
 /*
- * Fragment layout on the canvas (md+). `at` is the aligned position around the
+ * Fragment layout on the canvas (lg+). `at` is the aligned position around the
  * central record; `drift` is the transform applied in the "Today" view so the
  * same cards read as scattered, tilted and unconnected. Transform-only motion.
  */
@@ -80,7 +80,7 @@ export default function ProblemSection() {
         </div>
 
         <div
-          className="relative isolate mt-5 overflow-hidden rounded-[var(--av-radius-lg)] bg-[rgb(var(--av-sand))] px-3 py-5 sm:px-4 sm:py-6 md:h-[560px] md:p-0"
+          className="relative isolate mt-5 overflow-hidden rounded-[var(--av-radius-lg)] bg-[rgb(var(--av-sand))] px-3 py-5 sm:px-4 sm:py-6 lg:h-[560px] lg:p-0"
         >
           <p className="sr-only" aria-live="polite">
             {linked
@@ -89,8 +89,8 @@ export default function ProblemSection() {
           </p>
           <Topo lines={14} seed={11} stroke="#0B2E1A" opacity={0.07} className="-z-10" />
 
-          {/* Connectors (md+) */}
-          <svg aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 -z-10 hidden h-full w-full md:block">
+          {/* Connectors (lg+) */}
+          <svg aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 -z-10 hidden h-full w-full lg:block">
             {LAYOUT.map((l, i) => {
               const [x, y] = l.anchor;
               const hx = x < 50 ? 41 : 59;
@@ -116,7 +116,7 @@ export default function ProblemSection() {
 
           {/* Central record */}
           <div
-            className={`relative z-10 mx-auto mb-5 flex w-full max-w-[16rem] flex-col items-center justify-center rounded-[18px] border px-5 py-5 text-center transition-all duration-700 md:absolute md:left-1/2 md:top-1/2 md:mb-0 md:-translate-x-1/2 md:-translate-y-1/2 ${
+            className={`relative z-10 mx-auto mb-5 flex w-full max-w-[16rem] flex-col items-center justify-center rounded-[18px] border px-5 py-5 text-center transition-all duration-700 lg:absolute lg:left-1/2 lg:top-1/2 lg:mb-0 lg:-translate-x-1/2 lg:-translate-y-1/2 ${
               linked
                 ? "border-transparent bg-[rgb(var(--av-forest))] text-[rgb(var(--av-paper))] shadow-[0_24px_60px_-24px_rgba(11,46,26,0.55)]"
                 : "border-dashed border-[rgb(var(--av-slate)/0.35)] bg-[rgb(var(--av-paper)/0.6)] text-[rgb(var(--av-slate))]"
@@ -128,15 +128,15 @@ export default function ProblemSection() {
             </p>
           </div>
 
-          <ul className="grid grid-cols-2 gap-2.5 sm:gap-3 md:block">
-            {/* DOM (and mobile stacking) order is 01–06; on md+ each card takes its slot around the hub. */}
+          <ul className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 lg:block">
+            {/* DOM (and stacking) order is 01–06; on lg+ each card takes its slot around the hub. */}
             {FRAGMENTS.map((f, fi) => {
               const slot = ORDER.indexOf(fi);
               const l = LAYOUT[slot];
               return (
                 <li
                   key={f.title}
-                  className="avs-frag md:absolute md:w-[clamp(15rem,24%,18.5rem)]"
+                  className="avs-frag lg:absolute lg:w-[clamp(15rem,24%,18.5rem)]"
                   style={
                     {
                       ...l.at,
@@ -169,7 +169,7 @@ export default function ProblemSection() {
             })}
           </ul>
 
-          <p className="avs-meta mt-5 flex items-center gap-2 uppercase tracking-[0.12em] text-[rgb(var(--av-slate))] md:absolute md:bottom-5 md:left-6 md:mt-0">
+          <p className="avs-meta mt-5 flex items-center gap-2 uppercase tracking-[0.12em] text-[rgb(var(--av-slate))] lg:absolute lg:bottom-5 lg:left-6 lg:mt-0">
             <span aria-hidden="true" className={`inline-block w-6 border-t ${linked ? "border-solid border-[rgb(var(--av-emerald))]" : "border-dashed border-[rgb(var(--av-rust-2))]"}`} />
             {linked ? "With AgriVault · one record, traceable to source" : "Today · sources held separately"}
           </p>
