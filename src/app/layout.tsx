@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "@/styles/public-marketing.css";
-import { DM_Mono, DM_Serif_Display, Fraunces, Inter, Inter_Tight } from "next/font/google";
+import localFont from "next/font/local";
 
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import ToastProvider from "@/components/shared/toast/ToastProvider";
@@ -9,53 +8,73 @@ import { PwaInstallProvider } from "@/components/pwa/install-prompt-context";
 import PwaDiagnosticsPanel from "@/components/pwa/PwaDiagnosticsPanel";
 import PwaRegistrar from "@/components/pwa/PwaRegistrar";
 
-const fontHeading = Inter_Tight({
+/*
+ * Application fonts, self-hosted (src/fonts, SIL OFL; see src/fonts/README.md)
+ * so builds make no request to Google Fonts. Latin subset only; not preloaded,
+ * because public-site pages never render them.
+ */
+const fontHeading = localFont({
+  src: "../fonts/inter-tight/inter-tight-latin-wght.woff2",
+  weight: "100 900",
+  style: "normal",
   variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  preload: false,
+  display: "swap",
+  fallback: ["ui-sans-serif", "system-ui", "sans-serif"],
+  adjustFontFallback: "Arial",
 });
 
-const fontBody = Inter({
+const fontBody = localFont({
+  src: "../fonts/inter/inter-latin-wght.woff2",
+  weight: "100 900",
+  style: "normal",
   variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  preload: false,
+  display: "swap",
+  fallback: ["ui-sans-serif", "system-ui", "sans-serif"],
+  adjustFontFallback: "Arial",
 });
 
-const fontMono = DM_Mono({
+const fontMono = localFont({
+  src: [
+    { path: "../fonts/dm-mono/dm-mono-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/dm-mono/dm-mono-latin-500-normal.woff2", weight: "500", style: "normal" },
+  ],
   variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  preload: false,
+  display: "swap",
+  fallback: ["ui-monospace", "SFMono-Regular", "monospace"],
+  adjustFontFallback: "Arial",
 });
 
-const fontSerif = DM_Serif_Display({
+// Regular only: .font-serif-display is never set in italic.
+const fontSerif = localFont({
+  src: "../fonts/dm-serif-display/dm-serif-display-latin-400-normal.woff2",
+  weight: "400",
+  style: "normal",
   variable: "--font-serif-display",
-  subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal", "italic"],
+  preload: false,
+  display: "swap",
+  fallback: ["Georgia", "serif"],
+  adjustFontFallback: "Times New Roman",
 });
 
-const fontEditorial = Fraunces({
+/*
+ * Fraunces: Google Fonts intermittently served it through extension-less URLs
+ * that next/font cannot parse, failing builds. Only the weights the
+ * application uses are shipped.
+ */
+const fontEditorial = localFont({
   variable: "--font-editorial",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const agrivaultDisplay = Inter_Tight({
-  variable: "--font-av-display",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const agrivaultBody = Inter({
-  variable: "--font-av-body",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-});
-
-const agrivaultMono = DM_Mono({
-  variable: "--font-av-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  preload: false,
+  display: "swap",
+  src: [
+    { path: "../fonts/fraunces/fraunces-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/fraunces/fraunces-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/fraunces/fraunces-latin-600-normal.woff2", weight: "600", style: "normal" },
+  ],
+  fallback: ["Georgia", "serif"],
+  adjustFontFallback: "Times New Roman",
 });
 
 const FALLBACK_METADATA_BASE = "https://agritrace.app";
@@ -87,42 +106,43 @@ function resolveMetadataBase(): URL {
   return new URL(FALLBACK_METADATA_BASE);
 }
 
+const SITE_DESCRIPTION =
+  "AgriVault Data is an agricultural systems, technology and advisory company. We design and deploy the data systems, field operations and reporting infrastructure agricultural institutions run on.";
+
 export function generateMetadata(): Metadata {
   return {
     metadataBase: resolveMetadataBase(),
     title: {
-      default: "Agrivault",
-      template: "%s · Agrivault",
+      default: "AgriVault Data — Agricultural systems, technology and advisory",
+      template: "%s · AgriVault Data",
     },
-    description: "Agricultural traceability platform for Liberia · rice visibility · cocoa chain of custody · compliance",
-    applicationName: "Agrivault",
+    description: SITE_DESCRIPTION,
+    applicationName: "AgriVault",
     keywords: [
-      "Liberia",
-      "agriculture",
+      "agricultural systems",
+      "agricultural technology",
+      "programme implementation",
+      "farmer registry",
+      "GIS",
       "traceability",
-      "EUDR",
-      "cocoa",
-      "rice",
-      "supply chain",
-      "audit",
-      "compliance",
+      "government agriculture",
+      "development partners",
     ],
     icons: {
-      icon: [{ url: "/favicon.ico" }],
+      icon: [{ url: "/favicon.ico", sizes: "any" }, { url: "/icon.svg", type: "image/svg+xml" }],
+      apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
     },
     openGraph: {
       type: "website",
-      title: "Agrivault",
-      description:
-        "Pilot-ready agricultural traceability for Liberia: production visibility, chain of custody, discrepancy resolution, compliance reporting.",
-      siteName: "Agrivault",
-      images: [{ url: "/og.svg", width: 1200, height: 630, alt: "Agrivault — Liberia traceability" }],
+      title: "AgriVault Data",
+      description: SITE_DESCRIPTION,
+      siteName: "AgriVault Data",
+      // Image: src/app/opengraph-image.tsx (file convention).
     },
     twitter: {
       card: "summary_large_image",
-      title: "Agrivault",
-      description: "Agricultural traceability platform · Liberia",
-      images: ["/og.svg"],
+      title: "AgriVault Data",
+      description: SITE_DESCRIPTION,
     },
   };
 }
@@ -135,7 +155,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} ${fontSerif.variable} ${fontEditorial.variable} ${agrivaultDisplay.variable} ${agrivaultBody.variable} ${agrivaultMono.variable} h-full antialiased`}
+      className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} ${fontSerif.variable} ${fontEditorial.variable} h-full antialiased`}
     >
       <body className="h-full bg-[rgb(var(--surface))] text-[rgb(var(--text))]">
         <AnalyticsProvider>

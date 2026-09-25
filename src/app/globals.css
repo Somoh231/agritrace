@@ -1,3 +1,6 @@
+/* Public-site design system (avs-*). Inlined first so Tailwind utilities override it. */
+@import "../styles/site.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,9 +27,7 @@
   --color-navy-900: #003377;
   --color-red-600: #CC1133;
 
-  --font-display: "Inter Tight", "Inter", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  --font-mono: "DM Mono", monospace;
+  /* --font-display, --font-body and --font-mono are set by next/font/local on <html> (src/app/layout.tsx). */
 
   --surface: 255 255 255;
   --surface-muted: 247 248 250; /* mist-50 */
@@ -55,7 +56,7 @@
   --enterprise-muted: 100 116 139;
 
   --font-serif: var(--font-serif-display), Georgia, "Times New Roman", serif;
-  --font-editorial: var(--font-editorial), Fraunces, Georgia, serif;
+  /* --font-editorial is set by next/font/local on <html> (src/app/layout.tsx). */
 
   /* Enterprise typography rhythm */
   --ent-tracking-tight: -0.02em;

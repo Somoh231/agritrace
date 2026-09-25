@@ -1,0 +1,133 @@
+/**
+ * Generates all Liberia county (ADM1) geometry from one pinned, commercially
+ * licensed source: data/geo/geoboundaries/geoBoundaries-LBR-ADM1.geojson
+ * (geoBoundaries LBR-ADM1-1627179, UNMIL / OCHA, CC BY 3.0 IGO — see SOURCE.md).
+ *
+ * Outputs
+ *   public/data/liberia-counties.geojson  application maps; simplified in degrees,
+ *                                         keeps NAME_1 for existing county joins
+ *   src/lib/site/liberia-geo.ts           public-site SVG (projected, simplified)
+ *
+ *   node scripts/build-liberia-geo.mjs
+ */
+import fs from "node:fs";
+
+const SOURCE = "data/geo/geoboundaries/geoBoundaries-LBR-ADM1.geojson";
+// Same text as BOUNDARY_ATTRIBUTION in src/lib/gis/boundary-attribution.ts (displayed with every map).
+const ATTRIBUTION = "County boundaries: UNMIL / OCHA, via geoBoundaries (CC BY 3.0 IGO)";
+const src = JSON.parse(fs.readFileSync(SOURCE, "utf8"));
+
+/** Polygon or MultiPolygon → array of polygons (each an array of rings). */
+const polygonsOf = (g) => (g.type === "Polygon" ? [g.coordinates] : g.coordinates);
+
+function dp(points, tol) {
+  if (points.length < 3) return points;
+  let max = 0, idx = 0;
+  const [a, b] = [points[0], points[points.length - 1]];
+  const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1;
+  for (let i = 1; i < points.length - 1; i++) {
+    const d = Math.abs(dy * points[i][0] - dx * points[i][1] + b[0] * a[1] - b[1] * a[0]) / len;
+    if (d > max) { max = d; idx = i; }
+  }
+  if (max <= tol) return [a, b];
+  return [...dp(points.slice(0, idx + 1), tol).slice(0, -1), ...dp(points.slice(idx), tol)];
+}
+
+/** Simplify a closed ring: split at the vertex farthest from the start, simplify both halves. Returns an open ring. */
+function simplifyRing(ring, tol) {
+  const open = ring.slice(0, -1);
+  let far = 0, best = -1;
+  open.forEach(([x, y], i) => { const d = Math.hypot(x - open[0][0], y - open[0][1]); if (d > best) { best = d; far = i; } });
+  return [...dp(open.slice(0, far + 1), tol).slice(0, -1), ...dp([...open.slice(far), open[0]], tol).slice(0, -1)];
+}
+
+const nameOf = (f) => f.properties.shapeName;
+const idOf = (name) => name.replace(/\s+/g, "").toLowerCase();
+
+// ---------- 1. Application GeoJSON (lon/lat, CRS84) ----------
+const DEG_TOL = 0.003; // ≈330 m; county-scale choropleths
+const round = (n) => Math.round(n * 1e5) / 1e5;
+const appFeatures = src.features.map((f) => {
+  const polys = polygonsOf(f.geometry)
+    .map((poly) =>
+      poly
+        .map((ring) => {
+          const s = simplifyRing(ring, DEG_TOL).map(([x, y]) => [round(x), round(y)]);
+          return s.length >= 3 ? [...s, s[0]] : null;
+        })
+        .filter(Boolean),
+    )
+    .filter((poly) => poly.length > 0);
+  return {
+    type: "Feature",
+    properties: {
+      NAME_1: nameOf(f), // consumed by src/lib/gis/gis-intelligence-data.ts
+      shapeName: nameOf(f),
+      shapeISO: f.properties.shapeISO,
+      shapeID: f.properties.shapeID,
+    },
+    geometry: polys.length === 1 ? { type: "Polygon", coordinates: polys[0] } : { type: "MultiPolygon", coordinates: polys },
+  };
+});
+const appOut = {
+  type: "FeatureCollection",
+  name: "liberia-counties",
+  attribution: ATTRIBUTION,
+  source: "geoBoundaries LBR-ADM1-1627179 (wmgeolab/geoBoundaries@9469f09); see data/geo/geoboundaries/SOURCE.md",
+  license: "CC BY 3.0 IGO",
+  features: appFeatures,
+};
+const appJson = JSON.stringify(appOut);
+fs.writeFileSync("public/data/liberia-counties.geojson", appJson + "\n");
+
+// ---------- 2. Public-site SVG geometry ----------
+const WIDTH = 1000;
+const SVG_TOL = 1.6; // SVG units (≈0.6 px at typical display size)
+
+let minLon = Infinity, maxLon = -Infinity, minLat = Infinity, maxLat = -Infinity;
+for (const f of src.features) for (const poly of polygonsOf(f.geometry)) for (const ring of poly) for (const [lon, lat] of ring) {
+  minLon = Math.min(minLon, lon); maxLon = Math.max(maxLon, lon);
+  minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat);
+}
+const k = Math.cos((((minLat + maxLat) / 2) * Math.PI) / 180);
+const scale = WIDTH / ((maxLon - minLon) * k);
+const HEIGHT = Math.ceil((maxLat - minLat) * scale);
+const project = ([lon, lat]) => [(lon - minLon) * k * scale, (maxLat - lat) * scale];
+
+const counties = src.features.map((f) => {
+  let path = "";
+  let area = 0, cx = 0, cy = 0;
+  for (const poly of polygonsOf(f.geometry)) {
+    const outer = poly[0].map(project);
+    const simple = simplifyRing(outer, SVG_TOL);
+    if (simple.length < 3) continue;
+    path += "M" + simple.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join("L") + "Z";
+    for (let i = 0; i < outer.length - 1; i++) {
+      const [x0, y0] = outer[i], [x1, y1] = outer[i + 1];
+      const c = x0 * y1 - x1 * y0;
+      area += c; cx += (x0 + x1) * c; cy += (y0 + y1) * c;
+    }
+  }
+  area /= 2;
+  return {
+    id: idOf(nameOf(f)),
+    name: nameOf(f),
+    iso: f.properties.shapeISO,
+    path,
+    label: [Math.round(cx / (6 * area)), Math.round(cy / (6 * area))],
+  };
+});
+
+const out = `// Generated by scripts/build-liberia-geo.mjs. Do not edit by hand.
+// ${ATTRIBUTION}. Source: data/geo/geoboundaries/SOURCE.md
+export const LIBERIA_VIEWBOX = "0 0 ${WIDTH} ${HEIGHT}";
+export const LIBERIA_BOUNDS = { minLon: ${minLon}, maxLon: ${maxLon}, minLat: ${minLat}, maxLat: ${maxLat} };
+export type County = { id: string; name: string; iso: string; path: string; label: [number, number] };
+export const LIBERIA_COUNTIES: County[] = ${JSON.stringify(counties, null, 0)};
+`;
+fs.writeFileSync("src/lib/site/liberia-geo.ts", out);
+
+console.log(
+  `public/data/liberia-counties.geojson: ${appFeatures.length} counties, ${(appJson.length / 1024).toFixed(1)} KB\n` +
+    `src/lib/site/liberia-geo.ts: ${counties.length} counties, viewBox ${WIDTH}x${HEIGHT}, ${(out.length / 1024).toFixed(1)} KB`,
+);

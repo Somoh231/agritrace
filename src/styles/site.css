@@ -1,0 +1,354 @@
+/*
+ * AgriVault Data — public site design system.
+ * Inlined at the top of globals.css (postcss-import), ahead of Tailwind base and
+ * utilities, so utilities win at equal specificity. Every class is prefixed `avs-` (the app owns `av-*`).
+ *
+ * Contrast (WCAG 2.2 AA, measured): text colours are chosen per surface.
+ *   paper  #F7F7F2: forest 13.8 · slate 6.7 · emerald-ink 4.8 · gold-ink 4.7 · rust 7.0
+ *   sand   #ECECE3: slate 6.1 · gold-deep 5.4 · emerald-deep #087048 5.2 (remapped in .avs-surface-sand)
+ *   navy   #07152D: paper 17+ · mist 7.4 · gold 7.8 · mint 10.0 · emerald 5.6
+ *   emerald #0FA36B: navy 5.6 (never white text on emerald: 3.0)
+ * Emerald #0FA36B and sage #5E8C74 are never used for body text on light surfaces.
+ */
+
+.avs {
+  /* Palette */
+  --av-navy: 7 21 45;           /* #07152D */
+  --av-navy-2: 12 31 61;        /* #0C1F3D raised surface on navy */
+  --av-navy-3: 20 43 78;        /* #142B4E hairline-strong on navy */
+  --av-forest: 11 46 26;        /* #0B2E1A */
+  --av-forest-2: 16 58 35;      /* #103A23 */
+  --av-emerald: 15 163 107;     /* #0FA36B */
+  --av-emerald-ink: 10 125 80;  /* #0A7D50 text-safe on paper */
+  --av-mint: 111 211 164;       /* #6FD3A4 accent on dark */
+  --av-paper: 247 247 242;      /* #F7F7F2 */
+  --av-sand: 236 236 227;       /* #ECECE3 */
+  --av-sand-2: 226 226 214;     /* #E2E2D6 */
+  --av-gold: 199 165 106;       /* #C7A56A on dark */
+  --av-gold-ink: 138 106 46;    /* #8A6A2E on paper */
+  --av-gold-deep: 118 90 36;    /* #765A24 on sand */
+  --av-rust: 140 59 48;         /* #8C3B30 */
+  --av-rust-2: 180 86 74;       /* #B4564A lines */
+  --av-slate: 74 91 80;         /* #4A5B50 body on light */
+  --av-sage: 94 140 116;        /* #5E8C74 large text only */
+  --av-mist: 154 167 184;       /* #9AA7B8 body on navy */
+  --av-mist-2: 183 195 209;     /* #B7C3D1 */
+
+  /* Semantic defaults (light surface) */
+  --av-bg: var(--av-paper);
+  --av-fg: var(--av-forest);
+  --av-muted: var(--av-slate);
+  --av-line: 11 46 26;
+  --av-line-a: 0.14;
+
+  /* Type */
+  --av-font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --av-font-serif: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --av-font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  /* Layout */
+  --av-max: 1440px;
+  --av-gutter: clamp(1.25rem, 3.4vw, 3rem);
+  --av-section: clamp(5rem, 10vw, 9rem);
+  --av-header-h: 72px;
+  --av-radius: 20px;
+  --av-radius-lg: 28px;
+
+  /* Motion */
+  --av-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --av-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --av-dur: 420ms;
+
+  font-family: var(--av-font-sans);
+  color: rgb(var(--av-fg));
+  background: rgb(var(--av-bg));
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11";
+}
+
+/*
+ * The app's base layer styles bare h1–h3, p and li (font, size, colour).
+ * Inside the site those inherit instead. Specificity (0,0,2): above the app's
+ * element rules, below any class — so site and utility classes still apply.
+ */
+body :where(.avs) :is(h1, h2, h3, h4, h5, h6, p, li, small) {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+html:has(.avs) {
+  scroll-padding-top: calc(var(--av-header-h) + 16px);
+  background: rgb(7 21 45);
+}
+
+@media (min-width: 1024px) {
+  .avs {
+    font-size: 1.0625rem;
+  }
+}
+
+/* ---------- Surfaces ---------- */
+.avs-surface-paper { --av-bg: var(--av-paper); --av-fg: var(--av-forest); --av-muted: var(--av-slate); --av-line: 11 46 26; background: rgb(var(--av-paper)); color: rgb(var(--av-forest)); }
+/* On sand, emerald-ink (4.35) and gold-ink (4.23) fall below AA; remap to deeper inks (5.17 / 5.42). */
+.avs-surface-sand  { --av-emerald-ink: 8 112 72; --av-gold-ink: var(--av-gold-deep); --av-bg: var(--av-sand);  --av-fg: var(--av-forest); --av-muted: var(--av-slate); --av-line: 11 46 26; background: rgb(var(--av-sand));  color: rgb(var(--av-forest)); }
+.avs-surface-navy  { --av-bg: var(--av-navy);  --av-fg: var(--av-paper);  --av-muted: var(--av-mist);  --av-line: 247 247 242; --av-line-a: 0.12; background: rgb(var(--av-navy)); color: rgb(var(--av-paper)); }
+.avs-surface-forest{ --av-bg: var(--av-forest);--av-fg: var(--av-paper);  --av-muted: 169 184 174;   --av-line: 247 247 242; --av-line-a: 0.12; background: rgb(var(--av-forest)); color: rgb(var(--av-paper)); }
+
+/* ---------- Layout ---------- */
+.avs-container {
+  width: 100%;
+  max-width: var(--av-max);
+  margin-inline: auto;
+  padding-inline: var(--av-gutter);
+}
+.avs-section { padding-block: var(--av-section); }
+.avs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: clamp(1rem, 2vw, 1.5rem);
+}
+@media (min-width: 768px) { .avs-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .avs-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); } }
+.avs-measure { max-width: 62ch; }
+.avs-rule { border: 0; border-top: 1px solid rgb(var(--av-line) / var(--av-line-a)); }
+
+/* ---------- Type ---------- */
+.avs-display {
+  font-family: var(--av-font-sans);
+  font-weight: 500;
+  font-size: clamp(2.75rem, 7.2vw, 7.25rem);
+  line-height: 0.96;
+  letter-spacing: -0.038em;
+  text-wrap: balance;
+}
+.avs-h1 {
+  font-weight: 500;
+  font-size: clamp(2.5rem, 5.4vw, 5.25rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.avs-h2 {
+  font-weight: 500;
+  font-size: clamp(2rem, 3.8vw, 3.75rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.avs-h3 {
+  font-weight: 500;
+  font-size: clamp(1.375rem, 1.9vw, 1.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.018em;
+}
+.avs-h4 {
+  font-weight: 500;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.avs-serif { font-family: var(--av-font-serif); font-weight: 400; letter-spacing: -0.01em; }
+.avs-accent {
+  font-family: var(--av-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.avs-editorial {
+  font-family: var(--av-font-serif);
+  font-size: clamp(1.625rem, 2.6vw, 2.5rem);
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  text-wrap: pretty;
+}
+.avs-lead {
+  font-size: clamp(1.125rem, 1.35vw, 1.3125rem);
+  line-height: 1.55;
+  color: rgb(var(--av-muted));
+  text-wrap: pretty;
+}
+.avs-body { color: rgb(var(--av-muted)); text-wrap: pretty; }
+.avs-small { font-size: 0.875rem; line-height: 1.55; }
+.avs-label {
+  font-family: var(--av-font-mono);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.avs-meta {
+  font-family: var(--av-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+.avs-eyebrow { color: rgb(var(--av-emerald-ink)); }
+.avs-surface-navy .avs-eyebrow, .avs-surface-forest .avs-eyebrow { color: rgb(var(--av-gold)); }
+.avs-surface-sand .avs-eyebrow { color: rgb(var(--av-emerald-ink)); }
+
+/* ---------- Links & buttons ---------- */
+/* Zero-specificity reset so utility classes (text-*, underline) always win on links. */
+:where(.avs) a { color: inherit; text-decoration: none; }
+.avs-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  text-decoration-color: rgb(var(--av-fg) / 0.35);
+  transition: text-decoration-color 200ms var(--av-ease);
+}
+.avs-link:hover { text-decoration-color: currentColor; }
+
+.avs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 48px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 0.975rem;
+  letter-spacing: -0.005em;
+  line-height: 1;
+  transition: background-color 220ms var(--av-ease), color 220ms var(--av-ease), border-color 220ms var(--av-ease), transform 220ms var(--av-ease);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.avs-btn svg { transition: transform 260ms var(--av-ease-out); }
+.avs-btn:hover svg { transform: translateX(3px); }
+.avs-btn-primary { background: rgb(var(--av-forest)); color: rgb(var(--av-paper)); }
+.avs-btn-primary:hover { background: rgb(var(--av-forest-2)); }
+.avs-surface-navy .avs-btn-primary, .avs-surface-forest .avs-btn-primary, .avs-on-dark .avs-btn-primary { background: rgb(var(--av-paper)); color: rgb(var(--av-navy)); }
+.avs-surface-navy .avs-btn-primary:hover, .avs-surface-forest .avs-btn-primary:hover, .avs-on-dark .avs-btn-primary:hover { background: #fff; }
+.avs-btn-ghost { border: 1px solid rgb(var(--av-fg) / 0.28); color: rgb(var(--av-fg)); }
+.avs-btn-ghost:hover { border-color: rgb(var(--av-fg) / 0.7); }
+.avs-on-dark .avs-btn-ghost { border-color: rgb(247 247 242 / 0.35); color: rgb(var(--av-paper)); }
+.avs-on-dark .avs-btn-ghost:hover { border-color: rgb(247 247 242 / 0.85); }
+
+.avs-arrow-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: rgb(var(--av-emerald-ink));
+}
+.avs-surface-navy .avs-arrow-link, .avs-surface-forest .avs-arrow-link { color: rgb(var(--av-mint)); }
+.avs-arrow-link svg { transition: transform 260ms var(--av-ease-out); }
+.avs-arrow-link:hover svg { transform: translateX(4px); }
+
+/* Focus: visible on every surface */
+.avs :focus-visible {
+  outline: 2px solid rgb(var(--av-emerald));
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.avs-surface-navy :focus-visible, .avs-surface-forest :focus-visible, .avs-on-dark :focus-visible {
+  outline-color: rgb(var(--av-mint));
+}
+
+.avs-skip {
+  position: fixed;
+  left: 1rem;
+  top: 0.75rem;
+  z-index: 100;
+  transform: translateY(-160%);
+  background: rgb(var(--av-paper));
+  color: rgb(var(--av-navy));
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: transform 160ms var(--av-ease);
+}
+.avs-skip:focus { transform: translateY(0); }
+
+/* ---------- Cards / frames ---------- */
+.avs-card {
+  border-radius: var(--av-radius);
+  border: 1px solid rgb(var(--av-line) / var(--av-line-a));
+  background: rgb(255 255 255 / 0.55);
+}
+.avs-surface-navy .avs-card, .avs-surface-forest .avs-card {
+  background: rgb(var(--av-navy-2));
+  border-color: rgb(247 247 242 / 0.1);
+}
+.avs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--av-line) / 0.2);
+  padding: 0.3rem 0.7rem;
+  font-family: var(--av-font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Illustrative marker: anything that looks like data but is not */
+.avs-sample {
+  font-family: var(--av-font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--av-gold-ink));
+}
+.avs-surface-navy .avs-sample, .avs-surface-forest .avs-sample, .avs-on-dark .avs-sample { color: rgb(var(--av-gold)); }
+
+/* ---------- Motion ---------- */
+/* Hidden only once JS has run (html.avs-js), so content never depends on script. */
+.avs-js .avs-reveal {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  transition: opacity 900ms var(--av-ease-out), transform 900ms var(--av-ease-out);
+  transition-delay: var(--av-delay, 0ms);
+}
+.avs-js .avs-reveal[data-visible="true"] { opacity: 1; transform: none; }
+
+@keyframes avs-draw { to { stroke-dashoffset: 0; } }
+@keyframes avs-drift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-4%, 0, 0); } }
+@keyframes avs-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+/* Hero: slow contour drift + a plot boundary being walked */
+.avs-hero-drift { animation: avs-drift 60s var(--av-ease) infinite alternate; will-change: transform; }
+.avs-parcel-trace { stroke-dasharray: 1; stroke-dashoffset: 1; animation: avs-draw 2.4s 0.4s var(--av-ease-out) forwards; }
+.avs-parcel-fill { opacity: 0; animation: avs-fade 1.2s 2.4s var(--av-ease) forwards; }
+.avs-parcel-vertex { opacity: 0; animation: avs-fade 0.5s var(--av-ease) forwards; }
+@keyframes avs-fade { to { opacity: 1; } }
+.avs-fade-in { animation: avs-fade-up 700ms var(--av-ease-out); }
+@keyframes avs-fade-up { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }
+
+/* Problem canvas: scattered "today" vs aligned "with AgriVault" (transform only) */
+@media (min-width: 768px) {
+  .avs-frag { transform: var(--drift, none); transition: transform 900ms var(--av-ease-out); }
+}
+
+.avs-no-scrollbar { scrollbar-width: none; }
+.avs-no-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .avs-js .avs-reveal { opacity: 1; transform: none; transition: none; }
+  .avs *, .avs *::before, .avs *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Grain: gives flat photographic placeholders a printed, non-digital texture */
+.avs-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}

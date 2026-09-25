@@ -44,10 +44,10 @@ export default {
         },
       },
       fontFamily: {
-        display: ["var(--font-display)", "Inter Tight", "system-ui", "sans-serif"],
-        editorial: ["var(--font-editorial)", "Fraunces", "Georgia", "serif"],
-        body: ["Inter", "system-ui", "sans-serif"],
-        mono: ["DM Mono", "monospace"],
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
+        editorial: ["var(--font-editorial)", "Georgia", "serif"],
+        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
       },
       boxShadow: {
         soft: "0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.08)",
