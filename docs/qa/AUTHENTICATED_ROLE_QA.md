@@ -70,3 +70,94 @@ The gaps need data-aware tests (known records in two organizations, two
 warehouses, a multi-role operator). Write them against the disposable QA
 stack once it is provisioned, so each assertion is verified rather than
 guessed.
+
+## Missing scenarios — specification
+
+All users, organizations and records below are **synthetic** and must be
+created only in the QA environment described at the end. Names are
+placeholders (`ORG_A`, `WH_A`, …). Expected results follow the current
+policies in `supabase/migrations/` and the route gate in
+`src/lib/auth/workspace-access.ts`; items marked *confirm* need a product
+decision before the test is written.
+
+### 1. Organization isolation
+
+Enforced by `lots_org`, `locations_org` and the organization branch of
+`farmers_access` (`organization_id = viewer's organization_id`).
+
+| Item | Requirement |
+| --- | --- |
+| QA users | `EXPORTER_A` (role exporter, org `ORG_A`), `EXPORTER_B` (exporter, `ORG_B`), both county Bong |
+| Organizations / geography | `ORG_A`, `ORG_B` (two exporters/cooperatives), both in Bong |
+| Warehouse assignments | None |
+| Minimum seed | 1 lot and 1 location per organization; 1 farmer per organization with no geography overlap to the other user |
+| Expected | `EXPORTER_A` lists and opens `ORG_A`'s lot; `ORG_B`'s lot is absent from lists and its direct URL / REST select returns no row; insert or update of a lot with `organization_id = ORG_B` is refused. Mirror for `EXPORTER_B`. |
+
+### 2. Warehouse isolation
+
+Enforced by the `warehouse_manager` branch of `can_read_warehouse_transfer`
+and the stock/inventory policies that check `warehouse_assignments`.
+
+| Item | Requirement |
+| --- | --- |
+| QA users | `WM_A` (warehouse_manager), `WM_B` (warehouse_manager), both Bong |
+| Organizations / geography | One organization; warehouses `WH_A`, `WH_B`, `WH_C` in Bong |
+| Warehouse assignments | `WM_A` → `WH_A` only; `WM_B` → `WH_B` only |
+| Minimum seed | Stock rows in `WH_A` and `WH_B`; transfer `T1` (`WH_A`→`WH_C`), transfer `T2` (`WH_B`→`WH_C`) |
+| Expected | `WM_A` reads `WH_A` stock and `T1`; `WH_B` stock and `T2` are absent from lists and refused by direct URL / API; `WM_A` cannot dispatch or receive `T2`. Mirror for `WM_B`. Removing `WM_A`'s assignment removes access on the next request. |
+
+### 3. Notification visibility
+
+Enforced by `wf_notifs_read`: Ministry, the recipient, or the creator.
+
+| Item | Requirement |
+| --- | --- |
+| QA users | `CLAN_BONG` (creator), `DAO_BONG` (recipient), `DAO_NIMBA` (unrelated), `CAC_BONG`, `MINISTRY` |
+| Organizations / geography | Bong and Nimba |
+| Warehouse assignments | None |
+| Minimum seed | One synthetic submission by `CLAN_BONG` that notifies `DAO_BONG` |
+| Expected | Visible to `DAO_BONG` (recipient), `CLAN_BONG` (creator) and `MINISTRY`; not visible to `DAO_NIMBA`; not visible to `CAC_BONG` until a notification addressed to them is created (for example after DAO approval). Marking read is allowed only for the recipient (*confirm* against `wf_notifs_update`). |
+
+### 4. Multi-role switching
+
+Driven by `profile_role_assignments` (`assessOperationalAccess` →
+`multipleRoles`) and `/workspace/select`.
+
+| Item | Requirement |
+| --- | --- |
+| QA users | `MULTI_BONG` with two active assignments (e.g. `dao` primary + `cac`), plus one ended and one expired assignment (e.g. `ministry`) |
+| Organizations / geography | Bong |
+| Warehouse assignments | None |
+| Minimum seed | The four assignment rows above |
+| Expected | Sign-in lands on `/workspace/select` listing only the two active roles (ended/expired not offered). After choosing DAO: DAO routes allowed, CAC-only and Ministry routes denied; after switching to CAC: the reverse for DAO-only routes. Direct URL to a role that is not active is refused. *Confirm* how the chosen role persists across sessions. |
+
+### 5. Exporter denials
+
+Exporter lands on `/farmers` (`postLoginHomeForRole`).
+
+| Item | Requirement |
+| --- | --- |
+| QA users | `EXPORTER_A` (from scenario 1) |
+| Organizations / geography | `ORG_A`, Bong |
+| Warehouse assignments | None |
+| Minimum seed | One transfer requested by `EXPORTER_A`, one requested by another user |
+| Expected | Allowed: `/cocoa/lots`, `/cocoa/movements`, `/cocoa/eudr`, own-organization records. Denied by direct URL: `/command-center`, `/admin/users`, `/verification-queue`, `/workspace/clan`, `/workspace/dao`, `/workspace/cac`, `/workspace/ministry`, `/donor-dashboard`, `/audit-tools`. Exports `/api/reports/executive-briefing` and `/api/reports/donor-programme` refused (403). Transfers: only the one it requested is readable (`requester = self`). |
+
+## Where to build this QA matrix
+
+Use a **separate, disposable Supabase project** (for example
+`agrivault-qa`), never the production project:
+
+1. Create it from the tracked migrations only (`supabase/migrations/`), so
+   RLS and functions match what production will run. Do not apply the
+   legacy files under `src/lib/supabase/*.sql`.
+2. Seed the synthetic organizations, warehouses, users and records above
+   with a dedicated seed script (names prefixed `QA-`), using email
+   addresses on a domain you control.
+3. Point a Vercel **Preview-scoped** environment (not Production) at that
+   project, and run the suites against the preview with the variables above
+   plus `QA_ALLOW_SYNTHETIC_MUTATIONS=true`.
+4. For fast, repeatable policy checks, also run the same seed in a local
+   Docker Postgres/Supabase (`npm run test:rls:behavior`) before touching
+   the hosted QA project.
+5. Tear down or reset the QA project after each release cycle.

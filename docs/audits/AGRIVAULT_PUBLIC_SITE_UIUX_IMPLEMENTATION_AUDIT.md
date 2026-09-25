@@ -154,33 +154,22 @@ Resolved on this branch:
   credit appended via `customAttribution` on polygon maps.
 
 Still open — the site is **not production-ready** until these close:
-1. Real photography — 8 photographs to commission; slot-by-slot sizes,
-   crops, releases and sign-off in `docs/photography/REPLACEMENT_CHECKLIST.md`.
-   No approved photography exists in the repository.
-2. Privacy page — structure live at `/privacy` (draft notice, noindex);
-   counsel-approved text required (`src/lib/site/legal.ts`,
-   `docs/legal/COUNSEL_FACTS.md`).
-3. Terms page — same, at `/terms`.
-4. Confirm `partnerships@agrivaultdata.com` is a monitored mailbox. It is
-   defined once (`CONTACT_EMAIL`, `src/lib/site/content.ts`) and used by the
-   contact form (mailto), the contact page, the footer, the security page's
-   vulnerability-report link and the legal pages' draft notice.
-5. Credential-gated authenticated-role Playwright suites (64 tests skip
-   without QA credentials). Runbook, variables and coverage gaps:
-   `docs/qa/AUTHENTICATED_ROLE_QA.md`.
-6. Protected Vercel preview smoke test (needs an authenticated browser
-   session; no automation bypass secret is used without authorisation).
+1. Protected Vercel preview smoke pass (needs an authenticated browser
+   session; no bypass secret without authorisation).
+2. Authenticated role / RLS QA — runbook, scenarios and QA-environment plan
+   in `docs/qa/AUTHENTICATED_ROLE_QA.md`.
+3. Real photography — `docs/photography/REPLACEMENT_CHECKLIST.md`.
+4. Counsel-approved Privacy text (`/privacy` structure ready).
+5. Counsel-approved Terms text (`/terms` structure ready).
+6. `partnerships@agrivaultdata.com` verified as a monitored mailbox.
+7. Decision on personal contact data exposed in the public repository and on
+   the live site — `docs/audits/PERSONAL_DATA_EXPOSURE.md`; related table
+   review in `docs/audits/PUBLIC_CONTENT_DATA_MODEL.md`.
 
 Risks noted, not yet addressed:
-- `src/lib/growth/content.ts` holds a named person's contact details (name,
-  role, email, phone, locations) as default admin content. The repository is
-  **public**, so these are already publicly visible in source and history.
-  Only consumer: `/api/admin/content` (admin-guarded; 401 signed out); not in
-  client bundles or `public/`; `getPublicContent()` is unused. Recommendation:
-  remove the values from source (empty defaults), manage any published
-  contact through the admin content API, and decide whether to rewrite git
-  history. Note `public_content_blocks` has an anon-read policy, so anything
-  saved there is public too.
+- Personal contact defaults removed from this branch (`a17767c`); `main`,
+  two other remote branches and the live production site still carry them —
+  see `docs/audits/PERSONAL_DATA_EXPOSURE.md`.
 - `next dev` cannot run client JS because the production CSP (no
   `unsafe-eval`) also applies in development.
 - Unused visual-library dependencies from commit e668b85.
