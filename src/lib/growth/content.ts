@@ -44,11 +44,12 @@ export const DEFAULT_PUBLIC_CONTENT: PublicContent = {
     ctaDemo: "Request Demo",
   },
   contact: {
-    contactName: "Mohammed Donzo Soumaoro",
-    contactRole: "Founder & CEO, AgriVault Data",
-    contactEmail: "msdonzo@agrivaultdata.com",
-    contactPhone: "+1 571-427-5538",
-    contactLocations: "Sacramento, CA · Monrovia, Liberia",
+    // Intentionally empty: contact details are managed in the admin content tool, not in source.
+    contactName: "",
+    contactRole: "",
+    contactEmail: "",
+    contactPhone: "",
+    contactLocations: "",
   },
 };
 
