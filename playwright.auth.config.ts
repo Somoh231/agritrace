@@ -16,8 +16,16 @@ import { defineConfig, devices } from "@playwright/test";
 const STUB_URL = "http://127.0.0.1:54399";
 const PORT = Number(process.env.AUTH_TEST_PORT ?? 3100);
 
-const middlewareBundle = path.join(process.cwd(), ".next", "server", "middleware.js");
-if (!fs.existsSync(middlewareBundle) || !fs.readFileSync(middlewareBundle, "utf8").includes(STUB_URL)) {
+function buildIsWiredToStub(): boolean {
+  try {
+    const manifest = JSON.parse(fs.readFileSync(path.join(process.cwd(), ".next", "server", "middleware-manifest.json"), "utf8"));
+    const files: string[] = Object.values(manifest.middleware ?? {}).flatMap((m) => (m as { files: string[] }).files);
+    return files.some((f) => fs.readFileSync(path.join(process.cwd(), ".next", f), "utf8").includes(STUB_URL));
+  } catch {
+    return false;
+  }
+}
+if (!buildIsWiredToStub()) {
   throw new Error(`The build in .next is not wired to the stub Supabase (${STUB_URL}). Rebuild as described in playwright.auth.config.ts.`);
 }
 
