@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { AgriVaultMark } from "@/components/site/AgriVaultMark";
+import { AgriVaultLockup } from "@/components/site/AgriVaultMark";
 import { ArrowRight } from "@/components/site/icons";
 import { CONTACT_EMAIL } from "@/lib/site/content";
 
@@ -28,18 +28,13 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
     ],
   },
   {
-    title: "Programmes",
+    title: "Delivery",
     links: [
       { label: "Programme-led delivery", href: "/programmes" },
-      { label: "Liberia programme", href: "/programmes/liberia" },
-      { label: "Governments", href: "/governments" },
-    ],
-  },
-  {
-    title: "How we work",
-    links: [
-      { label: "Methodology", href: "/how-we-work" },
+      { label: "How we work", href: "/how-we-work" },
       { label: "Engagement models", href: "/how-we-work#engagement-models" },
+      { label: "Governments & ministries", href: "/governments" },
+      { label: "Liberia programme", href: "/programmes/liberia" },
     ],
   },
   {
@@ -53,71 +48,64 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   },
 ];
 
+const linkClass =
+  "inline-flex min-h-[44px] items-center py-1.5 text-[0.9375rem] leading-snug text-white/70 transition-colors hover:text-white md:min-h-[34px] md:py-1";
+
+/**
+ * Closing section of every public page: compact identity, sitemap, legal.
+ * Inner pages already end on a CTA band, so the footer carries no second hero.
+ */
 export default function SiteFooter() {
   return (
     <footer className="avs-surface-navy avs-on-dark relative isolate overflow-hidden">
       <FooterContours />
-      <div className="avs-container pt-20 md:pt-28">
-        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-2xl">
-            <p className="avs-h2">Agricultural systems, technology and advisory.</p>
-            <p className="avs-lead mt-5">
-              We design and deploy the data systems, field operations and reporting infrastructure that agricultural
-              institutions run on.
+      <div className="avs-container pt-14 md:pt-16">
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
+          <div className="lg:col-span-4">
+            <Link href="/" aria-label="AgriVault Data — home" className="inline-flex min-h-[44px] items-center rounded-md">
+              <AgriVaultLockup tone="light" size={24} />
+            </Link>
+            <p className="mt-4 max-w-[34ch] text-[0.9375rem] leading-relaxed text-white/70">
+              Agricultural systems, technology, advisory and implementation for governments, development partners and
+              agricultural institutions.
             </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/contact" className="avs-btn avs-btn-primary">
-              Start a conversation <ArrowRight />
-            </Link>
-            <Link href="/login" className="avs-btn avs-btn-ghost">
-              Sign in
-            </Link>
-          </div>
-        </div>
-
-        <hr className="avs-rule mt-16" />
-
-        <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-10 py-14 sm:grid-cols-3 lg:grid-cols-5">
-          {COLUMNS.map((col) => (
-            <div key={col.title}>
-              <h2 className="avs-label text-[rgb(var(--av-gold))]">{col.title}</h2>
-              <ul className="mt-5 space-y-1">
-                {col.links.map((l) => (
-                  <li key={l.label}>
-                    <Link
-                      href={l.href}
-                      className="inline-flex min-h-[36px] items-center text-[0.9375rem] text-white/75 transition-colors hover:text-white"
-                    >
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            <div className="mt-6 flex flex-col items-start gap-1">
+              <a href={`mailto:${CONTACT_EMAIL}`} className={`${linkClass} text-white/85`}>
+                {CONTACT_EMAIL}
+              </a>
+              <Link href="/contact" className="avs-arrow-link inline-flex min-h-[44px] items-center text-[0.9375rem]">
+                Start a conversation <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
-          ))}
-        </nav>
+          </div>
 
-        {/* Signature lockup: brand, not a link target. */}
-        <div aria-hidden="true" className="flex items-center gap-[3.5vw] pb-12 pt-4 text-[rgb(var(--av-paper))]">
-          <AgriVaultMark size={140} tone="light" className="h-auto w-[clamp(40px,10vw,150px)]" />
-          <span className="whitespace-nowrap text-[clamp(2rem,10.4vw,8.5rem)] font-semibold leading-none tracking-[-0.045em]">
-            AgriVault<span className="ml-[0.18em] font-normal text-white/50">Data</span>
-          </span>
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-4 lg:col-span-8">
+            {COLUMNS.map((col) => (
+              <div key={col.title}>
+                <h2 className="avs-label text-white/50">{col.title}</h2>
+                <ul className="mt-4">
+                  {col.links.map((l) => (
+                    <li key={l.label}>
+                      <Link href={l.href} className={linkClass}>
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-white/10 py-8 text-[0.875rem] text-white/60 md:flex-row md:items-center md:justify-between">
+        <div className="mt-12 flex flex-col gap-2 border-t border-white/10 py-6 text-[0.875rem] text-white/55 md:mt-14 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} AgriVault Data. An independent, privately held company.</p>
-          <div className="flex flex-wrap items-center gap-x-6">
-            <Link href="/privacy" className="inline-flex min-h-[44px] items-center text-white/75 transition-colors hover:text-white">
+          <div className="flex items-center gap-x-6">
+            <Link href="/privacy" className="inline-flex min-h-[44px] items-center text-white/70 transition-colors hover:text-white">
               Privacy
             </Link>
-            <Link href="/terms" className="inline-flex min-h-[44px] items-center text-white/75 transition-colors hover:text-white">
+            <Link href="/terms" className="inline-flex min-h-[44px] items-center text-white/70 transition-colors hover:text-white">
               Terms
             </Link>
-            <a href={`mailto:${CONTACT_EMAIL}`} className="inline-flex min-h-[44px] items-center text-white/75 transition-colors hover:text-white">
-              {CONTACT_EMAIL}
-            </a>
           </div>
         </div>
       </div>
@@ -125,18 +113,18 @@ export default function SiteFooter() {
   );
 }
 
-/** Concentric survey contours, bottom-right — the footer's only ornament. */
+/** Faint survey contours at the right edge — the footer's only ornament. */
 function FooterContours() {
-  const rings = Array.from({ length: 11 }, (_, i) => i);
+  const rings = Array.from({ length: 9 }, (_, i) => i);
   return (
     <svg
       aria-hidden="true"
       focusable="false"
       viewBox="0 0 800 800"
-      className="pointer-events-none absolute -bottom-64 -right-40 -z-10 h-[900px] w-[900px] opacity-[0.09]"
+      className="pointer-events-none absolute -right-48 -top-40 -z-10 h-[640px] w-[640px] opacity-[0.06]"
     >
       {rings.map((i) => {
-        const r = 40 + i * 34;
+        const r = 40 + i * 38;
         const wob = 6 + i * 2.2;
         const pts = Array.from({ length: 49 }, (_, s) => {
           const a = (s / 48) * Math.PI * 2;
