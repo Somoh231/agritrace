@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Check } from "@/components/site/icons";
-import { ImageFrame, type Scene } from "@/components/site/ImageFrame";
 import { CtaBand } from "@/components/site/page/CtaBand";
 import { PageHero } from "@/components/site/page/PageHero";
 import { SectionIndex } from "@/components/site/page/SectionIndex";
@@ -13,15 +12,6 @@ export const metadata: Metadata = {
   description:
     "Six practices — agricultural systems, field operations, GIS, supply chain, reporting and programme implementation — each defined by the institutional outcome it produces.",
   alternates: { canonical: "/what-we-do" },
-};
-
-const SCENE: Record<string, Scene> = {
-  systems: "operations-room",
-  field: "cooperative-store",
-  gis: "field-boundary",
-  supply: "warehouse",
-  reporting: "operations-room",
-  programmes: "aerial-fields",
 };
 
 const productName = (id: string) => PRODUCTS.find((p) => p.id === id)?.name ?? id;
@@ -56,20 +46,20 @@ export default function WhatWeDoPage() {
                 key={p.id}
                 id={p.id}
                 aria-labelledby={`${p.id}-title`}
-                className={`scroll-mt-[calc(var(--av-header-h)+24px)] ${i > 0 ? "mt-20 border-t border-[rgb(var(--av-line)/0.14)] pt-20 md:mt-28 md:pt-28" : ""}`}
+                className={`scroll-mt-[calc(var(--av-header-h)+24px)] ${i > 0 ? "mt-14 border-t border-[rgb(var(--av-line)/0.14)] pt-14 md:mt-20 md:pt-20" : ""}`}
               >
                 <p className="avs-meta avs-reveal text-[rgb(var(--av-emerald-ink))]">Practice {p.n}</p>
                 <h2 id={`${p.id}-title`} className="avs-h2 avs-reveal mt-4 max-w-[20ch]">
                   {p.title}
                 </h2>
-                <p className="avs-lead avs-reveal mt-6 max-w-[42rem]">{p.short}</p>
+                <p className="avs-lead avs-reveal mt-5 max-w-[42rem]">{p.short}</p>
 
-                <ImageFrame scene={SCENE[p.id]} alt="" ratio="21 / 9" className="avs-reveal mt-10 rounded-[var(--av-radius)]">
-                  <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
-                    <p className="avs-label text-[rgb(var(--av-gold))]">Institutional outcome</p>
-                    <p className="avs-editorial mt-2 max-w-[28ch] text-[rgb(var(--av-paper))]">{p.outcome}</p>
-                  </div>
-                </ImageFrame>
+                <figure className="avs-reveal mt-8 border-l-2 border-[rgb(var(--av-gold)/0.7)] pl-5 sm:pl-6">
+                  <figcaption className="avs-label text-[rgb(var(--av-gold-ink))]">Institutional outcome</figcaption>
+                  <p className="avs-serif mt-2 max-w-[34ch] text-[clamp(1.375rem,2vw,1.75rem)] leading-[1.25] text-[rgb(var(--av-forest))]">
+                    {p.outcome}
+                  </p>
+                </figure>
 
                 <div className="mt-10 grid gap-10 md:grid-cols-2">
                   <div className="avs-reveal">
@@ -92,7 +82,7 @@ export default function WhatWeDoPage() {
                         <li key={id}>
                           <Link
                             href={`/products#${id}`}
-                            className="inline-flex min-h-[40px] items-center rounded-full border border-[rgb(var(--av-line)/0.2)] px-4 text-[0.9375rem] transition-colors hover:border-[rgb(var(--av-emerald-ink))] hover:text-[rgb(var(--av-emerald-ink))]"
+                            className="inline-flex min-h-[44px] items-center rounded-full border border-[rgb(var(--av-line)/0.2)] px-4 text-[0.9375rem] transition-colors hover:border-[rgb(var(--av-emerald-ink))] hover:text-[rgb(var(--av-emerald-ink))]"
                           >
                             {productName(id)}
                           </Link>
