@@ -365,7 +365,6 @@ export const OUTCOMES = [
   { title: "Better coordination", body: "Field, district, county and national teams work from the same information." },
   { title: "More defensible data", body: "Figures hold up to review by auditors, donors and oversight bodies." },
   { title: "Operational continuity", body: "Work continues offline and through staff changes because the process lives in the system." },
-  { title: "Reduced fragmentation", body: "Fewer parallel lists, maps and ledgers describing the same farmers and stock." },
 ];
 
 /** The institutional problem, as sources held separately today and linked in one record. */

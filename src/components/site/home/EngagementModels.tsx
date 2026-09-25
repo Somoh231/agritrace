@@ -35,7 +35,7 @@ export default function EngagementModels({ headingLevel = 2 }: { headingLevel?: 
     <section id="engagement-models" aria-labelledby={`${base}-title`} className="avs-surface-paper avs-section">
       <div className="avs-container">
         <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
-          <Heading id={`${base}-title`} className="avs-h1 avs-reveal lg:col-span-8">
+          <Heading id={`${base}-title`} className="avs-h2 avs-reveal lg:col-span-8">
             Engagement <span className="avs-accent">models</span>
           </Heading>
           <p className="avs-body avs-reveal lg:col-span-4">
@@ -43,7 +43,7 @@ export default function EngagementModels({ headingLevel = 2 }: { headingLevel?: 
           </p>
         </div>
 
-        <div role="tablist" aria-label="Engagement models" className="avs-no-scrollbar -mx-[var(--av-gutter)] mt-12 flex gap-2 overflow-x-auto px-[var(--av-gutter)] pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
+        <div role="tablist" aria-label="Engagement models" className="avs-no-scrollbar -mx-[var(--av-gutter)] mt-10 flex gap-2 overflow-x-auto px-[var(--av-gutter)] pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
           {ENGAGEMENT_MODELS.map((em, i) => {
             const on = i === active;
             return (
@@ -76,11 +76,11 @@ export default function EngagementModels({ headingLevel = 2 }: { headingLevel?: 
           role="tabpanel"
           id={`${base}-panel`}
           aria-labelledby={`${base}-tab-${active}`}
-          className="avs-surface-forest mt-4 grid gap-10 rounded-[var(--av-radius-lg)] p-6 sm:p-10 lg:grid-cols-12 lg:gap-12 lg:p-14"
+          className="avs-surface-forest mt-4 grid gap-10 rounded-[var(--av-radius-lg)] p-6 sm:p-10 lg:grid-cols-12 lg:gap-12 lg:p-12"
         >
           <div key={m.n} className={`${changed ? "avs-fade-in" : ""} lg:col-span-5`}>
             <p className="avs-label text-[rgb(var(--av-gold))]">{m.kind}</p>
-            <p className="avs-h2 mt-4 text-[clamp(2rem,3.4vw,3.25rem)]">{m.name}</p>
+            <p className="avs-h3 mt-4 text-[clamp(1.625rem,2.4vw,2.25rem)]">{m.name}</p>
             <p className="mt-5 text-[1.0625rem] leading-relaxed text-white/80">{m.summary}</p>
             <div className="mt-8 border-t border-white/10 pt-5">
               <p className="avs-label text-[0.6875rem] text-white/60">Suited to</p>
@@ -97,16 +97,16 @@ export default function EngagementModels({ headingLevel = 2 }: { headingLevel?: 
                 return (
                   <li
                     key={s.n}
-                    className={`flex min-h-[120px] flex-col justify-between rounded-[14px] border p-4 transition-colors duration-500 sm:min-h-[140px] ${
+                    className={`flex min-h-[92px] flex-col justify-between gap-4 rounded-[14px] border p-4 transition-colors duration-500 sm:min-h-[104px] ${
                       inc
-                        ? "border-transparent bg-[rgb(var(--av-emerald))] text-[rgb(var(--av-navy))]"
-                        : "border-white/15 text-white/55"
+                        ? "border-[rgb(var(--av-mint)/0.45)] bg-white/[0.06] text-[rgb(var(--av-paper))]"
+                        : "border-dashed border-white/15 text-white/55"
                     }`}
                   >
                     <p className="avs-meta flex items-start justify-between gap-2 uppercase tracking-[0.08em]">
                       <span>{s.n}</span>
                       {inc ? (
-                        <span className="inline-flex items-center gap-1">
+                        <span className="inline-flex items-center gap-1 text-[rgb(var(--av-mint))]">
                           <Check className="h-3.5 w-3.5" /> Included
                         </span>
                       ) : (

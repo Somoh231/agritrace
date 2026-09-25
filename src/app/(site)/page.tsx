@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import ClosingCTA from "@/components/site/home/ClosingCTA";
-import EngagementModels from "@/components/site/home/EngagementModels";
 import Hero from "@/components/site/home/Hero";
 import LiberiaFeature from "@/components/site/home/LiberiaFeature";
 import Outcomes from "@/components/site/home/Outcomes";
@@ -25,7 +24,6 @@ export default function HomePage() {
       <ProductShowcase />
       <LiberiaFeature />
       <Outcomes />
-      <EngagementModels />
       <ClosingCTA />
     </>
   );

@@ -31,19 +31,22 @@ export default function ProblemSection() {
     <section aria-labelledby="problem-title" className="avs-surface-paper avs-section">
       <div className="avs-container">
         <p className="avs-label avs-eyebrow avs-reveal">The institutional problem</p>
-        <h2
-          id="problem-title"
-          className="avs-serif avs-reveal mt-6 max-w-[22ch] text-[clamp(2.125rem,5vw,4.75rem)] leading-[1.02] tracking-[-0.025em]"
-        >
-          Agricultural programmes often operate across{" "}
-          <em className="avs-accent text-[rgb(var(--av-rust))]">disconnected</em> field records, spreadsheets, GIS
-          systems, warehouse records, and reporting processes.
-        </h2>
-
-        <div className="mt-14 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-          <p className="avs-lead avs-reveal max-w-[34rem] border-l-2 border-[rgb(var(--av-emerald))] pl-5 text-[rgb(var(--av-forest))]">
-            AgriVault brings together technology, programme design and operational implementation.
+        <div className="mt-6 grid gap-8 lg:grid-cols-12 lg:items-end">
+          <h2
+            id="problem-title"
+            className="avs-serif avs-reveal max-w-[18ch] text-[clamp(2.125rem,3.9vw,3.75rem)] leading-[1.04] tracking-[-0.025em] lg:col-span-7"
+          >
+            Agricultural programmes often run on <em className="avs-accent text-[rgb(var(--av-rust))]">disconnected</em>{" "}
+            records.
+          </h2>
+          <p className="avs-body avs-reveal max-w-[30rem] text-[1.0625rem] leading-relaxed lg:col-span-5">
+            Field forms, spreadsheets, GIS files, warehouse ledgers and reports are held separately, so figures cannot
+            be traced back to the field. AgriVault brings technology, programme design and implementation together to
+            connect them.
           </p>
+        </div>
+
+        <div className="mt-12 flex justify-start">
           <div
             role="group"
             aria-label="Compare how programme records are held"
@@ -77,7 +80,7 @@ export default function ProblemSection() {
         </div>
 
         <div
-          className="relative isolate mt-6 overflow-hidden rounded-[var(--av-radius-lg)] bg-[rgb(var(--av-sand))] px-4 py-6 md:h-[640px] md:p-0"
+          className="relative isolate mt-5 overflow-hidden rounded-[var(--av-radius-lg)] bg-[rgb(var(--av-sand))] px-3 py-5 sm:px-4 sm:py-6 md:h-[560px] md:p-0"
         >
           <p className="sr-only" aria-live="polite">
             {linked
@@ -125,7 +128,7 @@ export default function ProblemSection() {
             </p>
           </div>
 
-          <ul className="grid gap-3 sm:grid-cols-2 md:block">
+          <ul className="grid grid-cols-2 gap-2.5 sm:gap-3 md:block">
             {/* DOM (and mobile stacking) order is 01–06; on md+ each card takes its slot around the hub. */}
             {FRAGMENTS.map((f, fi) => {
               const slot = ORDER.indexOf(fi);
@@ -143,7 +146,7 @@ export default function ProblemSection() {
                   }
                 >
                   <div
-                    className={`rounded-[14px] border bg-white px-4 py-3.5 transition-shadow duration-700 ${
+                    className={`h-full rounded-[14px] border bg-white px-3 py-3 transition-shadow duration-700 sm:px-4 sm:py-3.5 ${
                       linked ? "border-[rgb(var(--av-emerald)/0.35)] shadow-[0_10px_30px_-18px_rgba(11,46,26,0.45)]" : "border-[rgb(var(--av-line)/0.12)] shadow-[0_8px_24px_-16px_rgba(11,46,26,0.35)]"
                     }`}
                   >
@@ -151,7 +154,7 @@ export default function ProblemSection() {
                       <p className="avs-label text-[0.6875rem] text-[rgb(var(--av-gold-ink))]">{f.kind}</p>
                       <p className="avs-meta text-[rgb(var(--av-slate))]">{String(fi + 1).padStart(2, "0")}</p>
                     </div>
-                    <p className="mt-1 text-[1.0625rem] font-medium text-[rgb(var(--av-forest))]">{f.title}</p>
+                    <p className="mt-1 text-[0.9375rem] font-medium leading-snug text-[rgb(var(--av-forest))] sm:text-[1.0625rem]">{f.title}</p>
                     <p
                       className={`avs-meta mt-2.5 flex items-center gap-2 border-t border-[rgb(var(--av-line)/0.1)] pt-2.5 ${
                         linked ? "text-[rgb(var(--av-emerald-ink))]" : "text-[rgb(var(--av-rust))]"

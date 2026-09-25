@@ -47,8 +47,8 @@ export default function PracticeExplorer() {
     <section aria-labelledby="practices-title" className="avs-surface-paper avs-section pt-0">
       <div className="avs-container">
         <hr className="avs-rule" style={{ borderColor: "rgb(var(--av-forest))" }} />
-        <div className="mt-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <h2 id="practices-title" className="avs-h1 avs-reveal">
+        <div className="mt-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <h2 id="practices-title" className="avs-h-section avs-reveal">
             What we <span className="avs-accent">do</span>
           </h2>
           <p className="avs-body avs-reveal max-w-[27rem]">
@@ -57,7 +57,7 @@ export default function PracticeExplorer() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-10 lg:grid-cols-12 lg:gap-12">
+        <div className="mt-10 grid gap-10 lg:mt-12 lg:grid-cols-12 lg:gap-12">
           {/* Visual echo of the list; the same outcomes are in the list for assistive tech. */}
           <div aria-hidden="true" className="hidden lg:col-span-5 lg:block">
             <div className="sticky top-[calc(var(--av-header-h)+24px)]">
@@ -105,7 +105,7 @@ export default function PracticeExplorer() {
                   data-index={i}
                   onMouseEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
-                  className={`group relative border-t py-8 transition-colors duration-500 lg:py-10 ${
+                  className={`group relative border-t py-7 transition-colors duration-500 lg:py-8 ${
                     on ? "border-[rgb(var(--av-emerald))]" : "border-[rgb(var(--av-line)/0.14)]"
                   }`}
                 >
@@ -117,7 +117,7 @@ export default function PracticeExplorer() {
                     <p className={`avs-meta pt-2 ${on ? "text-[rgb(var(--av-emerald-ink))]" : "text-[rgb(var(--av-slate))]"}`}>{pr.n}</p>
                     <div>
                       <h3
-                        className={`text-[clamp(1.5rem,2.5vw,2.25rem)] font-medium leading-[1.1] tracking-[-0.025em] transition-colors duration-500 ${
+                        className={`text-[clamp(1.375rem,2.1vw,1.875rem)] font-medium leading-[1.12] tracking-[-0.022em] transition-colors duration-500 ${
                           on ? "text-[rgb(var(--av-forest))]" : "text-[rgb(var(--av-forest))] lg:text-[rgb(var(--av-sage))]"
                         }`}
                       >
@@ -127,13 +127,13 @@ export default function PracticeExplorer() {
                       </h3>
                       <p className="avs-body mt-3 max-w-[36rem]">{pr.short}</p>
                       {/* Outcome inline below lg; at lg+ the sticky card shows it visually. */}
-                      <div className="mt-5 rounded-[14px] bg-[rgb(var(--av-navy))] p-5 text-[rgb(var(--av-paper))] lg:sr-only">
-                        <p className="avs-label text-[rgb(var(--av-gold))]">Institutional outcome</p>
-                        <p className="avs-serif mt-2 text-[1.25rem] leading-snug">{pr.outcome}</p>
+                      <div className="mt-4 border-l-2 border-[rgb(var(--av-gold)/0.7)] pl-4 lg:sr-only">
+                        <p className="avs-label text-[0.6875rem] text-[rgb(var(--av-gold-ink))]">Institutional outcome</p>
+                        <p className="avs-serif mt-1.5 text-[1.125rem] leading-snug text-[rgb(var(--av-forest))]">{pr.outcome}</p>
                       </div>
                       <p
                         aria-hidden="true"
-                        className={`avs-arrow-link mt-5 text-[0.9375rem] transition-opacity duration-500 ${on ? "lg:opacity-100" : "lg:opacity-0"}`}
+                        className={`avs-arrow-link mt-4 text-[0.9375rem] transition-opacity duration-500 ${on ? "lg:opacity-100" : "lg:opacity-0"}`}
                       >
                         Explore the practice <ArrowRight />
                       </p>
