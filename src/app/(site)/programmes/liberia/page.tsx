@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { ImageFrame } from "@/components/site/ImageFrame";
 import { LiberiaMap, LiberiaMapCredit } from "@/components/site/LiberiaMap";
 import { CtaBand } from "@/components/site/page/CtaBand";
 import { PageHero, SectionIntro } from "@/components/site/page/PageHero";
@@ -106,9 +105,8 @@ export default function LiberiaProgrammePage() {
       <section aria-labelledby="components-title" className="avs-surface-paper avs-section">
         <div className="avs-container">
           <SectionIntro id="components-title" eyebrow="Programme components" title="Seven components, one programme." />
-          <div className="mt-12 grid gap-4 lg:grid-cols-12">
-            <ImageFrame scene="field-boundary" alt="" ratio="auto" className="avs-reveal min-h-[360px] rounded-[var(--av-radius-lg)] lg:col-span-5" />
-            <ol className="grid gap-px overflow-hidden rounded-[var(--av-radius-lg)] border border-[rgb(var(--av-line)/0.14)] bg-[rgb(var(--av-line)/0.14)] sm:grid-cols-2 lg:col-span-7">
+          <div className="mt-10">
+            <ol className="grid gap-px overflow-hidden rounded-[var(--av-radius-lg)] border border-[rgb(var(--av-line)/0.14)] bg-[rgb(var(--av-line)/0.14)] sm:grid-cols-2 lg:grid-cols-4">
               {LIBERIA.components.map((c, i) => (
                 <li key={c.title} className="avs-reveal bg-[rgb(var(--av-paper))] p-6">
                   <p className="avs-meta text-[rgb(var(--av-emerald-ink))]">{String(i + 1).padStart(2, "0")}</p>

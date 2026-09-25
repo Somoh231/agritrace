@@ -116,7 +116,8 @@ test.describe("public site: legal pages", () => {
     test(`${route} is a clearly marked draft and not indexed`, async ({ page }) => {
       await page.goto(route, { waitUntil: "domcontentloaded" });
       await expect(page.getByRole("note")).toContainText("Draft — not yet in effect");
-      await expect(page.getByText("Legal text pending — counsel review").first()).toBeVisible();
+      await expect(page.getByText("Draft — legal text pending")).toBeVisible();
+      await expect(page.getByText("Pending", { exact: true }).first()).toBeVisible();
       await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     });
   }

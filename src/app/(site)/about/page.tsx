@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ArrowRight } from "@/components/site/icons";
-import { ImageFrame } from "@/components/site/ImageFrame";
 import { CtaBand } from "@/components/site/page/CtaBand";
 import { PageHero, SectionIntro } from "@/components/site/page/PageHero";
 
@@ -48,13 +47,15 @@ export default function AboutPage() {
       />
 
       <section aria-labelledby="why-title" className="avs-surface-paper avs-section">
-        <div className="avs-container grid gap-12 lg:grid-cols-12 lg:items-center">
-          <div className="lg:col-span-6">
+        <div className="avs-container grid gap-8 lg:grid-cols-12 lg:gap-12">
+          <div className="lg:col-span-5">
             <p className="avs-label avs-eyebrow avs-reveal">Why we exist</p>
-            <h2 id="why-title" className="avs-h2 avs-reveal mt-5">
+            <h2 id="why-title" className="avs-h2 avs-reveal mt-5 max-w-[16ch]">
               Programmes are held back by records, not by intent.
             </h2>
-            <div className="avs-body avs-reveal mt-6 space-y-4 text-[1.0625rem]">
+          </div>
+          <div className="lg:col-span-6 lg:col-start-7 lg:pt-10">
+            <div className="avs-body avs-reveal space-y-4 text-[1.125rem] leading-relaxed">
               <p>
                 Agricultural programmes are often run across field forms, spreadsheets, GIS files, warehouse ledgers and
                 reports that no one can reconcile. Leadership sees activity late, and figures cannot be traced back to
@@ -66,7 +67,6 @@ export default function AboutPage() {
               </p>
             </div>
           </div>
-          <ImageFrame scene="aerial-fields" alt="" ratio="4 / 3" className="avs-reveal rounded-[var(--av-radius-lg)] lg:col-span-6" />
         </div>
       </section>
 

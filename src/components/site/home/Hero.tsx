@@ -31,7 +31,7 @@ export default function Hero() {
       <ParcelLayer />
 
       <div className="avs-container relative flex flex-1 flex-col justify-end pb-10 pt-[calc(var(--av-header-h)+4rem)] md:pb-12">
-        <p className="avs-label text-[rgb(var(--av-gold))]">Agricultural systems · Technology · Advisory</p>
+        <p className="avs-label text-[rgb(var(--av-gold))]">Agricultural systems · Technology · Advisory · Implementation</p>
         <h1 id="hero-title" className="avs-display mt-6 max-w-[15ch] text-[rgb(var(--av-paper))]">
           Building the systems behind <span className="avs-accent">stronger</span> agricultural institutions.
         </h1>
@@ -107,14 +107,11 @@ function ParcelLayer() {
           <circle key={i} cx={x} cy={y} r={4} fill="#6FD3A4" className="avs-parcel-vertex" style={{ animationDelay: `${0.5 + i * 0.35}s` }} />
         ))}
       </svg>
-      <Tag className="left-[4%] top-[-6%]" dot="#E4E9C9">
-        Bong County · 6.83° N, 9.37° W
-      </Tag>
       <Tag className="left-[42%] top-[17%]" dot="#0FA36B">
         Plot · boundary verified
       </Tag>
       <Tag className="left-[56%] top-[36%]" dot="#F7F7F2">
-        Rec LR-BG-······ · <span className="text-[rgb(var(--av-gold))]">Sample</span>
+        Field record · <span className="text-[rgb(var(--av-gold))]">Sample</span>
       </Tag>
     </div>
   );

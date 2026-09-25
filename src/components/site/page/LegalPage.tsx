@@ -6,9 +6,10 @@ import { CONTACT_EMAIL } from "@/lib/site/content";
 import { LEGAL_DRAFT, type LegalDocument } from "@/lib/site/legal";
 
 /**
- * Layout for /privacy and /terms. Sections without approved copy render a
- * clearly marked placeholder; nothing on the page makes a legal commitment
- * until counsel's text is inserted in src/lib/site/legal.ts.
+ * Layout for /privacy and /terms. Sections without approved copy show their
+ * heading with a "Pending" tag (the draft notice above explains why); nothing on
+ * the page makes a legal commitment until counsel's text is inserted in
+ * src/lib/site/legal.ts.
  */
 export function LegalPage({ doc, related }: { doc: LegalDocument; related: { label: string; href: string } }) {
   return (
@@ -65,11 +66,14 @@ export function LegalPage({ doc, related }: { doc: LegalDocument; related: { lab
                 key={s.id}
                 id={s.id}
                 aria-labelledby={`${s.id}-title`}
-                className="scroll-mt-[calc(var(--av-header-h)+24px)] border-b border-[rgb(var(--av-line)/0.1)] py-10"
+                className={`scroll-mt-[calc(var(--av-header-h)+24px)] border-b border-[rgb(var(--av-line)/0.1)] ${s.body.length ? "py-10" : "py-5"}`}
               >
-                <h2 id={`${s.id}-title`} className="avs-h3 flex gap-4">
-                  <span className="avs-meta pt-2 text-[rgb(var(--av-emerald-ink))]">{String(i + 1).padStart(2, "0")}</span>
-                  {s.title}
+                <h2 id={`${s.id}-title`} className={`flex items-baseline gap-4 ${s.body.length ? "avs-h3" : "text-[1.1875rem] font-medium leading-snug"}`}>
+                  <span className="avs-meta text-[rgb(var(--av-emerald-ink))]">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="flex-1">{s.title}</span>
+                  {s.body.length ? null : (
+                    <span className="avs-meta shrink-0 uppercase tracking-[0.1em] text-[rgb(var(--av-slate))]">Pending</span>
+                  )}
                 </h2>
                 {s.body.length ? (
                   <div className="avs-body mt-4 space-y-4 text-[1.0625rem] leading-relaxed">
@@ -77,14 +81,7 @@ export function LegalPage({ doc, related }: { doc: LegalDocument; related: { lab
                       <p key={j}>{para}</p>
                     ))}
                   </div>
-                ) : (
-                  <div className="mt-4 rounded-[14px] border border-dashed border-[rgb(var(--av-line)/0.35)] bg-[rgb(var(--av-sand)/0.6)] p-5">
-                    <p className="avs-label text-[0.6875rem] text-[rgb(var(--av-slate))]">Legal text pending — counsel review</p>
-                    <p className="avs-body mt-2 text-[0.9375rem]">
-                      Counsel-approved text for &ldquo;{s.title}&rdquo; will appear here.
-                    </p>
-                  </div>
-                )}
+                ) : null}
               </article>
             ))}
 

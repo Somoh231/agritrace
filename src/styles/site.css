@@ -49,7 +49,7 @@
   /* Layout */
   --av-max: 1440px;
   --av-gutter: clamp(1.25rem, 3.4vw, 3rem);
-  --av-section: clamp(5rem, 10vw, 9rem);
+  --av-section: clamp(4.5rem, 8.5vw, 7.5rem);
   --av-header-h: 72px;
   --av-radius: 20px;
   --av-radius-lg: 28px;
@@ -133,6 +133,14 @@ html:has(.avs) {
   font-size: clamp(2.5rem, 5.4vw, 5.25rem);
   line-height: 0.98;
   letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+/* Homepage section headings: one size between the display hero and inner-page h2s. */
+.avs-h-section {
+  font-weight: 500;
+  font-size: clamp(2.25rem, 4.2vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.032em;
   text-wrap: balance;
 }
 .avs-h2 {
@@ -323,8 +331,8 @@ html:has(.avs) {
 .avs-fade-in { animation: avs-fade-up 700ms var(--av-ease-out); }
 @keyframes avs-fade-up { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }
 
-/* Problem canvas: scattered "today" vs aligned "with AgriVault" (transform only) */
-@media (min-width: 768px) {
+/* Problem canvas: scattered "today" vs aligned "with AgriVault" (transform only, lg+) */
+@media (min-width: 1024px) {
   .avs-frag { transform: var(--drift, none); transition: transform 900ms var(--av-ease-out); }
 }
 

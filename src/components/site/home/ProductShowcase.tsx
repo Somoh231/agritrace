@@ -47,7 +47,7 @@ export default function ProductShowcase() {
         <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-8">
             <p className="avs-label avs-eyebrow avs-reveal">Products we deploy</p>
-            <h2 id="products-title" className="avs-h1 avs-reveal mt-6 max-w-[15ch]">
+            <h2 id="products-title" className="avs-h-section avs-reveal mt-6 max-w-[15ch]">
               Products, deployed inside the <span className="avs-accent">work</span>.
             </h2>
           </div>

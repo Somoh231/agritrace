@@ -35,7 +35,9 @@ export default function ProductsPage() {
         }
       />
 
-      <section aria-label="Products" className="avs-surface-paper avs-section">
+      <ProductArchitecture />
+
+      <section aria-label="Products" className="avs-surface-paper avs-section pt-0">
         <div className="avs-container grid gap-12 lg:grid-cols-12">
           <div className="hidden lg:col-span-3 lg:block">
             <SectionIndex items={PRODUCTS.map((p) => ({ id: p.id, n: p.code, label: p.name.replace("AgriVault ", "") }))} label="Products" />
@@ -56,12 +58,67 @@ export default function ProductsPage() {
   );
 }
 
+/**
+ * How the products fit together: five modules on one shared platform and record.
+ * Each tile jumps to that product below.
+ */
+function ProductArchitecture() {
+  const [platform, ...modules] = PRODUCTS;
+  return (
+    <section aria-labelledby="architecture-title" className="avs-surface-paper pt-[var(--av-section)] pb-16 md:pb-20">
+      <div className="avs-container">
+        <div className="grid gap-5 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-7">
+            <p className="avs-label avs-eyebrow">Product architecture</p>
+            <h2 id="architecture-title" className="avs-h2 mt-4 max-w-[18ch]">
+              Five modules on one platform and one record.
+            </h2>
+          </div>
+          <p className="avs-body max-w-[28rem] lg:col-span-5 lg:justify-self-end">
+            Programmes deploy the modules they need. Every module writes to the same operational record, so nothing is
+            re-keyed between them.
+          </p>
+        </div>
+
+        <div className="avs-reveal mt-10 rounded-[var(--av-radius-lg)] border border-[rgb(var(--av-line)/0.14)] bg-[rgb(var(--av-sand))] p-3 sm:p-4">
+          <ul className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5">
+            {modules.map((m) => (
+              <li key={m.id}>
+                <a
+                  href={`#${m.id}`}
+                  className="flex h-full min-h-[112px] flex-col justify-between rounded-[16px] border border-[rgb(var(--av-line)/0.12)] bg-white p-4 transition-colors hover:border-[rgb(var(--av-emerald-ink))]"
+                >
+                  <span className="avs-meta text-[rgb(var(--av-emerald-ink))]">{m.code}</span>
+                  <span className="mt-3 block text-[1rem] font-medium leading-snug">{m.name}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a
+            href={`#${platform.id}`}
+            className="avs-surface-forest mt-2 flex flex-col gap-2 rounded-[16px] p-5 text-[rgb(var(--av-paper))] sm:mt-3 md:flex-row md:items-center md:justify-between md:gap-8"
+          >
+            <span>
+              <span className="avs-meta text-[rgb(var(--av-mint))]">{platform.code} · Shared platform</span>
+              <span className="mt-1.5 block text-[1.125rem] font-medium">{platform.name}</span>
+            </span>
+            <span className="max-w-[34rem] text-[0.9375rem] leading-snug text-white/75">
+              Identity, roles, approvals and audit for every module — one operational record from field capture to
+              national reporting.
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ProductArticle({ p, first }: { p: Product; first: boolean }) {
   return (
     <article
       id={p.id}
       aria-labelledby={`${p.id}-title`}
-      className={`scroll-mt-[calc(var(--av-header-h)+24px)] ${first ? "" : "mt-20 border-t border-[rgb(var(--av-line)/0.14)] pt-20 md:mt-28 md:pt-28"}`}
+      className={`scroll-mt-[calc(var(--av-header-h)+24px)] ${first ? "border-t border-[rgb(var(--av-line)/0.14)] pt-14 md:pt-16" : "mt-14 border-t border-[rgb(var(--av-line)/0.14)] pt-14 md:mt-16 md:pt-16"}`}
     >
       <div className="flex flex-wrap items-center gap-3">
         <span className="avs-chip avs-reveal text-[rgb(var(--av-emerald-ink))]">{p.code}</span>
@@ -70,12 +127,12 @@ function ProductArticle({ p, first }: { p: Product; first: boolean }) {
       <h2 id={`${p.id}-title`} className="avs-h2 avs-reveal mt-5 max-w-[20ch]">
         {p.name}
       </h2>
-      <p className="avs-lead avs-reveal mt-6 max-w-[42rem]">{p.line}</p>
+      <p className="avs-lead avs-reveal mt-5 max-w-[42rem]">{p.line}</p>
 
       <div className="mt-10 grid gap-4 md:grid-cols-5">
-        <div className="avs-surface-navy avs-reveal rounded-[var(--av-radius)] p-6 md:col-span-3 md:p-8">
-          <h3 className="avs-label text-[rgb(var(--av-gold))]">The problem it addresses</h3>
-          <p className="avs-serif mt-4 text-[1.375rem] leading-[1.4]">{p.problem}</p>
+        <div className="avs-surface-sand avs-reveal rounded-[var(--av-radius)] p-6 md:col-span-3 md:p-8">
+          <h3 className="avs-label text-[rgb(var(--av-rust))]">The problem it addresses</h3>
+          <p className="avs-serif mt-3 text-[clamp(1.1875rem,1.6vw,1.375rem)] leading-[1.4]">{p.problem}</p>
         </div>
         {/* Illustrative record lineage */}
         <div className="avs-reveal rounded-[var(--av-radius)] border border-[rgb(var(--av-line)/0.14)] bg-white p-5 md:col-span-2">
