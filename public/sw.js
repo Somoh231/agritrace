@@ -1,9 +1,17 @@
 /* Agrivault operational offline service worker (minimal, deterministic).
  * Scope: same-origin only. Falls back to /offline for navigations when disconnected.
+ * API responses and React Server Component payloads are never cached, so a
+ * deploy is never masked by a stale page payload. Bumping CACHE purges every
+ * earlier cache on activation (v2 held the previous public site).
  */
 
-const CACHE = "agrivault-offline-v2";
-const CORE = ["/", "/offline", "/favicon.ico", "/og.svg", "/icons/pwa-192.png", "/icons/pwa-512.png", "/icons/pwa-512-maskable.png"];
+const CACHE = "agrivault-offline-v3";
+const CORE = ["/", "/offline", "/favicon.ico", "/icons/pwa-192.png", "/icons/pwa-512.png", "/icons/pwa-512-maskable.png"];
+
+function isNetworkOnly(req) {
+  const url = new URL(req.url);
+  return url.pathname.startsWith("/api/") || url.searchParams.has("_rsc") || req.headers.get("RSC") === "1";
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -43,6 +51,7 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
   if (!isSameOrigin(req.url)) return;
+  if (isNetworkOnly(req)) return; // browser default: straight to the network
 
   const isNav = req.mode === "navigate" || (req.destination === "" && req.headers.get("accept")?.includes("text/html"));
 
