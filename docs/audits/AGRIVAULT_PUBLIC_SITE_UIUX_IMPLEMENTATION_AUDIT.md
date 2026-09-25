@@ -166,17 +166,21 @@ Still open — the site is **not production-ready** until these close:
    contact form (mailto), the contact page, the footer, the security page's
    vulnerability-report link and the legal pages' draft notice.
 5. Credential-gated authenticated-role Playwright suites (64 tests skip
-   without QA credentials).
+   without QA credentials). Runbook, variables and coverage gaps:
+   `docs/qa/AUTHENTICATED_ROLE_QA.md`.
 6. Protected Vercel preview smoke test (needs an authenticated browser
    session; no automation bypass secret is used without authorisation).
 
 Risks noted, not yet addressed:
-- `src/lib/growth/content.ts` holds a named person's contact details
-  (email, phone, locations) used by `/api/admin/content` (returns 401 when
-  unauthenticated). Owner to decide whether it belongs in source.
-- The app-wide "PWA" diagnostics button (fixed, bottom-right) can sit over a
-  map's compact attribution control when that map's corner meets the
-  viewport corner.
+- `src/lib/growth/content.ts` holds a named person's contact details (name,
+  role, email, phone, locations) as default admin content. The repository is
+  **public**, so these are already publicly visible in source and history.
+  Only consumer: `/api/admin/content` (admin-guarded; 401 signed out); not in
+  client bundles or `public/`; `getPublicContent()` is unused. Recommendation:
+  remove the values from source (empty defaults), manage any published
+  contact through the admin content API, and decide whether to rewrite git
+  history. Note `public_content_blocks` has an anon-read policy, so anything
+  saved there is public too.
 - `next dev` cannot run client JS because the production CSP (no
   `unsafe-eval`) also applies in development.
 - Unused visual-library dependencies from commit e668b85.
