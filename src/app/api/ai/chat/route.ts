@@ -16,7 +16,7 @@ import {
 import { AI_CHAT_POLICY } from "@/lib/http/rate-limit-policies";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, UserRole } from "@/lib/supabase/types";
-import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
+import { roleFromProfile } from "@/lib/auth/profile-access";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -250,8 +250,11 @@ export async function POST(req: Request) {
   }
 
   const { data: profileRow } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>();
-  const profile = profileRow ?? buildDemoProfileForAuthUser(user);
-  const serverRole = profile.role;
+  // No active profile row, no assistant: there is no fallback role.
+  const serverRole = roleFromProfile(profileRow);
+  if (!serverRole) {
+    return apiError(ctx, "Account not provisioned.", 403, { policy: AI_CHAT_POLICY, userId: user.id });
+  }
 
   try {
     const body = (await req.json()) as ReqBody;

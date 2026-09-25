@@ -10,7 +10,15 @@ import { siteFontVariables } from "@/lib/site/fonts";
  * LoginClient and its Suspense fallback, so the prerendered HTML already shows
  * the full page while the client bundle loads.
  */
-export function LoginShell({ children }: { children: ReactNode }) {
+export function LoginShell({
+  children,
+  title = "Sign in",
+  lead = "For programme staff with an AgriVault account.",
+}: {
+  children: ReactNode;
+  title?: string;
+  lead?: string;
+}) {
   return (
     <div className={`avs ${siteFontVariables} min-h-screen`}>
       <main className="grid min-h-screen lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
@@ -44,9 +52,9 @@ export function LoginShell({ children }: { children: ReactNode }) {
         <section aria-labelledby="signin-title" className="avs-surface-paper flex items-center justify-center px-5 py-12 sm:px-10">
           <div className="w-full max-w-[420px]">
             <h1 id="signin-title" className="avs-h2 text-[clamp(2rem,3vw,2.5rem)]">
-              Sign in
+              {title}
             </h1>
-            <p className="avs-body mt-3">For programme staff with an AgriVault account.</p>
+            <p className="avs-body mt-3">{lead}</p>
             {children}
           </div>
         </section>

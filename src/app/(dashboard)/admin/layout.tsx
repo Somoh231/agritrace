@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
+import { ACCOUNT_UNAVAILABLE_PATH, roleFromProfile } from "@/lib/auth/profile-access";
 import { createClient } from "@/lib/supabase/server";
 import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
 import type { Profile } from "@/lib/supabase/types";
-import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -15,12 +15,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, is_active")
     .eq("id", user.id)
-    .maybeSingle<Pick<Profile, "role">>();
+    .maybeSingle<Pick<Profile, "role" | "is_active">>();
 
-  // TEMP DEMO FALLBACK — missing profiles row still allows admin routes for demo role.
-  const role = resolveUserRoleWithDemoFallback(profile, user);
+  // A missing or deactivated profile never reaches the admin console.
+  const role = roleFromProfile(profile);
+  if (!role) redirect(ACCOUNT_UNAVAILABLE_PATH);
   if (!isAdminConsoleRole(role)) {
     redirect("/command-center");
   }

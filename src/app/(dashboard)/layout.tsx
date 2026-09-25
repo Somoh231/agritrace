@@ -6,7 +6,7 @@ import PlatformProviders from "@/platform/providers";
 import { applyWorkspaceDemoRoleToProfile, WORKSPACE_DEMO_ROLE_COOKIE } from "@/lib/auth/workspace-demo-role";
 import { normalizeMinistryNavRole } from "@/lib/navigation/ministry-nav";
 import { createClient } from "@/lib/supabase/server";
-import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
+import { ACCOUNT_UNAVAILABLE_PATH } from "@/lib/auth/profile-access";
 import type { Profile } from "@/lib/supabase/types";
 
 export default async function DashboardLayout({
@@ -56,8 +56,9 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .maybeSingle<Profile>();
 
-  // TEMP DEMO FALLBACK — missing profiles row: use synthetic profile instead of blocking.
-  const effectiveProfile: Profile = profile ?? buildDemoProfileForAuthUser(user);
+  // No profile row (or an unreadable one) grants no access. There is no synthetic profile.
+  if (!profile) redirect(ACCOUNT_UNAVAILABLE_PATH);
+  const effectiveProfile: Profile = profile;
 
   if (effectiveProfile.is_active === false) {
     return (

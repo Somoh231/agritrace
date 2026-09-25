@@ -8,9 +8,9 @@ import AlertBanner from "@/components/shared/AlertBanner";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 import { LoginAccountNote, LoginShell } from "@/app/(auth)/login/LoginShell";
 import { postLoginHomeForRole } from "@/lib/auth/post-login-home";
+import { ACCOUNT_UNAVAILABLE_PATH, roleFromProfile } from "@/lib/auth/profile-access";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { describeAuthFetchFailure } from "@/lib/supabase/env";
-import { resolveUserRoleWithDemoFallback } from "@/lib/supabase/temp-demo-profile-fallback";
 import { track } from "@/lib/analytics/client";
 
 export default function LoginClient() {
@@ -46,7 +46,8 @@ export default function LoginClient() {
         } = await supabase.auth.getUser();
         if (user) {
           const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-          destination = postLoginHomeForRole(resolveUserRoleWithDemoFallback(prof, user));
+          const role = roleFromProfile(prof);
+          destination = role ? postLoginHomeForRole(role) : ACCOUNT_UNAVAILABLE_PATH;
         }
       }
       router.push(destination ?? "/command-center");
@@ -59,7 +60,7 @@ export default function LoginClient() {
     }
   };
 
-  // Presentation only below. The sign-in logic above is unchanged from production.
+  // Presentation only below.
   const field =
     "block h-12 w-full rounded-[12px] border border-[rgb(var(--av-line)/0.22)] bg-white px-4 text-[1rem] text-[rgb(var(--av-forest))] outline-none transition-colors placeholder:text-[rgb(var(--av-slate)/0.7)] focus:border-[rgb(var(--av-emerald-ink))] focus:ring-2 focus:ring-[rgb(var(--av-emerald)/0.25)]";
 

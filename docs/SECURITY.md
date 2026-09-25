@@ -82,14 +82,15 @@ After authentication, role is loaded from `profiles.role`:
 
 ```typescript
 const profile = await loadProfile(supabase, user.id);
-const role = resolveUserRoleWithDemoFallback(profile, user);
+const role = roleFromProfile(profile); // src/lib/auth/profile-access.ts
+if (!role) redirect(ACCOUNT_UNAVAILABLE_PATH);
 ```
 
-Fallback: `buildDemoProfileForAuthUser()` for demo seed accounts when profiles row is missing.
+There is no fallback role. A missing, deactivated or unreadable profile is denied: pages redirect to `/account-unavailable`, admin and AI APIs return 403.
 
 ### Demo accounts
 
-Created by `npm run seed:demo`. Password: `DemoPass!2026`.  
+Created by `npm run seed:demo`. Password: set by the seed script; not documented here.  
 Demo accounts are for training environments only — disable or rotate before production GA.
 
 ---

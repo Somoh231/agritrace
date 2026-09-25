@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import DistrictOfficerDashboard from "@/components/ais/DistrictOfficerDashboard";
 import { assertDistrictDashboardAccess } from "@/lib/auth/workspace-access";
 import { createClient } from "@/lib/supabase/server";
-import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
+import { ACCOUNT_UNAVAILABLE_PATH } from "@/lib/auth/profile-access";
 import type { Profile } from "@/lib/supabase/types";
 
 export default async function DistrictDashboardPage() {
@@ -15,7 +15,9 @@ export default async function DistrictDashboardPage() {
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>();
 
-  const effective = profile ?? buildDemoProfileForAuthUser(user);
+  if (!profile) redirect(ACCOUNT_UNAVAILABLE_PATH);
+
+  const effective = profile;
 
   const gate = assertDistrictDashboardAccess(effective.role);
   if (!gate.ok) redirect(gate.redirectTo);

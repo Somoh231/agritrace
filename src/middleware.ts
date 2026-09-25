@@ -1,11 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { assertPilotRouteAccess, needsPilotRoleGate } from "@/lib/auth/workspace-access";
+import { ACCOUNT_UNAVAILABLE_PATH, roleFromProfile } from "@/lib/auth/profile-access";
+import { assertPilotRouteAccess } from "@/lib/auth/workspace-access";
 import { REQUEST_ID_HEADER, resolveRequestId } from "@/lib/http/request-context";
 import { normalizeHttpUrl } from "@/lib/supabase/env";
-import { buildDemoProfileForAuthUser } from "@/lib/supabase/temp-demo-profile-fallback";
-import type { UserRole } from "@/lib/supabase/types";
+import type { Profile } from "@/lib/supabase/types";
 
 function matchesProtectedRoute(pathname: string, pattern: string) {
   return pathname === pattern || pathname.startsWith(`${pattern}/`);
@@ -99,9 +99,30 @@ export async function middleware(request: NextRequest) {
     return redirect;
   }
 
-  if (user && isProtectedPath(pathname) && needsPilotRoleGate(pathname)) {
-    const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-    const role = (prof?.role as UserRole | undefined) ?? buildDemoProfileForAuthUser(user).role;
+  if (user && isProtectedPath(pathname)) {
+    // Fail closed: a missing, deactivated or unreadable profile grants no access.
+    let prof: Pick<Profile, "role" | "is_active"> | null = null;
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("role, is_active")
+        .eq("id", user.id)
+        .maybeSingle<Pick<Profile, "role" | "is_active">>();
+      prof = data;
+    } catch {
+      prof = null;
+    }
+    const role = roleFromProfile(prof);
+    if (!role) {
+      const denied = request.nextUrl.clone();
+      denied.pathname = ACCOUNT_UNAVAILABLE_PATH;
+      denied.search = "";
+      const redirect = NextResponse.redirect(denied);
+      redirect.headers.set(REQUEST_ID_HEADER, requestId);
+      return redirect;
+    }
+
+    // Role gates are unchanged; paths without a pilot gate pass (see assertPilotRouteAccess).
     const gate = assertPilotRouteAccess(role, pathname);
     if (!gate.ok) {
       const normalized = pathname.split("?")[0] ?? pathname;
