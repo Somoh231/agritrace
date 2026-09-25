@@ -150,7 +150,7 @@ Resolved on this branch:
   (`src/fonts/fraunces`, OFL); two clean builds made no Google request for it.
 
 Still open — the site is **not production-ready** until these close:
-1. Commission real photography (`public/photography/README.md`).
+1. Commission real photography (`docs/photography/REPLACEMENT_CHECKLIST.md`).
 2. Privacy page (legal text required).
 3. Terms page (legal text required).
 4. Confirm `partnerships@agrivaultdata.com` is a monitored mailbox.

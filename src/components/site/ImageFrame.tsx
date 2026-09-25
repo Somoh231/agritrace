@@ -9,7 +9,7 @@ export type Scene = "aerial-fields" | "operations-room" | "field-boundary" | "co
  * Art-directed stand-ins until documentary photography is commissioned.
  * Each scene is a restrained landscape atmosphere (horizon light, land tone,
  * field structure) rather than a stock image. Replacement briefs and file
- * names live in public/photography/README.md; pass `src` to switch to a
+ * names live in docs/photography/ (BRIEFS.md, REPLACEMENT_CHECKLIST.md); pass `src` to switch to a
  * real, responsive image without changing layout.
  */
 const SCENES: Record<Scene, { bg: string; topo: string; brief: string }> = {

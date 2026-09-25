@@ -1,5 +1,7 @@
 # Photography — commissioning briefs
 
+Slot-by-slot sizes, crops, releases and sign-off: `REPLACEMENT_CHECKLIST.md`.
+
 The public site currently uses art-directed stand-ins (gradient landscapes,
 survey contours and grain) rendered by `src/components/site/ImageFrame.tsx`.
 They are decorative and hidden from assistive technology. Replace each scene
@@ -8,7 +10,7 @@ to `ImageFrame`; layout, crops and overlays do not change.
 
 No stock photography. No posed "farmer with tablet smiling at camera" images.
 People photographed must give informed consent for commercial use; keep the
-signed releases with the image files. Do not photograph identifiable
+signed releases on file with the owner, not in this repository. Do not photograph identifiable
 beneficiaries in a way that reveals programme status or personal data.
 
 | Scene key | File name | Brief | Used on |
