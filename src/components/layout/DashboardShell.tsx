@@ -13,6 +13,7 @@ import { resolveOperationalActor } from "@/lib/ops/current-actor";
 import OperationalActorProvider from "@/lib/ops/operational-actor-context";
 import { normalizeMinistryNavRole } from "@/lib/navigation/ministry-nav";
 import type { Profile, UserRole } from "@/lib/supabase/types";
+import StagingIndicator from "@/components/layout/StagingIndicator";
 
 function initialsFromName(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -219,8 +220,9 @@ export default function DashboardShell({
   return (
     <DashboardShellFatalBoundary>
       {actorShell(
-        <div className="gov-canvas overflow-x-hidden h-[100dvh]">
-        <div className="grid grid-cols-1 md:grid-cols-[232px_minmax(0,1fr)] h-full overflow-hidden">
+        <div className="gov-canvas overflow-x-hidden h-[100dvh] flex flex-col">
+        <StagingIndicator />
+        <div className="grid grid-cols-1 md:grid-cols-[232px_minmax(0,1fr)] flex-1 min-h-0 overflow-hidden">
           <div className="hidden md:block h-full border-r border-[rgb(var(--ministry-gold))]/10 overflow-hidden">
             <div className="h-full overflow-y-auto overscroll-contain">
               <MinistrySidebar pathname={pathname} onNavigate={(href) => router.push(href)} user={user} />

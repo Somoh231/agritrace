@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { appEnvironment, type AppEnvironment } from "@/lib/env/app-env";
 import { REQUEST_ID_HEADER, resolveRequestId, withRequestIdHeader } from "@/lib/http/request-context";
 import { normalizeHttpUrl } from "@/lib/supabase/env";
 
@@ -10,6 +11,8 @@ type CheckStatus = "ok" | "degraded" | "error";
 type HealthPayload = {
   status: CheckStatus;
   service: "agrivault";
+  /** Deployment label only: never a project ref, URL or key. */
+  environment: AppEnvironment;
   timestamp: string;
   checks: {
     app: CheckStatus;
@@ -62,6 +65,7 @@ export async function GET(request: Request) {
   const body: HealthPayload = {
     status: overall,
     service: "agrivault",
+    environment: appEnvironment(),
     timestamp,
     checks,
     requestId,
