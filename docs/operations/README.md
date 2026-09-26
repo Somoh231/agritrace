@@ -11,6 +11,7 @@ Runbooks, SOPs, incident response, and service management for AgriVault operatio
 | Document | Purpose |
 |----------|---------|
 | [RUNBOOK.md](./RUNBOOK.md) | Daily/weekly/monthly operational procedures |
+| [STAGING_ENVIRONMENT_PLAN.md](./STAGING_ENVIRONMENT_PLAN.md) | Preview → staging Supabase, Production → production (plan) |
 | [MONITORING.md](./MONITORING.md) | Observability, alerts, health checks |
 | [INCIDENT_RESPONSE.md](./INCIDENT_RESPONSE.md) | Incident classification and response |
 | [ON_CALL_GUIDE.md](./ON_CALL_GUIDE.md) | On-call rotation and handoff |
