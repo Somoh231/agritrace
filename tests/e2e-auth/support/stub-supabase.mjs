@@ -9,6 +9,7 @@
  *   u-field     authenticated, active "field_agent" profile
  *   u-clan      authenticated, active "clan_technician" profile
  *   u-ministry  authenticated, active "ministry_officer" profile
+ *   u-callcenter authenticated, active "call_center_agent" profile
  *
  * Every other table returns an empty result.
  */
@@ -22,6 +23,7 @@ const PROFILES = {
   "u-field": { role: "field_agent", is_active: true },
   "u-clan": { role: "clan_technician", is_active: true },
   "u-ministry": { role: "ministry_officer", is_active: true },
+  "u-callcenter": { role: "call_center_agent", is_active: true },
 };
 
 function subFromBearer(req) {

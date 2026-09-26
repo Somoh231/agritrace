@@ -17,7 +17,7 @@
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
     "seed:ministry": "tsx src/lib/supabase/seed-ministry-canonical.ts",
     "test:workflow": "tsx src/lib/workflow/__tests__/workflow.spec.ts && tsx src/lib/http/__tests__/security.spec.ts",
-    "test:auth": "tsx src/lib/auth/__tests__/profile-access.spec.ts && tsx src/lib/auth/__tests__/workspace-preview.spec.ts",
+    "test:auth": "tsx src/lib/auth/__tests__/profile-access.spec.ts && tsx src/lib/auth/__tests__/workspace-preview.spec.ts && tsx src/lib/auth/__tests__/role-routes.spec.ts",
     "test:db:roles": "node scripts/db-tests/profile-role-hardening.mjs",
     "test:e2e:site": "playwright test --config=playwright.config.ts tests/e2e/public-site.spec.ts",
     "test:e2e:auth": "playwright test --config=playwright.auth.config.ts"

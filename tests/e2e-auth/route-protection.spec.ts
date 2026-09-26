@@ -149,6 +149,20 @@ test.describe("valid profiles behave as before", () => {
     expect(locationPath(res, baseURL!)).toBe(gate.ok ? null : gate.redirectTo);
   });
 
+  test("call_center_agent: /app lands on the farmer registry, which it can open", async ({ request, baseURL }) => {
+    const home = await get(request, "/app", "u-callcenter");
+    expect(home.status()).toBe(307);
+    expect(locationPath(home, baseURL!)).toBe("/farmers");
+    const registry = await get(request, "/farmers", "u-callcenter");
+    expect(registry.status()).toBe(200);
+  });
+
+  test("call_center_agent: the reviewer queue stays closed", async ({ request, baseURL }) => {
+    const res = await get(request, "/verification-queue", "u-callcenter");
+    expect(res.status()).toBe(307);
+    expect(locationPath(res, baseURL!)).toBe("/farmers");
+  });
+
   test("field_agent: admin API returns 403", async ({ request }) => {
     const res = await get(request, "/api/admin/users", "u-field");
     expect(res.status()).toBe(403);

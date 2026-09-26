@@ -29,7 +29,9 @@ export function postLoginHomeForRole(role: UserRole): string {
     case "cooperative_manager":
       return "/farmers";
     case "call_center_agent":
-      return "/verification-queue";
+      // Data-capture support: the farmer registry. The verification queue is a
+      // reviewer workspace (DAO, CAC, ministry) that this role may not open.
+      return "/farmers";
     default:
       return "/command-center";
   }
@@ -47,9 +49,9 @@ export function mayAccessNationalCommandCenter(role: UserRole): boolean {
   ) {
     return true;
   }
-  if (role === "exporter" || role === "cooperative_manager" || role === "call_center_agent") {
-    return true;
-  }
+  // Exporters, cooperative managers and call-center agents are not national
+  // roles; middleware already refuses them (canAccessNationalCommandCenter), and
+  // the layout check now agrees instead of relying on middleware alone.
   return false;
 }
 
