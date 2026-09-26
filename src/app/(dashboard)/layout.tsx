@@ -1,13 +1,26 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import DashboardShell from "@/components/layout/DashboardShell";
+import { PwaInstallProvider } from "@/components/pwa/install-prompt-context";
+import PwaDiagnosticsPanel from "@/components/pwa/PwaDiagnosticsPanel";
+import PwaRegistrar from "@/components/pwa/PwaRegistrar";
 import PlatformProviders from "@/platform/providers";
 import { applyWorkspaceDemoRoleToProfile, WORKSPACE_DEMO_ROLE_COOKIE } from "@/lib/auth/workspace-demo-role";
 import { normalizeMinistryNavRole } from "@/lib/navigation/ministry-nav";
 import { createClient } from "@/lib/supabase/server";
 import { ACCOUNT_UNAVAILABLE_PATH } from "@/lib/auth/profile-access";
 import type { Profile } from "@/lib/supabase/types";
+
+/**
+ * The platform is the only installable part of agrivaultdata.com: the manifest
+ * is linked here and nowhere else (public website, login and invitation pages
+ * carry none).
+ */
+export const metadata: Metadata = {
+  manifest: "/manifest.webmanifest",
+};
 
 export default async function DashboardLayout({
   children,
@@ -90,11 +103,17 @@ export default async function DashboardLayout({
   const authenticRole = profileCore.role;
   const workspaceProfile = applyWorkspaceDemoRoleToProfile(profileCore, workspacePreviewCookie);
 
+  // PWA (service worker, install affordance, diagnostics) exists only here:
+  // after authentication and an active profile, inside the platform shell.
   return (
     <PlatformProviders>
-      <DashboardShell profile={workspaceProfile} authenticRole={authenticRole}>
-        {children}
-      </DashboardShell>
+      <PwaInstallProvider>
+        <PwaRegistrar />
+        <DashboardShell profile={workspaceProfile} authenticRole={authenticRole}>
+          {children}
+        </DashboardShell>
+        <PwaDiagnosticsPanel />
+      </PwaInstallProvider>
     </PlatformProviders>
   );
 }

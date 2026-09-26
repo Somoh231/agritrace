@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import AlertBanner from "@/components/shared/AlertBanner";
-import InstallAppButton from "@/components/pwa/InstallAppButton";
 import { LoginAccountNote, LoginShell } from "@/app/(auth)/login/LoginShell";
 import { postLoginHomeForRole } from "@/lib/auth/post-login-home";
 import { ACCOUNT_UNAVAILABLE_PATH, roleFromProfile } from "@/lib/auth/profile-access";
@@ -116,17 +115,6 @@ export default function LoginClient() {
       </form>
 
       <LoginAccountNote />
-
-      <div className="avs-surface-sand mt-8 rounded-[var(--av-radius)] p-5">
-        <p className="font-medium">Using AgriVault in the field?</p>
-        <p className="avs-body mt-1.5 text-[0.9375rem]">
-          Install the app on this device for offline reporting and GPS capture. Drafts stay on the device until you are
-          back online.
-        </p>
-        <div className="mt-4">
-          <InstallAppButton variant="primary" label="Install for offline use" className="w-full justify-center" />
-        </div>
-      </div>
 
       <p className="mt-8 text-[0.9375rem] text-[rgb(var(--av-slate))]">
         New to AgriVault?{" "}

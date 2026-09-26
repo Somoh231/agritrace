@@ -6,7 +6,7 @@ export const STUB_SUPABASE_URL = `http://127.0.0.1:${process.env.STUB_SUPABASE_P
 
 const b64url = (v: string) => Buffer.from(v, "utf8").toString("base64url");
 
-export type StubUser = "u-missing" | "u-inactive" | "u-admin" | "u-field";
+export type StubUser = "u-missing" | "u-inactive" | "u-admin" | "u-field" | "u-invitee" | "u-invitee-active";
 
 export function sessionCookie(sub: StubUser): { name: string; value: string } {
   const exp = Math.floor(Date.now() / 1000) + 3600;
@@ -31,4 +31,14 @@ export function sessionCookie(sub: StubUser): { name: string; value: string } {
 export function cookieHeader(sub: StubUser): Record<string, string> {
   const c = sessionCookie(sub);
   return { cookie: `${c.name}=${c.value}` };
+}
+
+/** Unsigned access token for a stub user, as it would appear in an invite link fragment. */
+export function stubAccessToken(sub: StubUser): string {
+  const exp = Math.floor(Date.now() / 1000) + 3600;
+  return [
+    b64url(JSON.stringify({ alg: "HS256", typ: "JWT" })),
+    b64url(JSON.stringify({ sub, exp, aud: "authenticated", role: "authenticated" })),
+    "stub-signature",
+  ].join(".");
 }

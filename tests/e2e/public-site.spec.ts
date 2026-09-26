@@ -71,6 +71,27 @@ test.describe("public site: brand separation", () => {
   });
 });
 
+test.describe("public site: a website, not an installable app", () => {
+  test("no manifest, service worker, install control or diagnostics on public pages and login", async ({ page }) => {
+    const downloads: string[] = [];
+    page.on("download", (d) => downloads.push(d.suggestedFilename()));
+    for (const route of [...PUBLIC_ROUTES, "/login"]) {
+      await page.goto(route, { waitUntil: "load" });
+      const state = await page.evaluate(async () => {
+        await new Promise((r) => setTimeout(r, 400));
+        return {
+          manifestLink: !!document.querySelector('link[rel="manifest"]'),
+          serviceWorkers: "serviceWorker" in navigator ? (await navigator.serviceWorker.getRegistrations()).length : 0,
+          diagnostics: !!document.querySelector("[data-pwa-diagnostics]"),
+          installControl: [...document.querySelectorAll("button, a")].some((el) => /install/i.test(el.textContent ?? "")),
+        };
+      });
+      expect(state, route).toEqual({ manifestLink: false, serviceWorkers: 0, diagnostics: false, installControl: false });
+    }
+    expect(downloads).toEqual([]);
+  });
+});
+
 test.describe("public site: navigation", () => {
   test("desktop mega menu opens on click, closes on Escape and returns focus", async ({ page }, info) => {
     test.skip(info.project.name !== "desktop-chromium", "Desktop navigation only.");

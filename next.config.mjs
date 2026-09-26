@@ -1,5 +1,18 @@
 /** @type {import('next').NextConfig} */
 
+/**
+ * The configured Supabase origin, allowed exactly (in addition to *.supabase.co)
+ * so custom domains and the local test stub can be reached from the browser.
+ */
+const supabaseOrigins = (() => {
+  try {
+    const u = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");
+    return u.hostname.endsWith(".supabase.co") ? [] : [u.origin, u.origin.replace(/^http/, "ws")];
+  } catch {
+    return [];
+  }
+})();
+
 /** Production CSP — Mapbox + Supabase + Sentry + Next.js hydration allowances. */
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -15,6 +28,7 @@ const contentSecurityPolicy = [
     "connect-src 'self'",
     "https://*.supabase.co",
     "wss://*.supabase.co",
+    ...supabaseOrigins,
     "https://api.mapbox.com",
     "https://events.mapbox.com",
     "https://*.tiles.mapbox.com",

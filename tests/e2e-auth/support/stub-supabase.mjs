@@ -18,7 +18,28 @@ const PROFILES = {
   "u-inactive": { role: "admin", is_active: false },
   "u-admin": { role: "admin", is_active: true },
   "u-field": { role: "field_agent", is_active: true },
+  // Invited accounts: one not yet activated by an administrator, one activated.
+  "u-invitee": { role: "field_agent", is_active: false },
+  "u-invitee-active": { role: "field_agent", is_active: true },
 };
+
+const b64url = (v) => Buffer.from(v).toString("base64url");
+const token = (sub) =>
+  [b64url(JSON.stringify({ alg: "HS256", typ: "JWT" })), b64url(JSON.stringify({ sub, exp: Math.floor(Date.now() / 1000) + 3600, aud: "authenticated", role: "authenticated" })), "stub-signature"].join(".");
+
+function readBody(req) {
+  return new Promise((resolve) => {
+    let data = "";
+    req.on("data", (c) => (data += c));
+    req.on("end", () => {
+      try {
+        resolve(JSON.parse(data || "{}"));
+      } catch {
+        resolve({});
+      }
+    });
+  });
+}
 
 function subFromBearer(req) {
   const m = /^Bearer\s+(.+)$/i.exec(req.headers.authorization ?? "");
@@ -32,22 +53,44 @@ function subFromBearer(req) {
   }
 }
 
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-headers": "authorization, apikey, content-type, x-client-info, x-supabase-api-version, accept, accept-profile, content-profile, prefer, range",
+  "access-control-allow-methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+  "access-control-expose-headers": "content-range",
+};
+
 function send(res, status, body, headers = {}) {
-  res.writeHead(status, { "content-type": "application/json", ...headers });
+  res.writeHead(status, { "content-type": "application/json", ...CORS, ...headers });
   res.end(body === undefined ? "" : JSON.stringify(body));
 }
 
-const hits = { user: 0, profiles: 0 };
+const hits = { user: 0, profiles: 0, passwordUpdates: 0, verify: 0 };
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url ?? "/", `http://127.0.0.1:${STUB_PORT}`);
   const accept = String(req.headers.accept ?? "");
   const wantsObject = accept.includes("application/vnd.pgrst.object+json");
 
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, CORS);
+    return res.end();
+  }
   if (url.pathname === "/__stub/hits") return send(res, 200, hits);
+
+  // verifyOtp for ?token_hash links: "valid-invite" signs in u-invitee-active.
+  if (url.pathname === "/auth/v1/verify" && req.method === "POST") {
+    hits.verify += 1;
+    return void readBody(req).then((body) => {
+      if (body.token_hash !== "valid-invite") return send(res, 403, { code: 403, error_code: "otp_expired", msg: "Token has expired or is invalid" });
+      const sub = "u-invitee-active";
+      send(res, 200, { access_token: token(sub), refresh_token: "stub-refresh", token_type: "bearer", expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, user: { id: sub, aud: "authenticated", role: "authenticated", email: `${sub}@example.test` } });
+    });
+  }
 
   if (url.pathname === "/auth/v1/user") {
     hits.user += 1;
+    if (req.method === "PUT") hits.passwordUpdates += 1;
     const sub = subFromBearer(req);
     if (!sub) return send(res, 401, { code: 401, msg: "invalid token" });
     return send(res, 200, {
