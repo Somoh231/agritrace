@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 
-import { WORKSPACE_PREVIEW_ROLES } from "@/lib/auth/workspace-demo-role";
 import type { UserRole } from "@/lib/supabase/types";
 
 const LABELS: Partial<Record<UserRole, string>> = {
@@ -32,6 +31,22 @@ export default function WorkspaceRoleSwitcher({
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
+  // Roles this user actually holds, from the server. The switcher only exists for
+  // accounts with more than one; it can never offer a role the user lacks.
+  const [assigned, setAssigned] = React.useState<UserRole[]>([]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch("/api/workspace-demo-role")
+      .then((r) => (r.ok ? r.json() : { allowed: [] }))
+      .then((d: { allowed?: UserRole[] }) => {
+        if (!cancelled) setAssigned(Array.isArray(d.allowed) ? d.allowed : []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const previewActive = effectiveRole !== authenticRole;
 
@@ -54,6 +69,9 @@ export default function WorkspaceRoleSwitcher({
     }
   };
 
+  const others = assigned.filter((r) => r !== authenticRole);
+  if (!others.length) return null;
+
   return (
     <div className="flex flex-col gap-1 min-w-[200px]">
       <label htmlFor="ais-workspace-role" className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">
@@ -71,7 +89,7 @@ export default function WorkspaceRoleSwitcher({
         className="h-9 rounded-lg border border-slate-700 bg-slate-900 px-2.5 text-[12px] text-slate-100 outline-none focus:border-emerald-600 disabled:opacity-60 max-w-[280px]"
       >
         <option value="authentic">Signed-in identity ({LABELS[authenticRole] ?? authenticRole})</option>
-        {WORKSPACE_PREVIEW_ROLES.map((r) => (
+        {others.map((r) => (
           <option key={r} value={r}>
             Preview · {LABELS[r] ?? r}
           </option>
@@ -79,7 +97,7 @@ export default function WorkspaceRoleSwitcher({
       </select>
       {previewActive ? (
         <p className="text-[10px] text-amber-200/85 leading-snug max-w-[300px]">
-          UI routing only — Supabase policies still enforce your signed-in role ({authenticRole}).
+          Presentation only — access is always checked against your signed-in role ({authenticRole}).
         </p>
       ) : null}
     </div>

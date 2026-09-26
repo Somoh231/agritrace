@@ -7,6 +7,8 @@
  *   u-inactive  authenticated, profile role "admin" with is_active = false
  *   u-admin     authenticated, active "admin" profile
  *   u-field     authenticated, active "field_agent" profile
+ *   u-clan      authenticated, active "clan_technician" profile
+ *   u-ministry  authenticated, active "ministry_officer" profile
  *
  * Every other table returns an empty result.
  */
@@ -18,6 +20,8 @@ const PROFILES = {
   "u-inactive": { role: "admin", is_active: false },
   "u-admin": { role: "admin", is_active: true },
   "u-field": { role: "field_agent", is_active: true },
+  "u-clan": { role: "clan_technician", is_active: true },
+  "u-ministry": { role: "ministry_officer", is_active: true },
 };
 
 function subFromBearer(req) {

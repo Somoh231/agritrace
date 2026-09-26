@@ -6,7 +6,7 @@ export const STUB_SUPABASE_URL = `http://127.0.0.1:${process.env.STUB_SUPABASE_P
 
 const b64url = (v: string) => Buffer.from(v, "utf8").toString("base64url");
 
-export type StubUser = "u-missing" | "u-inactive" | "u-admin" | "u-field";
+export type StubUser = "u-missing" | "u-inactive" | "u-admin" | "u-field" | "u-clan" | "u-ministry";
 
 export function sessionCookie(sub: StubUser): { name: string; value: string } {
   const exp = Math.floor(Date.now() / 1000) + 3600;
@@ -28,7 +28,8 @@ export function sessionCookie(sub: StubUser): { name: string; value: string } {
   return { name: `sb-${ref}-auth-token`, value: `base64-${b64url(JSON.stringify(session))}` };
 }
 
-export function cookieHeader(sub: StubUser): Record<string, string> {
+export function cookieHeader(sub: StubUser, extra: Record<string, string> = {}): Record<string, string> {
   const c = sessionCookie(sub);
-  return { cookie: `${c.name}=${c.value}` };
+  const more = Object.entries(extra).map(([k, v]) => `; ${k}=${v}`).join("");
+  return { cookie: `${c.name}=${c.value}${more}` };
 }
