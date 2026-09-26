@@ -16,6 +16,7 @@
     "seed:demo": "tsx src/lib/supabase/seed-demo.ts",
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
     "seed:ministry": "tsx src/lib/supabase/seed-ministry-canonical.ts",
+    "test:ratelimit": "tsx src/lib/http/__tests__/rate-limit-namespacing.spec.ts",
     "test:workflow": "tsx src/lib/workflow/__tests__/workflow.spec.ts && tsx src/lib/http/__tests__/security.spec.ts",
     "test:auth": "tsx src/lib/auth/__tests__/profile-access.spec.ts",
     "test:e2e:site": "playwright test --config=playwright.config.ts tests/e2e/public-site.spec.ts",

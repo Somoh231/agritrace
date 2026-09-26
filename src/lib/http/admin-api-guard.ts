@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { beginApiRequestAsync, rejectIfRateLimited, type ApiRequestContext } from "@/lib/http/api-response";
-import { ADMIN_MUTATION_POLICY, READ_POLICY } from "@/lib/http/rate-limit-policies";
+import { ADMIN_MUTATION_POLICY, ADMIN_READ_POLICY } from "@/lib/http/rate-limit-policies";
 import { requireAdminConsole } from "@/lib/supabase/require-admin-console";
 import type { UserRole } from "@/lib/supabase/types";
 
@@ -31,7 +31,7 @@ export async function guardAdminApiRequest(
 
   const ctx = await beginApiRequestAsync(
     request,
-    kind === "mutation" ? ADMIN_MUTATION_POLICY : READ_POLICY,
+    kind === "mutation" ? ADMIN_MUTATION_POLICY : ADMIN_READ_POLICY,
     guard.userId,
   );
   const limited = rejectIfRateLimited(ctx);

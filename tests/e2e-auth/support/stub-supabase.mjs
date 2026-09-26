@@ -18,6 +18,9 @@ const PROFILES = {
   "u-inactive": { role: "admin", is_active: false },
   "u-admin": { role: "admin", is_active: true },
   "u-field": { role: "field_agent", is_active: true },
+  // Rate-limit tests use their own users so budgets never interfere with other suites.
+  "u-quota": { role: "field_agent", is_active: true },
+  "u-quota-2": { role: "field_agent", is_active: true },
 };
 
 function subFromBearer(req) {

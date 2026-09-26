@@ -31,7 +31,21 @@ function moduleFromPath(pathname: string) {
 }
 
 export async function POST(request: Request) {
-  const ctx = await beginApiRequestAsync(request, ANALYTICS_POLICY);
+  // Best-effort auth context (not required). Resolved first so signed-in users
+  // are budgeted per user; anonymous visitors per IP. Analytics has its own
+  // namespace and never spends another endpoint's budget.
+  let userId: string | null = null;
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    userId = user?.id ?? null;
+  } catch {
+    userId = null;
+  }
+
+  const ctx = await beginApiRequestAsync(request, ANALYTICS_POLICY, userId);
   const blocked = rejectIfRateLimited(ctx);
   if (blocked) return blocked;
 
@@ -47,18 +61,6 @@ export async function POST(request: Request) {
 
   if (jsonPayloadTooLarge(body.payload, MAX_PAYLOAD_BYTES)) {
     return apiError(ctx, "payload too large", 400, { policy: ANALYTICS_POLICY });
-  }
-
-  // Best-effort auth context (not required).
-  let userId: string | null = null;
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    userId = user?.id ?? null;
-  } catch {
-    userId = null;
   }
 
   // Use service role if configured; otherwise no-op.

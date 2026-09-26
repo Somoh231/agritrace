@@ -15,6 +15,8 @@ import {
 export type ApiRequestContext = {
   requestId: string;
   rateLimit: RateLimitResult;
+  /** The budget this request was counted against (drives headers and 429s). */
+  policy: RateLimitPolicy;
 };
 
 type ApiInit = {
@@ -26,8 +28,9 @@ type ApiInit = {
 /** Standard entry for route handlers — attaches request id + rate limit snapshot (memory). */
 export function beginApiRequest(request: Request, policy?: RateLimitPolicy, userId?: string | null): ApiRequestContext {
   const requestId = resolveRequestId(request);
-  const rateLimit = checkRateLimit(clientRateLimitKey(request, userId), policy);
-  return { requestId, rateLimit };
+  const effective = policy ?? DEFAULT_POLICY;
+  const rateLimit = checkRateLimit(clientRateLimitKey(request, userId), effective);
+  return { requestId, rateLimit, policy: effective };
 }
 
 /** Production entry — distributed store when Redis/KV is configured. */
@@ -37,14 +40,15 @@ export async function beginApiRequestAsync(
   userId?: string | null,
 ): Promise<ApiRequestContext> {
   const requestId = resolveRequestId(request);
-  const rateLimit = await checkRateLimitDistributed(clientRateLimitKey(request, userId), policy ?? DEFAULT_POLICY);
-  return { requestId, rateLimit };
+  const effective = policy ?? DEFAULT_POLICY;
+  const rateLimit = await checkRateLimitDistributed(clientRateLimitKey(request, userId), effective);
+  return { requestId, rateLimit, policy: effective };
 }
 
 export function apiHeaders(ctx: ApiRequestContext, policy?: RateLimitPolicy): Record<string, string> {
   return withRequestIdHeader(
     {
-      ...rateLimitPolicyHeaders(policy),
+      ...rateLimitPolicyHeaders(policy ?? ctx.policy),
       ...rateLimitHeaders(ctx.rateLimit),
     },
     ctx.requestId,
@@ -69,11 +73,10 @@ export function apiError(
 }
 
 export function apiTooManyRequests(ctx: ApiRequestContext): NextResponse {
-  return apiJson(
-    ctx,
-    { error: "Too many requests. Please retry shortly." },
-    { status: 429 },
-  );
+  const retryAfter = Math.max(1, Math.ceil((ctx.rateLimit.resetAt - Date.now()) / 1000));
+  const res = apiJson(ctx, { error: "Too many requests. Please retry shortly.", retryAfterSeconds: retryAfter }, { status: 429 });
+  res.headers.set("Retry-After", String(retryAfter));
+  return res;
 }
 
 export function apiInternalError(ctx: ApiRequestContext): NextResponse {

@@ -34,7 +34,7 @@ check("resolveRequestId generates UUID when header missing", () => {
 console.log("security — rate limiting");
 
 check("rate limit blocks after max requests", () => {
-  const policy = { windowMs: 60_000, max: 3 };
+  const policy = { name: "test", windowMs: 60_000, max: 3 };
   const key = `test-${Date.now()}`;
   assert.equal(checkRateLimitMemory(key, policy).allowed, true);
   assert.equal(checkRateLimitMemory(key, policy).allowed, true);

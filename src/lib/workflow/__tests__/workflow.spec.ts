@@ -205,7 +205,7 @@ check("pilot fallback is distinct from demo", () => {
 console.log("http rate limit — enforcement");
 
 check("checkRateLimit blocks after max requests", () => {
-  const policy = { windowMs: 60_000, max: 3 };
+  const policy = { name: "test", windowMs: 60_000, max: 3 };
   const key = `test-${Date.now()}-${Math.random()}`;
   assert.equal(checkRateLimit(key, policy).allowed, true);
   assert.equal(checkRateLimit(key, policy).allowed, true);

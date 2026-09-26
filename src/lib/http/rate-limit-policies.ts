@@ -1,22 +1,36 @@
 import type { RateLimitPolicy } from "@/lib/http/rate-limit";
 
-/** Authenticated read APIs */
-export const READ_POLICY: RateLimitPolicy = { windowMs: 60_000, max: 120 };
+/*
+ * API rate-limit budgets. Each policy is its own namespace: counters are keyed
+ * `<name>:<identity>`, where identity is the signed-in user (`user:<id>`) or,
+ * for anonymous callers, the client IP (`ip:<addr>`). Budgets never share a
+ * counter, so traffic on one endpoint family cannot starve another.
+ */
 
-/** Public marketing / contact endpoints */
-export const PUBLIC_POLICY: RateLimitPolicy = { windowMs: 60_000, max: 10 };
+/** Authenticated read APIs (registry, production, registrations, reports list, workspace preview). */
+export const READ_POLICY: RateLimitPolicy = { name: "read", windowMs: 60_000, max: 120 };
 
-/** AI chat — token cost control */
-export const AI_CHAT_POLICY: RateLimitPolicy = { windowMs: 60_000, max: 20 };
+/** Public website forms (demo inquiry). Anonymous, per IP. */
+export const PUBLIC_POLICY: RateLimitPolicy = { name: "public-form", windowMs: 60_000, max: 10 };
 
-/** PDF / CSV export generation */
-export const EXPORT_POLICY: RateLimitPolicy = { windowMs: 60_000, max: 15 };
+/** AI assistant — token cost control. Per user. */
+export const AI_CHAT_POLICY: RateLimitPolicy = { name: "ai-chat", windowMs: 60_000, max: 20 };
 
-/** Workflow mutations */
-export const WORKFLOW_MUTATION_POLICY: RateLimitPolicy = { windowMs: 60_000, max: 60 };
+/** PDF / CSV export generation. Per user. */
+export const EXPORT_POLICY: RateLimitPolicy = { name: "export", windowMs: 60_000, max: 15 };
 
-/** Analytics event ingestion */
-export const ANALYTICS_POLICY: RateLimitPolicy = { windowMs: 60_000, max: 120 };
+/** Workflow mutations (submission, verification, transfer). Per user. */
+export const WORKFLOW_MUTATION_POLICY: RateLimitPolicy = { name: "workflow-write", windowMs: 60_000, max: 60 };
 
-/** Admin console mutations */
-export const ADMIN_MUTATION_POLICY: RateLimitPolicy = { windowMs: 60_000, max: 40 };
+/**
+ * Analytics event ingestion. Its own budget: page views and clicks never count
+ * against any other endpoint. Per user when signed in, per IP otherwise (each
+ * event is a database insert, so it stays limited).
+ */
+export const ANALYTICS_POLICY: RateLimitPolicy = { name: "analytics", windowMs: 60_000, max: 120 };
+
+/** Admin console reads. Per user; independent of general reads. */
+export const ADMIN_READ_POLICY: RateLimitPolicy = { name: "admin-read", windowMs: 60_000, max: 120 };
+
+/** Admin console mutations. Per user. */
+export const ADMIN_MUTATION_POLICY: RateLimitPolicy = { name: "admin-write", windowMs: 60_000, max: 40 };
