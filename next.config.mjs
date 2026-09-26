@@ -1,3 +1,9 @@
+import { assertSupabaseEnvironment } from "./src/lib/env/supabase-environment-guard.mjs";
+
+// Refuse to build or start when Preview/staging points at production (or
+// production at staging). See docs/operations/STAGING_ENVIRONMENT_PLAN.md §7.
+assertSupabaseEnvironment();
+
 /** @type {import('next').NextConfig} */
 
 /** Production CSP — Mapbox + Supabase + Sentry + Next.js hydration allowances. */

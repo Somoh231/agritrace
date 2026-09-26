@@ -2,7 +2,9 @@
 
 **Goal:** Vercel **Preview** → **staging** Supabase. Vercel **Production** → **production** Supabase. After cutover, no preview deployment can reach production data.
 
-**Status:** Plan (2026-09-26). Nothing described here has been executed.
+**Status (2026-09-26):** Owner decisions recorded (§2). Guardrails implemented on `ops/staging-guardrails` (§7). Nothing has been executed against Vercel, Supabase or production.
+
+**Sequence (owner instruction):** first finish the production security sequence **A → C → B → D** (disable signup → disable demo identities → role-hardening migration → deploy `security/platform-emergency-hardening`), then the staging cutover (§4), then Track B. Track B does not start until both are complete.
 
 ---
 
@@ -10,213 +12,166 @@
 
 | Fact | Evidence |
 |---|---|
-| Preview and Production share one Supabase project **and its service-role key**. | `vercel env ls`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` and `NEXT_PUBLIC_MAPBOX_TOKEN` are each scoped "Production, Preview". There are no other Vercel variables. |
-| **18 preview deployments** are live and were built against production. | `vercel ls agritrace`. They are behind Vercel SSO, but each carries production credentials (service role server-side; URL and anon key inlined in the bundle). |
-| Local development (`.env.local`) points at production. | Same project URL as production. |
-| The migration chain replays cleanly on Supabase Postgres 17. | All 11 files in `supabase/migrations/` apply in order on `public.ecr.aws/supabase/postgres:17.6.1.166` (see `npm run test:db:roles`). |
-| Supabase extras: one Edge Function (`sync-batch`), no Storage buckets. | `supabase/functions/`, no `storage.*` usage in code or migrations. |
-| Optional services are unset today: Sentry (`SENTRY_*`, `NEXT_PUBLIC_SENTRY_DSN`), Upstash/KV rate-limit store, Anthropic. | Read by code, not present in Vercel. The app falls back (no Sentry, in-memory rate limiting, AI chat 503). |
-| Existing seed scripts are **not** suitable for staging. | `seed-demo.ts` creates the shared `@agritrace.demo` accounts with a published password. `src/lib/data/ministry-canonical-data.ts` holds 24 DAO-officer and farmer records with realistic person names of unknown origin. |
+| Preview and Production share one Supabase project **and its service-role key**. | `vercel env ls`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` and `NEXT_PUBLIC_MAPBOX_TOKEN` are each scoped "Production, Preview"; there are no other variables. |
+| **18 preview deployments** (first page of the listing) were built against production. | Snapshot in §10. They are behind Vercel SSO, but each carries production credentials. |
+| Local development (`.env.local`) points at production. | Same project URL. |
+| The migration chain replays cleanly on Supabase Postgres 17. | All 11 migrations apply in order (`npm run test:db:roles`). |
+| Supabase extras: one Edge function (`sync-batch`), no Storage buckets. | `supabase/functions/`; no `storage.*` usage. |
+| Optional services are unset (Sentry, Upstash/KV, Anthropic). | Read by code, absent from Vercel. |
+| Existing seed scripts are **not** for staging. | `seed-demo.ts` creates the shared `@agritrace.demo` accounts; `ministry-canonical-data.ts` holds 24 DAO-officer and farmer records with realistic person names of unknown origin. |
 
----
+## 2. Owner decisions (2026-09-26)
 
-## 2. Staging Supabase project — requirements
+1. Supabase **Pro** for staging.
+2. Same **region** and **Postgres major version** as production.
+3. **Staging-only** CLI/project access for Claude, plus a local `.env.staging.local`. Never production database credentials.
+4. A **separate staging Mapbox token**.
+5. The 18 production-backed previews are deleted **only after** the cutover is fully verified.
+6. **Never** copy production operational or personal data into staging.
+7. Production credentials are **not rotated or modified** during staging setup unless separately approved.
+
+## 3. Staging project requirements
 
 | Item | Requirement |
 |---|---|
-| Name | `agrivault-staging` (never reuse the production project) |
-| Organisation / owner | Same organisation as production, so access is managed in one place. The CLI account on the build machine currently cannot see production. Grant it access to **staging only**. |
-| Region | Same region as production (latency and data-residency parity). |
-| Postgres | Same major version as production (check *Settings → Infrastructure*). Local tests use 17.6. |
-| Plan | **Pro** recommended. Free projects pause after ~1 week idle, which breaks preview QA. |
-| Auth | **Public signup off** (same policy as production after approval A). Email confirmations on. No custom SMTP; no mail needs to leave staging. |
-| Auth URLs | Site URL: `https://agritrace-git-main-somoh231s-projects.vercel.app` (placeholder). Redirect allowlist: `https://agritrace-*-somoh231s-projects.vercel.app/**` and `http://localhost:3000/**`. **No production domain.** |
-| Keys | Its own anon and service-role keys. The staging service-role key is stored only in Vercel (Preview and Development scopes) and in the owner's secret store. |
-| Backups | Default. Staging holds nothing irreplaceable. |
-| Network | Default. No production database password is ever given to staging tooling. |
+| Name | `agrivault-staging` |
+| Organisation | Same organisation as production. Claude's CLI account gets membership of **staging only**. |
+| Region / Postgres | Same as production (check production *Settings → Infrastructure*). |
+| Plan | Pro |
+| Auth | Public signup **off**; email confirmation on; no custom SMTP. |
+| Auth URLs | Site URL `https://agritrace-git-main-somoh231s-projects.vercel.app`; redirect allowlist `https://agritrace-*-somoh231s-projects.vercel.app/**` and `http://localhost:3000/**`. **No production domain.** |
+| Keys | Staging's own anon and service-role keys: stored in Vercel (Preview and Development scopes) and the owner's secret store only. |
+| Mapbox | New token restricted to `*.vercel.app` previews and localhost. The production token stays restricted to `agrivaultdata.com`. |
 
-Optional services, if enabled later: a **separate** Mapbox token restricted to `*.vercel.app` preview URLs and localhost (the production token stays restricted to `agrivaultdata.com`); `SENTRY_ENVIRONMENT=staging`; a separate Upstash database (or none).
+## 4. Environment variables
 
----
-
-## 3. Environment-variable split
-
-| Variable | Production scope | Preview scope | Development scope | Notes |
+| Variable | Production | Preview | Development | Notes |
 |---|---|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | production project | **staging project** | staging project | Inlined at build time, so a rebuild is needed after any change. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | production anon | **staging anon** | staging anon | |
-| `SUPABASE_SERVICE_ROLE_KEY` | production service role | **staging service role** | staging service role | Never in `NEXT_PUBLIC_*`. |
-| `NEXT_PUBLIC_MAPBOX_TOKEN` | production token (domain-restricted) | staging token (preview-restricted) | staging token | Can stay shared until a second token exists. |
-| `NEXT_PUBLIC_APP_ENV` *(new)* | `production` | `staging` | `development` | Drives a visible "Staging" label and the health label (see §7). Not secret. |
-| `SUPABASE_PRODUCTION_PROJECT_REF` *(new)* | production ref | production ref | production ref | Used only by the build guard (§7) to **refuse** a preview build that points at production. The ref is already public in the production bundle. |
-| `SENTRY_ENVIRONMENT`, `SENTRY_DSN` | `production` | `staging` | — | Only when Sentry is enabled. |
-| `UPSTASH_REDIS_REST_*` / `KV_REST_API_*` | production store | separate store or unset | unset | Only when enabled. |
-| `ANTHROPIC_API_KEY` | as decided | unset, or a separate low-limit key | unset | Only when enabled. |
+| `NEXT_PUBLIC_SUPABASE_URL` | production | **staging** | staging | Inlined at build, so rebuild after any change. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | production | **staging** | staging | |
+| `SUPABASE_SERVICE_ROLE_KEY` | production | **staging** | staging | Server only. |
+| `NEXT_PUBLIC_MAPBOX_TOKEN` | production token | **staging token** | staging token | |
+| `NEXT_PUBLIC_APP_ENV` *(new)* | `production` | **`staging`** | `development` | Label only. Required for Preview (guard). |
+| `SUPABASE_PRODUCTION_PROJECT_REF` *(new)* | production ref | production ref | production ref | Required in Production **and** Preview (guard). Not secret: the ref is already public in the production bundle. |
+| `SUPABASE_STAGING_PROJECT_REF` *(new)* | staging ref | staging ref | staging ref | Lets the guard also reject "production on staging" and "preview on some third project". |
 
-**Local development:** `vercel env pull .env.local --environment=development` then gives staging values. No developer machine needs production credentials.
+**Order matters:** the new guard variables must exist in both scopes **before** `ops/staging-guardrails` merges to `main`. Otherwise the next production build fails; that is safe, because Vercel keeps serving the previous deployment, but it's avoidable.
 
-**QA account credentials** (§6) are **not** Vercel variables. They live in the owner's secret store and in a local, gitignored `.env.qa.local` used by Playwright (`.env*` is already ignored).
+`.env.staging.local` (gitignored by `.env*`) holds the staging URL, anon key, service-role key, database URL and both project refs for Claude's staging tooling. QA account passwords live in `.env.qa.local` and the owner's secret store, never in Vercel.
 
----
+## 5. Production security sequence (before cutover)
 
-## 4. Cutover sequence
+| Order | Action | Who | Verification |
+|---|---|---|---|
+| A | Disable public signup (*Authentication → Sign In / Providers → Allow new users to sign up: off*) | Owner | Claude reads `/auth/v1/settings`: `disable_signup: true` |
+| C | Disable the 4 shared demo identities (`scripts/ops/disable-demo-identities.mjs --execute` with the confirmation variable) | Owner says "approve C"; Claude runs it | Dry run shows 4 inactive and banned; 4 audit rows |
+| B | Apply `supabase/proposals/20260926100000_harden_profile_role_assignment.sql` in the SQL editor | Owner | Owner runs the verification queries; Claude checks the output, moves the file into `supabase/migrations/`, re-runs `npm run test:db:roles` |
+| D | Merge and deploy `security/platform-emergency-hardening` | Owner says "approve D"; Claude merges and smoke-tests | Production smoke plus the preview-cookie checks; rollback target recorded |
 
-Each step names who does it. Claude acts only after explicit owner approval of that step.
+Full detail, including rollbacks: the owner checklist delivered on 2026-09-26 and ADR 0011.
 
-| # | Step | Who |
+## 6. Staging cutover checklist (after A–D)
+
+| # | Step | Who | Verification | Rollback |
+|---|---|---|---|---|
+| 1 | Create `agrivault-staging` (§3). Add Claude's CLI account to it (staging only). Put staging values in `.env.staging.local`. | Owner | Claude: `supabase projects list` shows staging; refuses if its ref equals `SUPABASE_PRODUCTION_PROJECT_REF` | Delete project |
+| 2 | Replay migrations: `supabase link --project-ref <staging>` then `supabase db push`. Then apply the (by now production-approved) role hardening. | Claude | `supabase migration list`: all applied, 0 pending; hardening queries true | Reset staging database |
+| 3 | Deploy Edge function: `supabase functions deploy sync-batch --project-ref <staging>` (staging secrets only) | Claude | Function listed; invoke with a staging QA token → 2xx/4xx as designed | `supabase functions delete` |
+| 4 | Generate synthetic QA data: `npm run seed:staging` (§8; refuses a production ref) | Claude | Row counts match the seed manifest; spot-check shows only `QA-` records | Re-run (idempotent reset) |
+| 5 | Create the QA role matrix accounts (§9) through the Admin API; passwords to `.env.qa.local` and the secret store | Claude | Each account signs in on a local staging build and lands on its expected home | Delete QA users |
+| 6 | Point Vercel **Preview** (and Development) at staging: the variables in §4. Production scope untouched. | Owner, or Claude via `vercel env` after approval | `vercel env ls`: separate Production and Preview entries; Production entries unchanged | Re-point Preview (not recommended) |
+| 7 | Trigger a fresh preview: push `ops/staging-guardrails` (or redeploy) | Claude | Build passes the guard; staging label present | Redeploy previous |
+| 8 | **Prove the guard:** on a throwaway branch, set one Preview variable (branch-scoped) to the production project and push | Claude, with owner approval of the temporary variable | That preview **fails to build** with `supabase-environment-guard … PRODUCTION Supabase project`; then remove the variable and the branch | Remove the temporary variable |
+| 9 | Smoke tests on the fresh preview, signed into Vercel: auth (each QA role home and refused routes), workflow (submit → DAO verify → CAC approve on `QA-` data), RLS (cross-county account sees nothing; inactive account refused), `/api/health` → `"environment":"staging"`, indicator visible | Claude (the owner signs the browser pane into Vercel) | All pass | — |
+| 10 | Confirm no staging activity reached production: production `analytics_events`, `audit_log` and `profiles` counts before and after steps 7–9 (read-only), and no `QA-` codes in production | Claude | Counts unchanged except real production traffic; 0 `QA-` rows | — |
+| 11 | Record every production-backed preview deployment (all pages of the listing, not just the first) | Claude | List saved in §10 with IDs | — |
+| 12 | Delete them: `vercel remove <dpl_id> --yes` one at a time | Owner approves the final list; Claude runs | Each ID returns 404 in `vercel inspect` | Not reversible (and not needed: superseded builds carrying production credentials) |
+| 13 | Re-check: every remaining preview was built after step 6 and its `/api/health` says `staging` | Claude | Listing contains only post-cutover previews | — |
+
+## 7. Guardrails (implemented, branch `ops/staging-guardrails`)
+
+- **Build and start guard:** `src/lib/env/supabase-environment-guard.mjs`, loaded by `next.config.mjs`, so it runs for `next build`, `next dev` and `next start`.
+
+  | Situation | Result |
+  |---|---|
+  | Vercel Preview (or local `NEXT_PUBLIC_APP_ENV=staging`) on the production project | **fails** |
+  | Preview without `NEXT_PUBLIC_APP_ENV=staging` or without `SUPABASE_PRODUCTION_PROJECT_REF` | **fails** (cannot be verified) |
+  | Preview on a project other than `SUPABASE_STAGING_PROJECT_REF` (when set) | **fails** |
+  | Vercel Production on staging, not on production, or labelled `staging` | **fails** |
+  | Anon or service-role key belonging to a different project than the URL (legacy JWT keys carry `ref`) | **fails** |
+  | Local development without a staging label | unconstrained (current behaviour) |
+
+  Error messages never contain refs, URLs or keys.
+- **Staging indicator:** "STAGING · SYNTHETIC DATA" bar at the top of the authenticated app shell. It renders only when the build's `NEXT_PUBLIC_APP_ENV` is exactly `staging`, which the guard makes impossible in production. It never appears on the public website.
+- **Health label:** `/api/health` now includes `"environment": "production" | "staging" | "development"`. It is a label only.
+- **Evidence:**
+  - 18 guard checks, including loading `next.config.mjs` (`npm run test:env`).
+  - Real `next build` runs with a deliberate misconfiguration fail at startup (preview → production project; production labelled staging).
+  - Stub-Supabase production builds labelled `staging` and `production`: 87/87 route and environment tests each (indicator present or absent; health label; no identifying data; route protection intact).
+  - Normal build: public-site suite 90 passed, 2 skipped by design.
+
+## 8. Synthetic QA seed (`npm run seed:staging`, to be written at step 4)
+
+- **Nothing from production:** no rows, exports or "anonymised" copies. Schema-only dumps are used for diffing only.
+- **Obviously synthetic:**
+  - names like `QA Farmer 0042` and `QA DAO Officer 03`;
+  - phone numbers in a non-dialable pattern (`+231 000 000 0042`);
+  - an organisation called `AgriVault QA (synthetic)`;
+  - a `QA-` prefix on every generated code.
+- **Allowed reference data:** public administrative geography (counties, districts, geoBoundaries county shapes, CC BY 3.0 IGO).
+- **Deterministic:** a fixed random seed; re-running resets all `QA-` data.
+- **Guarded:** refuses unless the URL matches `.env.staging.local` and differs from `SUPABASE_PRODUCTION_PROJECT_REF`.
+- **Shape:**
+  - the 3 pilot counties plus 1 empty **control county**;
+  - ~50 farmers per pilot district, with plots inside the real county boundary;
+  - submissions in every workflow state, including overdue and stale;
+  - 2 warehouses per pilot county, with transfers and one discrepancy;
+  - queued, partial and failed sync records;
+  - two synthetic seasons, labelled synthetic.
+
+## 9. Synthetic QA role matrix
+
+Accounts are `qa.<name>@agrivault-staging.test`, created through the Admin API with `email_confirm: true`, each with a random per-account password; there are no shared passwords. "Current" is computed from the code (`postLoginHomeForRole`, `assertPilotRouteAccess`) with the call-center fix from ADR 0012 §A applied. "Proposed" is ADR 0012 §B–§D, pending owner confirmation.
+
+| QA account | Scope | Home | Command Center | County | District | DAO desk | CLAN desk | Admin | Farmers | Verif. queue | Inventory |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| super_admin | national | /command-center | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| ministry_admin | national | /command-center | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| ministry_officer | national | /command-center | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| county_agriculture_coordinator | Bong | /county-dashboard | – | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ |
+| dao_officer | Bong / 1 district | /district-dashboard | – | – | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ |
+| clan_technician | Bong / 1 district | current: /district-dashboard · **proposed: /workspace/clan** | – | – | current ✓ · **proposed –** | current ✓ · **proposed –** | ✓ | – | ✓ (own scope) | – | – |
+| field_agent | Nimba / 1 district | as clan_technician | – | – | as CLAN | as CLAN | ✓ | – | ✓ (own county) | – | – |
+| warehouse_manager | 1 warehouse | /inventory | – | – | – | – | – | – | ✓ | – | ✓ |
+| cooperative_manager | 1 cooperative | /farmers | – | – | – | – | – | – | ✓ | – | ✓ |
+| exporter | own organisation | current: /cocoa/lots (gated → /farmers) · **proposed: /cocoa/lots** | – | – | – | – | – | – | current ✓ · **proposed –** | – | current ✓ · **proposed –** |
+| call_center_agent | national capture | **/farmers** (fixed) | – | – | – | – | – | – | ✓ | – (by design) | – |
+| auditor | read-only | /audit-tools | – | – | – | – | – | – | ✓ | – | – |
+| donor_observer | read-only | /donor-dashboard | – | – | – | – | – | – | – | – | – |
+| **legacy aliases:** admin, government_officer, county_officer, district_officer, donor_partner | as their modern role | | | | | | | | | | |
+
+**Negative accounts (each must be refused):** `qa.inactive-admin` (inactive `admin` → `/account-unavailable`, admin API 403, RLS denies with the hardening applied); `qa.no-profile` (Auth user without a profile row); `qa.pending` (fresh signup-shaped account, inactive `field_agent`); `qa.cross-county` (CAC for the empty control county: sees no pilot-county records).
+
+## 10. Old preview deletion plan
+
+- **Snapshot (2026-09-26, first page of `vercel ls agritrace`, 18 preview deployments, all built with production credentials):** `dpl_CsjXkDDHDUkwTtRVFkqFz8N8GWFH`, `dpl_928vW5WUSJ5vqmNFSG6zvRviio8g`, `dpl_44ba75FSmos3if7iiuZCqFwW59zu`, `dpl_6DqKn5LLafAcihRZXfvdoBzPiCzv`, `dpl_Dj8b76aeXHN57inWEJveiKjyGi1y`, `dpl_2ZM1VFXKatMfYcW3kgN6M175eB39`, `dpl_GeXLaZK5FZdaPpsWPxumFdz6cH6W`, `dpl_J8NEuzhaLqMKRKM3yAaQFxV3d1e7`, `dpl_42faQq2Jd5YtkQTJ7sKZTZssPKmv`, `dpl_FCo2WdkjGZTLX5MbgjdQtMYqZbhQ`, `dpl_4XL3vi5vqFaY5PZtpgbFvAw7LSnn`, `dpl_HSfPFLE1h5ZwnczyUfVYojMnH47K`, `dpl_vYBYHYH9wcwis2aitzUA32hkQtGy`, `dpl_G94C6SVufbeFL1Et3nFYaXxnvG74`, `dpl_5URyQdETspR1U52ZRfCrizAqRriw`, `dpl_C5VUQmsVeQhFahM3cWrcLne37oZ1`, `dpl_GLF2WA3HrgR45z4doQsyozKyGKNs`, `dpl_E86xDN1oHoNcbrq6DqQSSCUdJDWw`.
+- **At step 11**, the list is rebuilt from **all** pages. It includes any preview created before step 6 (for example new pushes of the security or guardrails branches) and **excludes every production deployment**, including the current production and the rollback targets `dpl_4QRCeQapV8KcvvMaviB1N5EQ2Xvz` / `dpl_AJjGknRipMfXPvhKuoxZUJbaK83W`.
+- **Deletion** happens only after steps 7–10 pass and the owner approves the final list: `vercel remove <id> --yes`, one ID at a time, logging each result.
+- **Afterwards:** `vercel inspect` on each removed ID returns not found, and step 13 passes.
+
+## 11. Rollback
+
+| Scope | Rollback | Production impact |
 |---|---|---|
-| 1 | Create `agrivault-staging` with the settings in §2. | Owner (Supabase dashboard) |
-| 2 | Give Claude **staging-only** access: either log the CLI into an account that can see staging, or put the staging URL, anon key, service-role key and database URL in a local `.env.staging.local`. Never production database credentials. | Owner |
-| 3 | Replay migrations, deploy `sync-batch`, apply the role-hardening proposal (rehearsing approval B), load geography and the synthetic QA seed (§5, §6). | Claude |
-| 4 | Verify staging (§8, steps V1–V4). | Claude |
-| 5 | Set the Preview and Development scopes of the variables in §3 to staging values. Production scope is **not touched**. | Owner, or Claude via `vercel env` after approval |
-| 6 | Land the build guard and environment label (§7) on a small branch; review; merge. | Claude, then owner approves the merge |
-| 7 | Redeploy the active branches' previews so they rebuild against staging. | Claude |
-| 8 | Verify previews hit staging and production is unchanged (§8, steps V5–V8). | Claude |
-| 9 | Delete the preview deployments built before cutover (18 today). They still carry production credentials. | Owner approves; Claude runs `vercel remove` per deployment |
-| 10 | Switch local `.env.local` to staging (`vercel env pull`). | Owner / each developer |
+| Staging project, migrations, function, seed, QA accounts (steps 1–5) | Reset or delete staging | None |
+| Preview variable split (step 6) | Re-point Preview. Prefer fixing staging forward: reverting reconnects previews to production. | None; Production scope untouched |
+| Guardrails merge | Revert the merge commit, or unset `SUPABASE_PRODUCTION_PROJECT_REF` in Preview (preview builds then fail closed, not open) | None |
+| Old preview deletion (step 12) | Not reversible; not needed | None |
 
-Steps 5–9 should happen in one sitting. Between 5 and 9, older previews still point at production, but they stay behind Vercel SSO.
+## 12. Data-handling rules
 
----
-
-## 5. Migration replay procedure
-
-1. **Link staging only:** `supabase link --project-ref <staging-ref>`. Confirm with `supabase projects list` that the linked project is staging, and refuse if it matches `SUPABASE_PRODUCTION_PROJECT_REF`.
-2. **Apply the chain:** `supabase db push` applies `supabase/migrations/*` in order. Then `supabase migration list` shows 11 applied and 0 pending.
-3. **Rehearse the role hardening:** apply `supabase/proposals/20260926100000_harden_profile_role_assignment.sql` (branch `security/platform-emergency-hardening`) to staging. Run the verification queries from the owner checklist, then run the rollback and re-apply, so approval B is proven on a real Supabase project before production.
-4. **Edge function:** `supabase functions deploy sync-batch --project-ref <staging-ref>`. Set any function secrets to staging values.
-5. **Schema parity (no data):** the owner produces a **schema-only** dump of production (`supabase db dump --schema public --db-url <prod>`; it contains no rows) and Claude diffs it against staging. Any difference means production has drifted from the repository (changes made in the SQL editor). Each difference gets a migration or an explanation **before** previews move over.
-6. **Going forward:** every new migration lands on staging first (via the branch preview), then production. The repository stays the single source of schema.
-
----
-
-## 6. Synthetic QA seed strategy
-
-**Principles**
-
-- **Nothing from production.** No rows, no exports, no anonymised copies. Staging starts empty and is filled by code.
-- **Obviously synthetic.** Names like `QA Farmer 0042` and `QA DAO Officer 03`. Phone numbers in a non-dialable pattern (`+231 000 000 0042`). An organisation called `AgriVault QA (synthetic)`. Every generated record carries a `QA-` code prefix.
-- **Public reference data is allowed.** Counties, districts and county boundaries (geoBoundaries, CC BY 3.0 IGO, already credited in the app) are public administrative geography, not personal data. They are loaded by a geography-only split of `seed-national-pilot.ts`.
-- **The canonical and demo seeds are not used on staging.** They carry demo accounts and realistic person names.
-- **Deterministic.** A fixed random seed makes every run produce the same dataset, so screenshots and tests are stable. Re-running resets QA data (delete by `QA-` prefix, then insert).
-- **Guarded.** `npm run seed:staging` refuses to run unless the target URL matches `.env.staging.local` **and** does not contain `SUPABASE_PRODUCTION_PROJECT_REF`.
-
-**Dataset shape (small, but it covers every state)**
-
-| Area | Content |
-|---|---|
-| Geography | All counties, including the 3 pilot counties (Nimba, Bong, Lofa) and 1 **control county** with no data, which exercises empty and out-of-scope states. 2 districts per pilot county. |
-| Farmers and plots | About 50 farmers per pilot district, with plots drawn inside the real county boundary. Verification mix: verified / pending / flagged / rejected. |
-| Workflow | Submissions in every state (draft, submitted, DAO-verified, CAC-approved, returned, escalated), including **overdue** and **stale** items for exception queues. |
-| Warehouses | 2 per pilot county: stock, receipts, transfers in flight, and one open **discrepancy**. |
-| Offline and sync | Records in *queued*, *partially synced* and *failed* states for PWA and sync UI. |
-| Reports and analytics | Two seasons of synthetic production figures, so trends and variance are meaningful, explicitly labelled synthetic. |
-| Audit | Audit rows produced by the seed's own workflow actions, never hand-written. |
-
-**Accounts:** created with the Admin API (`email_confirm: true`, so no email is sent). Each gets a random 24+ character password, written once to `.env.qa.local` and the owner's secret store. There are no shared passwords, and none are committed.
-
----
-
-## 7. Guardrails to add (small code change, step 6)
-
-1. **Build guard.** In `next.config.mjs`, fail any **preview** build whose `NEXT_PUBLIC_SUPABASE_URL` contains `SUPABASE_PRODUCTION_PROJECT_REF`, and fail a **production** build whose URL does not. A misconfigured scope then produces a failed build instead of a preview connected to production.
-2. **Environment label.** When `NEXT_PUBLIC_APP_ENV=staging`, the app shell shows a small, persistent "Staging · synthetic data" marker. The public website is unaffected.
-3. **Health label.** `/api/health` adds `"environment": "staging" | "production"`. This is a label only, never a project ref or key.
-4. **Seed guard.** As in §6: seed scripts refuse any URL containing the production ref.
-
----
-
-## 8. Safe verification steps
-
-All checks are read-only against production. Staging checks use only staging credentials.
-
-| # | Check | Expected |
-|---|---|---|
-| V1 | `supabase migration list` on staging | 11 applied, 0 pending. The rehearsed hardening is confirmed by the owner checklist queries (it is not a migration file until approved). |
-| V2 | Staging `GET /auth/v1/settings` | `disable_signup: true` |
-| V3 | `npm run test:db:roles` (local Docker), plus the owner checklist queries run on staging | 32/32; hardening verified on staging |
-| V4 | Role matrix (§9): sign in as each QA account on a local build pointed at staging | Each lands on its expected home; forbidden routes redirect; admin API 401/403 as listed |
-| V5 | `vercel env ls` | The four Supabase/Mapbox variables have **separate** Production and Preview entries |
-| V6 | A new preview build | The guard passes; `/api/health` (signed into Vercel) reports `"environment": "staging"` |
-| V7 | Production smoke test | `agrivaultdata.com` routes, boundaries and `/api/health` unchanged; production deployment ID unchanged by steps 5–9 |
-| V8 | Negative test | A throwaway branch with a preview variable deliberately pointed at production **fails to build** (then the variable is removed) |
-
----
-
-## 9. Role and account matrix (staging QA accounts)
-
-Home and access below are computed from the current code (`postLoginHomeForRole`, `assertPilotRouteAccess`, `isAdminConsoleRole`). They are the baseline, not a judgement of correctness.
-
-| QA account (`qa.<role>@agrivault-staging.test`) | Scope | Home | Command Center | County dash | District dash | Admin console / API | Farmers | Verification queue | Inventory |
-|---|---|---|---|---|---|---|---|---|---|
-| super_admin | national | /command-center | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| admin | national | /command-center | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| ministry_admin | national | /command-center | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| ministry_officer | national | /command-center | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| government_officer (legacy) | national | /command-center | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| county_agriculture_coordinator (CAC) | Bong | /county-dashboard | – | ✓ | ✓ | – | ✓ | ✓ | ✓ |
-| county_officer (legacy CAC) | Nimba | /county-dashboard | – | ✓ | ✓ | – | ✓ | ✓ | ✓ |
-| dao_officer | Bong / 1 district | /district-dashboard | – | – | ✓ | – | ✓ | ✓ | ✓ |
-| district_officer (legacy DAO) | Lofa / 1 district | /district-dashboard | – | – | ✓ | – | ✓ | ✓ | ✓ |
-| clan_technician | Bong / 1 district | /district-dashboard | – | – | ✓ | – | ✓ | – | – |
-| field_agent | Nimba / 1 district | /district-dashboard | – | – | ✓ | – | ✓ | – | – |
-| cooperative_manager | 1 cooperative | /farmers | – | – | – | – | ✓ | – | ✓ |
-| warehouse_manager | 1 warehouse | /inventory | – | – | – | – | ✓ | – | ✓ |
-| donor_observer | read-only | /donor-dashboard | – | – | – | – | – | – | – |
-| donor_partner (legacy) | read-only | /donor-dashboard | – | – | – | – | – | – | – |
-| exporter | own lots | /cocoa/lots | – | – | – | – | ✓ | – | ✓ |
-| call_center_agent | national queue | /verification-queue | – | – | – | – | ✓ | – | – |
-| auditor | read-only | /audit-tools | – | – | – | – | ✓ | – | – |
-
-**Negative accounts (each must be refused):**
-
-| Account | State | Expected |
-|---|---|---|
-| `qa.inactive-admin` | admin role, `is_active = false` | Every protected route → `/account-unavailable`; admin API 403; with the hardening applied, RLS denies too |
-| `qa.no-profile` | Auth user, profile row removed | → `/account-unavailable` |
-| `qa.pending` | created as a fresh signup (inactive `field_agent`) | → `/account-unavailable` until an admin activates it |
-| `qa.cross-county` | CAC for the **control county** | Sees none of the pilot counties' records (RLS scope) |
-
-**Boundaries to confirm with the owner** (current behaviour, possibly unintended; to settle before Track B):
-
-- `clan_technician` and `field_agent` land on **/district-dashboard** and can open the DAO workspace (`/workspace/dao`).
-- `exporter` can open **/farmers** and **/inventory**.
-- `call_center_agent`'s home is **/verification-queue**, but the route gate does **not** allow that role there, so the role signs in to a page it cannot open (likely bug).
-- `call_center_agent` and `auditor` can open **/farmers**.
-- `government_officer`, `county_officer`, `district_officer` and `donor_partner` are legacy aliases kept for existing accounts.
-
----
-
-## 10. Rollback
-
-| Step | Rollback | Production impact |
-|---|---|---|
-| Staging project creation, migrations, seed (1–4) | Delete or reset the staging project. | None |
-| Vercel variable split (5) | Restore the Preview-scope entries to their previous values and redeploy. **Not recommended:** it reconnects previews to production. Prefer fixing the staging values forward. | None; Production scope is never edited |
-| Build guard and label (6) | Revert the merge commit, or leave `SUPABASE_PRODUCTION_PROJECT_REF` unset (the guard is then inert). | None |
-| Preview redeploys (7) | Redeploy from the previous commit. | None |
-| Deleting old previews (9) | Not reversible, and not needed: they were superseded builds carrying production credentials. | None |
-| Local `.env.local` switch (10) | `vercel env pull` again. | None |
-
-Production is never modified by this plan. The only production interactions are read-only checks (V7) and the owner's schema-only dump (§5 step 5).
-
----
-
-## 11. Data-handling rules for staging
-
-1. No production rows, backups, exports or "anonymised" copies. Schema-only dumps are the only production artefact, and they are used for diffing, not import.
-2. No real names, phone numbers, emails or locations of people. Public administrative geography is fine.
-3. No shared or published passwords. QA credentials are per account, random and kept in a secret store.
-4. Staging keys never enter the client bundle except the anon key and URL, as in production.
-5. Anything that looks real in staging is a bug in the seed. Fix the seed; don't redact after the fact.
-
----
-
-## 12. Owner decisions needed before step 1
-
-1. Staging project plan tier (Pro recommended) and region confirmation.
-2. How Claude receives **staging-only** access: a CLI account with staging membership, or a local `.env.staging.local`.
-3. Whether to create a second Mapbox token now (recommended) or share the current one until later.
-4. Confirmation of the boundary questions in §9.
-5. Approval to delete the 18 pre-cutover preview deployments after step 8.
+1. No production rows, backups, exports or anonymised copies in staging.
+2. No real names, phone numbers, emails or personal locations. Public administrative geography is fine.
+3. No shared or published passwords. Per-account random credentials live in a secret store.
+4. Anything in staging that looks real is a seed bug. Fix the seed.
+5. Production credentials are not rotated or modified during staging setup unless separately approved.
