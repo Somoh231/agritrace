@@ -209,7 +209,7 @@ export default function NationalDashboard() {
               type="button"
               className="h-8 px-3 rounded-md border border-gray-200 bg-white text-[12px] text-gray-700 hover:bg-gray-50"
             >
-              All 15 counties
+              Pilot counties
             </button>
           </div>
 

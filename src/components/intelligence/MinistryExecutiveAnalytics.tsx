@@ -1,5 +1,6 @@
 "use client";
 
+import { PILOT_COUNTIES } from "@/lib/utils/pilot-config";
 import {
   countyProductionPerformance,
   foodSecurityIndicators,
@@ -55,7 +56,7 @@ export default function MinistryExecutiveAnalytics({ metrics }: { metrics: Minis
         tone={metrics.nationalRiskScore > 60 ? "warning" : "success"}
         title="Executive national brief"
       >
-        {nf(metrics.registeredFarmers)} farmers registered · {metrics.countiesReporting}/15 counties reporting ·
+        {nf(metrics.registeredFarmers)} farmers registered · {metrics.countiesReporting}/{PILOT_COUNTIES.length} counties reporting ·
         national food risk index {metrics.nationalRiskScore}. {metrics.pendingVerification} verifications awaiting CAC decision.
       </InsightRibbon>
 

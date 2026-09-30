@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PILOT_COUNTIES } from "@/lib/utils/pilot-config";
 import {
   Activity,
   AlertTriangle,
@@ -50,19 +51,19 @@ export default function MinistryWorkspaceClient({ metrics }: { metrics: Ministry
   return (
     <div className="space-y-6 pb-8">
       <PageHeader
-        kicker="National operations · Ministry of Agriculture"
+        kicker="National review desk · Liberia pilot"
         title="National command workspace"
-        description="National posture across 15 counties — operational health, CAC-approved queues, escalations, and cabinet-ready summaries."
+        description="Pilot posture across Nimba, Bong and Lofa — operational health, CAC-approved queues, escalations, and cabinet-ready summaries."
         actions={<SyncStatusIndicator />}
       />
 
-      <SectionHeader kicker="National posture" title="Executive summary" subtitle="Live pilot metrics across programmes and reporting health" />
+      <SectionHeader kicker="National posture" title="Executive summary" subtitle="Illustrative pilot metrics across programmes and reporting health" />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Link href="/farmers" className="block">
           <KpiCard label="Registered farmers" value={nf(metrics.registeredFarmers)} hint={`${nf(metrics.verifiedFarmers)} verified`} />
         </Link>
         <Link href="/national-heat-map" className="block">
-          <KpiCard label="Counties reporting" value={`${metrics.countiesReporting}/15`} hint="National coverage" />
+          <KpiCard label="Counties reporting" value={`${metrics.countiesReporting}/${PILOT_COUNTIES.length}`} hint="Pilot counties" />
         </Link>
         <Link href="/inventory" className="block">
           <KpiCard label="Input coverage" value={`${metrics.inputInventoryCoveragePct}%`} hint="Allocation reach" />

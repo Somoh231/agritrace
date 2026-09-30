@@ -271,7 +271,10 @@ export default function DashboardShell({
               </div>
             ) : null}
             {layoutMode === "map" ? (
-              <main className="flex-1 min-w-0 overflow-hidden">{children}</main>
+              <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+                <PilotBanner />
+                <div className="relative min-h-0 flex-1">{children}</div>
+              </main>
             ) : layoutMode === "admin" ? (
               <main className="flex-1 min-w-0 overflow-y-auto overscroll-contain bg-slate-50 text-slate-900">
                 <PilotBanner />

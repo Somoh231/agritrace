@@ -96,12 +96,12 @@ export type MinistryInventoryMovementRecord = {
 };
 
 /** Farmer registry rows (ministry ID convention). */
-export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
+const MINISTRY_FARMERS_ALL: MinistryFarmerRecord[] = [
   {
     registryPublicId: "NIM-0001",
-    fullName: "Kumba Kollie",
+    fullName: "Sample farmer 01",
     gender: "Female",
-    phone: "+231777120341",
+    phone: "+231 000 000 001",
     county: "Nimba",
     district: "Sanniquellie-Mah",
     cooperative: "Nimba Rice Cooperative",
@@ -119,9 +119,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "NIM-0002",
-    fullName: "Joseph Zleh",
+    fullName: "Sample farmer 02",
     gender: "Male",
-    phone: "+231888450121",
+    phone: "+231 000 000 002",
     county: "Nimba",
     district: "Yarmein",
     cooperative: "Nimba Farmers Union",
@@ -139,9 +139,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "NIM-0003",
-    fullName: "Mary Tokpah",
+    fullName: "Sample farmer 03",
     gender: "Female",
-    phone: "+231776233987",
+    phone: "+231 000 000 003",
     county: "Nimba",
     district: "Ganta District",
     cooperative: "Ganta Agro Group",
@@ -159,9 +159,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "NIM-0004",
-    fullName: "Emmanuel Kpargoi",
+    fullName: "Sample farmer 04",
     gender: "Male",
-    phone: "+231770984223",
+    phone: "+231 000 000 004",
     county: "Nimba",
     district: "Tappita",
     cooperative: "Tappita Rice Cluster",
@@ -179,9 +179,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "BON-0001",
-    fullName: "Fatmata Kamara",
+    fullName: "Sample farmer 05",
     gender: "Female",
-    phone: "+231777560982",
+    phone: "+231 000 000 005",
     county: "Bong",
     district: "Gbarnga",
     cooperative: "Bong Central Cooperative",
@@ -199,9 +199,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "BON-0002",
-    fullName: "Abraham Fofana",
+    fullName: "Sample farmer 06",
     gender: "Male",
-    phone: "+231886771122",
+    phone: "+231 000 000 006",
     county: "Bong",
     district: "Salala",
     cooperative: "Salala Farmers Association",
@@ -219,9 +219,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "BON-0003",
-    fullName: "Rebecca Gaye",
+    fullName: "Sample farmer 07",
     gender: "Female",
-    phone: "+231775234892",
+    phone: "+231 000 000 007",
     county: "Bong",
     district: "Zota",
     cooperative: "Zota Rice Network",
@@ -239,9 +239,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "BON-0004",
-    fullName: "Morris Mulbah",
+    fullName: "Sample farmer 08",
     gender: "Male",
-    phone: "+231778330129",
+    phone: "+231 000 000 008",
     county: "Bong",
     district: "Panta",
     cooperative: "Panta Agro Producers",
@@ -259,9 +259,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "LOF-0001",
-    fullName: "Hawa Massaquoi",
+    fullName: "Sample farmer 09",
     gender: "Female",
-    phone: "+231777912334",
+    phone: "+231 000 000 009",
     county: "Lofa",
     district: "Voinjama",
     cooperative: "Lofa Rice Cooperative",
@@ -279,9 +279,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "LOF-0002",
-    fullName: "Mohammed Sheriff",
+    fullName: "Sample farmer 10",
     gender: "Male",
-    phone: "+231888345991",
+    phone: "+231 000 000 010",
     county: "Lofa",
     district: "Zorzor",
     cooperative: "Zorzor Agro Union",
@@ -299,9 +299,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "LOF-0003",
-    fullName: "Aminata Koroma",
+    fullName: "Sample farmer 11",
     gender: "Female",
-    phone: "+231775661902",
+    phone: "+231 000 000 011",
     county: "Lofa",
     district: "Foya",
     cooperative: "Foya Women Farmers",
@@ -319,9 +319,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "MON-0001",
-    fullName: "Prince Cooper",
+    fullName: "Sample farmer 12",
     gender: "Male",
-    phone: "+231777345888",
+    phone: "+231 000 000 012",
     county: "Montserrado",
     district: "Careysburg",
     cooperative: "Montserrado Urban Growers",
@@ -339,9 +339,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "MON-0002",
-    fullName: "Satta Doe",
+    fullName: "Sample farmer 13",
     gender: "Female",
-    phone: "+231888921233",
+    phone: "+231 000 000 013",
     county: "Montserrado",
     district: "Todee",
     cooperative: "Todee Farmers Group",
@@ -359,9 +359,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "GBA-0001",
-    fullName: "Samuel Peters",
+    fullName: "Sample farmer 14",
     gender: "Male",
-    phone: "+231776512344",
+    phone: "+231 000 000 014",
     county: "Grand Bassa",
     district: "Buchanan",
     cooperative: "Bassa Agricultural Network",
@@ -379,9 +379,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "MAR-0001",
-    fullName: "Victoria Johnson",
+    fullName: "Sample farmer 15",
     gender: "Female",
-    phone: "+231777623410",
+    phone: "+231 000 000 015",
     county: "Margibi",
     district: "Kakata",
     cooperative: "Kakata Farmers Cooperative",
@@ -399,9 +399,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "BOM-0001",
-    fullName: "Thomas Diggs",
+    fullName: "Sample farmer 16",
     gender: "Male",
-    phone: "+231888129944",
+    phone: "+231 000 000 016",
     county: "Bomi",
     district: "Tubmanburg",
     cooperative: "Bomi Agro Collective",
@@ -419,9 +419,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "SIN-0001",
-    fullName: "Janet Wilson",
+    fullName: "Sample farmer 17",
     gender: "Female",
-    phone: "+231776982134",
+    phone: "+231 000 000 017",
     county: "Sinoe",
     district: "Greenville",
     cooperative: "Sinoe Farmers Union",
@@ -439,9 +439,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "MDL-0001",
-    fullName: "Peter Wreh",
+    fullName: "Sample farmer 18",
     gender: "Male",
-    phone: "+231777000233",
+    phone: "+231 000 000 018",
     county: "Maryland",
     district: "Harper",
     cooperative: "Harper Agricultural Society",
@@ -459,9 +459,9 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
   {
     registryPublicId: "RIV-0001",
-    fullName: "Finda Kamara",
+    fullName: "Sample farmer 19",
     gender: "Female",
-    phone: "+231888456781",
+    phone: "+231 000 000 019",
     county: "River Cess",
     district: "Cestos City",
     cooperative: "Rivercess Rice Network",
@@ -479,10 +479,10 @@ export const MINISTRY_FARMERS: MinistryFarmerRecord[] = [
   },
 ];
 
-export const MINISTRY_DAO_OFFICERS: MinistryDaoOfficerRecord[] = [
+const MINISTRY_DAO_OFFICERS_ALL: MinistryDaoOfficerRecord[] = [
   {
     daoCode: "DAO-NIM-001",
-    fullName: "Joseph Yarkpawolo",
+    fullName: "Sample DAO officer 01",
     county: "Nimba",
     district: "Sanniquellie-Mah",
     reportsSubmitted: 43,
@@ -494,7 +494,7 @@ export const MINISTRY_DAO_OFFICERS: MinistryDaoOfficerRecord[] = [
   },
   {
     daoCode: "DAO-NIM-002",
-    fullName: "Martha Kolleh",
+    fullName: "Sample DAO officer 02",
     county: "Nimba",
     district: "Yarmein",
     reportsSubmitted: 38,
@@ -506,7 +506,7 @@ export const MINISTRY_DAO_OFFICERS: MinistryDaoOfficerRecord[] = [
   },
   {
     daoCode: "DAO-BON-001",
-    fullName: "Edward Gaye",
+    fullName: "Sample DAO officer 03",
     county: "Bong",
     district: "Gbarnga",
     reportsSubmitted: 51,
@@ -518,7 +518,7 @@ export const MINISTRY_DAO_OFFICERS: MinistryDaoOfficerRecord[] = [
   },
   {
     daoCode: "DAO-LOF-001",
-    fullName: "Fatou Sesay",
+    fullName: "Sample DAO officer 04",
     county: "Lofa",
     district: "Voinjama",
     reportsSubmitted: 45,
@@ -530,7 +530,7 @@ export const MINISTRY_DAO_OFFICERS: MinistryDaoOfficerRecord[] = [
   },
   {
     daoCode: "DAO-MON-001",
-    fullName: "Samuel Reeves",
+    fullName: "Sample DAO officer 05",
     county: "Montserrado",
     district: "Careysburg",
     reportsSubmitted: 29,
@@ -542,15 +542,15 @@ export const MINISTRY_DAO_OFFICERS: MinistryDaoOfficerRecord[] = [
   },
 ];
 
-export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
+const MINISTRY_WAREHOUSES_ALL: MinistryWarehouseRecord[] = [
   {
     ministryCode: "WH-NIM-001",
-    name: "Nimba Central Warehouse",
+    name: "Sample warehouse 01",
     county: "Nimba",
     capacityMt: 1200,
     currentStockMt: 944,
     utilizationPct: 79,
-    managerName: "Samuel Dolo",
+    managerName: "Sample manager 01",
     operationalStatus: "Operational",
     donorResupplyFlag: false,
     latitude: 7.384,
@@ -558,12 +558,12 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
   {
     ministryCode: "WH-NIM-002",
-    name: "Nimba South Inputs Facility",
+    name: "Sample warehouse 02",
     county: "Nimba",
     capacityMt: 600,
     currentStockMt: 412,
     utilizationPct: 69,
-    managerName: "Patience Tokpah",
+    managerName: "Sample manager 02",
     operationalStatus: "Operational",
     donorResupplyFlag: false,
     latitude: 6.98,
@@ -571,12 +571,12 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
   {
     ministryCode: "WH-BON-001",
-    name: "Bong Agricultural Depot",
+    name: "Sample warehouse 03",
     county: "Bong",
     capacityMt: 900,
     currentStockMt: 641,
     utilizationPct: 71,
-    managerName: "Martha Kamara",
+    managerName: "Sample manager 03",
     operationalStatus: "Operational",
     donorResupplyFlag: false,
     latitude: 7.004,
@@ -584,12 +584,12 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
   {
     ministryCode: "WH-BON-002",
-    name: "Bong South Cooperative Store",
+    name: "Sample warehouse 04",
     county: "Bong",
     capacityMt: 720,
     currentStockMt: 498,
     utilizationPct: 69,
-    managerName: "James Sumo",
+    managerName: "Sample manager 04",
     operationalStatus: "Operational",
     donorResupplyFlag: false,
     latitude: 6.72,
@@ -597,12 +597,12 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
   {
     ministryCode: "WH-LOF-001",
-    name: "Lofa Regional Warehouse",
+    name: "Sample warehouse 05",
     county: "Lofa",
     capacityMt: 700,
     currentStockMt: 233,
     utilizationPct: 33,
-    managerName: "Fatmata Kromah",
+    managerName: "Sample manager 05",
     operationalStatus: "Operational",
     donorResupplyFlag: true,
     latitude: 8.422,
@@ -610,12 +610,12 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
   {
     ministryCode: "WH-LOF-002",
-    name: "Lofa Foya Distribution Point",
+    name: "Sample warehouse 06",
     county: "Lofa",
     capacityMt: 400,
     currentStockMt: 285,
     utilizationPct: 71,
-    managerName: "Amadu Sesay",
+    managerName: "Sample manager 06",
     operationalStatus: "Operational",
     donorResupplyFlag: false,
     latitude: 8.18,
@@ -623,12 +623,12 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
   {
     ministryCode: "WH-MON-001",
-    name: "Montserrado Input Hub",
+    name: "Sample warehouse 07",
     county: "Montserrado",
     capacityMt: 500,
     currentStockMt: 477,
     utilizationPct: 95,
-    managerName: "Peter Sonpon",
+    managerName: "Sample manager 07",
     operationalStatus: "Operational",
     donorResupplyFlag: false,
     latitude: 6.328,
@@ -636,12 +636,12 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
   {
     ministryCode: "WH-GBA-001",
-    name: "Grand Bassa Coastal Inputs Depot",
+    name: "Sample warehouse 08",
     county: "Grand Bassa",
     capacityMt: 850,
     currentStockMt: 612,
     utilizationPct: 72,
-    managerName: "Helena Dennis",
+    managerName: "Sample manager 08",
     operationalStatus: "Operational",
     donorResupplyFlag: false,
     latitude: 5.881,
@@ -649,12 +649,12 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
   {
     ministryCode: "WH-MAR-001",
-    name: "Margibi Kakata Consolidation Hub",
+    name: "Sample warehouse 09",
     county: "Margibi",
     capacityMt: 680,
     currentStockMt: 521,
     utilizationPct: 77,
-    managerName: "Marcus Zaza",
+    managerName: "Sample manager 09",
     operationalStatus: "Operational",
     donorResupplyFlag: false,
     latitude: 6.531,
@@ -662,12 +662,12 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
   {
     ministryCode: "WH-BOM-001",
-    name: "Bomi Tubmanburg Agricultural Store",
+    name: "Sample warehouse 10",
     county: "Bomi",
     capacityMt: 420,
     currentStockMt: 298,
     utilizationPct: 71,
-    managerName: "Alfred Wesseh",
+    managerName: "Sample manager 10",
     operationalStatus: "Operational",
     donorResupplyFlag: false,
     latitude: 6.868,
@@ -675,12 +675,12 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
   {
     ministryCode: "WH-SIN-001",
-    name: "Sinoe Greenville Inputs Warehouse",
+    name: "Sample warehouse 11",
     county: "Sinoe",
     capacityMt: 640,
     currentStockMt: 473,
     utilizationPct: 74,
-    managerName: "Esther Pyne",
+    managerName: "Sample manager 11",
     operationalStatus: "Operational",
     donorResupplyFlag: false,
     latitude: 5.009,
@@ -688,12 +688,12 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
   {
     ministryCode: "WH-MDL-001",
-    name: "Maryland Harper Strategic Reserve",
+    name: "Sample warehouse 12",
     county: "Maryland",
     capacityMt: 780,
     currentStockMt: 629,
     utilizationPct: 81,
-    managerName: "Francis Chea",
+    managerName: "Sample manager 12",
     operationalStatus: "Operational",
     donorResupplyFlag: false,
     latitude: 4.375,
@@ -701,12 +701,12 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
   {
     ministryCode: "WH-RIV-001",
-    name: "River Cess Cestos Inputs Depot",
+    name: "Sample warehouse 13",
     county: "River Cess",
     capacityMt: 520,
     currentStockMt: 361,
     utilizationPct: 69,
-    managerName: "Siah Kamara",
+    managerName: "Sample manager 13",
     operationalStatus: "Operational",
     donorResupplyFlag: false,
     latitude: 5.898,
@@ -714,7 +714,7 @@ export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = [
   },
 ];
 
-export const MINISTRY_INVENTORY_LINES: MinistryInventoryLineRecord[] = [
+const MINISTRY_INVENTORY_LINES_ALL: MinistryInventoryLineRecord[] = [
   {
     inventoryCode: "INV-0001",
     sku: "RICE-SEED-001",
@@ -761,7 +761,7 @@ export const MINISTRY_INVENTORY_LINES: MinistryInventoryLineRecord[] = [
   },
 ];
 
-export const MINISTRY_OPERATIONAL_EVENTS: MinistryOperationalEventRecord[] = [
+const MINISTRY_OPERATIONAL_EVENTS_ALL: MinistryOperationalEventRecord[] = [
   {
     eventCode: "EVT-0001",
     occurredAt: "2026-05-05T09:12:00Z",
@@ -805,7 +805,7 @@ export const MINISTRY_OPERATIONAL_EVENTS: MinistryOperationalEventRecord[] = [
 ];
 
 /** County intelligence signal centers (Mapbox point layer + dashboards). */
-export const MINISTRY_COUNTY_METRICS: MinistryCountyMetricRecord[] = [
+const MINISTRY_COUNTY_METRICS_ALL: MinistryCountyMetricRecord[] = [
   { county: "Nimba", productionIndex: 82, foodRisk: "Low", daoCompliance: 94, lng: -8.7064, lat: 7.3621 },
   { county: "Bong", productionIndex: 74, foodRisk: "Moderate", daoCompliance: 89, lng: -9.4723, lat: 6.9951 },
   { county: "Lofa", productionIndex: 68, foodRisk: "Elevated", daoCompliance: 91, lng: -9.7512, lat: 8.4212 },
@@ -818,7 +818,7 @@ export const MINISTRY_COUNTY_METRICS: MinistryCountyMetricRecord[] = [
   { county: "River Cess", productionIndex: 64, foodRisk: "Low", daoCompliance: 87, lng: -9.5811, lat: 5.9022 },
 ];
 
-export const MINISTRY_INVENTORY_MOVEMENTS: MinistryInventoryMovementRecord[] = [
+const MINISTRY_INVENTORY_MOVEMENTS_ALL: MinistryInventoryMovementRecord[] = [
   {
     id: "MOV-001",
     sku: "FERT-NPK-001",
@@ -860,6 +860,27 @@ export const MINISTRY_INVENTORY_MOVEMENTS: MinistryInventoryMovementRecord[] = [
     occurredAt: "2026-05-01T16:05:00Z",
   },
 ];
+
+/*
+ * Preview fixtures are pilot-scoped: only Nimba, Bong and Lofa are exported,
+ * so no page can imply national coverage. People are synthetic ("Sample …")
+ * with fictitious numbers (+231 000 000 …). See PREVIEW_DATA_LABEL.
+ */
+const PILOT_ONLY = new Set(["Nimba", "Bong", "Lofa"]);
+const inPilot = (county: string | null | undefined) => PILOT_ONLY.has(String(county ?? ""));
+
+export const MINISTRY_FARMERS: MinistryFarmerRecord[] = MINISTRY_FARMERS_ALL.filter((r) => inPilot(r.county));
+export const MINISTRY_DAO_OFFICERS: MinistryDaoOfficerRecord[] = MINISTRY_DAO_OFFICERS_ALL.filter((r) => inPilot(r.county));
+export const MINISTRY_WAREHOUSES: MinistryWarehouseRecord[] = MINISTRY_WAREHOUSES_ALL.filter((r) => inPilot(r.county));
+const PILOT_WAREHOUSE_CODES = new Set(MINISTRY_WAREHOUSES.map((w) => w.ministryCode));
+export const MINISTRY_INVENTORY_LINES: MinistryInventoryLineRecord[] = MINISTRY_INVENTORY_LINES_ALL.filter((r) =>
+  PILOT_WAREHOUSE_CODES.has(r.warehouseMinistryCode),
+);
+export const MINISTRY_OPERATIONAL_EVENTS: MinistryOperationalEventRecord[] = MINISTRY_OPERATIONAL_EVENTS_ALL.filter((r) => inPilot(r.county));
+export const MINISTRY_COUNTY_METRICS: MinistryCountyMetricRecord[] = MINISTRY_COUNTY_METRICS_ALL.filter((r) => inPilot(r.county));
+export const MINISTRY_INVENTORY_MOVEMENTS: MinistryInventoryMovementRecord[] = MINISTRY_INVENTORY_MOVEMENTS_ALL.filter(
+  (r) => PILOT_WAREHOUSE_CODES.has(r.fromWarehouseCode) && PILOT_WAREHOUSE_CODES.has(r.toWarehouseCode),
+);
 
 export type MinistryCountyIntelligenceGeoJSON = {
   type: "FeatureCollection";

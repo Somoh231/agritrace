@@ -114,10 +114,6 @@ export default function Topbar({
             <WorkspaceRoleSwitcher effectiveRole={effectiveRole} authenticRole={authenticRole} />
           </ClientErrorBoundary>
         </div>
-        <div className="hidden lg:flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden />
-          <span className="font-mono text-[10px] text-emerald-800">System live</span>
-        </div>
         <div className="sm:hidden flex items-center pr-1">
           <SyncStatusIndicator />
         </div>

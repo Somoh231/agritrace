@@ -196,9 +196,9 @@ export default function FarmersRegistryClient() {
   return (
     <div className="space-y-6 pb-8">
       <PageHeader
-        kicker="National registry · Ministry of Agriculture"
+        kicker="Farmer registry · Liberia pilot"
         title="Farmer registry"
-        description="National agricultural record system — verification posture, geo readiness, subsidy eligibility, and district custody chain."
+        description="Pilot farmer register — verification posture, geo readiness, subsidy eligibility, and district custody chain."
         actions={
           <button type="button" onClick={() => setRegisterOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-lg btn-emerald px-4 text-[13px] font-semibold">
             <UserPlus className="h-4 w-4" aria-hidden />
@@ -224,7 +224,7 @@ export default function FarmersRegistryClient() {
           {
             label: usingDemo ? "Verified (pipeline)" : "Verified in view",
             value: nf(usingDemo ? pipeline.verified : liveStats.verified),
-            hint: usingDemo ? "National pipeline aggregate" : `${liveStats.total} rows loaded`,
+            hint: usingDemo ? "Illustrative pilot aggregate" : `${liveStats.total} rows loaded`,
             deltaTone: "up",
           },
           {
@@ -270,7 +270,7 @@ export default function FarmersRegistryClient() {
             title={usingDemo ? "Operational archive" : "National farmer registry"}
             subtitle={
               usingDemo
-                ? "Connect Supabase for national UUID rows with full operational profiles."
+                ? "Illustrative sample records. Validated registrations appear here once the pilot is live."
                 : `${nf(filteredRows.length)} records in current filter scope`
             }
             action={
@@ -378,7 +378,7 @@ export default function FarmersRegistryClient() {
         open={Boolean(previewRow)}
         onClose={() => setPreviewRow(null)}
         title="Farmer registry preview"
-        subtitle="Illustrative pilot row — full profile requires live Supabase UUID."
+        subtitle="Illustrative sample record — not a real farmer."
         widthClassName="max-w-xl"
       >
         {previewRow ? <FarmerRegistryPreview row={previewRow} onClose={() => setPreviewRow(null)} /> : null}

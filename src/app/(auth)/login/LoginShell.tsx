@@ -45,7 +45,7 @@ export function LoginShell({
             </ul>
           </div>
           <p className="avs-meta hidden uppercase tracking-[0.12em] text-white/55 lg:block">
-            Programme context · Liberia Agricultural Intelligence Programme
+            Programme context · AgriVault&rsquo;s Liberia Agricultural Intelligence Programme · Pilot, being validated
           </p>
         </section>
 

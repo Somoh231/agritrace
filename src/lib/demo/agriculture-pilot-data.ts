@@ -1,10 +1,19 @@
 /**
- * Illustrative pilot dataset for Liberia ministry demos — not official government statistics.
- * All figures are clearly synthetic for UX demonstration while live Ministry data is configured.
+ * Illustrative preview dataset — synthetic, NOT programme results or government statistics.
+ *
+ * Rules (Ministry preview readiness, 2026-09-29):
+ *   - pilot counties only (Nimba, Bong, Lofa); nothing implies national coverage;
+ *   - modest, round, obviously illustrative figures;
+ *   - no personal names, phone numbers or real facility names ("Sample …");
+ *   - identifiers use a SMP- prefix that cannot collide with production records;
+ *   - no institutional claims (no "verified by", no ownership statements beyond R-19).
+ * Every platform page that can show these values carries PREVIEW_DATA_LABEL
+ * (src/lib/utils/pilot-config.ts).
  */
 
-export const PILOT_DATA_LABEL = "Illustrative pilot dataset";
+export const PILOT_DATA_LABEL = "Illustrative preview data";
 
+/** Liberia's fifteen counties — geography reference only, never used for figures. */
 export const PILOT_COUNTIES_FULL = [
   "Bomi",
   "Bong",
@@ -27,22 +36,6 @@ export const PILOT_COUNTIES_ACTIVE = ["Nimba", "Bong", "Lofa"] as const;
 
 export type PilotStatus = "healthy" | "warning" | "critical";
 
-export const nationalHeroMetrics = {
-  registeredFarmers: 48_620,
-  domesticRiceProductionMt: 298_400,
-  nationalProductionTargetMt: 340_000,
-  inputInventoryCoveragePct: 78,
-  countiesReporting: 15,
-  countiesActivePilot: 3,
-  dataQualityScore: 84,
-  postHarvestLossRatePct: 11.2,
-  activeFieldOfficers: 142,
-  activeCountyAgOfficers: 15,
-  callCenterAssistedSubmissions7d: 186,
-  offlinePendingSync: 23,
-  importDependencyPct: 62,
-};
-
 export type CountyProductionRow = {
   county: string;
   productionMt: number;
@@ -52,41 +45,47 @@ export type CountyProductionRow = {
   farmersRegistered: number;
 };
 
+/** Pilot counties only. Synthetic. */
 export const countyProductionPerformance: CountyProductionRow[] = [
-  { county: "Nimba", productionMt: 62_100, targetMt: 68_000, lossPct: 10.1, status: "healthy", farmersRegistered: 11_200 },
-  { county: "Bong", productionMt: 44_800, targetMt: 52_000, lossPct: 12.4, status: "warning", farmersRegistered: 8_400 },
-  { county: "Lofa", productionMt: 51_200, targetMt: 55_000, lossPct: 9.8, status: "healthy", farmersRegistered: 9_100 },
-  { county: "Montserrado", productionMt: 38_400, targetMt: 48_000, lossPct: 13.2, status: "warning", farmersRegistered: 7_800 },
-  { county: "Margibi", productionMt: 28_900, targetMt: 34_000, lossPct: 14.5, status: "critical", farmersRegistered: 5_200 },
-  { county: "Grand Bassa", productionMt: 22_100, targetMt: 28_000, lossPct: 11.0, status: "warning", farmersRegistered: 4_600 },
-  { county: "Maryland", productionMt: 18_600, targetMt: 22_000, lossPct: 10.5, status: "healthy", farmersRegistered: 3_900 },
-  { county: "Sinoe", productionMt: 12_400, targetMt: 16_000, lossPct: 15.1, status: "critical", farmersRegistered: 2_700 },
-  ...PILOT_COUNTIES_FULL.filter((c) =>
-    !["Nimba", "Bong", "Lofa", "Montserrado", "Margibi", "Grand Bassa", "Maryland", "Sinoe"].includes(c),
-  ).map((county, i) => ({
-    county,
-    productionMt: 8_000 + i * 420,
-    targetMt: 11_000 + i * 400,
-    lossPct: 9 + (i % 5),
-    status: (i % 4 === 0 ? "warning" : "healthy") as PilotStatus,
-    farmersRegistered: 1200 + i * 80,
-  })),
+  { county: "Nimba", productionMt: 4_200, targetMt: 4_800, lossPct: 10, status: "healthy", farmersRegistered: 1_200 },
+  { county: "Bong", productionMt: 3_100, targetMt: 3_600, lossPct: 12, status: "warning", farmersRegistered: 900 },
+  { county: "Lofa", productionMt: 3_600, targetMt: 4_000, lossPct: 9, status: "healthy", farmersRegistered: 1_000 },
 ];
 
+const sum = (k: "productionMt" | "targetMt" | "farmersRegistered") => countyProductionPerformance.reduce((s, r) => s + r[k], 0);
+
+/** Key names are historical; every value is a pilot-county synthetic total. */
+export const nationalHeroMetrics = {
+  registeredFarmers: sum("farmersRegistered"),
+  domesticRiceProductionMt: sum("productionMt"),
+  nationalProductionTargetMt: sum("targetMt"),
+  inputInventoryCoveragePct: 75,
+  countiesReporting: PILOT_COUNTIES_ACTIVE.length,
+  countiesActivePilot: PILOT_COUNTIES_ACTIVE.length,
+  dataQualityScore: 80,
+  postHarvestLossRatePct: 10,
+  activeFieldOfficers: 24,
+  activeCountyAgOfficers: PILOT_COUNTIES_ACTIVE.length,
+  callCenterAssistedSubmissions7d: 18,
+  offlinePendingSync: 6,
+  /** Retained for type compatibility; not shown as a national statistic. */
+  importDependencyPct: 0,
+};
+
 export const farmerRegistrationPipeline = {
-  verified: 41_200,
-  pendingVerification: 4_120,
-  flagged: 892,
-  geoTaggedPct: 71,
+  verified: 2_600,
+  pendingVerification: 400,
+  flagged: 100,
+  geoTaggedPct: 70,
   lastSyncHoursAgo: 2,
 };
 
 export const inputDistributionProgress = {
-  fertilizerAllocatedMt: 18_400,
-  fertilizerDistributedMt: 14_200,
-  seedAllocatedMt: 9_800,
-  seedDistributedMt: 7_650,
-  countiesFullyDistributed: 9,
+  fertilizerAllocatedMt: 600,
+  fertilizerDistributedMt: 450,
+  seedAllocatedMt: 300,
+  seedDistributedMt: 240,
+  countiesFullyDistributed: 1,
 };
 
 export type WarehouseRow = {
@@ -101,10 +100,9 @@ export type WarehouseRow = {
 };
 
 export const warehouses: WarehouseRow[] = [
-  { id: "wh-001", name: "Central Hub · Ganta", county: "Nimba", riceSeedTons: 420, fertilizerTons: 310, pesticideTons: 42, stockRisk: "healthy", donorTaggedPct: 55 },
-  { id: "wh-002", name: "County Store · Gbarnga", county: "Bong", riceSeedTons: 280, fertilizerTons: 240, pesticideTons: 28, stockRisk: "warning", donorTaggedPct: 40 },
-  { id: "wh-003", name: "Voinjama Depot", county: "Lofa", riceSeedTons: 315, fertilizerTons: 265, pesticideTons: 31, stockRisk: "healthy", donorTaggedPct: 62 },
-  { id: "wh-004", name: "Monrovia Strategic Reserve", county: "Montserrado", riceSeedTons: 890, fertilizerTons: 720, pesticideTons: 88, stockRisk: "warning", donorTaggedPct: 35 },
+  { id: "SMP-WH-A", name: "Sample warehouse A · Nimba", county: "Nimba", riceSeedTons: 40, fertilizerTons: 30, pesticideTons: 4, stockRisk: "healthy", donorTaggedPct: 0 },
+  { id: "SMP-WH-B", name: "Sample warehouse B · Bong", county: "Bong", riceSeedTons: 28, fertilizerTons: 24, pesticideTons: 3, stockRisk: "warning", donorTaggedPct: 0 },
+  { id: "SMP-WH-C", name: "Sample warehouse C · Lofa", county: "Lofa", riceSeedTons: 32, fertilizerTons: 26, pesticideTons: 3, stockRisk: "healthy", donorTaggedPct: 0 },
 ];
 
 export type InventoryTransfer = {
@@ -118,9 +116,9 @@ export type InventoryTransfer = {
 };
 
 export const inventoryTransfers: InventoryTransfer[] = [
-  { id: "tr-1", from: "Monrovia Strategic Reserve", to: "Gbarnga · Bong", commodity: "Urea", qtyTons: 45, status: "in_transit", date: "2026-05-04" },
-  { id: "tr-2", from: "Ganta Hub", to: "District 3 · Nimba", commodity: "NERICA seed", qtyTons: 12, status: "completed", date: "2026-05-03" },
-  { id: "tr-3", from: "Voinjama Depot", to: "Kolahun · Lofa", commodity: "NPK", qtyTons: 18, status: "scheduled", date: "2026-05-06" },
+  { id: "SMP-TR-1", from: "Sample warehouse A · Nimba", to: "Sample warehouse B · Bong", commodity: "Urea", qtyTons: 5, status: "in_transit", date: "2026-05-04" },
+  { id: "SMP-TR-2", from: "Sample warehouse A · Nimba", to: "District A · Nimba", commodity: "Rice seed", qtyTons: 2, status: "completed", date: "2026-05-03" },
+  { id: "SMP-TR-3", from: "Sample warehouse C · Lofa", to: "District B · Lofa", commodity: "NPK", qtyTons: 3, status: "scheduled", date: "2026-05-06" },
 ];
 
 export type FarmerRegistryDemoRow = {
@@ -129,7 +127,7 @@ export type FarmerRegistryDemoRow = {
   county: string;
   district: string;
   cooperative: string;
-  /** Ministry registry public id when synced from pilot seed */
+  /** Registry id when synced from preview seed */
   registryPublicId?: string;
   daoOfficerCode?: string;
   primaryWarehouseCode?: string;
@@ -143,11 +141,11 @@ export type FarmerRegistryDemoRow = {
 };
 
 export const farmerRegistrySample: FarmerRegistryDemoRow[] = [
-  { id: "F-10492", fullName: "James W. Toe", county: "Nimba", district: "Sanniquellie-Mahn", cooperative: "Nimba Highlands Cooperative", gpsStatus: "verified", acreage: 3.2, mainCrop: "Rice", productionHistorySeasons: 4, subsidyEligible: true, verification: "verified", lastFieldVisit: "2026-05-01" },
-  { id: "F-21883", fullName: "Mary Suah", county: "Bong", district: "Fuamah", cooperative: "Bong Central Farmers Union", gpsStatus: "pending", acreage: 2.1, mainCrop: "Rice", productionHistorySeasons: 2, subsidyEligible: true, verification: "pending", lastFieldVisit: "2026-04-28" },
-  { id: "F-33021", fullName: "Mohammed Kamara", county: "Lofa", district: "Voinjama", cooperative: "Lofa Rice Alliance", gpsStatus: "verified", acreage: 4.8, mainCrop: "Rice", productionHistorySeasons: 6, subsidyEligible: false, verification: "verified", lastFieldVisit: "2026-05-02" },
-  { id: "F-44102", fullName: "Patience Doe", county: "Margibi", district: "Kakata", cooperative: "Margibi Growers", gpsStatus: "none", acreage: 1.4, mainCrop: "Rice", productionHistorySeasons: 1, subsidyEligible: true, verification: "flagged", lastFieldVisit: "2026-04-15" },
-  { id: "F-55291", fullName: "Emmanuel Weah", county: "Montserrado", district: "Careysburg", cooperative: "Urban Edge Cooperative", gpsStatus: "verified", acreage: 0.9, mainCrop: "Rice", productionHistorySeasons: 3, subsidyEligible: true, verification: "verified", lastFieldVisit: "2026-05-05" },
+  { id: "SMP-F-001", fullName: "Sample farmer 01", county: "Nimba", district: "District A", cooperative: "Sample cooperative A", gpsStatus: "verified", acreage: 3, mainCrop: "Rice", productionHistorySeasons: 2, subsidyEligible: true, verification: "verified", lastFieldVisit: "2026-05-01" },
+  { id: "SMP-F-002", fullName: "Sample farmer 02", county: "Bong", district: "District B", cooperative: "Sample cooperative B", gpsStatus: "pending", acreage: 2, mainCrop: "Rice", productionHistorySeasons: 1, subsidyEligible: true, verification: "pending", lastFieldVisit: "2026-04-28" },
+  { id: "SMP-F-003", fullName: "Sample farmer 03", county: "Lofa", district: "District C", cooperative: "Sample cooperative C", gpsStatus: "verified", acreage: 4, mainCrop: "Rice", productionHistorySeasons: 2, subsidyEligible: false, verification: "verified", lastFieldVisit: "2026-05-02" },
+  { id: "SMP-F-004", fullName: "Sample farmer 04", county: "Nimba", district: "District A", cooperative: "Sample cooperative A", gpsStatus: "none", acreage: 1, mainCrop: "Rice", productionHistorySeasons: 1, subsidyEligible: true, verification: "flagged", lastFieldVisit: "2026-04-15" },
+  { id: "SMP-F-005", fullName: "Sample farmer 05", county: "Bong", district: "District B", cooperative: "Sample cooperative B", gpsStatus: "verified", acreage: 1, mainCrop: "Rice", productionHistorySeasons: 1, subsidyEligible: true, verification: "verified", lastFieldVisit: "2026-05-05" },
 ];
 
 export type FieldReportDemo = {
@@ -160,9 +158,9 @@ export type FieldReportDemo = {
 };
 
 export const fieldReports: FieldReportDemo[] = [
-  { id: "R-9081", officer: "S. Kollie", county: "Nimba", summary: "Moisture readings elevated · drying advisory issued", channel: "offline", submittedAt: "2026-05-06T08:40:00Z" },
-  { id: "R-9082", officer: "A. Sumo", county: "Bong", summary: "Input voucher redemption verified · 42 farmers", channel: "online", submittedAt: "2026-05-06T07:15:00Z" },
-  { id: "R-9078", officer: "Call desk · ext 204", county: "Lofa", summary: "Voice-assisted registration completed · 3 parcels", channel: "call_center", submittedAt: "2026-05-05T16:22:00Z" },
+  { id: "SMP-R-01", officer: "Sample field officer 01", county: "Nimba", summary: "Moisture readings elevated · drying advisory issued", channel: "offline", submittedAt: "2026-05-06T08:40:00Z" },
+  { id: "SMP-R-02", officer: "Sample field officer 02", county: "Bong", summary: "Input voucher redemption checked", channel: "online", submittedAt: "2026-05-06T07:15:00Z" },
+  { id: "SMP-R-03", officer: "Sample call desk", county: "Lofa", summary: "Voice-assisted registration completed", channel: "call_center", submittedAt: "2026-05-05T16:22:00Z" },
 ];
 
 export type OfflineQueueItem = {
@@ -174,9 +172,9 @@ export type OfflineQueueItem = {
 };
 
 export const offlineSyncQueue: OfflineQueueItem[] = [
-  { id: "q-1", deviceId: "TAB-NIM-042", records: 8, oldestAgeMinutes: 35, county: "Nimba" },
-  { id: "q-2", deviceId: "TAB-BONG-019", records: 5, oldestAgeMinutes: 120, county: "Bong" },
-  { id: "q-3", deviceId: "TAB-LOF-007", records: 10, oldestAgeMinutes: 18, county: "Lofa" },
+  { id: "q-1", deviceId: "SMP-DEVICE-01", records: 3, oldestAgeMinutes: 35, county: "Nimba" },
+  { id: "q-2", deviceId: "SMP-DEVICE-02", records: 2, oldestAgeMinutes: 120, county: "Bong" },
+  { id: "q-3", deviceId: "SMP-DEVICE-03", records: 1, oldestAgeMinutes: 18, county: "Lofa" },
 ];
 
 export type CallCenterSubmission = {
@@ -189,9 +187,9 @@ export type CallCenterSubmission = {
 };
 
 export const callCenterSubmissions: CallCenterSubmission[] = [
-  { id: "cc-1", topic: "Subsidy eligibility clarification", county: "Nimba", agent: "J. Flomo", resolved: true, time: "2026-05-06 09:12" },
-  { id: "cc-2", topic: "Duplicate farmer merge request", county: "Bong", agent: "R. Johnson", resolved: false, time: "2026-05-06 08:55" },
-  { id: "cc-3", topic: "Warehouse stock discrepancy", county: "Montserrado", agent: "P. Mensah", resolved: false, time: "2026-05-05 17:40" },
+  { id: "cc-1", topic: "Eligibility clarification", county: "Nimba", agent: "Sample agent 01", resolved: true, time: "2026-05-06 09:12" },
+  { id: "cc-2", topic: "Duplicate farmer merge request", county: "Bong", agent: "Sample agent 02", resolved: false, time: "2026-05-06 08:55" },
+  { id: "cc-3", topic: "Warehouse stock discrepancy", county: "Lofa", agent: "Sample agent 03", resolved: false, time: "2026-05-05 17:40" },
 ];
 
 export type DataQualityAlertDemo = {
@@ -202,9 +200,9 @@ export type DataQualityAlertDemo = {
 };
 
 export const dataQualityAlerts: DataQualityAlertDemo[] = [
-  { id: "dq-1", severity: "warning", title: "12% of farmer GPS reads older than 180 days", county: "Margibi" },
-  { id: "dq-2", severity: "critical", title: "County submission gap · no sync in 36h", county: "Grand Gedeh" },
-  { id: "dq-3", severity: "healthy", title: "Pilot counties meeting completeness SLA" },
+  { id: "dq-1", severity: "warning", title: "Some farmer GPS reads older than 180 days", county: "Bong" },
+  { id: "dq-2", severity: "critical", title: "District submission gap · no sync in 36h", county: "Lofa" },
+  { id: "dq-3", severity: "healthy", title: "Nimba meeting the agreed completeness check" },
 ];
 
 export type LossAlertDemo = {
@@ -215,8 +213,7 @@ export type LossAlertDemo = {
 };
 
 export const postHarvestLossAlerts: LossAlertDemo[] = [
-  { id: "ph-1", county: "Margibi", lossPct: 14.5, driver: "Moisture / storage" },
-  { id: "ph-2", county: "Sinoe", lossPct: 15.1, driver: "Transport delay" },
+  { id: "ph-1", county: "Bong", lossPct: 12, driver: "Moisture / storage" },
 ];
 
 export type SubsidyRecordDemo = {
@@ -228,9 +225,9 @@ export type SubsidyRecordDemo = {
 };
 
 export const subsidyDistributionRecords: SubsidyRecordDemo[] = [
-  { id: "sub-1", county: "Nimba", farmersPaid: 820, amountUsd: 164_000, period: "Apr 2026 · tranche 2" },
-  { id: "sub-2", county: "Bong", farmersPaid: 540, amountUsd: 108_000, period: "Apr 2026 · tranche 2" },
-  { id: "sub-3", county: "Lofa", farmersPaid: 610, amountUsd: 122_000, period: "Apr 2026 · tranche 2" },
+  { id: "sub-1", county: "Nimba", farmersPaid: 80, amountUsd: 8_000, period: "Sample period · tranche 1" },
+  { id: "sub-2", county: "Bong", farmersPaid: 60, amountUsd: 6_000, period: "Sample period · tranche 1" },
+  { id: "sub-3", county: "Lofa", farmersPaid: 70, amountUsd: 7_000, period: "Sample period · tranche 1" },
 ];
 
 export type DonorInventoryDemo = {
@@ -241,60 +238,62 @@ export type DonorInventoryDemo = {
 };
 
 export const donorInventoryRecords: DonorInventoryDemo[] = [
-  { donor: "Illustrative donor · Programme A", sku: "NERICA seed", tons: "640 t", warehouse: "Monrovia Strategic Reserve" },
-  { donor: "Illustrative donor · Programme B", sku: "Urea", tons: "420 t", warehouse: "Ganta Hub" },
+  { donor: "Sample programme stock A", sku: "Rice seed", tons: "20 t", warehouse: "Sample warehouse A · Nimba" },
+  { donor: "Sample programme stock B", sku: "Urea", tons: "12 t", warehouse: "Sample warehouse C · Lofa" },
 ];
 
 export const foodSecurityIndicators = {
-  riceDemandMt: 650_000,
+  /** Pilot-scope synthetic demand, not a national figure. */
+  riceDemandMt: 14_000,
   domesticProductionMt: nationalHeroMetrics.domesticRiceProductionMt,
-  importDependencyTrend: "+1.2 ppt vs prior quarter (illustrative)",
-  emergencyAlerts: 2,
-  marketPriceWatch: "Stable · illustrative pilot band",
-  nationalRiskScore: 62,
-  countyForecastNote: "Pilot counties projected within ±6% of seasonal norm (illustrative)",
+  importDependencyTrend: "Not assessed in the pilot preview",
+  emergencyAlerts: 1,
+  marketPriceWatch: "Illustrative band",
+  nationalRiskScore: 50,
+  countyForecastNote: "Pilot counties only · illustrative",
 };
 
 export type OfficerDemo = { id: string; name: string; county: string; activeSubmissions7d: number };
 
 export const fieldOfficers: OfficerDemo[] = [
-  { id: "fo-1", name: "Samuel Kollie", county: "Nimba", activeSubmissions7d: 38 },
-  { id: "fo-2", name: "Alice Sumo", county: "Bong", activeSubmissions7d: 31 },
-  { id: "fo-3", name: "Joseph Cooper", county: "Lofa", activeSubmissions7d: 29 },
+  { id: "fo-1", name: "Sample field officer 01", county: "Nimba", activeSubmissions7d: 12 },
+  { id: "fo-2", name: "Sample field officer 02", county: "Bong", activeSubmissions7d: 9 },
+  { id: "fo-3", name: "Sample field officer 03", county: "Lofa", activeSubmissions7d: 10 },
 ];
 
-export const countyAgOfficers: OfficerDemo[] = PILOT_COUNTIES_FULL.slice(0, 15).map((county, i) => ({
+export const countyAgOfficers: OfficerDemo[] = PILOT_COUNTIES_ACTIVE.map((county, i) => ({
   id: `cac-${i}`,
-  name: `County Ag Officer · ${county}`,
+  name: `Sample county officer · ${county}`,
   county,
-  activeSubmissions7d: 12 + (i % 8),
+  activeSubmissions7d: 6 + i,
 }));
 
 export const districtAgOfficersSample: OfficerDemo[] = [
-  { id: "dao-1", name: "DAO · Sanniquellie-Mahn", county: "Nimba", activeSubmissions7d: 14 },
-  { id: "dao-2", name: "DAO · Fuamah", county: "Bong", activeSubmissions7d: 11 },
+  { id: "dao-1", name: "Sample DAO · District A", county: "Nimba", activeSubmissions7d: 5 },
+  { id: "dao-2", name: "Sample DAO · District B", county: "Bong", activeSubmissions7d: 4 },
 ];
 
 export type ConnectivityRiskRow = { county: string; riskScore: number; note: string };
 
 export const connectivityRiskByCounty: ConnectivityRiskRow[] = [
-  { county: "Grand Gedeh", riskScore: 78, note: "Sparse coverage · offline-first advised" },
-  { county: "River Gee", riskScore: 71, note: "SMS backup channel active" },
-  { county: "Nimba", riskScore: 42, note: "Mixed coverage · pilot hardened" },
+  { county: "Lofa", riskScore: 70, note: "Sparse coverage · offline capture advised" },
+  { county: "Bong", riskScore: 55, note: "Mixed coverage" },
+  { county: "Nimba", riskScore: 42, note: "Mixed coverage" },
 ];
 
 export const countyOperationsCards = [
-  { county: "Nimba", pendingVerification: 212, inputProgressPct: 82, fieldReports7d: 156, diseaseAlerts: 1, warehouseRequests: 2, dqIssues: 3 },
-  { county: "Bong", pendingVerification: 318, inputProgressPct: 71, fieldReports7d: 122, diseaseAlerts: 0, warehouseRequests: 4, dqIssues: 5 },
-  { county: "Lofa", pendingVerification: 164, inputProgressPct: 88, fieldReports7d: 134, diseaseAlerts: 2, warehouseRequests: 1, dqIssues: 2 },
+  { county: "Nimba", pendingVerification: 20, inputProgressPct: 80, fieldReports7d: 15, diseaseAlerts: 1, warehouseRequests: 2, dqIssues: 3 },
+  { county: "Bong", pendingVerification: 30, inputProgressPct: 70, fieldReports7d: 12, diseaseAlerts: 0, warehouseRequests: 1, dqIssues: 4 },
+  { county: "Lofa", pendingVerification: 15, inputProgressPct: 85, fieldReports7d: 13, diseaseAlerts: 1, warehouseRequests: 1, dqIssues: 2 },
 ];
 
+/** Consistent with the owner-approved data-ownership language (R-19). */
 export const governanceFraming = {
-  headline: "Ministry-owned data infrastructure",
+  headline: "Institution-owned programme data",
   bullets: [
-    "Sovereign agricultural database under national governance",
-    "Role-based access and audit-ready reporting",
-    "County-to-national coordination with phased portability",
-    "Designed for transition to government-controlled infrastructure",
+    "Institutions retain ownership and control of the operational data generated through their programmes",
+    "Role-based access and a recorded decision history",
+    "County-to-national coordination, introduced in phases",
+    "AgriVault provides the technology and operating support; capability transfer is planned",
   ],
 };

@@ -9,10 +9,10 @@ import { demoSource, resolveDisplaySource } from "@/lib/data/data-source";
 import {
   dataQualityAlerts,
   farmerRegistrationPipeline,
-  foodSecurityIndicators,
   inputDistributionProgress,
   nationalHeroMetrics,
   postHarvestLossAlerts,
+  subsidyDistributionRecords,
 } from "@/lib/demo/agriculture-pilot-data";
 import { safePct } from "@/lib/utils/rice";
 
@@ -39,7 +39,6 @@ function MiniBar({ pct, tone }: { pct: number; tone: "ok" | "warn" | "bad" }) {
 export default function MinistryCommandCenter() {
   const live = useNationalAISLive();
   const hero = nationalHeroMetrics;
-  const fi = foodSecurityIndicators;
   const p = farmerRegistrationPipeline;
 
   const prodMt = live.productionMt;
@@ -84,26 +83,26 @@ export default function MinistryCommandCenter() {
     {
       label: "Rice production YTD",
       value: `${nf(prodMt)} MT`,
-      trend: "↓ 12.4% YoY",
-      hint: `${productionProgress.toFixed(0)}% of ${nf(targetMt)} MT season target`,
+      trend: "Pilot counties",
+      hint: `${productionProgress.toFixed(0)}% of ${nf(targetMt)} MT sample season target`,
     },
     {
-      label: "Import dependence",
-      value: `${hero.importDependencyPct}%`,
-      trend: "↓ 6 pts",
-      hint: "National priority · from 82% (2022)",
+      label: "Pilot counties",
+      value: String(hero.countiesActivePilot),
+      trend: "Being validated",
+      hint: "Nimba · Bong · Lofa",
     },
     {
       label: "Farmers registered",
       value: nf(live.farmersCount),
-      trend: `↑ ${nf(p.pendingVerification)} mo`,
-      hint: `${nf(p.verified)} verified · ${p.geoTaggedPct}% geo-boundaried`,
+      trend: `${nf(p.pendingVerification)} awaiting review`,
+      hint: `${nf(p.verified)} verified · ${p.geoTaggedPct}% with plot outlines`,
     },
     {
       label: "Post-harvest loss",
       value: `${lossRate.toFixed(1)}%`,
-      trend: "↓ 1.8 pts",
-      hint: "Target < 10% by 2027",
+      trend: "Sample",
+      hint: "Recorded at warehouse receipt",
     },
   ];
 
@@ -118,31 +117,31 @@ export default function MinistryCommandCenter() {
 
   const programmes = [
     {
-      label: "Voucher subsidies",
-      value: "$3.84M",
-      hint: "24,108 of 31,000 redeemed",
-      pct: safePct(24108, 31000),
+      label: "Voucher payments",
+      value: `$${nf(subsidyDistributionRecords.reduce((s, r) => s + r.amountUsd, 0))}`,
+      hint: `${nf(subsidyDistributionRecords.reduce((s, r) => s + r.farmersPaid, 0))} sample payments`,
+      pct: 60,
       tone: "ok" as const,
     },
     {
       label: "Certified seed",
       value: `${nf(inputDistributionProgress.seedDistributedMt)} MT`,
-      hint: `NERICA-4 · ${seedPct.toFixed(0)}% of plan`,
+      hint: `${seedPct.toFixed(0)}% of sample plan`,
       pct: seedPct,
       tone: "ok" as const,
     },
     {
       label: "Fertilizer dispatched",
       value: `${nf(inputDistributionProgress.fertilizerDistributedMt)} MT`,
-      hint: "across 90 districts",
+      hint: "Pilot districts",
       pct: fertPct,
       tone: "ok" as const,
     },
     {
-      label: "Plots EUDR-checked",
-      value: nf(31890),
-      hint: "97.6% deforestation-clear",
-      pct: 97.6,
+      label: "Plots with outlines",
+      value: nf(Math.round((p.verified * p.geoTaggedPct) / 100)),
+      hint: "Walked on the ground · approximate",
+      pct: p.geoTaggedPct,
       tone: "warn" as const,
     },
   ];
@@ -162,27 +161,27 @@ export default function MinistryCommandCenter() {
     {
       n: 2,
       stage: "DAO",
-      tier: "District · 90",
+      tier: "District",
       who: "District Officers",
       value: nf(p.pendingVerification),
       valueLabel: "awaiting review",
-      meta: "90 districts",
+      meta: "Pilot districts",
       accent: "text-emerald-700",
     },
     {
       n: 3,
       stage: "CAC",
-      tier: "County · 15",
+      tier: "County",
       who: "County Coordinators",
-      value: String(countiesAwaiting * 12 + 14),
+      value: String(countiesAwaiting),
       valueLabel: "awaiting sign-off",
-      meta: "15 counties",
+      meta: `${hero.countiesActivePilot} pilot counties`,
       accent: "text-sky-700",
     },
     {
       n: 4,
-      stage: "MoA",
-      tier: "National",
+      stage: "Ministry",
+      tier: "National review",
       who: "Ministry / National",
       value: String(activeAlerts),
       valueLabel: "open escalations",
@@ -196,20 +195,20 @@ export default function MinistryCommandCenter() {
       {/* Hero */}
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-slate-200 pb-5">
         <div className="min-w-0">
-          <div className="gov-kicker gov-kicker-gold">Reporting Chain · Ministry of Agriculture</div>
+          <div className="gov-kicker gov-kicker-gold">Reporting chain · Liberia pilot</div>
           <h1 className="mt-2 font-serif-display text-[30px] md:text-[40px] leading-[1.05] text-slate-900">
-            Command Center · National
+            Command Center · Pilot overview
           </h1>
           <p className="mt-2.5 max-w-2xl text-[13px] leading-relaxed text-slate-600">
-            Rice-first national picture, consolidated up the CLAN → DAO → CAC → Ministry chain. Season {live.season} ·
-            food risk index {fi.nationalRiskScore}.
+            Rice-first picture of the three pilot counties, consolidated up the CLAN → DAO → CAC → Ministry review chain.
+            Season {live.season}.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <DataSourceBadge source={commandSource} />
           <span className="btn-gov-outline h-9 px-3 rounded-lg text-[12px]">Season {live.season}</span>
           <Link href="/executive-briefing" className="btn-gold h-9 px-3.5 rounded-lg text-[12px]">
-            Cabinet Brief
+            Executive brief
           </Link>
         </div>
       </header>
@@ -234,14 +233,14 @@ export default function MinistryCommandCenter() {
           <section className="gov-card overflow-hidden">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-4">
               <div className="min-w-0">
-                <div className="font-serif-display text-[18px] text-slate-900">National reporting chain · live consolidation</div>
+                <div className="font-serif-display text-[18px] text-slate-900">Reporting chain · consolidation</div>
                 <div className="mt-0.5 text-[12px] text-slate-500">
                   Capture flows up · verification signs off down · offline-first at the field tier
                 </div>
               </div>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />
-                Syncing · live
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-900">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-600" aria-hidden />
+                Illustrative
               </span>
             </div>
             <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -258,10 +257,10 @@ export default function MinistryCommandCenter() {
                     ) : null}
                   </div>
                   <div className="mt-2 font-serif-display text-[15px] text-slate-900">{c.stage}</div>
-                  <div className="font-mono text-[9px] uppercase tracking-wider text-slate-400">{c.tier}</div>
+                  <div className="font-mono text-[9px] uppercase tracking-wider text-slate-600">{c.tier}</div>
                   <div className="mt-3 font-serif-display text-[22px] leading-none tabular-nums text-slate-900">{c.value}</div>
                   <div className="text-[11px] text-slate-500">{c.valueLabel}</div>
-                  <div className="mt-1.5 font-mono text-[10px] text-slate-400">{c.meta}</div>
+                  <div className="mt-1.5 font-mono text-[10px] text-slate-600">{c.meta}</div>
                 </div>
               ))}
             </div>
@@ -364,7 +363,7 @@ export default function MinistryCommandCenter() {
           <section className="gov-card overflow-hidden">
             <div className="border-b border-slate-100 px-4 py-3.5">
               <div className="font-serif-display text-[15px] text-slate-900">County heat · production</div>
-              <div className="mt-0.5 text-[11px] text-slate-500">Top producing counties this season</div>
+              <div className="mt-0.5 text-[11px] text-slate-500">Pilot counties · sample figures</div>
             </div>
             <div className="space-y-3 p-4">
               {countyRows.slice(0, 6).map((r) => (
@@ -389,7 +388,7 @@ export default function MinistryCommandCenter() {
             <div className="mt-3 space-y-2.5 text-[12px]">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Counties reporting</span>
-                <span className="font-mono tabular-nums text-slate-900">{hero.countiesReporting}/15</span>
+                <span className="font-mono tabular-nums text-slate-900">{hero.countiesReporting}/{hero.countiesActivePilot}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Counties awaiting sign-off</span>

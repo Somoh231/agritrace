@@ -74,7 +74,7 @@ export default function OperationalActivityRail({ className }: { className?: str
         at: ago(55),
         tone: "slate" as const,
         title: "County reporting cadence · overdue district",
-        detail: "Margibi · follow-up issued to supervising CAC",
+        detail: "Bong · follow-up issued to supervising CAC",
       },
       {
         id: "sub-1",

@@ -335,7 +335,7 @@ export default function GisIntelligenceWorkspace() {
               checked={overlays.warehouses}
               onChange={(v) => setOverlays((o) => ({ ...o, warehouses: v }))}
               label="Warehouses"
-              hint="Live coordinates from Supabase when configured"
+              hint="Illustrative coordinates in the preview"
             />
             <Toggle
               checked={overlays.daoOffices}

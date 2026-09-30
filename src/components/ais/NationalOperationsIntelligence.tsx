@@ -96,7 +96,7 @@ export default function NationalOperationsIntelligence() {
           </DashboardPanel>
 
           <DashboardPanel>
-            <SectionHeader kicker="Live feed" title="Operational activity" />
+            <SectionHeader kicker="Activity (illustrative)" title="Operational activity" />
             <Timeline items={FEED} className="mt-4" />
             <div className="mt-4 flex flex-wrap gap-2">
               <Link href="/alerts" className="text-[13px] font-medium text-forest-700">

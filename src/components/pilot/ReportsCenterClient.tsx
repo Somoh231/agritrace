@@ -23,7 +23,7 @@ export default function ReportsCenterClient() {
       <OpsSectionTitle
         kicker="Reporting"
         title="Ministry & donor reporting center"
-        subtitle="Audit-ready, role-governed exports · sovereign database framing with national portability."
+        subtitle="Role-governed exports built from the operational record."
       />
       <PilotDatasetNotice />
 

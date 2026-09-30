@@ -194,7 +194,7 @@ export default function ReportingWorkspaceView({ tab }: { tab: ReportingTabId })
 
       <RegistryKpiStrip
         items={[
-          { label: "Counties reporting", value: `${hero.countiesReporting}/15`, hint: "Pilot cadence", href: "/national-heat-map" },
+          { label: "Counties reporting", value: `${hero.countiesReporting}/${hero.countiesActivePilot}`, hint: "Pilot cadence", href: "/national-heat-map" },
           { label: "Active field officers", value: nf(hero.activeFieldOfficers), hint: `${hero.activeCountyAgOfficers} county coordinators`, href: "/field-agents" },
           { label: "Pending verification", value: nf(pipeline.pendingVerification), hint: "Awaiting CAC decision", href: "/verification-queue" },
           { label: "Active alerts", value: String(activeAlerts), hint: "Escalations & quality signals", href: "/alerts", deltaTone: activeAlerts > 0 ? "down" : "up" },
