@@ -4,9 +4,7 @@ import localFont from "next/font/local";
 
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import ToastProvider from "@/components/shared/toast/ToastProvider";
-import { PwaInstallProvider } from "@/components/pwa/install-prompt-context";
-import PwaDiagnosticsPanel from "@/components/pwa/PwaDiagnosticsPanel";
-import PwaRegistrar from "@/components/pwa/PwaRegistrar";
+import { AUTH_REDIRECT_SCRIPT } from "@/lib/auth/auth-redirect-script";
 
 /*
  * Application fonts, self-hosted (src/fonts, SIL OFL; see src/fonts/README.md)
@@ -157,15 +155,15 @@ export default function RootLayout({
       lang="en"
       className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} ${fontSerif.variable} ${fontEditorial.variable} h-full antialiased`}
     >
+      <head>
+        {/* Sends Supabase invite/recovery redirects to /auth/callback before anything renders. Static string. */}
+        <script dangerouslySetInnerHTML={{ __html: AUTH_REDIRECT_SCRIPT }} />
+      </head>
       <body className="h-full bg-[rgb(var(--surface))] text-[rgb(var(--text))]">
+        {/* No PWA here: the manifest, service worker, install UI and diagnostics
+            belong to the authenticated platform only (see (dashboard)/layout.tsx). */}
         <AnalyticsProvider>
-          <ToastProvider>
-            <PwaInstallProvider>
-              <PwaRegistrar />
-              {children}
-              <PwaDiagnosticsPanel />
-            </PwaInstallProvider>
-          </ToastProvider>
+          <ToastProvider>{children}</ToastProvider>
         </AnalyticsProvider>
       </body>
     </html>

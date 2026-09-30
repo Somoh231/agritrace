@@ -91,8 +91,9 @@ check("post-login home is computed from the database role, as before", () => {
   for (const role of ALL_ROLES) assert.equal(postLoginHomeForRole(roleFromProfile({ role })!), postLoginHomeForRole(role), role);
 });
 
-check("workspace preview still applies on top of a real profile", () => {
-  assert.equal(resolveEffectiveWorkspaceRole({ role: "ministry_admin" }, "county_officer"), "county_officer");
+check("workspace preview cannot re-role a real profile (single-role accounts)", () => {
+  assert.equal(resolveEffectiveWorkspaceRole({ role: "ministry_admin" }, "county_officer"), "ministry_admin");
+  assert.equal(resolveEffectiveWorkspaceRole({ role: "field_agent" }, "admin"), "field_agent");
   assert.equal(resolveEffectiveWorkspaceRole({ role: "field_agent" }, null), "field_agent");
 });
 

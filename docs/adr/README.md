@@ -20,6 +20,7 @@ Recorded architectural decisions for the AgriVault platform. ADRs document the c
 | [0008](./0008-role-based-security.md) | Role-based security model | Accepted |
 | [0009](./0009-operational-submission-bridge.md) | Operational submission bridge | Accepted |
 | [0010](./0010-verification-architecture.md) | Verification queue architecture | Accepted |
+| [0011](./0011-profile-role-assignment-hardening.md) | Roles are assigned, never chosen | Proposed |
 
 ---
 

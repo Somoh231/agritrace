@@ -1,17 +1,15 @@
-import { roleFromProfile } from "@/lib/auth/profile-access";
-import { parseWorkspaceDemoRole } from "@/lib/auth/workspace-demo-role";
+import { assignedWorkspaceRoles, presentedWorkspaceRole } from "@/lib/auth/workspace-demo-role";
 import type { Profile, UserRole } from "@/lib/supabase/types";
 
 /**
- * Database-backed role merged with optional workspace preview cookie (server-side).
- * Returns `null` when the user has no usable profile; the preview cookie never
- * stands in for a missing profile.
+ * Role used for server-side workspace routing. Always one of the user's own
+ * assigned roles (today: their single profile role); the preview cookie can only
+ * pick among those, so it never widens access. Returns `null` when the user has
+ * no usable profile.
  */
 export function resolveEffectiveWorkspaceRole(
-  profile: Pick<Profile, "role"> | null | undefined,
+  profile: (Pick<Profile, "role"> & Partial<Pick<Profile, "is_active">>) | null | undefined,
   cookieValue: string | null | undefined,
 ): UserRole | null {
-  const base = roleFromProfile(profile);
-  if (!base) return null;
-  return parseWorkspaceDemoRole(cookieValue) ?? base;
+  return presentedWorkspaceRole(assignedWorkspaceRoles(profile), cookieValue);
 }
