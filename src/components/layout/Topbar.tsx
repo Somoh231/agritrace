@@ -40,7 +40,8 @@ export default function Topbar({
   profile: Profile;
   authenticRole: UserRole;
   effectiveRole: UserRole;
-  primaryAction: { label: string; onClick: () => void };
+  /** Omitted for read-only preview accounts: no creating action is offered. */
+  primaryAction?: { label: string; onClick: () => void } | null;
   onExportPdf: () => void;
   onOpenMobileNav?: () => void;
 }) {
@@ -147,7 +148,7 @@ export default function Topbar({
                 router.push(next.pathname + "?" + sp.toString());
               }}
             />
-            <ToolItem label={`Action · ${primaryAction.label}`} onClick={primaryAction.onClick} />
+            {primaryAction ? <ToolItem label={`Action · ${primaryAction.label}`} onClick={primaryAction.onClick} /> : null}
           </div>
         </details>
 
@@ -177,13 +178,15 @@ export default function Topbar({
           initials={initialsFromName(profile?.full_name || "User")}
         />
 
-        <button
-          type="button"
-          onClick={primaryAction.onClick}
-          className="hidden sm:inline-flex btn-emerald h-9 px-3.5 rounded-lg text-[12px]"
-        >
-          {primaryAction.label}
-        </button>
+        {primaryAction ? (
+          <button
+            type="button"
+            onClick={primaryAction.onClick}
+            className="hidden sm:inline-flex btn-emerald h-9 px-3.5 rounded-lg text-[12px]"
+          >
+            {primaryAction.label}
+          </button>
+        ) : null}
       </div>
       <div className="w-full xl:hidden border-t border-slate-100 pt-2 pb-1">
         <ClientErrorBoundary

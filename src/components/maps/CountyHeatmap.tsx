@@ -251,7 +251,7 @@ export default function CountyHeatmap({
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-100 p-4">
         <div className="font-display text-[16px] font-semibold text-ink-900">County heatmap</div>
-        <div className="text-[12px] text-slate-600">Rice production choropleth · Season {season}</div>
+        <div className="text-[12px] text-slate-600">Rice production choropleth · pilot validation period</div>
       </div>
       {mapBody}
     </div>

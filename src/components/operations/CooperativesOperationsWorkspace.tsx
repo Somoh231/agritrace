@@ -14,6 +14,7 @@ import {
 } from "@/components/enterprise";
 import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
 import OperationDrawer from "@/components/operations/OperationDrawer";
+import { MutationControl } from "@/lib/auth/read-only-context";
 import RecordCooperativeForm from "@/components/operations/forms/RecordCooperativeForm";
 import {
   CooperativeDetailPanel,
@@ -148,10 +149,12 @@ export default function CooperativesOperationsWorkspace() {
         title="Cooperative registry"
         description="Registered farmer organizations and cooperative legal entities. New records append to organizations with audit log entries on create."
         actions={
-          <button type="button" onClick={() => setCreateOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-lg btn-emerald px-4 text-[13px] font-semibold">
-            <Plus className="h-4 w-4" aria-hidden />
-            Add cooperative
-          </button>
+          <MutationControl>
+            <button type="button" onClick={() => setCreateOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-lg btn-emerald px-4 text-[13px] font-semibold">
+              <Plus className="h-4 w-4" aria-hidden />
+              Add cooperative
+            </button>
+          </MutationControl>
         }
       />
 
@@ -162,12 +165,14 @@ export default function CooperativesOperationsWorkspace() {
           title="Farmer registry"
           description="View enrolled farmers linked to cooperative programmes and subsidy eligibility."
         />
-        <QuickActionCard
-          icon={Plus}
-          title="Register cooperative"
-          description="Add a new cooperative legal entity with county assignment and optional license."
-          onClick={() => setCreateOpen(true)}
-        />
+        <MutationControl>
+          <QuickActionCard
+            icon={Plus}
+            title="Register cooperative"
+            description="Add a new cooperative legal entity with county assignment and optional license."
+            onClick={() => setCreateOpen(true)}
+          />
+        </MutationControl>
         <QuickActionCard
           href="/compliance/audit-log"
           icon={Building2}
@@ -239,9 +244,11 @@ export default function CooperativesOperationsWorkspace() {
               title="No cooperatives in scope"
               description="Adjust search or county filters, or register the first cooperative for this workspace."
               action={
-                <button type="button" onClick={() => setCreateOpen(true)} className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
-                  Add cooperative
-                </button>
+                <MutationControl>
+                  <button type="button" onClick={() => setCreateOpen(true)} className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
+                    Add cooperative
+                  </button>
+                </MutationControl>
               }
             />
           </div>

@@ -121,7 +121,7 @@ export default function PostHarvestLossAlerts() {
           <div className="flex items-center justify-between">
             <div>
               <div className="font-display text-[16px] text-gray-900">Loss incidents</div>
-              <div className="text-[12px] text-gray-500">Season {season}</div>
+              <div className="text-[12px] text-gray-500">Pilot validation period</div>
             </div>
             <div className="flex items-center gap-1.5">
               <button

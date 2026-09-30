@@ -67,6 +67,8 @@ export interface Profile {
   phone: string | null;
   is_active?: boolean;
   deactivated_at?: string | null;
+  /** Read-only stakeholder preview account (see src/lib/auth/preview-read-only.ts). */
+  preview_read_only?: boolean | null;
   created_at: string;
 }
 

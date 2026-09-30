@@ -47,7 +47,7 @@ export function OpsSectionTitle({
   return (
     <div className="mb-3">
       {kicker ? (
-        <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">{kicker}</div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-600">{kicker}</div>
       ) : null}
       <h2 className="font-display text-lg font-semibold tracking-tight text-[#0f172a]">{title}</h2>
       {subtitle ? <p className="mt-1 text-[12px] text-slate-600 max-w-[820px]">{subtitle}</p> : null}

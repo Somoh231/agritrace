@@ -112,6 +112,8 @@ Full detail, including rollbacks: the owner checklist delivered on 2026-09-26 an
 
 ## 8. Synthetic QA seed (`npm run seed:staging`, to be written at step 4)
 
+> The Ministry stakeholder preview uses its own, smaller synthetic dataset, which already exists: `supabase/seed/preview-synthetic.sql`. It uses "Sample farmer NN" names and `SMP-` codes, covers Nimba, Bong and Lofa only, and is guarded by the staging marker. See `MINISTRY_PREVIEW.md`. The `QA-` seed below is still planned for the broader QA role matrix.
+
 - **Nothing from production:** no rows, exports or "anonymised" copies. Schema-only dumps are used for diffing only.
 - **Obviously synthetic:**
   - names like `QA Farmer 0042` and `QA DAO Officer 03`;

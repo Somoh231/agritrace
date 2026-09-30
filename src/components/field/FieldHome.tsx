@@ -5,6 +5,7 @@ import * as React from "react";
 import CreateLotQuick from "@/components/field/forms/CreateLotQuick";
 import LogMovementQuick from "@/components/field/forms/LogMovementQuick";
 import RegisterFarmerQuick from "@/components/field/forms/RegisterFarmerQuick";
+import { useReadOnlyPreview } from "@/lib/auth/read-only-context";
 
 type View = "home" | "register" | "lot" | "movement";
 
@@ -58,6 +59,20 @@ function FullscreenFormShell({
 
 export default function FieldHome() {
   const [view, setView] = React.useState<View>("home");
+  const readOnly = useReadOnlyPreview();
+
+  if (readOnly) {
+    return (
+      <div className="min-h-[calc(100vh-46px)] bg-gray-50 p-4">
+        <div className="max-w-md mx-auto rounded-2xl border border-gray-200 bg-white p-5">
+          <div className="font-display text-[18px] text-gray-900">Field entry</div>
+          <p className="mt-1 text-[13px] text-gray-700">
+            Field capture is used by field staff. This preview account is read-only, so capture forms are not available here.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (view === "register") {
     return (

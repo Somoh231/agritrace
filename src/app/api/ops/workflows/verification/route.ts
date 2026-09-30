@@ -5,6 +5,7 @@ import { beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-respon
 import { WORKFLOW_MUTATION_POLICY } from "@/lib/http/rate-limit-policies";
 import { buildUnifiedVerificationQueue } from "@/lib/ops/ministry-verification-queue-data";
 import { canPerform, explainPermission, type OperationalWorkflowAction } from "@/lib/ops/permissions";
+import { isPreviewReadOnly } from "@/lib/auth/preview-read-only";
 import { requireWorkflowPrincipal, workflowScopeFailure } from "@/lib/ops/server-permissions";
 import { persistOperationalWorkflowEvent, persistWorkflowAuditLog } from "@/lib/ops/server-workflow-io";
 
@@ -35,6 +36,10 @@ export async function POST(req: Request) {
       { ok: false, code: principal.code, message: principal.message },
       { status: principal.status },
     );
+  }
+  // Read-only preview accounts never mutate workflow state (also refused by middleware and RLS).
+  if (isPreviewReadOnly(principal.profile)) {
+    return NextResponse.json({ ok: false, code: "read_only", message: "This preview account is read-only." }, { status: 403 });
   }
 
   const apiCtx = await beginApiRequestAsync(req, WORKFLOW_MUTATION_POLICY, principal.userId);

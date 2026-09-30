@@ -1,6 +1,7 @@
 "use client";
 
 import { formatDateTimeUtc } from "@/lib/utils/formatters";
+import { useReadOnlyPreview } from "@/lib/auth/read-only-context";
 import * as React from "react";
 
 import { DashboardPanel, EmptyState, SectionHeader, StatusBadge, type StatusBadgeTone } from "@/components/enterprise";
@@ -71,7 +72,8 @@ export default function WorkflowReviewPanel({
     void load();
   }, [load]);
 
-  const interactive = !readOnly && stage !== "auditor" && stage !== "donor";
+  const previewReadOnly = useReadOnlyPreview();
+  const interactive = !readOnly && !previewReadOnly && stage !== "auditor" && stage !== "donor";
 
   return (
     <DashboardPanel>

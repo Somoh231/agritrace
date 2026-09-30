@@ -165,7 +165,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
     container: light ? "border-gray-200 bg-white" : "border-slate-700/80 bg-slate-900/50",
     bar: light ? "border-b border-gray-100 bg-gray-50" : "border-b border-slate-700/80 bg-slate-950/60",
     title: light ? "text-gray-400" : "text-slate-500",
-    titleMuted: light ? "text-gray-300" : "text-slate-600",
+    titleMuted: light ? "text-gray-600" : "text-slate-400",
     input: light
       ? "border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-forest-300 focus:ring-2 focus:ring-forest-50"
       : "border-slate-600 bg-slate-950 text-slate-100 placeholder:text-slate-600 focus:border-emerald-600",

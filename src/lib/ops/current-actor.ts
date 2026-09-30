@@ -42,11 +42,14 @@ export function mapUserRoleToOperationalPersona(role: UserRole): OperationalPers
   }
 }
 
-export function resolveOperationalActor(profile: Pick<Profile, "id" | "full_name" | "role" | "county">): OperationalActor {
+export function resolveOperationalActor(
+  profile: Pick<Profile, "id" | "full_name" | "role" | "county"> & Pick<Partial<Profile>, "preview_read_only">,
+): OperationalActor {
   return {
     id: profile.id,
     displayName: profile.full_name?.trim() || "Operator",
-    role: mapUserRoleToOperationalPersona(profile.role),
+    // A read-only preview account never acts, whatever its role.
+    role: profile.preview_read_only === true ? "preview_observer" : mapUserRoleToOperationalPersona(profile.role),
     county: profile.county,
     warehouseMinistryCode: null,
   };

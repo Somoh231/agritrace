@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import type { DaoOversightRow } from "@/lib/ais/county-dao-demo";
+import { useReadOnlyPreview } from "@/lib/auth/read-only-context";
 import { StatusBadge } from "@/components/enterprise";
 import EnterpriseDataGrid, { type GridColumn } from "@/components/operations/EnterpriseDataGrid";
 
@@ -96,6 +97,8 @@ export default function CaoDaoOversightGrid({
   onDistrictFilterChange: (v: string) => void;
   onSyncFilterChange: (v: string) => void;
 }) {
+  const readOnly = useReadOnlyPreview();
+  const columns = React.useMemo(() => (readOnly ? cols.filter((c) => c.key !== "actions") : cols), [readOnly]);
   const districts = React.useMemo(() => {
     const s = new Set(rows.map((r) => r.district));
     return ["all", ...[...s].sort()];
@@ -143,7 +146,7 @@ export default function CaoDaoOversightGrid({
   return (
     <EnterpriseDataGrid<DaoOversightRow>
       rows={filtered}
-      columns={cols}
+      columns={columns}
       filename="cac-dao-oversight.csv"
       pageSize={12}
       theme="light"

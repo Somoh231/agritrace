@@ -18,6 +18,7 @@ export type StubUser =
   | "u-quota"
   | "u-quota-2"
   | "u-super"
+  | "u-preview"
   | "u-ministry-admin"
   | "u-dao"
   | "u-exporter"

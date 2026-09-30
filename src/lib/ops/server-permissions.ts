@@ -69,7 +69,7 @@ export async function requireWorkflowPrincipal(): Promise<WorkflowPrincipal | Wo
 
     const { data: profileRow, error: profileErr } = await supabase
       .from("profiles")
-      .select("id,email,full_name,role,organization_id,county,district,phone,is_active,created_at")
+      .select("*") // includes preview_read_only where the column exists
       .eq("id", user.id)
       .maybeSingle();
 

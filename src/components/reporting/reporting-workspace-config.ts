@@ -42,7 +42,7 @@ export function reportingSectionsForTab(tab: ReportingTabId): { label: string; i
             title: "Field activity",
             body: "Offline-capable checklist capture and operational notes.",
             href: "/field/mobile",
-            meta: "DAO submit · GPS stubs · attachments placeholders",
+            meta: "DAO submit · GPS · attachments",
           },
           {
             title: "Farmer registration",

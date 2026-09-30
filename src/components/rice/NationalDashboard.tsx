@@ -162,7 +162,7 @@ export default function NationalDashboard() {
         <KPICard
           label="Domestic production"
           value={formatWeight(totalProdKg)}
-          delta={`Season ${season}`}
+          delta="Pilot validation period"
           deltaDirection="neutral"
           accentColor="green"
         />
@@ -203,7 +203,7 @@ export default function NationalDashboard() {
               <div className="font-display text-[16px] text-gray-900">
                 County production vs NADP target
               </div>
-              <div className="text-[12px] text-gray-500">Season {season}</div>
+              <div className="text-[12px] text-gray-500">Pilot validation period</div>
             </div>
             <button
               type="button"

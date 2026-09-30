@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { isPreviewReadOnly, isSafeMethod, previewRequestAllowed } from "@/lib/auth/preview-read-only";
 import { ACCOUNT_UNAVAILABLE_PATH, roleFromProfile } from "@/lib/auth/profile-access";
 import { assertPilotRouteAccess } from "@/lib/auth/workspace-access";
 import { REQUEST_ID_HEADER, resolveRequestId } from "@/lib/http/request-context";
@@ -88,6 +89,23 @@ export async function middleware(request: NextRequest) {
     user = data.user;
   } catch {
     user = null;
+  }
+
+  // Read-only preview accounts: refuse every write, on API routes and pages alike.
+  if (user && !isSafeMethod(request.method) && !previewRequestAllowed(request.method, pathname)) {
+    let flag: { preview_read_only?: boolean | null } | null = null;
+    try {
+      // select("*"): stays valid on databases where the preview column does not exist yet.
+      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<{ preview_read_only?: boolean | null }>();
+      flag = data;
+    } catch {
+      flag = null;
+    }
+    if (isPreviewReadOnly(flag)) {
+      const denied = NextResponse.json({ error: "This preview account is read-only." }, { status: 403 });
+      denied.headers.set(REQUEST_ID_HEADER, requestId);
+      return denied;
+    }
   }
 
   if (isProtectedPath(pathname) && !user) {

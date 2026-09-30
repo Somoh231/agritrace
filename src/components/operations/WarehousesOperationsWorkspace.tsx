@@ -1,5 +1,6 @@
 "use client";
 
+import { MutationControl } from "@/lib/auth/read-only-context";
 import * as React from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
@@ -144,12 +145,14 @@ export default function WarehousesOperationsWorkspace() {
       <PageHeader
         kicker="National logistics · Warehouse registry"
         title="Warehouse operations"
-        description="National warehouse footprint, utilization thresholds, geo anchors, and hub command profiles for routing and compliance."
+        description="Warehouse footprint for the pilot counties: utilisation, locations and hub profiles for routing and compliance."
         actions={
-          <button type="button" onClick={() => setCreateOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-lg btn-emerald px-4 text-[13px] font-semibold">
-            <Plus className="h-4 w-4" aria-hidden />
-            Create warehouse
-          </button>
+          <MutationControl>
+            <button type="button" onClick={() => setCreateOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-lg btn-emerald px-4 text-[13px] font-semibold">
+              <Plus className="h-4 w-4" aria-hidden />
+              Create warehouse
+            </button>
+          </MutationControl>
         }
       />
 
@@ -220,9 +223,11 @@ export default function WarehousesOperationsWorkspace() {
                   title="No warehouses in scope"
                   description="Adjust filters or create a new warehouse hub for the national network."
                   action={
-                    <button type="button" onClick={() => setCreateOpen(true)} className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
-                      Create warehouse
-                    </button>
+                    <MutationControl>
+                      <button type="button" onClick={() => setCreateOpen(true)} className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
+                        Create warehouse
+                      </button>
+                    </MutationControl>
                   }
                 />
               </div>

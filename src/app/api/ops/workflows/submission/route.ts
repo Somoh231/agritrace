@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { beginApiRequestAsync, rejectIfRateLimited } from "@/lib/http/api-response";
 import { WORKFLOW_MUTATION_POLICY } from "@/lib/http/rate-limit-policies";
+import { isPreviewReadOnly } from "@/lib/auth/preview-read-only";
 import { requireWorkflowPrincipal } from "@/lib/ops/server-permissions";
 import { persistWorkflowAuditLog } from "@/lib/ops/server-workflow-io";
 import { checkWorkflowPermission, workflowStageForRole } from "@/lib/workflow/roles";
@@ -100,6 +101,10 @@ export async function POST(req: Request) {
   const principal = await requireWorkflowPrincipal();
   if (!principal.ok) {
     return NextResponse.json({ ok: false, code: principal.code, message: principal.message }, { status: principal.status });
+  }
+  // Read-only preview accounts never mutate workflow state (also refused by middleware and RLS).
+  if (isPreviewReadOnly(principal.profile)) {
+    return NextResponse.json({ ok: false, code: "read_only", message: "This preview account is read-only." }, { status: 403 });
   }
 
   const ctx = await beginApiRequestAsync(req, WORKFLOW_MUTATION_POLICY, principal.userId);

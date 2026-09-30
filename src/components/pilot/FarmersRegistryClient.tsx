@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadOnlyPreview } from "@/lib/auth/read-only-context";
 import * as React from "react";
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
@@ -58,6 +59,7 @@ function mapLiveRow(r: Record<string, unknown>, i: number): FarmerRegistryDemoRo
 const nf = (n: number) => Intl.NumberFormat().format(n);
 
 export default function FarmersRegistryClient() {
+  const readOnly = useReadOnlyPreview();
   const [registerOpen, setRegisterOpen] = React.useState(false);
   const [profileId, setProfileId] = React.useState<string | null>(null);
   const [previewRow, setPreviewRow] = React.useState<FarmerRegistryDemoRow | null>(null);
@@ -200,10 +202,12 @@ export default function FarmersRegistryClient() {
         title="Farmer registry"
         description="Pilot farmer register — verification posture, geo readiness, subsidy eligibility, and district custody chain."
         actions={
-          <button type="button" onClick={() => setRegisterOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-lg btn-emerald px-4 text-[13px] font-semibold">
-            <UserPlus className="h-4 w-4" aria-hidden />
-            Register farmer
-          </button>
+          readOnly ? undefined : (
+            <button type="button" onClick={() => setRegisterOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-lg btn-emerald px-4 text-[13px] font-semibold">
+              <UserPlus className="h-4 w-4" aria-hidden />
+              Register farmer
+            </button>
+          )
         }
       />
 
@@ -295,9 +299,11 @@ export default function FarmersRegistryClient() {
               title="No farmers match the current filters"
               description="Adjust county, verification status, or search terms. New registrations appear here after CLAN capture and DAO review."
               action={
-                <button type="button" onClick={() => setRegisterOpen(true)} className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
-                  Register farmer
-                </button>
+                readOnly ? undefined : (
+                  <button type="button" onClick={() => setRegisterOpen(true)} className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
+                    Register farmer
+                  </button>
+                )
               }
             />
           </div>

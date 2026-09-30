@@ -1,5 +1,6 @@
 "use client";
 
+import { MutationControl } from "@/lib/auth/read-only-context";
 import * as React from "react";
 
 import {
@@ -27,13 +28,15 @@ export default function InventoryNationalWorkspace() {
     <>
       <div className="space-y-6 pb-8">
         <PageHeader
-          kicker="National logistics · Warehouse command"
+          kicker="Logistics · Warehouse command"
           title="Warehouse & logistics command"
-          description="National hub oversight, TRF transfer workflows, corridor maps, donor flows, and immutable inventory movements — Agrivault AIS logistics platform."
+          description="Warehouse oversight for the pilot counties: transfer workflows, corridor maps, programme stock and recorded inventory movements."
           actions={
-            <button type="button" onClick={() => setDrawer(true)} className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
-              Record receipt
-            </button>
+            <MutationControl>
+              <button type="button" onClick={() => setDrawer(true)} className="inline-flex h-10 items-center rounded-lg btn-emerald px-4 text-[13px] font-semibold">
+                Record receipt
+              </button>
+            </MutationControl>
           }
         />
 

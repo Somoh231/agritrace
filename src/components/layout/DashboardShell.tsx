@@ -8,6 +8,8 @@ import Topbar from "@/components/layout/Topbar";
 import { LAYOUT_CONTAINER_CLASS, isDarkCanvasRoute, resolveLayoutMode } from "@/lib/navigation/layout-mode";
 // import DemoRail from "@/components/demo/DemoRail";
 import PilotBanner from "@/components/shared/PilotBanner";
+import { isPreviewReadOnly } from "@/lib/auth/preview-read-only";
+import { ReadOnlyPreviewProvider } from "@/lib/auth/read-only-context";
 // import AiAssistant from "@/components/ai-assistant/AiAssistant";
 import { resolveOperationalActor } from "@/lib/ops/current-actor";
 import OperationalActorProvider from "@/lib/ops/operational-actor-context";
@@ -114,8 +116,9 @@ export default function DashboardShell({
       full_name: profile.full_name,
       role: safeEffectiveRole,
       county: profile.county,
+      preview_read_only: profile.preview_read_only,
     });
-  }, [profile?.id, profile?.full_name, profile?.county, safeEffectiveRole]);
+  }, [profile?.id, profile?.full_name, profile?.county, profile?.preview_read_only, safeEffectiveRole]);
 
   const user = React.useMemo(
     () => ({
@@ -146,19 +149,22 @@ export default function DashboardShell({
     );
   }
 
-  const primary = primaryActionForPath(pathname);
-  const actorShell = (node: React.ReactNode) =>
-    operationalActor ? (
-      <OperationalActorProvider actor={operationalActor}>{node}</OperationalActorProvider>
-    ) : (
-      node
-    );
+  // Read-only preview accounts are never offered a primary (creating) action.
+  const readOnly = isPreviewReadOnly(profile);
+  const primary = readOnly ? null : primaryActionForPath(pathname);
+  const actorShell = (node: React.ReactNode) => (
+    <ReadOnlyPreviewProvider readOnly={readOnly}>
+      {operationalActor ? <OperationalActorProvider actor={operationalActor}>{node}</OperationalActorProvider> : node}
+    </ReadOnlyPreviewProvider>
+  );
 
   if (presentation) {
     return (
       <DashboardShellFatalBoundary>
         {actorShell(
           <div className="min-h-screen bg-[rgb(var(--ministry-workspace))]">
+            <StagingIndicator />
+            <PilotBanner />
             <div className="fixed right-4 top-4 z-50 hidden md:flex items-center gap-2">
               <button
                 type="button"
@@ -184,6 +190,8 @@ export default function DashboardShell({
       <DashboardShellFatalBoundary>
         {actorShell(
           <div className="min-h-screen bg-white">
+            <StagingIndicator />
+            <PilotBanner />
             <div className="fixed right-4 top-4 z-50 hidden print:hidden md:flex items-center gap-2">
               <button
                 type="button"
@@ -236,18 +244,22 @@ export default function DashboardShell({
               authenticRole={safeAuthenticRole}
               effectiveRole={safeEffectiveRole}
               onOpenMobileNav={() => setMobileNav(true)}
-              primaryAction={{
-                label: primary.label,
-                onClick: () => {
-                  if (primary.href) {
-                    router.push(primary.href);
-                    return;
-                  }
-                  if (typeof window !== "undefined") {
-                    window.dispatchEvent(new CustomEvent("agritrace-primary-action"));
-                  }
-                },
-              }}
+              primaryAction={
+                primary
+                  ? {
+                      label: primary.label,
+                      onClick: () => {
+                        if (primary.href) {
+                          router.push(primary.href);
+                          return;
+                        }
+                        if (typeof window !== "undefined") {
+                          window.dispatchEvent(new CustomEvent("agritrace-primary-action"));
+                        }
+                      },
+                    }
+                  : null
+              }
               onExportPdf={() => {
                 if (typeof window !== "undefined") window.open(exportHref, "_blank", "noopener,noreferrer");
               }}

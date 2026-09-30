@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadOnlyPreview } from "@/lib/auth/read-only-context";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -134,6 +135,7 @@ function statusTone(status: string): "success" | "warning" | "danger" | "info" |
 }
 
 export default function ReportingWorkspaceView({ tab }: { tab: ReportingTabId }) {
+  const readOnly = useReadOnlyPreview();
   const tabMeta = REPORTING_TABS.find((t) => t.id === tab) ?? REPORTING_TABS[0]!;
   const sections = reportingSectionsForTab(tab);
 
@@ -333,13 +335,23 @@ export default function ReportingWorkspaceView({ tab }: { tab: ReportingTabId })
       </DashboardPanel>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <QuickActionCard href="/verification-queue" icon={ClipboardList} title="Verification desk" description="Approve, reject, escalate, and assign investigations across the unified queue." />
+        <QuickActionCard
+          href="/verification-queue"
+          icon={ClipboardList}
+          title="Verification desk"
+          description={
+            readOnly
+              ? "The verification queue and its recorded decisions (view only)."
+              : "Approve, reject, escalate, and assign investigations across the unified queue."
+          }
+        />
         <QuickActionCard href="/reports/export" icon={FileBarChart} title="Export center" description="Download reporting packages and data extracts for ministry cycles." />
         <QuickActionCard href="/food-security" icon={ShieldAlert} title="Food security intelligence" description="Early-warning signals and county vulnerability derived from field reporting." />
       </div>
 
       <div className="space-y-5">
-        {sections.map((sec) => (
+        {/* Capture sections are for field desks; a read-only preview account is not offered them. */}
+        {(readOnly ? [] : sections).map((sec) => (
           <DashboardPanel key={sec.label}>
             <SectionHeader kicker="Required action" title={sec.label} />
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">

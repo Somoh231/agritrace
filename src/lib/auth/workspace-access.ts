@@ -251,6 +251,8 @@ type PilotRule = { prefix: string; canAccess: (role: UserRole) => boolean };
 const PILOT_ROUTE_RULES: PilotRule[] = [
   { prefix: "/gis-intelligence", canAccess: (r) => canAccessAdvancedGisIntelligence(r) },
   { prefix: "/admin", canAccess: (r) => isAdminConsoleRole(r) },
+  // Environment/setup checklist (env vars, seed commands): operators only, not programme users.
+  { prefix: "/cocoa/pilot-readiness", canAccess: (r) => isAdminConsoleRole(r) },
   { prefix: "/command-center", canAccess: (r) => canAccessNationalCommandCenter(r) },
   { prefix: "/national-operations", canAccess: (r) => canAccessNationalOperationsShell(r) },
   { prefix: "/national-heat-map", canAccess: (r) => canAccessNationalHeatMap(r) },
@@ -322,6 +324,7 @@ export function assertPilotRouteAccess(role: UserRole, pathname: string): PilotR
 export const PILOT_ROUTE_INVENTORY: { route: string; intendedRoles: string; mechanism: string }[] = [
   { route: "/gis-intelligence", intendedRoles: "Ministry national, CAC (advanced GIS)", mechanism: "middleware + assertPilotRouteAccess" },
   { route: "/admin", intendedRoles: "super_admin only (admin-access.ts allowlist)", mechanism: "middleware + admin/layout" },
+  { route: "/cocoa/pilot-readiness", intendedRoles: "super_admin only (setup diagnostics)", mechanism: "middleware" },
   { route: "/command-center", intendedRoles: "Ministry national", mechanism: "middleware" },
   { route: "/national-operations", intendedRoles: "Ministry national", mechanism: "middleware" },
   { route: "/national-heat-map", intendedRoles: "Ministry, CAC, DAO (no CLAN, donor, auditor)", mechanism: "middleware" },

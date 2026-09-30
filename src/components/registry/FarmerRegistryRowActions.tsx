@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import type { FarmerRegistryDemoRow } from "@/lib/demo/agriculture-pilot-data";
+import { useReadOnlyPreview } from "@/lib/auth/read-only-context";
 
 import { isRegistryUuid } from "@/components/registry/registry-utils";
 
@@ -16,6 +17,22 @@ export default function FarmerRegistryRowActions({
   onVerify: (row: FarmerRegistryDemoRow) => void;
 }) {
   const canVerify = isRegistryUuid(row.id);
+  const readOnly = useReadOnlyPreview();
+
+  if (readOnly) {
+    // Read-only preview: viewing only; no review, verify or flag actions.
+    return (
+      <div className="flex flex-wrap items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          onClick={() => onViewProfile(row)}
+          className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 hover:bg-slate-50"
+        >
+          View
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-wrap items-center gap-1" onClick={(e) => e.stopPropagation()}>

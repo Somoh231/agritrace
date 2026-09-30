@@ -26,6 +26,8 @@ const PROFILES = {
   "u-ministry": { role: "ministry_officer", is_active: true },
   // Ministry preview readiness: the only admin-console role, plus scoped roles.
   "u-super": { role: "super_admin", is_active: true },
+  // Ministry stakeholder preview: ministry_officer with the read-only preview flag.
+  "u-preview": { role: "ministry_officer", is_active: true, preview_read_only: true },
   "u-ministry-admin": { role: "ministry_admin", is_active: true },
   "u-dao": { role: "dao_officer", is_active: true, county: "Nimba" },
   "u-exporter": { role: "exporter", is_active: true },
@@ -95,6 +97,16 @@ const server = http.createServer((req, res) => {
   }
   if (url.pathname === "/__stub/hits") return send(res, 200, hits);
 
+  // Password sign-in for walkthrough tests: <stub user>@example.test with the
+  // fixture password "stub-password" (not a real credential anywhere).
+  if (url.pathname === "/auth/v1/token" && url.searchParams.get("grant_type") === "password" && req.method === "POST") {
+    return void readBody(req).then((body) => {
+      const sub = String(body.email ?? "").replace(/@example\.test$/, "");
+      if (!PROFILES[sub] || body.password !== "stub-password") return send(res, 400, { code: 400, error_code: "invalid_credentials", msg: "Invalid login credentials" });
+      send(res, 200, { access_token: token(sub), refresh_token: "stub-refresh", token_type: "bearer", expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, user: { id: sub, aud: "authenticated", role: "authenticated", email: `${sub}@example.test` } });
+    });
+  }
+
   // verifyOtp for ?token_hash links: "valid-invite" signs in u-invitee-active.
   if (url.pathname === "/auth/v1/verify" && req.method === "POST") {
     hits.verify += 1;
@@ -135,6 +147,7 @@ const server = http.createServer((req, res) => {
           is_active: p.is_active,
           organization_id: null,
           county: p.county ?? null,
+          preview_read_only: p.preview_read_only ?? false,
           district: null,
           phone: null,
           created_at: "2026-01-01T00:00:00Z",

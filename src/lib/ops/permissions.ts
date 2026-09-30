@@ -6,6 +6,8 @@ import { warehouseCountyForMinistryCode } from "@/lib/ops/warehouse-scope";
 export type OperationalPersona =
   /** CLAN technicians and field agents: capture only, never review or approve. */
   | "field_operator"
+  /** Read-only stakeholder preview account (profiles.preview_read_only): views only. */
+  | "preview_observer"
   | "dao_officer"
   | "county_supervisor"
   | "warehouse_manager"
@@ -106,6 +108,8 @@ function transferTouchesWarehouse(t: NonNullable<OperationalPermissionContext["t
 }
 
 export function canPerform(actor: OperationalActor, action: OperationalWorkflowAction, context?: OperationalPermissionContext): boolean {
+  // Read-only preview accounts can look at operational layers and nothing else.
+  if (actor.role === "preview_observer") return action === "gis.view_operational_layers";
   if (actor.role === "national_admin") return true;
 
   if (actor.role === "donor_observer") {

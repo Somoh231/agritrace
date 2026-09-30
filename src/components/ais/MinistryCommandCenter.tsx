@@ -201,12 +201,12 @@ export default function MinistryCommandCenter() {
           </h1>
           <p className="mt-2.5 max-w-2xl text-[13px] leading-relaxed text-slate-600">
             Rice-first picture of the three pilot counties, consolidated up the CLAN → DAO → CAC → Ministry review chain.
-            Season {live.season}.
+            Pilot validation period.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <DataSourceBadge source={commandSource} />
-          <span className="btn-gov-outline h-9 px-3 rounded-lg text-[12px]">Season {live.season}</span>
+          <span className="btn-gov-outline h-9 px-3 rounded-lg text-[12px]">Pilot validation period</span>
           <Link href="/executive-briefing" className="btn-gold h-9 px-3.5 rounded-lg text-[12px]">
             Executive brief
           </Link>
@@ -251,7 +251,7 @@ export default function MinistryCommandCenter() {
                       {c.n}
                     </span>
                     {c.badge ? (
-                      <span className="rounded border border-[rgb(var(--ministry-gold-strong))]/40 bg-[rgb(var(--ministry-gold))]/15 px-1.5 py-0.5 font-mono text-[8.5px] uppercase tracking-wide text-[rgb(var(--ministry-gold-strong))]">
+                      <span className="rounded border border-[rgb(var(--ministry-gold-strong))]/40 bg-[rgb(var(--ministry-gold))]/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-amber-900">
                         {c.badge}
                       </span>
                     ) : null}
@@ -268,7 +268,7 @@ export default function MinistryCommandCenter() {
 
           {/* Programmes */}
           <section>
-            <div className="gov-kicker">Programmes · {live.season} Season</div>
+            <div className="gov-kicker">Programmes · pilot validation period</div>
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {programmes.map((pr) => (
                 <div key={pr.label} className="gov-card px-4 py-4">
@@ -405,7 +405,7 @@ export default function MinistryCommandCenter() {
             </div>
             <Link
               href="/food-security"
-              className="mt-4 inline-flex text-[12px] font-medium text-[rgb(var(--ministry-gold-strong))] hover:underline"
+              className="mt-4 inline-flex text-[12px] font-medium text-amber-800 hover:underline"
             >
               Food security intelligence →
             </Link>

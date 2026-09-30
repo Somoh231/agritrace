@@ -22,6 +22,7 @@ import {
   Timeline,
 } from "@/components/enterprise";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
+import { MutationControl } from "@/lib/auth/read-only-context";
 import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import { fieldReports } from "@/lib/demo/agriculture-pilot-data";
 import { demoSource, liveSource, offlineSource, resolveDisplaySource } from "@/lib/data/data-source";
@@ -93,26 +94,28 @@ export default function ClanWorkspaceClient() {
         <span>Session · {sessionId ?? "—"}</span>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <QuickActionCard
-          href="/field/boundary-capture"
-          icon={MapPin}
-          title="Capture boundary"
-          description="Walk farm corners with GPS. Outline saves locally when offline."
-        />
-        <QuickActionCard
-          href="/farmers"
-          icon={UserPlus}
-          title="Register farmer"
-          description="National registry capture with district assignment and traceability."
-        />
-        <QuickActionCard
-          href="/field/mobile"
-          icon={ClipboardList}
-          title="Submit field report"
-          description="Daily logs, crop health, and operational notes for DAO consolidation."
-        />
-      </div>
+      <MutationControl>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <QuickActionCard
+            href="/field/boundary-capture"
+            icon={MapPin}
+            title="Capture boundary"
+            description="Walk farm corners with GPS. Outline saves locally when offline."
+          />
+          <QuickActionCard
+            href="/farmers"
+            icon={UserPlus}
+            title="Register farmer"
+            description="National registry capture with district assignment and traceability."
+          />
+          <QuickActionCard
+            href="/field/mobile"
+            icon={ClipboardList}
+            title="Submit field report"
+            description="Daily logs, crop health, and operational notes for DAO consolidation."
+          />
+        </div>
+      </MutationControl>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <div className="space-y-6">
