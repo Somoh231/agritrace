@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { apiHeaders } from "@/lib/http/api-response";
 import { guardAdminApiRequest } from "@/lib/http/admin-api-guard";
+import { authorizeProfileUpdate } from "@/lib/auth/profile-update-policy";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { UserRole } from "@/lib/supabase/types";
 
@@ -98,6 +99,32 @@ export async function PATCH(request: Request) {
 
     const admin = getSupabaseAdminClient();
 
+    // The service-role client bypasses RLS and the profiles trigger: authorize here.
+    const { data: target, error: targetErr } = await admin
+      .from("profiles")
+      .select("id,role,is_active")
+      .eq("id", body.userId)
+      .maybeSingle<{ id: string; role: UserRole | null; is_active: boolean | null }>();
+    if (targetErr) throw targetErr;
+    if (!target) return NextResponse.json({ error: "User not found." }, { status: 404, headers: apiHeaders(gate.ctx) });
+
+    const { count: activeSuperAdmins, error: countErr } = await admin
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "super_admin")
+      .eq("is_active", true);
+    if (countErr) throw countErr;
+
+    const decision = authorizeProfileUpdate({
+      actor: { id: gate.userId, role: gate.role },
+      target,
+      patch: { role: body.role, is_active: body.is_active },
+      activeSuperAdmins: activeSuperAdmins ?? 0,
+    });
+    if (!decision.ok) {
+      return NextResponse.json({ error: decision.reason }, { status: decision.status, headers: apiHeaders(gate.ctx) });
+    }
+
     const patch: any = {};
     if (typeof body.role !== "undefined") patch.role = body.role;
     if (typeof body.organization_id !== "undefined") patch.organization_id = body.organization_id;
@@ -127,8 +154,8 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ profile: data }, { headers: apiHeaders(gate.ctx) });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Failed to update user.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[admin/users] update failed", e instanceof Error ? e.message : e);
+    return NextResponse.json({ error: "Failed to update user." }, { status: 500 });
   }
 }
 

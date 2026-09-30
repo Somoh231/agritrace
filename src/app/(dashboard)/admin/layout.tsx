@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { ACCOUNT_UNAVAILABLE_PATH, roleFromProfile } from "@/lib/auth/profile-access";
 import { createClient } from "@/lib/supabase/server";
+import { postLoginHomeForRole } from "@/lib/auth/post-login-home";
 import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
 import type { Profile } from "@/lib/supabase/types";
 
@@ -22,8 +23,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // A missing or deactivated profile never reaches the admin console.
   const role = roleFromProfile(profile);
   if (!role) redirect(ACCOUNT_UNAVAILABLE_PATH);
+  // super_admin only (see admin-access.ts); everyone else goes to their own workspace.
   if (!isAdminConsoleRole(role)) {
-    redirect("/command-center");
+    redirect(postLoginHomeForRole(role));
   }
 
   return children;
