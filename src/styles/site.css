@@ -5,6 +5,8 @@
  *
  * Contrast (WCAG 2.2 AA, measured): text colours are chosen per surface.
  *   paper  #F7F7F2: forest 13.8 · slate 6.7 · emerald-ink 4.8 · gold-ink 4.7 · rust 7.0
+ *   linen  #F1EEE5: forest 12.8 · slate 6.2 · gold-deep 5.6 (emerald-ink 4.46 and gold-ink 4.33 fail: remapped)
+ *   field-sand #EFE9DC: forest 12.2 · slate 6.0 · gold-deep 5.3 (graphics and land fill only)
  *   sand   #ECECE3: slate 6.1 · gold-deep 5.4 · emerald-deep #087048 5.2 (remapped in .avs-surface-sand)
  *   navy   #07152D: paper 17+ · mist 7.4 · gold 7.8 · mint 10.0 · emerald 5.6
  *   emerald #0FA36B: navy 5.6 (never white text on emerald: 3.0)
@@ -33,6 +35,15 @@
   --av-sage: 94 140 116;        /* #5E8C74 large text only */
   --av-mist: 154 167 184;       /* #9AA7B8 body on navy */
   --av-mist-2: 183 195 209;     /* #B7C3D1 */
+  --av-linen: 241 238 229;      /* #F1EEE5 plates, map mats, captions */
+  --av-field-sand: 239 233 220; /* #EFE9DC plots, land fill */
+  --av-straw: 217 194 138;      /* #D9C28A graphics only: pilot counties, rice */
+
+  /* Record states (renders, sequence, badges). Colour always ships with a text label. */
+  --av-state-verified: var(--av-emerald-ink);
+  --av-state-pending: var(--av-gold-ink);
+  --av-state-returned: var(--av-rust);
+  --av-state-draft: var(--av-mist);
 
   /* Semantic defaults (light surface) */
   --av-bg: var(--av-paper);
@@ -51,8 +62,15 @@
   --av-gutter: clamp(1.25rem, 3.4vw, 3rem);
   --av-section: clamp(4.5rem, 8.5vw, 7.5rem);
   --av-header-h: 72px;
-  --av-radius: 20px;
-  --av-radius-lg: 28px;
+  /* Radii: institutional, not app-like */
+  --av-radius-xs: 2px;          /* chips, status badges */
+  --av-radius-sm: 6px;          /* buttons, inputs */
+  --av-radius: 12px;            /* plates, media, panels */
+  --av-radius-lg: 16px;         /* navy product panel, tablet frame */
+
+  /* Component tokens */
+  --avs-btn-radius: var(--av-radius-sm);
+  --avs-btn-h: 48px;
 
   /* Motion */
   --av-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -85,7 +103,7 @@ body :where(.avs) :is(h1, h2, h3, h4, h5, h6, p, li, small) {
 
 html:has(.avs) {
   scroll-padding-top: calc(var(--av-header-h) + 16px);
-  background: rgb(7 21 45);
+  background: rgb(247 247 242);
 }
 
 @media (min-width: 1024px) {
@@ -98,6 +116,7 @@ html:has(.avs) {
 .avs-surface-paper { --av-bg: var(--av-paper); --av-fg: var(--av-forest); --av-muted: var(--av-slate); --av-line: 11 46 26; background: rgb(var(--av-paper)); color: rgb(var(--av-forest)); }
 /* On sand, emerald-ink (4.35) and gold-ink (4.23) fall below AA; remap to deeper inks (5.17 / 5.42). */
 .avs-surface-sand  { --av-emerald-ink: 8 112 72; --av-gold-ink: var(--av-gold-deep); --av-bg: var(--av-sand);  --av-fg: var(--av-forest); --av-muted: var(--av-slate); --av-line: 11 46 26; background: rgb(var(--av-sand));  color: rgb(var(--av-forest)); }
+.avs-surface-linen { --av-emerald-ink: var(--av-forest); --av-gold-ink: var(--av-gold-deep); --av-bg: var(--av-linen); --av-fg: var(--av-forest); --av-muted: var(--av-slate); --av-line: 11 46 26; background: rgb(var(--av-linen)); color: rgb(var(--av-forest)); }
 .avs-surface-navy  { --av-bg: var(--av-navy);  --av-fg: var(--av-paper);  --av-muted: var(--av-mist);  --av-line: 247 247 242; --av-line-a: 0.12; background: rgb(var(--av-navy)); color: rgb(var(--av-paper)); }
 .avs-surface-forest{ --av-bg: var(--av-forest);--av-fg: var(--av-paper);  --av-muted: 169 184 174;   --av-line: 247 247 242; --av-line-a: 0.12; background: rgb(var(--av-forest)); color: rgb(var(--av-paper)); }
 
@@ -120,41 +139,45 @@ html:has(.avs) {
 .avs-rule { border: 0; border-top: 1px solid rgb(var(--av-line) / var(--av-line-a)); }
 
 /* ---------- Type ---------- */
-.avs-display {
-  font-family: var(--av-font-sans);
-  font-weight: 500;
-  font-size: clamp(2.75rem, 7.2vw, 7.25rem);
-  line-height: 0.96;
-  letter-spacing: -0.038em;
+/*
+ * H1/H2 roles are Newsreader (only the 400 cut ships; font-synthesis stops a
+ * faux bold). Everything else — h3/h4, body, navigation, UI, data — is Geist.
+ */
+.avs-display,
+.avs-h1,
+.avs-h-section,
+.avs-h2 {
+  font-family: var(--av-font-serif);
+  font-weight: 400;
+  font-synthesis: none;
   text-wrap: balance;
+}
+.avs-display {
+  font-size: clamp(2.75rem, 5.6vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.022em;
 }
 .avs-h1 {
-  font-weight: 500;
-  font-size: clamp(2.5rem, 5.4vw, 5.25rem);
-  line-height: 0.98;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
+  font-size: clamp(2.5rem, 4.8vw, 4.75rem);
+  line-height: 1.03;
+  letter-spacing: -0.02em;
 }
-/* Homepage section headings: one size between the display hero and inner-page h2s. */
+/* Homepage section headings: between the display hero and inner-page h2s. */
 .avs-h-section {
-  font-weight: 500;
-  font-size: clamp(2.25rem, 4.2vw, 4rem);
-  line-height: 1;
-  letter-spacing: -0.032em;
-  text-wrap: balance;
+  font-size: clamp(2.125rem, 3.8vw, 3.5rem);
+  line-height: 1.06;
+  letter-spacing: -0.018em;
 }
 .avs-h2 {
-  font-weight: 500;
-  font-size: clamp(2rem, 3.8vw, 3.75rem);
-  line-height: 1.02;
-  letter-spacing: -0.03em;
-  text-wrap: balance;
+  font-size: clamp(2rem, 3.4vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
 }
 .avs-h3 {
   font-weight: 500;
   font-size: clamp(1.375rem, 1.9vw, 1.75rem);
-  line-height: 1.15;
-  letter-spacing: -0.018em;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
 }
 .avs-h4 {
   font-weight: 500;
@@ -163,12 +186,8 @@ html:has(.avs) {
   letter-spacing: -0.01em;
 }
 .avs-serif { font-family: var(--av-font-serif); font-weight: 400; letter-spacing: -0.01em; }
-.avs-accent {
-  font-family: var(--av-font-serif);
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-}
+/* Retired: the italic accent word is no longer a default pattern. Legacy spans inherit. */
+.avs-accent { font: inherit; letter-spacing: inherit; }
 .avs-editorial {
   font-family: var(--av-font-serif);
   font-size: clamp(1.625rem, 2.6vw, 2.5rem);
@@ -188,9 +207,11 @@ html:has(.avs) {
   font-family: var(--av-font-mono);
   font-size: 0.75rem;
   line-height: 1.4;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
+.avs-caption { font-size: 0.8125rem; line-height: 1.5; color: rgb(var(--av-slate)); }
+.avs-data { font-family: var(--av-font-mono); font-size: 0.8125rem; line-height: 1.45; font-variant-numeric: tabular-nums; }
 .avs-meta {
   font-family: var(--av-font-mono);
   font-size: 0.75rem;
@@ -199,6 +220,7 @@ html:has(.avs) {
 .avs-eyebrow { color: rgb(var(--av-emerald-ink)); }
 .avs-surface-navy .avs-eyebrow, .avs-surface-forest .avs-eyebrow { color: rgb(var(--av-gold)); }
 .avs-surface-sand .avs-eyebrow { color: rgb(var(--av-emerald-ink)); }
+.avs-surface-linen .avs-eyebrow { color: rgb(var(--av-gold-deep)); }
 
 /* ---------- Links & buttons ---------- */
 /* Zero-specificity reset so utility classes (text-*, underline) always win on links. */
@@ -217,21 +239,21 @@ html:has(.avs) {
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  min-height: 48px;
-  padding: 0.75rem 1.5rem;
-  border-radius: 999px;
+  min-height: var(--avs-btn-h);
+  padding: 0.75rem 1.375rem;
+  border-radius: var(--avs-btn-radius);
   font-weight: 500;
   font-size: 0.975rem;
   letter-spacing: -0.005em;
   line-height: 1;
-  transition: background-color 220ms var(--av-ease), color 220ms var(--av-ease), border-color 220ms var(--av-ease), transform 220ms var(--av-ease);
+  transition: background-color 160ms var(--av-ease), color 160ms var(--av-ease), border-color 160ms var(--av-ease);
   cursor: pointer;
   white-space: nowrap;
 }
 .avs-btn svg { transition: transform 260ms var(--av-ease-out); }
 .avs-btn:hover svg { transform: translateX(3px); }
-.avs-btn-primary { background: rgb(var(--av-forest)); color: rgb(var(--av-paper)); }
-.avs-btn-primary:hover { background: rgb(var(--av-forest-2)); }
+.avs-btn-primary { background: rgb(var(--av-emerald-ink)); color: #fff; }
+.avs-btn-primary:hover { background: rgb(8 104 66); }
 .avs-surface-navy .avs-btn-primary, .avs-surface-forest .avs-btn-primary, .avs-on-dark .avs-btn-primary { background: rgb(var(--av-paper)); color: rgb(var(--av-navy)); }
 .avs-surface-navy .avs-btn-primary:hover, .avs-surface-forest .avs-btn-primary:hover, .avs-on-dark .avs-btn-primary:hover { background: #fff; }
 .avs-btn-ghost { border: 1px solid rgb(var(--av-fg) / 0.28); color: rgb(var(--av-fg)); }
@@ -252,9 +274,9 @@ html:has(.avs) {
 
 /* Focus: visible on every surface */
 .avs :focus-visible {
-  outline: 2px solid rgb(var(--av-emerald));
+  outline: 2px solid rgb(var(--av-emerald-ink));
   outline-offset: 3px;
-  border-radius: 6px;
+  border-radius: var(--av-radius-sm);
 }
 .avs-surface-navy :focus-visible, .avs-surface-forest :focus-visible, .avs-on-dark :focus-visible {
   outline-color: rgb(var(--av-mint));
@@ -269,7 +291,7 @@ html:has(.avs) {
   background: rgb(var(--av-paper));
   color: rgb(var(--av-navy));
   padding: 0.75rem 1rem;
-  border-radius: 10px;
+  border-radius: var(--av-radius-sm);
   font-weight: 600;
   transition: transform 160ms var(--av-ease);
 }
@@ -289,7 +311,7 @@ html:has(.avs) {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  border-radius: 999px;
+  border-radius: var(--av-radius-xs);
   border: 1px solid rgb(var(--av-line) / 0.2);
   padding: 0.3rem 0.7rem;
   font-family: var(--av-font-mono);
@@ -312,8 +334,8 @@ html:has(.avs) {
 /* Hidden only once JS has run (html.avs-js), so content never depends on script. */
 .avs-js .avs-reveal {
   opacity: 0;
-  transform: translate3d(0, 24px, 0);
-  transition: opacity 900ms var(--av-ease-out), transform 900ms var(--av-ease-out);
+  transform: translate3d(0, 8px, 0);
+  transition: opacity 320ms var(--av-ease-out), transform 320ms var(--av-ease-out);
   transition-delay: var(--av-delay, 0ms);
 }
 .avs-js .avs-reveal[data-visible="true"] { opacity: 1; transform: none; }
@@ -330,6 +352,21 @@ html:has(.avs) {
 @keyframes avs-fade { to { opacity: 1; } }
 .avs-fade-in { animation: avs-fade-up 700ms var(--av-ease-out); }
 @keyframes avs-fade-up { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }
+
+/* Field → decision sequence (homepage 7). Static frames by default; the sticky
+   panel only with JS (html.avs-js, set before paint), lg+, motion allowed. */
+.avs-seq-panel { display: none; }
+@media (min-width: 1024px) {
+  .avs-seq-steps { grid-column: 1 / -1; }
+  .avs-seq-step { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 3rem; align-items: start; }
+}
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .avs-js .avs-seq-steps { grid-column: span 5 / span 5; }
+  .avs-js .avs-seq-step { display: flex; flex-direction: column; justify-content: center; min-height: 62vh; }
+  .avs-js .avs-seq-panel { display: block; }
+  .avs-js .avs-seq-inline { display: none; }
+  .avs-js .avs-seq-dim { color: rgb(247 247 242 / 0.6); }
+}
 
 /* Problem canvas: scattered "today" vs aligned "with AgriVault" (transform only, lg+) */
 @media (min-width: 1024px) {

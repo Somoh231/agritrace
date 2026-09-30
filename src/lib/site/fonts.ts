@@ -1,7 +1,7 @@
 import localFont from "next/font/local";
 
 /*
- * Approved AgriVault type system: Geist (sans), Newsreader (serif accent),
+ * Approved AgriVault type system: Geist (sans, UI and body), Newsreader (H1/H2),
  * Geist Mono (metadata). Self-hosted Latin files (src/fonts, SIL OFL) so builds
  * make no request to Google Fonts; see src/fonts/README.md.
  */
@@ -16,14 +16,12 @@ export const geist = localFont({
 });
 
 /*
- * Static 400 cuts only. The variable opsz build was ~273 kB for both styles;
- * the site uses a single weight, and payload matters on rural 3G.
+ * Static 400 roman only: Newsreader sets H1/H2. The italic accent-word pattern
+ * is retired, so the italic file is no longer loaded (it stays in src/fonts).
+ * The variable opsz build was ~273 kB; payload matters on rural 3G.
  */
 export const newsreader = localFont({
-  src: [
-    { path: "../../fonts/newsreader/newsreader-latin-400-normal.woff2", weight: "400", style: "normal" },
-    { path: "../../fonts/newsreader/newsreader-latin-400-italic.woff2", weight: "400", style: "italic" },
-  ],
+  src: [{ path: "../../fonts/newsreader/newsreader-latin-400-normal.woff2", weight: "400", style: "normal" }],
   variable: "--font-newsreader",
   display: "swap",
   fallback: ["Georgia", "serif"],
