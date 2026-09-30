@@ -25,9 +25,11 @@ export function mapUserRoleToOperationalPersona(role: UserRole): OperationalPers
       return "county_supervisor";
     case "dao_officer":
     case "district_officer":
+      return "dao_officer";
     case "clan_technician":
     case "field_agent":
-      return "dao_officer";
+      // Capture roles must not act as reviewers (no self-approval path).
+      return "field_operator";
     case "warehouse_manager":
       return "warehouse_manager";
     case "donor_observer":

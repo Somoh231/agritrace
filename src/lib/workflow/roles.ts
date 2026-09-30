@@ -74,6 +74,9 @@ export function actorCountyMatches(
   return a === s;
 }
 
+/** Decisions that must come from someone other than the author. */
+export const REVIEW_DECISIONS: readonly WorkflowAction[] = ["approve", "reject", "request_corrections", "archive"];
+
 export type WorkflowPermissionInput = {
   stage: WorkflowStage;
   action: WorkflowAction;
@@ -120,6 +123,10 @@ export function checkWorkflowPermission(input: WorkflowPermissionInput): Workflo
   // Reviewer mutations (approve/reject/request_corrections/escalate/assign_reviewer/archive)
   if (stage === "clan") {
     return { ok: false, reason: "CLAN field operators cannot review submissions." };
+  }
+  // Separation of duties: nobody decides on a submission they authored.
+  if (isAuthor && REVIEW_DECISIONS.includes(action)) {
+    return { ok: false, reason: "You cannot review a submission you authored." };
   }
   if (!actorCountyMatches(stage, actorCounty, submissionCounty)) {
     return { ok: false, reason: "Submission is outside your county scope." };

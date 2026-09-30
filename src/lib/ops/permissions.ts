@@ -4,6 +4,8 @@ import { warehouseCountyForMinistryCode } from "@/lib/ops/warehouse-scope";
 
 /** Institutional desk personas — map from DB roles via `resolveOperationalActor`. */
 export type OperationalPersona =
+  /** CLAN technicians and field agents: capture only, never review or approve. */
+  | "field_operator"
   | "dao_officer"
   | "county_supervisor"
   | "warehouse_manager"
