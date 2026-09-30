@@ -1,129 +1,73 @@
 import Link from "next/link";
 
+import { FieldPlate } from "@/components/site/home/FieldPlate";
 import { ArrowRight } from "@/components/site/icons";
-import { Topo } from "@/components/site/Topo";
+import { RecordPanel, SAMPLE_LABEL } from "@/components/site/render/SystemRenders";
 import { MARKETS } from "@/lib/site/content";
 
 /**
- * Hero: aerial field atmosphere, survey contours and an illustrative parcel
- * layer. The parcel annotations are sample UI (labelled), not data.
- * No reveal animation here — the hero is the LCP and renders immediately.
+ * 1 · Hero. Map-style and product-led: a schematic field plate with the
+ * record it produces, so the technology is visible in the first viewport.
+ * No photograph. Sized to its content; the H1 is the LCP element and never
+ * waits on a reveal.
  */
 export default function Hero() {
   return (
-    <section
-      aria-labelledby="hero-title"
-      className="avs-on-dark avs-grain relative isolate flex min-h-[max(640px,100svh)] flex-col overflow-hidden text-[rgb(var(--av-paper))] lg:max-h-[1040px]"
-      style={{
-        background:
-          "radial-gradient(90% 70% at 82% 8%, rgba(143,156,98,0.9) 0%, rgba(143,156,98,0) 60%), radial-gradient(70% 60% at 10% 100%, rgba(7,21,45,0.65) 0%, rgba(7,21,45,0) 70%), linear-gradient(115deg, #0C1D16 0%, #1B3222 34%, #3B4E2E 64%, #5F6E43 100%)",
-      }}
-    >
-      <div aria-hidden="true" className="avs-hero-drift absolute inset-[-4%] -z-10">
-        <Topo lines={22} seed={3} stroke="#E4E9C9" opacity={0.11} emphasis={13} />
-      </div>
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10"
-        style={{ background: "linear-gradient(90deg, rgba(8,20,14,0.72) 0%, rgba(8,20,14,0.35) 45%, rgba(8,20,14,0) 75%)" }}
-      />
-
-      <ParcelLayer />
-
-      <div className="avs-container relative flex flex-1 flex-col justify-end pb-10 pt-[calc(var(--av-header-h)+4rem)] md:pb-12">
-        <p className="avs-label text-[rgb(var(--av-gold))]">Agricultural systems · Technology · Advisory · Implementation</p>
-        <h1 id="hero-title" className="avs-display mt-6 max-w-[15ch] text-[rgb(var(--av-paper))]">
-          Building the systems behind <span className="avs-accent">stronger</span> agricultural institutions.
-        </h1>
-
-        <div className="mt-10 grid gap-8 lg:grid-cols-12 lg:items-end">
-          <p className="avs-lead max-w-[38rem] text-white/85 lg:col-span-6">
-            AgriVault Data works with governments, development partners and agricultural organisations to design and
-            deploy the data systems, field operations, digital products and reporting infrastructure needed to manage
-            agriculture at scale.
+    <section aria-labelledby="hero-title" data-home-section="hero" className="avs-surface-paper relative">
+      <div className="avs-container grid gap-10 pb-16 pt-[calc(var(--av-header-h)+3rem)] md:pb-20 md:pt-[calc(var(--av-header-h)+4.5rem)] lg:grid-cols-12 lg:gap-x-10 lg:gap-y-0 lg:pb-24">
+        <div className="lg:col-span-6 lg:row-start-1 lg:self-end">
+          <p className="avs-label text-[rgb(var(--av-gold-ink))]">Independent agricultural systems company</p>
+          <h1 id="hero-title" className="avs-display mt-6 max-w-[16ch]">
+            Building the systems behind stronger agricultural institutions.
+          </h1>
+          <p className="avs-lead mt-7 max-w-[38rem]">
+            AgriVault Data designs, deploys and operates the data infrastructure behind agricultural programmes: field
+            capture, verification, GIS, traceability and reporting, configured for each programme.
           </p>
-          <div className="flex flex-wrap gap-3 lg:col-span-6">
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Link href="/contact" className="avs-btn avs-btn-primary">
               Start a conversation <ArrowRight />
             </Link>
-            <Link href="/what-we-do" className="avs-btn avs-btn-ghost">
-              Explore our work
+            <Link href="/how-we-work" className="avs-btn avs-btn-ghost">
+              How we work
             </Link>
           </div>
         </div>
 
-        <div className="mt-14 border-t border-white/15 pt-5 md:mt-16">
-          <h2 className="sr-only">Who we work with</h2>
-          <div className="flex flex-col gap-3 md:flex-row md:items-baseline md:gap-8">
-            <p aria-hidden="true" className="avs-label shrink-0 text-[rgb(var(--av-gold))]">
-              We work with
-            </p>
-            <ul className="avs-meta flex flex-wrap gap-x-7 gap-y-2 text-[0.8125rem] text-white/75">
-              {MARKETS.map((m) => (
-                <li key={m.name}>{m.name}</li>
-              ))}
-            </ul>
+        <figure className="relative lg:col-span-6 lg:col-start-7 lg:row-span-2 lg:row-start-1 lg:self-center lg:pb-10 lg:pl-6">
+          <div className="relative aspect-[4/3] w-full max-w-full overflow-hidden rounded-[var(--av-radius)] border border-[rgb(var(--av-line)/0.12)] lg:aspect-[7/8]">
+            <FieldPlate className="absolute inset-0 h-full w-full" />
           </div>
+          <figcaption className="avs-label mt-3 text-[0.6875rem] text-[rgb(var(--av-gold-deep))] lg:absolute lg:bottom-0 lg:right-0 lg:mt-0 lg:text-right" data-sample-label>
+            {SAMPLE_LABEL}
+          </figcaption>
+          <div className="mt-5 lg:absolute lg:-bottom-6 lg:-left-10 lg:mt-0 lg:w-[min(21rem,64%)]">
+            <RecordPanel
+              title="Sample plot 01 · Sample farmer 01"
+              state="synced"
+              facts={[
+                { k: "Area", v: "District A" },
+                { k: "Outline", v: "Walked · approximate" },
+              ]}
+              steps={[
+                { step: "Captured in the field", actor: "Field officer · offline", status: "done", label: "Synced" },
+                { step: "District verification", actor: "District reviewer", status: "done", label: "Verified" },
+                { step: "County approval", actor: "County reviewer", status: "current", label: "In review" },
+                { step: "National consolidation", actor: "Programme team", status: "pending", label: "Pending" },
+              ]}
+            />
+          </div>
+        </figure>
+
+        <div className="border-t border-[rgb(var(--av-line)/0.14)] pt-5 lg:col-span-6 lg:row-start-2 lg:mt-12 lg:self-start">
+          <h2 className="avs-label text-[rgb(var(--av-gold-ink))]">Built for</h2>
+          <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[0.9375rem] text-[rgb(var(--av-slate))]">
+            {MARKETS.map((m) => (
+              <li key={m.name}>{m.name}</li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>
-  );
-}
-
-/** Illustrative plot outlines with a boundary being traced. Decorative + labelled sample. */
-function ParcelLayer() {
-  const plots = [
-    "M40 40 L215 12 L262 182 L78 212 Z",
-    "M235 8 L420 -12 L468 150 L282 178 Z",
-    "M92 236 L278 204 L318 390 L136 422 Z",
-    "M300 200 L488 170 L530 346 L338 386 Z",
-    "M150 446 L336 412 L372 590 L190 626 Z",
-  ];
-  return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute right-[3%] top-[17%] hidden w-[min(38vw,560px)] xl:block"
-    >
-      <svg viewBox="-10 -30 560 680" className="h-auto w-full overflow-visible">
-        {plots.map((d, i) => (
-          <path key={i} d={d} fill="none" stroke="#EEF0DA" strokeOpacity={0.42} strokeWidth={1.2} vectorEffect="non-scaling-stroke" />
-        ))}
-        <path d={plots[0]} fill="rgba(111,211,164,0.22)" stroke="none" className="avs-parcel-fill" />
-        <path
-          d={plots[0]}
-          fill="none"
-          stroke="#6FD3A4"
-          strokeWidth={2}
-          vectorEffect="non-scaling-stroke"
-          pathLength={1}
-          className="avs-parcel-trace"
-        />
-        {[
-          [40, 40],
-          [215, 12],
-          [262, 182],
-          [78, 212],
-        ].map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r={4} fill="#6FD3A4" className="avs-parcel-vertex" style={{ animationDelay: `${0.5 + i * 0.35}s` }} />
-        ))}
-      </svg>
-      <Tag className="left-[42%] top-[17%]" dot="#0FA36B">
-        Plot · boundary verified
-      </Tag>
-      <Tag className="left-[56%] top-[36%]" dot="#F7F7F2">
-        Field record · <span className="text-[rgb(var(--av-gold))]">Sample</span>
-      </Tag>
-    </div>
-  );
-}
-
-function Tag({ children, className, dot }: { children: React.ReactNode; className: string; dot: string }) {
-  return (
-    <span className={`avs-meta absolute flex items-center gap-2 whitespace-nowrap uppercase ${className}`}>
-      <span className="h-1.5 w-1.5 rounded-full" style={{ background: dot }} />
-      <span className="rounded-[4px] bg-[rgba(7,21,45,0.62)] px-2 py-1 text-[0.6875rem] tracking-[0.1em] text-white/90 backdrop-blur-sm">
-        {children}
-      </span>
-    </span>
   );
 }

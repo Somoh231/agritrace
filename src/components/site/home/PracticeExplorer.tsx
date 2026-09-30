@@ -1,150 +1,142 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 
-import { ArrowRight } from "@/components/site/icons";
-import { ImageFrame, type Scene } from "@/components/site/ImageFrame";
-import { PRACTICES } from "@/lib/site/content";
-
-const SCENE_FOR: Record<string, Scene> = {
-  systems: "operations-room",
-  field: "cooperative-store",
-  gis: "field-boundary",
-  supply: "warehouse",
-  reporting: "operations-room",
-  programmes: "aerial-fields",
-};
+import { PracticeDiagram } from "@/components/site/home/PracticeDiagram";
+import { ArrowRight, Chevron } from "@/components/site/icons";
+import { PRACTICES, type Practice } from "@/lib/site/content";
 
 /**
- * Six practices with a sticky "institutional outcome" card (lg+). The active
- * practice follows native scroll (IntersectionObserver on a band through the
- * middle of the viewport) and also follows hover and keyboard focus. Nothing is
- * pinned or hijacked; below lg every outcome is shown inline.
+ * 4 · Six practices. Desktop (lg+): WAI-ARIA tabs with the practice diagram
+ * beside them. Below lg: an accordion, one practice open at a time, so the
+ * phone layout reads as a list of practices rather than a squeezed tab rail.
  */
 export default function PracticeExplorer() {
   const [active, setActive] = useState(0);
-  const items = useRef<(HTMLLIElement | null)[]>([]);
+  const [openMobile, setOpenMobile] = useState<number | null>(0);
+  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const base = useId();
 
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    if (!mq.matches || !("IntersectionObserver" in window)) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.index));
-        }
-      },
-      { rootMargin: "-45% 0px -45% 0px" },
-    );
-    items.current.forEach((el) => el && io.observe(el));
-    return () => io.disconnect();
-  }, []);
+  const onKey = (e: React.KeyboardEvent, i: number) => {
+    const keys: Record<string, number> = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+    let next: number | null = null;
+    if (e.key in keys) next = (i + keys[e.key] + PRACTICES.length) % PRACTICES.length;
+    if (e.key === "Home") next = 0;
+    if (e.key === "End") next = PRACTICES.length - 1;
+    if (next === null) return;
+    e.preventDefault();
+    setActive(next);
+    tabs.current[next]?.focus();
+  };
 
   const p = PRACTICES[active];
 
   return (
-    <section aria-labelledby="practices-title" className="avs-surface-paper avs-section pt-0">
+    <section aria-labelledby="practices-title" data-home-section="practices" className="avs-surface-paper avs-section border-t border-[rgb(var(--av-line)/0.1)]">
       <div className="avs-container">
-        <hr className="avs-rule" style={{ borderColor: "rgb(var(--av-forest))" }} />
-        <div className="mt-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <h2 id="practices-title" className="avs-h-section avs-reveal">
-            What we <span className="avs-accent">do</span>
-          </h2>
-          <p className="avs-body avs-reveal max-w-[27rem]">
-            Six practices. Each is defined by the institutional outcome it produces, and each can draw on the products
-            we build.
+        <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-7">
+            <p className="avs-label avs-eyebrow avs-reveal">What we do</p>
+            <h2 id="practices-title" className="avs-h-section avs-reveal mt-5 max-w-[16ch]">
+              Six practices, one operational record.
+            </h2>
+          </div>
+          <p className="avs-body avs-reveal text-[1.0625rem] leading-relaxed lg:col-span-5">
+            Each practice is defined by what it changes for the institution. Most programmes combine several, and each
+            can draw on the products we build.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-10 lg:mt-12 lg:grid-cols-12 lg:gap-12">
-          {/* Visual echo of the list; the same outcomes are in the list for assistive tech. */}
-          <div aria-hidden="true" className="hidden lg:col-span-5 lg:block">
-            <div className="sticky top-[calc(var(--av-header-h)+24px)]">
-              <div className="relative overflow-hidden rounded-[var(--av-radius-lg)] bg-[rgb(var(--av-navy))]">
-                {PRACTICES.map((pr, i) => (
-                  <div
-                    key={pr.id}
-                    aria-hidden="true"
-                    className="transition-opacity duration-700"
-                    style={{ opacity: i === active ? 1 : 0, position: i === 0 ? "relative" : "absolute", inset: 0 }}
-                  >
-                    <ImageFrame scene={SCENE_FOR[pr.id]} alt="" ratio="4 / 5" className="h-full w-full" />
-                  </div>
-                ))}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0"
-                  style={{ background: "linear-gradient(180deg, rgba(7,21,45,0.25) 0%, rgba(7,21,45,0.1) 40%, rgba(7,21,45,0.92) 100%)" }}
-                />
-                <div className="absolute inset-0 flex flex-col justify-between p-7 text-[rgb(var(--av-paper))]">
-                  <p className="avs-meta self-start rounded-[4px] bg-[rgba(7,21,45,0.6)] px-2.5 py-1.5 uppercase tracking-[0.12em]">
-                    Practice {p.n} / 06
-                  </p>
-                  <div>
-                    <p className="avs-label text-[rgb(var(--av-gold))]">Institutional outcome</p>
-                    <p key={p.id} className="avs-editorial avs-fade-in mt-3 max-w-[22ch] text-[rgb(var(--av-paper))]">
-                      {p.outcome}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Practice list */}
-          <ol className="lg:col-span-7">
+        {/* Desktop: tabs */}
+        <div className="mt-14 hidden gap-10 lg:grid lg:grid-cols-12">
+          <div role="tablist" aria-orientation="vertical" aria-label="Practices" className="flex flex-col border-t border-[rgb(var(--av-forest))] lg:col-span-5">
             {PRACTICES.map((pr, i) => {
               const on = i === active;
               return (
-                <li
+                <button
                   key={pr.id}
                   ref={(el) => {
-                    items.current[i] = el;
+                    tabs.current[i] = el;
                   }}
-                  data-index={i}
-                  onMouseEnter={() => setActive(i)}
-                  onFocus={() => setActive(i)}
-                  className={`group relative border-t py-7 transition-colors duration-500 lg:py-8 ${
-                    on ? "border-[rgb(var(--av-emerald))]" : "border-[rgb(var(--av-line)/0.14)]"
+                  role="tab"
+                  id={`${base}-tab-${i}`}
+                  aria-selected={on}
+                  aria-controls={`${base}-panel`}
+                  tabIndex={on ? 0 : -1}
+                  onClick={() => setActive(i)}
+                  onKeyDown={(e) => onKey(e, i)}
+                  className={`group grid grid-cols-[2.5rem_1fr_auto] items-baseline gap-x-3 border-b border-[rgb(var(--av-line)/0.12)] py-4 text-left transition-colors duration-150 ${
+                    on ? "text-[rgb(var(--av-forest))]" : "text-[rgb(var(--av-slate))] hover:text-[rgb(var(--av-forest))]"
                   }`}
                 >
-                  <span
-                    aria-hidden="true"
-                    className={`absolute -top-px left-0 h-0.5 bg-[rgb(var(--av-emerald))] transition-[width] duration-700 ${on ? "w-full" : "w-0"}`}
-                  />
-                  <div className="grid grid-cols-[3rem_1fr] gap-x-4 sm:grid-cols-[5rem_1fr]">
-                    <p className={`avs-meta pt-2 ${on ? "text-[rgb(var(--av-emerald-ink))]" : "text-[rgb(var(--av-slate))]"}`}>{pr.n}</p>
-                    <div>
-                      <h3
-                        className={`text-[clamp(1.375rem,2.1vw,1.875rem)] font-medium leading-[1.12] tracking-[-0.022em] transition-colors duration-500 ${
-                          on ? "text-[rgb(var(--av-forest))]" : "text-[rgb(var(--av-forest))] lg:text-[rgb(var(--av-sage))]"
-                        }`}
-                      >
-                        <Link href={`/what-we-do#${pr.id}`} className="after:absolute after:inset-0 after:content-['']">
-                          {pr.title}
-                        </Link>
-                      </h3>
-                      <p className="avs-body mt-3 max-w-[36rem]">{pr.short}</p>
-                      {/* Outcome inline below lg; at lg+ the sticky card shows it visually. */}
-                      <div className="mt-4 border-l-2 border-[rgb(var(--av-gold)/0.7)] pl-4 lg:sr-only">
-                        <p className="avs-label text-[0.6875rem] text-[rgb(var(--av-gold-ink))]">Institutional outcome</p>
-                        <p className="avs-serif mt-1.5 text-[1.125rem] leading-snug text-[rgb(var(--av-forest))]">{pr.outcome}</p>
-                      </div>
-                      <p
-                        aria-hidden="true"
-                        className={`avs-arrow-link mt-4 text-[0.9375rem] transition-opacity duration-500 ${on ? "lg:opacity-100" : "lg:opacity-0"}`}
-                      >
-                        Explore the practice <ArrowRight />
-                      </p>
-                    </div>
-                  </div>
-                </li>
+                  <span className={`avs-meta ${on ? "text-[rgb(var(--av-emerald-ink))]" : ""}`}>{pr.n}</span>
+                  <span className={`text-[1.0625rem] leading-snug ${on ? "font-semibold" : "font-medium"}`}>{pr.title}</span>
+                  <ArrowRight className={`h-4 w-4 self-center transition-opacity duration-150 ${on ? "opacity-100" : "opacity-0 group-hover:opacity-60"}`} />
+                </button>
               );
             })}
-          </ol>
+          </div>
+          <div role="tabpanel" id={`${base}-panel`} aria-labelledby={`${base}-tab-${active}`} tabIndex={0} className="lg:col-span-7">
+            <PracticeBody practice={p} />
+          </div>
         </div>
+
+        {/* Below lg: accordion */}
+        <ul className="mt-10 border-t border-[rgb(var(--av-forest))] lg:hidden">
+          {PRACTICES.map((pr, i) => {
+            const open = openMobile === i;
+            const panelId = `${base}-acc-${i}`;
+            return (
+              <li key={pr.id} className="border-b border-[rgb(var(--av-line)/0.12)]">
+                <h3>
+                  <button
+                    type="button"
+                    aria-expanded={open}
+                    aria-controls={panelId}
+                    onClick={() => setOpenMobile(open ? null : i)}
+                    className="grid w-full grid-cols-[2.25rem_1fr_auto] items-baseline gap-x-3 py-4 text-left"
+                  >
+                    <span className="avs-meta text-[rgb(var(--av-emerald-ink))]">{pr.n}</span>
+                    <span className="text-[1.0625rem] font-medium leading-snug">{pr.title}</span>
+                    <Chevron className={`h-4 w-4 self-center transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+                  </button>
+                </h3>
+                <div id={panelId} hidden={!open} className="pb-6">
+                  <PracticeBody practice={pr} compact />
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </section>
+  );
+}
+
+function PracticeBody({ practice: p, compact = false }: { practice: Practice; compact?: boolean }) {
+  return (
+    <div className={compact ? "grid gap-5" : "grid gap-7"}>
+      <div className="rounded-[var(--av-radius)] bg-[rgb(var(--av-linen))] px-4 py-5 sm:px-6">
+        <PracticeDiagram id={p.id} className="mx-auto block h-auto max-h-[15rem] w-full" />
+      </div>
+      <div className={compact ? "grid gap-4" : "grid gap-6 md:grid-cols-2"}>
+        <div>
+          <p className="avs-label text-[rgb(var(--av-gold-ink))]">What changes</p>
+          <p className="mt-2 text-[1.0625rem] leading-relaxed">{p.outcome}</p>
+        </div>
+        <div>
+          <p className="avs-label text-[rgb(var(--av-gold-ink))]">Scope</p>
+          <ul className="mt-2 grid gap-1 text-[0.9375rem] text-[rgb(var(--av-slate))]">
+            {p.scope.map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <Link href={`/what-we-do#${p.id}`} aria-label={`More on this practice: ${p.title}`} className="avs-arrow-link">
+        More on this practice <ArrowRight className="h-4 w-4" />
+      </Link>
+    </div>
   );
 }

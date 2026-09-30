@@ -4,21 +4,16 @@ import Link from "next/link";
 import { useId, useRef, useState } from "react";
 
 import { ArrowRight } from "@/components/site/icons";
-import { ImageFrame, type Scene } from "@/components/site/ImageFrame";
+import { SampleLabel, StatusChip, TabletFrame } from "@/components/site/render/SystemRenders";
 import { PRODUCTS } from "@/lib/site/content";
 
-const SCENE_FOR: Record<string, Scene> = {
-  "operations-platform": "cooperative-store",
-  "farmer-registry": "cooperative-store",
-  "gis-boundary": "field-boundary",
-  "warehouse-traceability": "warehouse",
-  "reporting-intelligence": "operations-room",
-  "offline-field": "aerial-fields",
-};
-
-/** Products as an accessible vertical tab list (WAI-ARIA tabs, automatic activation). */
+/**
+ * 5 · Products / platform. WAI-ARIA tabs (automatic activation) at every
+ * width: a horizontal, self-scrolling row on phones, a vertical list on lg+.
+ * The panel shows the product's record lineage as a coded render (sample
+ * data) inside a tablet frame, with its capabilities as plain text beside it.
+ */
 export default function ProductShowcase() {
-  // Fade only on user-initiated changes, never on first paint.
   const [changed, setChanged] = useState(false);
   const [active, setActiveRaw] = useState(0);
   const setActive = (i: number) => {
@@ -39,57 +34,55 @@ export default function ProductShowcase() {
     e.preventDefault();
     setActive(next);
     tabs.current[next]?.focus();
+    tabs.current[next]?.scrollIntoView({ block: "nearest", inline: "nearest" });
   };
 
   return (
-    <section aria-labelledby="products-title" className="avs-surface-paper avs-section">
+    <section aria-labelledby="products-title" data-home-section="products" className="avs-surface-paper avs-section border-t border-[rgb(var(--av-line)/0.1)]">
       <div className="avs-container">
-        <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
-          <div className="lg:col-span-8">
-            <p className="avs-label avs-eyebrow avs-reveal">Products we deploy</p>
-            <h2 id="products-title" className="avs-h-section avs-reveal mt-6 max-w-[15ch]">
-              Products, deployed inside the <span className="avs-accent">work</span>.
+        <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-7">
+            <p className="avs-label avs-eyebrow avs-reveal">Products and platform</p>
+            <h2 id="products-title" className="avs-h-section avs-reveal mt-5 max-w-[17ch]">
+              Six products on one operational record.
             </h2>
           </div>
-          <p className="avs-body avs-reveal lg:col-span-4">
-            We build our own systems and configure them to each programme, geography and institutional structure.
+          <p className="avs-body avs-reveal text-[1.0625rem] leading-relaxed lg:col-span-5">
+            We build our own products and configure them for each programme. Institutions retain ownership and control
+            of their operational data.
           </p>
         </div>
 
-        <div className="mt-14 grid gap-4 lg:grid-cols-12">
-          <div role="tablist" aria-orientation="vertical" aria-label="Products" className="flex flex-col lg:col-span-4">
-            {PRODUCTS.map((pr, i) => {
-              const on = i === active;
-              return (
-                <button
-                  key={pr.id}
-                  ref={(el) => {
-                    tabs.current[i] = el;
-                  }}
-                  role="tab"
-                  id={`${base}-tab-${i}`}
-                  aria-selected={on}
-                  aria-controls={`${base}-panel`}
-                  tabIndex={on ? 0 : -1}
-                  onClick={() => setActive(i)}
-                  onKeyDown={(e) => onKey(e, i)}
-                  className={`group grid min-h-[76px] grid-cols-[2.75rem_1fr_auto] items-center gap-x-3 border-b px-3 py-4 text-left transition-colors duration-300 ${
-                    on
-                      ? "border-transparent bg-[rgb(var(--av-forest))] text-[rgb(var(--av-paper))]"
-                      : "border-[rgb(var(--av-line)/0.14)] text-[rgb(var(--av-forest))] hover:bg-[rgb(var(--av-sand))]"
-                  }`}
-                >
-                  <span className={`avs-meta ${on ? "text-white/70" : "text-[rgb(var(--av-slate))]"}`}>{pr.code}</span>
-                  <span>
-                    <span className="block text-[1.125rem] font-medium leading-tight tracking-[-0.01em]">{pr.name}</span>
-                    <span className={`avs-meta mt-1 block uppercase tracking-[0.1em] ${on ? "text-white/70" : "text-[rgb(var(--av-slate))]"}`}>
-                      {pr.practices.length > 1 ? "Practices" : "Practice"} {pr.practices.join(" · ")}
-                    </span>
-                  </span>
-                  <ArrowRight className={`transition-transform duration-300 ${on ? "translate-x-0.5" : "opacity-50 group-hover:translate-x-0.5"}`} />
-                </button>
-              );
-            })}
+        <div className="mt-12 grid grid-cols-1 gap-8 lg:mt-14 lg:grid-cols-12 lg:gap-10">
+          <div className="avs-no-scrollbar min-w-0 max-w-full overflow-x-auto pb-1 lg:col-span-4 lg:overflow-visible lg:pb-0">
+            <div role="tablist" aria-label="Products" className="flex w-max gap-2 lg:w-auto lg:flex-col lg:gap-0 lg:border-t lg:border-[rgb(var(--av-forest))]">
+              {PRODUCTS.map((pr, i) => {
+                const on = i === active;
+                return (
+                  <button
+                    key={pr.id}
+                    ref={(el) => {
+                      tabs.current[i] = el;
+                    }}
+                    role="tab"
+                    id={`${base}-tab-${i}`}
+                    aria-selected={on}
+                    aria-controls={`${base}-panel`}
+                    tabIndex={on ? 0 : -1}
+                    onClick={() => setActive(i)}
+                    onKeyDown={(e) => onKey(e, i)}
+                    className={`flex min-h-[44px] shrink-0 items-center gap-3 rounded-[var(--av-radius-sm)] border px-3.5 py-2 text-left transition-colors duration-150 lg:rounded-none lg:border-0 lg:border-b lg:px-0 lg:py-4 ${
+                      on
+                        ? "border-[rgb(var(--av-forest))] bg-[rgb(var(--av-forest))] text-[rgb(var(--av-paper))] lg:border-[rgb(var(--av-line)/0.12)] lg:bg-transparent lg:text-[rgb(var(--av-forest))]"
+                        : "border-[rgb(var(--av-line)/0.18)] text-[rgb(var(--av-slate))] hover:text-[rgb(var(--av-forest))] lg:border-[rgb(var(--av-line)/0.12)]"
+                    }`}
+                  >
+                    <span className={`avs-meta hidden lg:inline ${on ? "text-[rgb(var(--av-emerald-ink))]" : ""}`}>{pr.code}</span>
+                    <span className={`whitespace-nowrap text-[0.9375rem] lg:whitespace-normal lg:text-[1.0625rem] ${on ? "font-semibold" : "font-medium"}`}>{pr.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div
@@ -97,58 +90,60 @@ export default function ProductShowcase() {
             id={`${base}-panel`}
             aria-labelledby={`${base}-tab-${active}`}
             tabIndex={0}
-            className="relative overflow-hidden rounded-[var(--av-radius-lg)] bg-[rgb(var(--av-forest))] lg:col-span-8"
+            className="grid min-w-0 grid-cols-1 gap-8 lg:col-span-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]"
           >
-            <ImageFrame key={p.id} scene={SCENE_FOR[p.id]} alt="" ratio="auto" className={`${changed ? "avs-fade-in" : ""} absolute inset-0 h-full w-full`} overlay={false} />
-            <div
-              aria-hidden="true"
-              className="absolute inset-0"
-              style={{ background: "linear-gradient(180deg, rgba(11,46,26,0.05) 0%, rgba(11,46,26,0.35) 45%, rgba(9,26,17,0.94) 100%)" }}
-            />
-            <div className="relative grid min-h-[620px] content-between gap-10 p-6 sm:p-8 lg:min-h-[680px] lg:p-11">
-              {/* Illustrative record lineage */}
-              <div key={`lin-${p.id}`} className={`${changed ? "avs-fade-in" : ""} w-full max-w-[21rem] justify-self-end rounded-[16px] bg-[rgb(var(--av-paper)/0.96)] p-4 text-[rgb(var(--av-forest))] shadow-[0_24px_48px_-24px_rgba(0,0,0,0.5)] backdrop-blur`}>
-                <div className="flex items-center justify-between border-b border-[rgb(var(--av-line)/0.12)] pb-2.5">
-                  <p className="avs-label text-[0.6875rem] text-[rgb(var(--av-slate))]">Record lineage</p>
-                  <p className="avs-sample">Sample</p>
-                </div>
-                <ol className="mt-1">
-                  {p.lineage.map((l) => (
-                    <li key={l.step} className="flex items-center gap-3 border-b border-[rgb(var(--av-line)/0.08)] py-2.5 last:border-0">
-                      <span
-                        aria-hidden="true"
-                        className={`h-2.5 w-2.5 shrink-0 rounded-full ${
-                          l.status === "pending" ? "border border-[rgb(var(--av-slate)/0.5)]" : "bg-[rgb(var(--av-emerald))]"
-                        } ${l.status === "current" ? "ring-4 ring-[rgb(var(--av-emerald)/0.18)]" : ""}`}
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[0.9375rem] font-medium leading-tight">{l.step}</span>
-                        <span className="avs-meta block text-[rgb(var(--av-slate))]">{l.actor}</span>
-                      </span>
-                      <span
-                        className={`avs-meta shrink-0 uppercase tracking-[0.08em] ${
-                          l.status === "pending" ? "text-[rgb(var(--av-slate))]" : "text-[rgb(var(--av-emerald-ink))]"
-                        }`}
-                      >
-                        {l.label}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-
-              <div key={`copy-${p.id}`} className={`avs-on-dark ${changed ? "avs-fade-in" : ""} text-[rgb(var(--av-paper))]`}>
-                <p className="avs-label text-[rgb(var(--av-gold))]">{active === 0 ? "Flagship product" : `Product ${p.code}`}</p>
-                <div className="mt-4 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-                  <div className="max-w-[36rem]">
-                    <h3 className="avs-h2 text-[clamp(2rem,3.4vw,3.25rem)]">{p.name}</h3>
-                    <p className="mt-4 text-[1.0625rem] leading-relaxed text-white/80">{p.line}</p>
+            <div key={`r-${p.id}`} className={`min-w-0 ${changed ? "avs-fade-in" : ""}`}>
+              <TabletFrame>
+                <div aria-hidden="true" className="grid min-w-0 grid-cols-1 gap-3 p-3 text-[rgb(var(--av-forest))] sm:p-5">
+                  <div className="flex min-w-0 items-center justify-between gap-3 border-b border-[rgb(var(--av-line)/0.1)] pb-3">
+                    <span className="min-w-0">
+                      <span className="avs-meta block text-[0.625rem] uppercase tracking-[0.08em] text-[rgb(var(--av-slate))]">{p.code} · record lineage</span>
+                      <span className="block truncate text-[0.9375rem] font-semibold">{p.name}</span>
+                    </span>
+                    <span className="avs-meta shrink-0 text-[0.625rem] uppercase tracking-[0.08em] text-[rgb(var(--av-gold-deep))]">Sample data</span>
                   </div>
-                  <Link href={`/products#${p.id}`} className="avs-btn avs-btn-primary shrink-0 self-start md:self-auto">
-                    View product <ArrowRight />
-                  </Link>
+                  <ol className="grid min-w-0 grid-cols-1 gap-2">
+                    {p.lineage.map((l) => (
+                      <li key={l.step} className="flex min-w-0 items-center gap-3 rounded-[6px] border border-[rgb(var(--av-line)/0.1)] bg-white px-3 py-2.5">
+                        <span
+                          className={`h-2.5 w-2.5 shrink-0 rounded-full border-2 ${
+                            l.status === "done"
+                              ? "border-[rgb(var(--av-emerald-ink))] bg-[rgb(var(--av-emerald-ink))]"
+                              : l.status === "current"
+                                ? "border-[rgb(var(--av-gold-ink))] bg-white"
+                                : "border-[rgb(var(--av-line)/0.3)] bg-white"
+                          }`}
+                        />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[0.8125rem] font-medium leading-tight">{l.step}</span>
+                          <span className="avs-meta block truncate text-[0.6875rem] text-[rgb(var(--av-slate))]">{l.actor}</span>
+                        </span>
+                        <StatusChip state={l.status === "done" ? "verified" : l.status === "current" ? "review" : "pending"} label={l.label} />
+                      </li>
+                    ))}
+                  </ol>
                 </div>
+              </TabletFrame>
+              <SampleLabel className="mt-3" />
+            </div>
+
+            <div key={`c-${p.id}`} className={`grid min-w-0 content-start gap-5 ${changed ? "avs-fade-in" : ""}`}>
+              <div>
+                <p className="avs-label text-[rgb(var(--av-gold-ink))]">{active === 0 ? "Flagship product" : `Product ${p.code}`}</p>
+                <h3 className="avs-h3 mt-3">{p.name}</h3>
+                <p className="avs-body mt-3 leading-relaxed">{p.line}</p>
               </div>
+              <ul className="grid gap-2 border-t border-[rgb(var(--av-line)/0.12)] pt-4 text-[0.9375rem]">
+                {p.capabilities.map((c) => (
+                  <li key={c} className="flex gap-2.5">
+                    <span aria-hidden="true" className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-[rgb(var(--av-emerald-ink))]" />
+                    {c}
+                  </li>
+                ))}
+              </ul>
+              <Link href={`/products#${p.id}`} className="avs-arrow-link">
+                View {p.name} <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </div>

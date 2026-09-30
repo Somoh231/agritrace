@@ -132,6 +132,92 @@ test.describe("public site: navigation", () => {
   });
 });
 
+test.describe("public site: homepage guardrails (redesign checkpoint 1)", () => {
+  const HOME_ORDER = [
+    "hero",
+    "problem",
+    "product-preview",
+    "practices",
+    "products",
+    "how-it-works",
+    "field-to-decision",
+    "liberia",
+    "governance",
+    "engagement",
+    "closing-cta",
+  ];
+  const SAMPLE_LABEL = "Illustrative system view · Sample data";
+
+  test("sections follow the approved order", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const order = await page.locator("[data-home-section]").evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.homeSection));
+    expect(order).toEqual(HOME_ORDER);
+  });
+
+  test("hero is map-led, photo-free and labels its sample data", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const hero = page.locator('[data-home-section="hero"]');
+    await expect(hero.locator("img")).toHaveCount(0);
+    await expect(hero.locator("[data-sample-label]").first()).toHaveText(SAMPLE_LABEL);
+    await expect(hero.locator("[data-sample-label]").first()).toBeVisible();
+    await expect(hero.getByText("Built for", { exact: true })).toBeVisible();
+    await expect(page.getByText("We work with")).toHaveCount(0);
+  });
+
+  test("H1/H2 are Newsreader, UI text is Geist, and no heading uses the retired accent word", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const fonts = await page.evaluate(() => ({
+      headings: [...document.querySelectorAll("main h1, main h2:not(.avs-label)")].map((h) => getComputedStyle(h).fontFamily),
+      nav: getComputedStyle(document.querySelector("header nav button, header a")!).fontFamily,
+      accents: document.querySelectorAll("main h1 .avs-accent, main h2 .avs-accent").length,
+    }));
+    for (const f of fonts.headings) expect(f.toLowerCase()).toContain("newsreader");
+    expect(fonts.nav.toLowerCase()).toContain("geist");
+    expect(fonts.accents).toBe(0);
+  });
+
+  test("no unsupported metric, partner or security claim on the homepage", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const text = await page.locator("body").innerText();
+    expect(text).not.toMatch(/append-only|immutable|tamper|however the data is requested|nationwide|across Liberia|institution's own administrative levels|as it is recorded|counterpart/i);
+    expect(text).not.toMatch(/\b\d[\d,.]*\s*(farmers|hectares|ha\b|acres|warehouses|tonnes|beneficiaries|counties)/i);
+    expect(text).not.toContain("partnerships@agrivaultdata.com");
+    await expect(page.locator("main img")).toHaveCount(0);
+  });
+
+  test("the Liberia programme is AgriVault's framing and always carries its status", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const block = page.locator('[data-home-section="liberia"]');
+    await expect(block.getByRole("heading", { level: 2 })).toHaveText("AgriVault's Liberia Agricultural Intelligence Programme");
+    await expect(block.locator("[data-programme-status]")).toHaveText(/Pilot · 2026 · being validated/);
+    await expect(block).toContainText("Initial focus: rice · Nimba, Bong, and Lofa");
+    await expect(block).toContainText("The programme is designed to operate within existing national, county, and district agricultural structures.");
+  });
+
+  test("every product render is labelled as sample data", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    for (const id of ["hero", "product-preview", "products"]) {
+      await expect(page.locator(`[data-home-section="${id}"]`), id).toContainText(SAMPLE_LABEL);
+    }
+  });
+
+  test("field-to-decision sequence: still frames under reduced motion, sticky panel only with motion on desktop", async ({ browser }, info) => {
+    const reduced = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1440, height: 900 } });
+    const p1 = await reduced.newPage();
+    await p1.goto("/", { waitUntil: "load" });
+    await expect(p1.locator(".avs-seq-inline")).toHaveCount(6);
+    expect(await p1.locator(".avs-seq-inline").evaluateAll((els) => els.every((e) => getComputedStyle(e).display !== "none"))).toBe(true);
+    await expect(p1.locator(".avs-seq-panel")).toBeHidden();
+    await reduced.close();
+    test.skip(info.project.name !== "desktop-chromium", "Sticky panel is desktop-only.");
+    const motion = await browser.newContext({ reducedMotion: "no-preference", viewport: { width: 1440, height: 900 } });
+    const p2 = await motion.newPage();
+    await p2.goto("/", { waitUntil: "load" });
+    await expect(p2.locator(".avs-seq-panel")).toBeVisible();
+    await motion.close();
+  });
+});
+
 test.describe("public site: legal pages", () => {
   for (const route of ["/privacy", "/terms"]) {
     test(`${route} is a clearly marked draft and not indexed`, async ({ page }) => {
