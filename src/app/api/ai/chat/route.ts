@@ -233,7 +233,13 @@ function describeAnthropicStreamError(e: unknown): { logLine: string; streamNoti
 }
 
 export async function POST(req: Request) {
-  const ctx = await beginApiRequestAsync(req, AI_CHAT_POLICY);
+  // Identify first: the AI budget is per user (anonymous callers fall back to IP
+  // and are refused below). Other endpoints' traffic never counts against it.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const ctx = await beginApiRequestAsync(req, AI_CHAT_POLICY, user?.id ?? null);
   const blocked = rejectIfRateLimited(ctx);
   if (blocked) return blocked;
 
@@ -241,10 +247,6 @@ export async function POST(req: Request) {
     return apiError(ctx, "Payload too large.", 413, { policy: AI_CHAT_POLICY });
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   if (!user) {
     return apiError(ctx, API_ERROR_UNAUTHORIZED, 401, { policy: AI_CHAT_POLICY });
   }

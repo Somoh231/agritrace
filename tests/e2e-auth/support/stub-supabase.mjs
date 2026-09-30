@@ -27,6 +27,9 @@ const PROFILES = {
   // Invited accounts: one not yet activated by an administrator, one activated.
   "u-invitee": { role: "field_agent", is_active: false },
   "u-invitee-active": { role: "field_agent", is_active: true },
+  // Rate-limit tests use their own users so budgets never interfere with other suites.
+  "u-quota": { role: "field_agent", is_active: true },
+  "u-quota-2": { role: "field_agent", is_active: true },
 };
 
 const b64url = (v) => Buffer.from(v).toString("base64url");

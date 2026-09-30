@@ -23,9 +23,15 @@ function pruneMemory(now: number): void {
   }
 }
 
-function memoryCheck(key: string, policy: RateLimitPolicy): RateLimitResult {
+/** Counter key: the policy's namespace plus the caller identity (user or IP). */
+export function scopedRateLimitKey(policy: RateLimitPolicy, identity: string): string {
+  return `${policy.name}:${identity}`;
+}
+
+function memoryCheck(identity: string, policy: RateLimitPolicy): RateLimitResult {
   const now = Date.now();
   pruneMemory(now);
+  const key = scopedRateLimitKey(policy, identity);
   let bucket = memoryStore.get(key);
   if (!bucket || now >= bucket.resetAt) {
     bucket = { count: 0, resetAt: now + policy.windowMs };
@@ -61,8 +67,8 @@ async function redisCommand(command: (string | number)[]): Promise<unknown> {
   return json.result;
 }
 
-async function redisCheck(key: string, policy: RateLimitPolicy): Promise<RateLimitResult> {
-  const namespaced = `agrivault:rl:${key}`;
+async function redisCheck(identity: string, policy: RateLimitPolicy): Promise<RateLimitResult> {
+  const namespaced = `agrivault:rl:${scopedRateLimitKey(policy, identity)}`;
   const windowSec = Math.max(1, Math.ceil(policy.windowMs / 1000));
   const now = Date.now();
   const resetAt = now + policy.windowMs;

@@ -15,14 +15,14 @@ import { READ_POLICY } from "@/lib/http/rate-limit-policies";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
-  const ctx = await beginApiRequestAsync(request, READ_POLICY);
-  const blocked = rejectIfRateLimited(ctx);
-  if (blocked) return blocked;
-
+  // Identify first so the budget is per user (anonymous callers fall back to IP).
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const ctx = await beginApiRequestAsync(request, READ_POLICY, user?.id ?? null);
+  const blocked = rejectIfRateLimited(ctx);
+  if (blocked) return blocked;
   if (!user) return apiError(ctx, API_ERROR_UNAUTHORIZED, 401, { policy: READ_POLICY });
 
   const url = new URL(request.url);

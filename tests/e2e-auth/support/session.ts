@@ -14,7 +14,9 @@ export type StubUser =
   | "u-clan"
   | "u-ministry"
   | "u-invitee"
-  | "u-invitee-active";
+  | "u-invitee-active"
+  | "u-quota"
+  | "u-quota-2";
 
 export function sessionCookie(sub: StubUser): { name: string; value: string } {
   const exp = Math.floor(Date.now() / 1000) + 3600;

@@ -11,6 +11,12 @@ export type RateLimitResult = {
 };
 
 export type RateLimitPolicy = {
+  /**
+   * Budget namespace. Every counter is keyed by `<name>:<identity>`, so one
+   * endpoint family can never spend another's budget (e.g. analytics traffic
+   * cannot exhaust the AI assistant).
+   */
+  name: string;
   /** Sliding window in milliseconds */
   windowMs: number;
   /** Max requests per window per key */
@@ -18,6 +24,7 @@ export type RateLimitPolicy = {
 };
 
 export const DEFAULT_POLICY: RateLimitPolicy = {
+  name: "default",
   windowMs: 60_000,
   max: 60,
 };
@@ -35,6 +42,7 @@ export function checkRateLimit(key: string, policy: RateLimitPolicy = DEFAULT_PO
 export function rateLimitPolicyHeaders(policy: RateLimitPolicy = DEFAULT_POLICY): Record<string, string> {
   return {
     "X-RateLimit-Policy": `${policy.max};w=${Math.round(policy.windowMs / 1000)}`,
+    "X-RateLimit-Scope": policy.name,
   };
 }
 
