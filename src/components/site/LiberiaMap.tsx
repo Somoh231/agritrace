@@ -16,7 +16,8 @@ export function LiberiaMap({
   titleId = "lbr-map-title",
 }: {
   highlight?: string[];
-  tone?: "light" | "dark";
+  /** "field": warm land (field-sand) with straw pilot counties, for linen map mats. */
+  tone?: "light" | "dark" | "field";
   labels?: "none" | "highlight" | "all";
   title?: string;
   className?: string;
@@ -24,8 +25,17 @@ export function LiberiaMap({
   titleId?: string;
 }) {
   const dark = tone === "dark";
-  const base = dark ? { fill: "rgba(247,247,242,0.035)", stroke: "rgba(247,247,242,0.28)" } : { fill: "rgba(11,46,26,0.035)", stroke: "rgba(11,46,26,0.32)" };
-  const hi = dark ? { fill: "rgba(111,211,164,0.22)", stroke: "#6FD3A4" } : { fill: "rgba(15,163,107,0.2)", stroke: "#0A7D50" };
+  const field = tone === "field";
+  const base = dark
+    ? { fill: "rgba(247,247,242,0.035)", stroke: "rgba(247,247,242,0.28)" }
+    : field
+      ? { fill: "#EFE9DC", stroke: "rgba(11,46,26,0.3)" }
+      : { fill: "rgba(11,46,26,0.035)", stroke: "rgba(11,46,26,0.32)" };
+  const hi = dark
+    ? { fill: "rgba(111,211,164,0.22)", stroke: "#6FD3A4" }
+    : field
+      ? { fill: "#D9C28A", stroke: "#765A24" }
+      : { fill: "rgba(15,163,107,0.2)", stroke: "#0A7D50" };
   const labelColor = dark ? "#F7F7F2" : "#0B2E1A";
   const mutedLabel = dark ? "rgba(247,247,242,0.55)" : "rgba(74,91,80,0.9)";
   return (

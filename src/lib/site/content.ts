@@ -1,12 +1,14 @@
 /**
  * Public-site content — single source for navigation, homepage and inner pages.
  *
- * Claims policy: every capability stated here exists in the production platform
- * code (workflow engine with approval chain and append-only decision ledger,
- * role-based workspaces, boundary capture with GPS accuracy and area, offline
- * capture queue, warehouse transfer workflow, CSV import, PDF/CSV reports). No farmer, warehouse,
- * production or impact figures are published; the Liberia programme is described
- * only as a pilot being validated.
+ * Claims policy (security verification matrix, 26 Sep 2026): wording is limited
+ * to what the repository and production behaviour support. Review stages are
+ * district → county → national (fixed levels, not configurable per institution);
+ * decisions are recorded and platform users cannot edit or delete them (not
+ * database-immutable); offline capture covers selected records (farmer
+ * registration, plot outlines, production records). Do not strengthen these
+ * without new evidence. No farmer, warehouse, acreage, production or impact
+ * figures are published; the Liberia programme is a pilot being validated.
  */
 
 export type Practice = {
@@ -29,7 +31,7 @@ export const PRACTICES: Practice[] = [
     short: "The shared data model, identity, access and integration layer an agricultural institution runs on.",
     outcome: "One trusted record of farmers, farms, inputs and activity, owned by the institution.",
     scope: ["Institutional data model", "Identity and role-based access", "Administrative geography", "Integration and data exchange"],
-    delivers: "A system of record configured to the institution's own structure — national, county, district and field levels.",
+    delivers: "A system of record organised by national, county, district and field levels.",
     products: ["operations-platform", "farmer-registry"],
     tone: "navy",
   },
@@ -39,8 +41,8 @@ export const PRACTICES: Practice[] = [
     title: "Field Operations & Digitization",
     short: "Moving registration, inspection and extension work from paper to supervised digital workflows.",
     outcome: "Field work that arrives verified, attributed and on time — including from areas without coverage.",
-    scope: ["Registration and inspection workflows", "Offline-first capture", "Supervision and review chains", "Officer training"],
-    delivers: "Digital field workflows that officers can run offline, reviewed by the level above before they count.",
+    scope: ["Registration and inspection workflows", "Offline capture for selected records", "Supervision and review stages", "Officer training"],
+    delivers: "Digital field workflows with offline capture for selected records, reviewed by the level above before they count.",
     products: ["offline-field", "operations-platform"],
     tone: "forest",
   },
@@ -114,20 +116,20 @@ export const PRODUCTS: Product[] = [
     line: "One operational record from field capture through district verification, county approval and national reporting.",
     problem: "Programmes run on parallel lists, maps and ledgers that no one can reconcile, so leadership sees activity weeks late and cannot trace a figure back to its source.",
     capabilities: [
-      "Approval chain from field to national level, with corrections and escalation",
-      "Role-based and geography-based access for every user",
-      "Append-only decision ledger and audit trail",
+      "Review stages from field to national level, with corrections and escalation",
+      "Role-based and geography-based access",
+      "Recorded decision history with who and when",
       "Workspaces for field, district, county and national teams",
     ],
     workflow: ["Captured in the field", "District verification", "County approval", "National consolidation"],
     users: ["Field officers", "District agriculture officers", "County coordinators", "National programme teams", "Auditors"],
     integrations: ["CSV import for registries and ledgers", "PDF and CSV exports"],
-    deployment: "Configured to the institution's administrative levels and rolled out in phases, starting with a defined area.",
+    deployment: "Set up for the programme's district, county and national review levels and rolled out in phases, starting with a defined area.",
     practices: ["01", "02", "06"],
     lineage: [
       { step: "Captured in the field", actor: "Field officer · offline", status: "done", label: "Synced" },
       { step: "District verification", actor: "District agriculture officer", status: "done", label: "Verified" },
-      { step: "County approval", actor: "County office", status: "current", label: "Approved" },
+      { step: "County approval", actor: "County office", status: "current", label: "In review" },
       { step: "National consolidation", actor: "Programme team", status: "pending", label: "Pending" },
     ],
   },
@@ -151,7 +153,7 @@ export const PRODUCTS: Product[] = [
     lineage: [
       { step: "Farmer registered", actor: "Field officer · assigned area", status: "done", label: "Registered" },
       { step: "Profile completed", actor: "Field officer", status: "done", label: "Ready" },
-      { step: "Profile verified", actor: "District reviewer", status: "current", label: "Verified" },
+      { step: "Profile verified", actor: "District reviewer", status: "current", label: "In review" },
       { step: "Eligible for programme", actor: "Programme manager", status: "pending", label: "Pending" },
     ],
   },
@@ -165,7 +167,7 @@ export const PRODUCTS: Product[] = [
       "Walk-the-corners boundary capture with recorded GPS accuracy",
       "Area estimation in hectares and acres from the captured outline",
       "Boundaries linked to the farmer's field visit record",
-      "County and district geography for every record",
+      "County and district geography for linked records",
     ],
     workflow: ["Walk corners", "Close outline", "Link to farmer", "Review on the map"],
     users: ["Field officers", "District reviewers", "GIS and programme analysts"],
@@ -230,10 +232,10 @@ export const PRODUCTS: Product[] = [
     id: "offline-field",
     code: "P6",
     name: "Offline Field Operations",
-    line: "Capture that keeps working without coverage and syncs when it returns.",
+    line: "Capture for selected field records that keeps working without coverage and syncs when it returns.",
     problem: "Field teams work where connectivity is intermittent; paper fills the gap and is re-keyed weeks later — if at all.",
     capabilities: [
-      "Installable field app with an offline capture queue",
+      "Installable field app with an offline capture queue for selected records",
       "Queued records sync when the connection returns",
       "Queue status visible to the officer",
     ],
@@ -251,13 +253,15 @@ export const PRODUCTS: Product[] = [
   },
 ];
 
-export type Stage = { n: string; phase: "Before" | "Live" | "Review" | "After"; name: string; body: string; output: string; activities: string[] };
+/** `name` drives /how-we-work anchors (#diagnose, #transfer…); `label` is the approved display name. */
+export type Stage = { n: string; phase: "Before" | "Live" | "Review" | "After"; name: string; label: string; body: string; output: string; activities: string[] };
 
 export const STAGES: Stage[] = [
   {
     n: "01",
     phase: "Before",
     name: "Diagnose",
+    label: "Diagnosis",
     body: "Understand the programme as it runs today: structures, data, connectivity and constraints.",
     output: "Diagnostic report and recommended path",
     activities: ["Stakeholder and site visits", "Data and process inventory", "Connectivity and device review"],
@@ -266,7 +270,8 @@ export const STAGES: Stage[] = [
     n: "02",
     phase: "Before",
     name: "Design",
-    body: "Configure workflows, roles and reports around the institution's existing administrative levels.",
+    label: "Design",
+    body: "Set up workflows, roles and reports around the programme's administrative levels.",
     output: "Programme and system design",
     activities: ["Workflow and approval design", "Role and geography model", "Reporting requirements"],
   },
@@ -274,6 +279,7 @@ export const STAGES: Stage[] = [
     n: "03",
     phase: "Live",
     name: "Deploy",
+    label: "Deploy",
     body: "Train officers, equip teams and go live in phases, starting with a defined area.",
     output: "Live pilot in agreed geography",
     activities: ["Officer training", "Phased go-live", "Field support"],
@@ -282,6 +288,7 @@ export const STAGES: Stage[] = [
     n: "04",
     phase: "Live",
     name: "Operate",
+    label: "Operate",
     body: "Run, support and maintain day-to-day operations alongside institutional teams.",
     output: "Operational support and service reporting",
     activities: ["Service support", "Data quality review", "Change management"],
@@ -290,6 +297,7 @@ export const STAGES: Stage[] = [
     n: "05",
     phase: "Review",
     name: "Measure",
+    label: "Measure",
     body: "Assess results against the criteria agreed at the design stage.",
     output: "Evaluation against agreed criteria",
     activities: ["Criteria agreed up front", "Evidence from the record", "Independent review where required"],
@@ -298,6 +306,7 @@ export const STAGES: Stage[] = [
     n: "06",
     phase: "After",
     name: "Transfer capability",
+    label: "Capability transfer",
     body: "Hand over skills, documentation and ownership so the institution can run the system.",
     output: "Capability and ownership plan",
     activities: ["Skills transfer", "Documentation", "Ownership and continuity plan"],
@@ -379,6 +388,13 @@ export const FRAGMENTS = [
 
 export const LIBERIA = {
   name: "Liberia Agricultural Intelligence Programme",
+  /** AgriVault's own programme framing (R-07): never styled as a government programme. */
+  framing: "AgriVault's Liberia Agricultural Intelligence Programme",
+  badge: "Pilot · 2026 · being validated",
+  focusShort: "Initial focus: rice · Nimba, Bong, and Lofa",
+  focusLong: "The programme is beginning with rice, with initial validation work focused on Nimba, Bong, and Lofa counties.",
+  institutionalContext: "The programme is designed to operate within existing national, county, and district agricultural structures.",
+  disclosure: "AgriVault Data is an independent company. Institutional names and marks belong to their owners.",
   status: "Pilot, 2026 · being validated",
   counties: ["Nimba", "Bong", "Lofa"],
   posture: [
@@ -397,6 +413,12 @@ export const LIBERIA = {
     { title: "Offline field capture", body: "Designed for intermittent coverage." },
     { title: "National reporting", body: "Built from the operational record." },
   ],
+};
+
+/** Owner-approved working language (R-19). No absolute legal claims beyond this. */
+export const DATA_OWNERSHIP = {
+  heading: "Your programme. Your data. Infrastructure built to make it usable.",
+  body: "Institutions retain ownership and control of the operational data generated through their programmes. AgriVault provides the configurable technology, implementation support, and operating infrastructure used to collect, manage, verify, and analyze that information. Access and use are governed by the applicable engagement and institutional permissions.",
 };
 
 export const CONTACT_EMAIL = "partnerships@agrivaultdata.com";
@@ -465,8 +487,8 @@ export const NAV: NavGroup[] = [
     ],
     feature: {
       eyebrow: "Starting market",
-      title: "Liberia Agricultural Intelligence Programme",
-      body: "Three pilot counties, a field-to-national workflow and a phased path to expansion.",
+      title: "AgriVault's Liberia Agricultural Intelligence Programme",
+      body: "Pilot · 2026 · being validated. Initial focus: rice in Nimba, Bong, and Lofa.",
       href: "/programmes/liberia",
       cta: "Read the programme",
     },
@@ -508,7 +530,7 @@ export const NAV: NavGroup[] = [
     feature: {
       eyebrow: "Security & governance",
       title: "Built to hold up to review.",
-      body: "Role-based access, approval chains and an append-only decision ledger.",
+      body: "Role-based access, review stages and a recorded decision history.",
       href: "/security",
       cta: "Security & governance",
     },
