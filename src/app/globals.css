@@ -102,7 +102,7 @@
   line-height: 1.2;
   text-transform: uppercase;
   letter-spacing: var(--ent-tracking-label);
-  color: rgb(100 116 139);
+  color: rgb(71 85 105); /* slate-600: AA at 10px on light canvases */
 }
 .ent-metric {
   font-family: var(--font-display);
@@ -202,10 +202,10 @@
   line-height: 1;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  color: rgb(100 116 139); /* slate-500 */
+  color: rgb(71 85 105); /* slate-600: AA at 10px on light canvases */
 }
 .gov-kicker-gold {
-  color: rgb(var(--ministry-gold-strong));
+  color: rgb(122 90 30); /* deep gold: AA on light canvases (ministry-gold-strong was ~3:1) */
 }
 .btn-gold {
   display: inline-flex;

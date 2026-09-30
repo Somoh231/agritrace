@@ -29,7 +29,8 @@ function readinessTone(label: string): "success" | "warning" | "danger" | "neutr
 
 export default function OfflineReadinessPanel({ className }: { className?: string }) {
   const { deferredPrompt, installed } = usePwaInstall();
-  const [online, setOnline] = React.useState(() => (typeof navigator !== "undefined" ? navigator.onLine : true));
+  const [online, setOnline] = React.useState(true); // device state is read after mount (hydration-safe)
+  const [mounted, setMounted] = React.useState(false);
   const [pending, setPending] = React.useState(0);
   const [errors, setErrors] = React.useState<string[]>([]);
   const [gpsState, setGpsState] = React.useState<"unknown" | "granted" | "prompt" | "denied" | "unsupported">("unknown");
@@ -47,6 +48,8 @@ export default function OfflineReadinessPanel({ className }: { className?: strin
   }, []);
 
   React.useEffect(() => {
+    setMounted(true);
+    setOnline(navigator.onLine);
     void refresh();
     const id = window.setInterval(() => void refresh(), 30_000);
     const up = () => setOnline(true);
@@ -104,15 +107,17 @@ export default function OfflineReadinessPanel({ className }: { className?: strin
   else if (pending > 0) syncLabel = "Pending sync";
 
   const installLabel = installedView ? "Installed" : installAvailable ? "Install available" : "Manual setup required";
-  const lastClear = formatShort(queueClear);
+  const lastClear = mounted ? formatShort(queueClear) : null;
 
+  // Device checks only run in the browser: the server and first client render show "Checking…".
+  const deviceValue = (v: string) => (mounted ? v : "Checking…");
   const rows = [
-    { label: "Install", value: installLabel },
-    { label: "GPS permission", value: gpsLabel },
-    { label: "Offline storage", value: storageLabel },
-    { label: "Pending sync", value: pending > 0 ? `${pending} on device` : "None" },
-    { label: "Sync health", value: syncLabel },
-    { label: "Network", value: online ? "Online" : "Offline" },
+    { label: "Install", value: deviceValue(installLabel) },
+    { label: "GPS permission", value: deviceValue(gpsLabel) },
+    { label: "Offline storage", value: deviceValue(storageLabel) },
+    { label: "Pending sync", value: deviceValue(pending > 0 ? `${pending} on device` : "None") },
+    { label: "Sync health", value: deviceValue(syncLabel) },
+    { label: "Network", value: deviceValue(online ? "Online" : "Offline") },
   ];
 
   return (

@@ -112,7 +112,7 @@ export default async function DashboardLayout({
         <DashboardShell profile={workspaceProfile} authenticRole={authenticRole}>
           {children}
         </DashboardShell>
-        <PwaDiagnosticsPanel />
+        <PwaDiagnosticsPanel enabled={authenticRole === "super_admin"} />
       </PwaInstallProvider>
     </PlatformProviders>
   );

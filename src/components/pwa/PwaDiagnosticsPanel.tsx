@@ -16,7 +16,8 @@ function bool(n: boolean | null | undefined) {
 /**
  * Shown only in production builds. Collapsed by default; for pilot PWA verification (Chrome Application tab).
  */
-export default function PwaDiagnosticsPanel() {
+/** Engineering diagnostics: rendered only for super_admin (never for Ministry or field users). */
+export default function PwaDiagnosticsPanel({ enabled = false }: { enabled?: boolean }) {
   const pathname = usePathname();
   const { deferredPrompt, beforeInstallPromptCaptured, installed } = usePwaInstall();
   const [open, setOpen] = React.useState(false);
@@ -26,7 +27,7 @@ export default function PwaDiagnosticsPanel() {
   const [swReg, setSwReg] = React.useState(false);
   const [controlling, setControlling] = React.useState(false);
   const rootRef = React.useRef<HTMLDivElement>(null);
-  const visible = process.env.NODE_ENV === "production" && !isPublicSitePath(pathname);
+  const visible = enabled && process.env.NODE_ENV === "production" && !isPublicSitePath(pathname);
   // Never sit on Mapbox attribution, the wordmark or map controls: lift clear of them instead.
   const lift = useClearOfMapControls(rootRef, visible);
 
@@ -70,7 +71,7 @@ export default function PwaDiagnosticsPanel() {
   }, []);
 
   React.useEffect(() => {
-    if (process.env.NODE_ENV !== "production") return;
+    if (!enabled || process.env.NODE_ENV !== "production") return;
     void refresh();
     const id = window.setInterval(() => void refresh(), 5000);
     const onCc = () => void refresh();
@@ -79,7 +80,7 @@ export default function PwaDiagnosticsPanel() {
       window.clearInterval(id);
       navigator.serviceWorker.removeEventListener("controllerchange", onCc);
     };
-  }, [refresh]);
+  }, [refresh, enabled]);
 
   const standalone =
     typeof window !== "undefined" &&
@@ -92,7 +93,7 @@ export default function PwaDiagnosticsPanel() {
   else if (beforeInstallPromptCaptured) installability = "beforeinstallprompt seen (prompt may be consumed)";
   else installability = "Waiting (HTTPS, manifest icons, SW, engagement criteria)";
 
-  if (process.env.NODE_ENV !== "production") return null;
+  if (!enabled || process.env.NODE_ENV !== "production") return null;
   // Pilot diagnostics belong to the application, not the public corporate site.
   if (isPublicSitePath(pathname)) return null;
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDateTimeUtc } from "@/lib/utils/formatters";
 import * as React from "react";
 
 import { titleForDaoWorkflowKind } from "@/hooks/useDaoWorkflowQueue";
@@ -104,7 +105,7 @@ export default function DaoOfflineQueuePanel({
                   <span className="font-mono text-[10px] text-slate-500">{titleForDaoWorkflowKind(row.kind)}</span>
                 </div>
                 <div className="font-mono text-[10px] text-slate-500">
-                  Updated {new Date(row.updated_at).toLocaleString()}
+                  Updated {formatDateTimeUtc(row.updated_at)}
                   {row.sync_attempts ? ` · attempts ${row.sync_attempts}` : null}
                 </div>
                 {row.error_message ? (

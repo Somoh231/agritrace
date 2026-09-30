@@ -21,10 +21,9 @@ function toneDot(tone: OperationsRailLink["tone"]): string {
 }
 
 function useOnline(): boolean {
-  const [online, setOnline] = React.useState<boolean>(() =>
-    typeof navigator !== "undefined" ? navigator.onLine : true,
-  );
+  const [online, setOnline] = React.useState<boolean>(true); // device state is read after mount (hydration-safe)
   React.useEffect(() => {
+    setOnline(navigator.onLine);
     const up = () => setOnline(true);
     const down = () => setOnline(false);
     window.addEventListener("online", up);

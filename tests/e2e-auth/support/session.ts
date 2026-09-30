@@ -16,7 +16,14 @@ export type StubUser =
   | "u-invitee"
   | "u-invitee-active"
   | "u-quota"
-  | "u-quota-2";
+  | "u-quota-2"
+  | "u-super"
+  | "u-ministry-admin"
+  | "u-dao"
+  | "u-exporter"
+  | "u-warehouse"
+  | "u-auditor"
+  | "u-callcenter";
 
 export function sessionCookie(sub: StubUser): { name: string; value: string } {
   const exp = Math.floor(Date.now() / 1000) + 3600;

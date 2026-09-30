@@ -24,6 +24,14 @@ const PROFILES = {
   "u-field": { role: "field_agent", is_active: true },
   "u-clan": { role: "clan_technician", is_active: true },
   "u-ministry": { role: "ministry_officer", is_active: true },
+  // Ministry preview readiness: the only admin-console role, plus scoped roles.
+  "u-super": { role: "super_admin", is_active: true },
+  "u-ministry-admin": { role: "ministry_admin", is_active: true },
+  "u-dao": { role: "dao_officer", is_active: true, county: "Nimba" },
+  "u-exporter": { role: "exporter", is_active: true },
+  "u-warehouse": { role: "warehouse_manager", is_active: true },
+  "u-auditor": { role: "auditor", is_active: true },
+  "u-callcenter": { role: "call_center_agent", is_active: true },
   // Invited accounts: one not yet activated by an administrator, one activated.
   "u-invitee": { role: "field_agent", is_active: false },
   "u-invitee-active": { role: "field_agent", is_active: true },
@@ -126,7 +134,7 @@ const server = http.createServer((req, res) => {
           role: p.role,
           is_active: p.is_active,
           organization_id: null,
-          county: null,
+          county: p.county ?? null,
           district: null,
           phone: null,
           created_at: "2026-01-01T00:00:00Z",

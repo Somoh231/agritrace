@@ -58,7 +58,7 @@ export default function DistrictOfficerDashboard({
 }) {
   const readOnly = daoReviewReadOnly(role);
   const wf = useDaoWorkflowQueue();
-  const [online, setOnline] = React.useState(() => (typeof navigator !== "undefined" ? navigator.onLine : true));
+  const [online, setOnline] = React.useState(true); // device state is read after mount (hydration-safe)
 
   const [farmerOpen, setFarmerOpen] = React.useState(false);
   const [inspectOpen, setInspectOpen] = React.useState(false);
@@ -76,6 +76,7 @@ export default function DistrictOfficerDashboard({
 
   React.useEffect(() => {
     const sync = () => setOnline(navigator.onLine);
+    sync();
     window.addEventListener("online", sync);
     window.addEventListener("offline", sync);
     return () => {

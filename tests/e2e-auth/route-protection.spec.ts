@@ -130,15 +130,22 @@ test.describe("valid profiles behave as before", () => {
     });
   }
 
-  test("admin: admin console is reachable", async ({ request, baseURL }) => {
-    const res = await get(request, "/admin/users", "u-admin");
+  test("super_admin: admin console is reachable", async ({ request, baseURL }) => {
+    const res = await get(request, "/admin/users", "u-super");
     expect(res.status()).toBe(200);
     expect(locationPath(res, baseURL!)).toBeNull();
   });
 
-  test("admin: admin API passes the role check", async ({ request }) => {
-    const res = await get(request, "/api/admin/users", "u-admin");
+  test("super_admin: admin API passes the role check", async ({ request }) => {
+    const res = await get(request, "/api/admin/users", "u-super");
     expect([401, 403]).not.toContain(res.status());
+  });
+
+  test("admin (not super_admin): admin console and API are refused", async ({ request, baseURL }) => {
+    const page = await get(request, "/admin/users", "u-admin");
+    expect(page.status()).toBe(307);
+    expect(locationPath(page, baseURL!)).toBe(postLoginHomeForRole("admin"));
+    expect((await get(request, "/api/admin/users", "u-admin")).status()).toBe(403);
   });
 
   test("field_agent: admin console redirects exactly as the pilot gate says", async ({ request, baseURL }) => {

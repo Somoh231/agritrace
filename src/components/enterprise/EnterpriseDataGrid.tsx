@@ -350,6 +350,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
             type="button"
             disabled={safePage <= 0}
             onClick={() => setPage((p) => Math.max(0, p - 1))}
+            aria-label="Previous page"
             className={`h-8 w-8 rounded-lg border disabled:opacity-40 inline-flex items-center justify-center ${T.pageBtn}`}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -358,6 +359,7 @@ export default function EnterpriseDataGrid<T extends Record<string, unknown>>({
             type="button"
             disabled={safePage >= pages - 1}
             onClick={() => setPage((p) => Math.min(pages - 1, p + 1))}
+            aria-label="Next page"
             className={`h-8 w-8 rounded-lg border disabled:opacity-40 inline-flex items-center justify-center ${T.pageBtn}`}
           >
             <ChevronRight className="h-4 w-4" />

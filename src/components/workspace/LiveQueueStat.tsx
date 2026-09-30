@@ -17,9 +17,7 @@ export default function LiveQueueStat({
   href?: string;
   label?: string;
 }) {
-  const [online, setOnline] = React.useState<boolean>(() =>
-    typeof navigator !== "undefined" ? navigator.onLine : true,
-  );
+  const [online, setOnline] = React.useState<boolean>(true); // device state is read after mount (hydration-safe)
   const [pending, setPending] = React.useState<number | null>(null);
 
   React.useEffect(() => {
@@ -34,6 +32,7 @@ export default function LiveQueueStat({
     };
     void refresh();
     const id = window.setInterval(refresh, 15_000);
+    setOnline(navigator.onLine);
     const up = () => setOnline(true);
     const down = () => setOnline(false);
     window.addEventListener("online", up);

@@ -130,7 +130,8 @@ test.describe("invitation flow", () => {
 
 test.describe("authenticated platform keeps its PWA", () => {
   test("manifest, service worker, install control and diagnostics exist only after sign-in", async ({ page, context, baseURL }) => {
-    const c = sessionCookie("u-admin");
+    // Diagnostics are engineering tooling: super_admin only.
+    const c = sessionCookie("u-super");
     await context.addCookies([{ name: c.name, value: c.value, url: baseURL! }]);
     await page.goto("/farmers", { waitUntil: "load" });
 

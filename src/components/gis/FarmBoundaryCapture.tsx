@@ -117,9 +117,7 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
   const [gpsWatchFailed, setGpsWatchFailed] = React.useState(false);
   const [flash, setFlash] = React.useState<string | null>(null);
   const [gpsRetryKey, setGpsRetryKey] = React.useState(0);
-  const [online, setOnline] = React.useState(
-    () => typeof navigator !== "undefined" && navigator.onLine,
-  );
+  const [online, setOnline] = React.useState(true); // device state is read after mount (hydration-safe)
   const liveGpsInitialFitRef = React.useRef(false);
   const prevDraftLenRef = React.useRef(0);
 
@@ -215,6 +213,7 @@ export default function FarmBoundaryCapture({ disabled, readOnly, value, onChang
   }, [closedPoly, draftFill, displayBoundary?.geometry, draftPoints.length, closed, fitToOperationalArea]);
 
   React.useEffect(() => {
+    setOnline(navigator.onLine);
     const up = () => setOnline(true);
     const down = () => setOnline(false);
     window.addEventListener("online", up);

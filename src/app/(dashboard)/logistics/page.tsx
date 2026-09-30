@@ -18,7 +18,7 @@ function Card({ item }: { item: LinkCard }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="font-semibold text-white truncate">{item.title}</div>
-          <p className="mt-2 text-[12px] leading-relaxed text-slate-400">{item.body}</p>
+          <p className="mt-2 text-[12px] leading-relaxed text-slate-600">{item.body}</p>
           <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">{item.meta}</div>
         </div>
         <span className="font-mono text-[12px] text-emerald-300/80 shrink-0">→</span>

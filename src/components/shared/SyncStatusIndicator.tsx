@@ -7,7 +7,7 @@ import { StatusBadge } from "@/components/enterprise";
 import { getPendingCount, getSyncErrors, processSyncQueue, recordQueueClearTimestamp } from "@/lib/offline/sync-queue";
 
 export default function SyncStatusIndicator() {
-  const [online, setOnline] = React.useState<boolean>(() => (typeof navigator !== "undefined" ? navigator.onLine : true));
+  const [online, setOnline] = React.useState<boolean>(true); // device state is read after mount (hydration-safe)
   const [pendingCount, setPendingCount] = React.useState<number>(0);
   const [errors, setErrors] = React.useState<string[]>([]);
   const [reviewOpen, setReviewOpen] = React.useState(false);
@@ -41,6 +41,7 @@ export default function SyncStatusIndicator() {
   }, [online, refresh]);
 
   React.useEffect(() => {
+    setOnline(navigator.onLine);
     refresh();
     const id = window.setInterval(refresh, 30_000);
 

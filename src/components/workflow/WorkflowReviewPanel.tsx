@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDateTimeUtc } from "@/lib/utils/formatters";
 import * as React from "react";
 
 import { DashboardPanel, EmptyState, SectionHeader, StatusBadge, type StatusBadgeTone } from "@/components/enterprise";
@@ -28,11 +29,7 @@ function statusBadgeTone(s: WorkflowStatus): StatusBadgeTone {
 }
 
 function fmt(ts: string): string {
-  try {
-    return new Date(ts).toLocaleString();
-  } catch {
-    return ts;
-  }
+  return formatDateTimeUtc(ts);
 }
 
 function statusLabel(s: WorkflowStatus): string {
