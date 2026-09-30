@@ -1,3 +1,8 @@
+import {
+  canAccessCountyDashboard,
+  canAccessDistrictDashboard,
+  canAccessNationalCommandCenter,
+} from "@/lib/auth/workspace-access";
 import type { UserRole } from "@/lib/supabase/types";
 
 /** Default workspace after authentication for each ministry role. */
@@ -14,9 +19,10 @@ export function postLoginHomeForRole(role: UserRole): string {
       return "/county-dashboard";
     case "dao_officer":
     case "district_officer":
+      return "/district-dashboard";
     case "clan_technician":
     case "field_agent":
-      return "/district-dashboard";
+      return "/workspace/clan";
     case "warehouse_manager":
       return "/inventory";
     case "donor_observer":
@@ -29,54 +35,25 @@ export function postLoginHomeForRole(role: UserRole): string {
     case "cooperative_manager":
       return "/farmers";
     case "call_center_agent":
-      return "/verification-queue";
+      // Capture support, not a reviewer (ADR 0012 §A).
+      return "/farmers";
     default:
       return "/command-center";
   }
 }
 
-/** Roles permitted to open the national command center route. */
+/*
+ * Layout checks delegate to the middleware route policy so the two can never
+ * disagree (ADR 0012 §A).
+ */
 export function mayAccessNationalCommandCenter(role: UserRole): boolean {
-  if (role === "donor_partner" || role === "donor_observer" || role === "auditor") return false;
-  if (
-    role === "ministry_admin" ||
-    role === "ministry_officer" ||
-    role === "government_officer" ||
-    role === "super_admin" ||
-    role === "admin"
-  ) {
-    return true;
-  }
-  if (role === "exporter" || role === "cooperative_manager" || role === "call_center_agent") {
-    return true;
-  }
-  return false;
+  return canAccessNationalCommandCenter(role);
 }
 
 export function mayAccessCountyDashboard(role: UserRole): boolean {
-  return (
-    role === "county_agriculture_coordinator" ||
-    role === "county_officer" ||
-    role === "ministry_admin" ||
-    role === "ministry_officer" ||
-    role === "government_officer" ||
-    role === "super_admin" ||
-    role === "admin"
-  );
+  return canAccessCountyDashboard(role);
 }
 
 export function mayAccessDistrictDashboard(role: UserRole): boolean {
-  return (
-    role === "dao_officer" ||
-    role === "district_officer" ||
-    role === "clan_technician" ||
-    role === "field_agent" ||
-    role === "county_agriculture_coordinator" ||
-    role === "county_officer" ||
-    role === "ministry_admin" ||
-    role === "ministry_officer" ||
-    role === "government_officer" ||
-    role === "super_admin" ||
-    role === "admin"
-  );
+  return canAccessDistrictDashboard(role);
 }

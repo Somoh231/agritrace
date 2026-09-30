@@ -11,6 +11,8 @@ import {
   rejectIfRateLimited,
 } from "@/lib/http/api-response";
 import { READ_POLICY } from "@/lib/http/rate-limit-policies";
+import { roleFromProfile } from "@/lib/auth/profile-access";
+import { canAccessFarmersCooperativesProfiles } from "@/lib/auth/workspace-access";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -23,6 +25,11 @@ export async function GET(request: Request) {
   const blocked = rejectIfRateLimited(ctx);
   if (blocked) return blocked;
   if (!user) return apiError(ctx, API_ERROR_UNAUTHORIZED, 401, { policy: READ_POLICY });
+
+  // Farmer data (names, IDs, phone numbers) is limited to FARMER_DATA_ROLES, server-side.
+  const { data: prof } = await supabase.from("profiles").select("role, is_active").eq("id", user.id).maybeSingle();
+  const role = roleFromProfile(prof);
+  if (!role || !canAccessFarmersCooperativesProfiles(role)) return apiError(ctx, "Forbidden", 403, { policy: READ_POLICY });
 
   const url = new URL(request.url);
   const limit = parseBoundedInt(url.searchParams.get("limit"), 50, 1, 200);

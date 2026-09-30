@@ -1,5 +1,8 @@
 import type { UserRole } from "@/lib/supabase/types";
 
+import { assertPilotRouteAccess } from "@/lib/auth/workspace-access";
+import { isAdminConsoleRole } from "@/lib/supabase/admin-access";
+
 import {
   CAC_COUNTY_ROLES,
   CLAN_FIELD_ROLES,
@@ -56,10 +59,17 @@ function denied(role: UserRole, list?: UserRole[]) {
   return list?.includes(role) ?? false;
 }
 
+/** Navigation never offers a link the route policy would refuse (middleware is the source of truth). */
+function routeAllows(role: UserRole, href: string): boolean {
+  const path = href.split("?")[0] ?? href;
+  if (path === "/admin" || path.startsWith("/admin/")) return isAdminConsoleRole(role);
+  return assertPilotRouteAccess(role, path).ok;
+}
+
 function itemVisible(role: UserRole, item: MinistryNavItem): boolean {
   if (item.rolesAllow?.length && !item.rolesAllow.includes(role)) return false;
   if (denied(role, item.rolesDeny)) return false;
-  return true;
+  return routeAllows(role, item.href);
 }
 
 function sectionVisible(role: UserRole, section: MinistryNavSection): boolean {

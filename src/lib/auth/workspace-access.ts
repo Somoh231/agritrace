@@ -40,7 +40,7 @@ export function canAccessNationalOperationsShell(role: UserRole): boolean {
 /** National heat map — operational read-through without donor/auditor. */
 export function canAccessNationalHeatMap(role: UserRole): boolean {
   if (isDonorObserverRole(role) || role === "auditor") return false;
-  return isMinistryNationalRole(role) || isCountyCoordinatorRole(role) || isDaoDistrictRole(role) || isClanFieldRole(role);
+  return isMinistryNationalRole(role) || isCountyCoordinatorRole(role) || isDaoDistrictRole(role);
 }
 
 export function canAccessExecutiveBriefing(role: UserRole): boolean {
@@ -54,9 +54,10 @@ export function canAccessFieldAgentsMonitoring(role: UserRole): boolean {
   return isDaoDistrictRole(role) || isCountyCoordinatorRole(role) || isMinistryNationalRole(role);
 }
 
+/** District/county/national reporting — not CLAN capture roles (their own submissions stay in the CLAN desk). */
 export function canAccessReportingHub(role: UserRole): boolean {
   if (isDonorObserverRole(role) || role === "auditor") return false;
-  return isDaoWorkspaceRole(role) || isCountyCoordinatorRole(role) || isMinistryNationalRole(role);
+  return isDaoDistrictRole(role) || isCountyCoordinatorRole(role) || isMinistryNationalRole(role);
 }
 
 export function canAccessVerificationQueue(role: UserRole): boolean {
@@ -72,10 +73,12 @@ export function canAccessWarehouseLogisticsRoutes(role: UserRole): boolean {
     isCountyCoordinatorRole(role) ||
     isMinistryNationalRole(role) ||
     role === "warehouse_manager" ||
-    role === "cooperative_manager" ||
-    role === "exporter"
+    role === "cooperative_manager"
   );
 }
+
+/** Exporter surfaces: their own lots, movements and due diligence (organisation-scoped by RLS). */
+export const EXPORTER_COCOA_PREFIXES = ["/cocoa/lots", "/cocoa/movements", "/cocoa/eudr"] as const;
 
 export function canAccessSubsidiesAndProduction(role: UserRole): boolean {
   if (isDonorObserverRole(role) || role === "auditor") return false;
@@ -84,9 +87,30 @@ export function canAccessSubsidiesAndProduction(role: UserRole): boolean {
   );
 }
 
+/**
+ * Farmer, cooperative and farm-profile data (names, IDs, phone numbers).
+ * Explicit allowlist: the operational chain plus cooperative managers and call-centre
+ * capture support. Not exporters (lot traceability only), warehouse managers,
+ * auditors or donors.
+ */
+export const FARMER_DATA_ROLES: readonly UserRole[] = [
+  "super_admin",
+  "admin",
+  "ministry_admin",
+  "ministry_officer",
+  "government_officer",
+  "county_agriculture_coordinator",
+  "county_officer",
+  "dao_officer",
+  "district_officer",
+  "clan_technician",
+  "field_agent",
+  "cooperative_manager",
+  "call_center_agent",
+];
+
 export function canAccessFarmersCooperativesProfiles(role: UserRole): boolean {
-  if (isDonorObserverRole(role)) return false;
-  return true;
+  return FARMER_DATA_ROLES.includes(role);
 }
 
 export function canAccessAlerts(role: UserRole): boolean {
@@ -107,12 +131,14 @@ export function canAccessActivitySearchDashboard(role: UserRole): boolean {
 /** Aligns with operational workspace nav: who may open each hub. */
 export function canAccessPilotWorkspace(role: UserRole, workspace: PilotWorkspaceId): boolean {
   if (isDonorObserverRole(role) || role === "auditor") return false;
-  const clanDaoDesk =
+  const clanDesk =
     isClanFieldRole(role) || isDaoDistrictRole(role) || isCountyCoordinatorRole(role) || isMinistryNationalRole(role);
+  const daoDesk = isDaoDistrictRole(role) || isCountyCoordinatorRole(role) || isMinistryNationalRole(role);
   switch (workspace) {
     case "clan":
+      return clanDesk;
     case "dao":
-      return clanDaoDesk;
+      return daoDesk;
     case "cac":
       return isCountyCoordinatorRole(role) || isMinistryNationalRole(role);
     case "ministry":
@@ -129,10 +155,10 @@ export function pilotRoleLandingPath(role: UserRole): string {
   if (isMinistryNationalRole(role)) return "/command-center";
   if (isCountyCoordinatorRole(role)) return "/county-dashboard";
   if (isDaoDistrictRole(role)) return "/district-dashboard";
-  if (isClanFieldRole(role)) return "/field/mobile";
+  if (isClanFieldRole(role)) return "/workspace/clan";
   if (role === "warehouse_manager") return "/inventory";
   if (role === "cooperative_manager") return "/cooperatives";
-  if (role === "exporter") return "/farmers";
+  if (role === "exporter") return "/cocoa/lots";
   if (role === "call_center_agent") return "/farmers";
   return "/district-dashboard";
 }
@@ -152,12 +178,12 @@ export function canAccessCountyDashboard(role: UserRole): boolean {
 }
 
 /**
- * District operations hub — CLAN + DAO capture; CAC and ministry may open for oversight
- * (district UI applies read-only for non-DAO roles where applicable).
+ * District operations hub — DAO desk; CAC and ministry may open for oversight.
+ * CLAN capture roles work from /workspace/clan (ADR 0012 §B).
  */
 export function canAccessDistrictDashboard(role: UserRole): boolean {
   if (isDonorObserverRole(role) || role === "auditor") return false;
-  return isClanFieldRole(role) || isDaoDistrictRole(role) || isCountyCoordinatorRole(role) || isMinistryNationalRole(role);
+  return isDaoDistrictRole(role) || isCountyCoordinatorRole(role) || isMinistryNationalRole(role);
 }
 
 export function assertCountyDashboardAccess(role: UserRole): { ok: true } | { ok: false; redirectTo: string } {
@@ -197,6 +223,7 @@ export function needsPilotRoleGate(pathname: string): boolean {
     "/map",
     "/verification-queue",
     "/reporting",
+    "/reports",
     "/inventory",
     "/transfers",
     "/logistics",
@@ -248,6 +275,7 @@ const PILOT_ROUTE_RULES: PilotRule[] = [
   { prefix: "/map", canAccess: (r) => canAccessPilotPrimaryGis(r) },
   { prefix: "/verification-queue", canAccess: (r) => canAccessVerificationQueue(r) },
   { prefix: "/reporting", canAccess: (r) => canAccessReportingHub(r) },
+  { prefix: "/reports", canAccess: (r) => canAccessReportingHub(r) },
   { prefix: "/inventory", canAccess: (r) => canAccessWarehouseLogisticsRoutes(r) },
   { prefix: "/transfers", canAccess: (r) => canAccessWarehouseLogisticsRoutes(r) },
   { prefix: "/logistics", canAccess: (r) => canAccessWarehouseLogisticsRoutes(r) },
@@ -259,6 +287,7 @@ const PILOT_ROUTE_RULES: PilotRule[] = [
   { prefix: "/food-security", canAccess: (r) => canAccessNationalHeatMap(r) },
   { prefix: "/rice", canAccess: (r) => canAccessSubsidiesAndProduction(r) },
   { prefix: "/cocoa", canAccess: (r) => canAccessSubsidiesAndProduction(r) },
+  ...EXPORTER_COCOA_PREFIXES.map((prefix) => ({ prefix, canAccess: (r: UserRole) => canAccessSubsidiesAndProduction(r) || r === "exporter" })),
   { prefix: "/compliance", canAccess: (r) => canAccessComplianceRoutes(r) },
   { prefix: "/farm-profiles", canAccess: (r) => canAccessFarmersCooperativesProfiles(r) },
   { prefix: "/farmers", canAccess: (r) => canAccessFarmersCooperativesProfiles(r) },
@@ -292,24 +321,24 @@ export function assertPilotRouteAccess(role: UserRole, pathname: string): PilotR
 /** Metadata for audits / docs — mirrors middleware rule order (longest prefix). */
 export const PILOT_ROUTE_INVENTORY: { route: string; intendedRoles: string; mechanism: string }[] = [
   { route: "/gis-intelligence", intendedRoles: "Ministry national, CAC (advanced GIS)", mechanism: "middleware + assertPilotRouteAccess" },
-  { route: "/admin", intendedRoles: "Admin console (ministry national)", mechanism: "middleware + admin/layout" },
+  { route: "/admin", intendedRoles: "super_admin only (admin-access.ts allowlist)", mechanism: "middleware + admin/layout" },
   { route: "/command-center", intendedRoles: "Ministry national", mechanism: "middleware" },
   { route: "/national-operations", intendedRoles: "Ministry national", mechanism: "middleware" },
-  { route: "/national-heat-map", intendedRoles: "Ministry, CAC, DAO, CLAN (no donor/auditor)", mechanism: "middleware" },
+  { route: "/national-heat-map", intendedRoles: "Ministry, CAC, DAO (no CLAN, donor, auditor)", mechanism: "middleware" },
   { route: "/executive-briefing", intendedRoles: "Ministry national, CAC", mechanism: "middleware" },
   { route: "/county-dashboard", intendedRoles: "CAC, ministry national", mechanism: "middleware + page assert" },
-  { route: "/district-dashboard", intendedRoles: "CLAN, DAO, CAC, ministry", mechanism: "middleware + page assert" },
-  { route: "/workspace/*", intendedRoles: "Per hub (CLAN/DAO/CAC/Ministry)", mechanism: "middleware + page assert" },
+  { route: "/district-dashboard", intendedRoles: "DAO, CAC, ministry (CLAN uses /workspace/clan)", mechanism: "middleware + page assert" },
+  { route: "/workspace/*", intendedRoles: "clan: CLAN+DAO+CAC+ministry; dao: DAO+CAC+ministry; cac: CAC+ministry; ministry: ministry", mechanism: "middleware + page assert" },
   { route: "/field-agents", intendedRoles: "DAO, CAC, ministry", mechanism: "middleware" },
   { route: "/field", intendedRoles: "CLAN, DAO, CAC, ministry", mechanism: "middleware" },
   { route: "/geo-registry, /map", intendedRoles: "Pilot GIS (CLAN, DAO, CAC, ministry)", mechanism: "middleware" },
   { route: "/verification-queue, /registration-approvals", intendedRoles: "DAO, CAC, ministry", mechanism: "middleware" },
-  { route: "/reporting", intendedRoles: "CLAN, DAO, CAC, ministry", mechanism: "middleware" },
-  { route: "/inventory, /transfers, /logistics, /operations", intendedRoles: "DAO, CAC, ministry, warehouse, cooperative, exporter", mechanism: "middleware" },
-  { route: "/subsidies, /production, /rice, /cocoa", intendedRoles: "Operational + warehouse", mechanism: "middleware" },
+  { route: "/reporting, /reports", intendedRoles: "DAO, CAC, ministry", mechanism: "middleware" },
+  { route: "/inventory, /transfers, /logistics, /operations", intendedRoles: "DAO, CAC, ministry, warehouse, cooperative (not exporter)", mechanism: "middleware" },
+  { route: "/subsidies, /production, /rice, /cocoa", intendedRoles: "Operational + warehouse; exporter only /cocoa/lots, /cocoa/movements, /cocoa/eudr", mechanism: "middleware" },
   { route: "/alerts", intendedRoles: "CLAN, DAO, CAC, ministry", mechanism: "middleware" },
   { route: "/food-security", intendedRoles: "Operational chain", mechanism: "middleware" },
   { route: "/compliance", intendedRoles: "Authenticated non-donor", mechanism: "middleware" },
-  { route: "/farmers, /cooperatives, /farm-profiles", intendedRoles: "Authenticated non-donor", mechanism: "middleware" },
+  { route: "/farmers, /cooperatives, /farm-profiles", intendedRoles: "FARMER_DATA_ROLES allowlist (operational chain, cooperative manager, call centre)", mechanism: "middleware" },
   { route: "/activity, /search, /dashboard", intendedRoles: "Ministry national, call_center_agent", mechanism: "middleware" },
 ];
