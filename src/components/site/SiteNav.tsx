@@ -90,17 +90,17 @@ export default function SiteNav() {
   return (
     <header
       ref={headerRef}
-      className="avs-on-dark fixed inset-x-0 top-0 z-50"
+      className="fixed inset-x-0 top-0 z-50"
       onMouseLeave={() => open && scheduleHover(null, HOVER_CLOSE_MS)}
     >
       <div
         className={`transition-[background-color,border-color,backdrop-filter] duration-300 ${
-          solid ? "border-b border-white/10 bg-[rgb(7_21_45/0.92)] backdrop-blur-md" : "border-b border-transparent bg-transparent"
+          solid ? "border-b border-[rgb(var(--av-line)/0.12)] bg-[rgb(var(--av-paper)/0.95)] backdrop-blur-md" : "border-b border-transparent bg-[rgb(var(--av-paper))]"
         }`}
       >
         <div className="avs-container flex h-[var(--av-header-h)] items-center gap-6">
           <Link href="/" aria-label="AgriVault Data — home" className="shrink-0 rounded-md">
-            <AgriVaultLockup tone="light" />
+            <AgriVaultLockup tone="dark" />
           </Link>
 
           <nav aria-label="Primary" className="hidden xl:ml-8 xl:block">
@@ -125,8 +125,12 @@ export default function SiteNav() {
                       }}
                       onMouseEnter={() => scheduleHover(group.id, open ? 0 : HOVER_OPEN_MS)}
                       onKeyDown={(e) => onTriggerKey(e, i)}
-                      className={`group inline-flex h-10 items-center gap-1.5 rounded-full px-3 text-[0.9375rem] transition-colors ${
-                        isOpen ? "bg-white/10 text-white" : current ? "text-white" : "text-white/80 hover:text-white"
+                      className={`group inline-flex h-10 items-center gap-1.5 rounded-[var(--av-radius-sm)] px-3 text-[0.9375rem] font-medium transition-colors duration-150 ${
+                        isOpen
+                          ? "bg-[rgb(var(--av-sand))] text-[rgb(var(--av-forest))]"
+                          : current
+                            ? "text-[rgb(var(--av-forest))] underline decoration-[rgb(var(--av-emerald-ink))] decoration-2 underline-offset-[10px]"
+                            : "text-[rgb(var(--av-slate))] hover:text-[rgb(var(--av-forest))]"
                       }`}
                     >
                       {group.label}
@@ -139,7 +143,7 @@ export default function SiteNav() {
           </nav>
 
           <div className="ml-auto hidden items-center gap-2 md:flex">
-            <Link href="/login" className="hidden rounded-full px-3.5 py-2 text-[0.9375rem] text-white/80 transition-colors hover:text-white xl:inline-flex">
+            <Link href="/login" className="hidden min-h-[44px] items-center rounded-[var(--av-radius-sm)] px-3.5 text-[0.9375rem] font-medium text-[rgb(var(--av-slate))] transition-colors duration-150 hover:text-[rgb(var(--av-forest))] xl:inline-flex">
               Sign in
             </Link>
             <Link href="/contact" className="avs-btn avs-btn-primary !min-h-[44px] !px-5 !text-[0.9375rem]">
@@ -149,7 +153,7 @@ export default function SiteNav() {
 
           <button
             type="button"
-            className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white md:ml-2 xl:hidden"
+            className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-[var(--av-radius-sm)] border border-[rgb(var(--av-line)/0.25)] text-[rgb(var(--av-forest))] md:ml-2 xl:hidden"
             aria-label="Open menu"
             aria-haspopup="dialog"
             aria-expanded={mobileOpen}
@@ -189,12 +193,12 @@ function MegaPanel({
     <div
       id={id}
       onMouseEnter={onMouseEnter}
-      className="avs-megamenu absolute inset-x-0 top-full hidden border-b border-white/10 bg-[rgb(7_21_45/0.98)] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.6)] backdrop-blur-xl xl:block"
+      className="avs-megamenu absolute inset-x-0 top-full hidden border-b border-[rgb(var(--av-line)/0.12)] bg-white shadow-[0_30px_60px_-40px_rgba(7,21,45,0.35)] xl:block"
     >
       <div className="avs-container grid grid-cols-12 gap-8 py-8">
-        <div className="col-span-3 border-r border-white/10 pr-8">
-          <p className="avs-label text-[rgb(var(--av-gold))]">{group.label}</p>
-          <p className="mt-3 text-[1rem] leading-relaxed text-white/75">{group.intro}</p>
+        <div className="col-span-3 border-r border-[rgb(var(--av-line)/0.12)] pr-8">
+          <p className="avs-label text-[rgb(var(--av-gold-ink))]">{group.label}</p>
+          <p className="mt-3 text-[1rem] leading-relaxed text-[rgb(var(--av-slate))]">{group.intro}</p>
           <Link href={group.href} onClick={onNavigate} className="avs-arrow-link mt-5 text-[0.9375rem]">
             Overview <ArrowRight className="h-4 w-4" />
           </Link>
@@ -202,21 +206,21 @@ function MegaPanel({
         <div className={`${group.feature ? "col-span-6" : "col-span-9"} grid gap-8 ${group.columns.length > 1 ? "grid-cols-2" : ""}`}>
           {group.columns.map((col) => (
             <div key={col.title}>
-              <p className="avs-label mb-3 text-white/55">{col.title}</p>
+              <p className="avs-label mb-3 text-[rgb(var(--av-slate))]">{col.title}</p>
               <ul className={`grid gap-x-8 ${col.items.length > 4 && group.columns.length === 1 ? "grid-cols-2" : "grid-cols-1"}`}>
                 {col.items.map((item) => (
                   <li key={item.label}>
                     <Link
                       href={item.href}
                       onClick={onNavigate}
-                      className="group -mx-3 block rounded-xl px-3 py-2.5 transition-colors hover:bg-white/[0.06]"
+                      className="group -mx-3 block rounded-[var(--av-radius-sm)] px-3 py-2.5 transition-colors duration-150 hover:bg-[rgb(var(--av-paper))]"
                     >
-                      <span className="flex items-center gap-2 text-[0.975rem] font-medium text-white">
+                      <span className="flex items-center gap-2 text-[0.975rem] font-medium text-[rgb(var(--av-forest))]">
                         {item.label}
                         <ArrowRight className="h-3.5 w-3.5 -translate-x-1 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:opacity-100" />
                       </span>
                       {item.description ? (
-                        <span className="mt-1 block text-[0.875rem] leading-snug text-white/65">{item.description}</span>
+                        <span className="mt-1 block text-[0.875rem] leading-snug text-[rgb(var(--av-slate))]">{item.description}</span>
                       ) : null}
                     </Link>
                   </li>
@@ -229,11 +233,11 @@ function MegaPanel({
           <Link
             href={group.feature.href}
             onClick={onNavigate}
-            className="group relative col-span-3 overflow-hidden rounded-2xl border border-white/10 bg-[rgb(var(--av-forest))] p-6"
+            className="avs-surface-linen group relative col-span-3 overflow-hidden rounded-[var(--av-radius)] p-6"
           >
-            <span className="avs-label block text-[rgb(var(--av-gold))]">{group.feature.eyebrow}</span>
-            <span className="mt-6 block text-[1.25rem] font-medium leading-tight tracking-[-0.02em] text-white">{group.feature.title}</span>
-            <span className="mt-3 block text-[0.9rem] leading-snug text-white/75">{group.feature.body}</span>
+            <span className="avs-label block text-[rgb(var(--av-gold-deep))]">{group.feature.eyebrow}</span>
+            <span className="avs-serif mt-5 block text-[1.375rem] leading-tight">{group.feature.title}</span>
+            <span className="mt-3 block text-[0.9rem] leading-snug text-[rgb(var(--av-slate))]">{group.feature.body}</span>
             <span className="avs-arrow-link mt-6 text-[0.9rem]">
               {group.feature.cta} <ArrowRight className="h-4 w-4" />
             </span>
@@ -287,18 +291,18 @@ function MobileNav({ onClose }: { onClose: () => void }) {
       role="dialog"
       aria-modal="true"
       aria-label="Site menu"
-      className="fixed inset-0 z-[60] flex flex-col bg-[rgb(var(--av-navy))] text-white xl:hidden"
+      className="fixed inset-0 z-[60] flex flex-col bg-[rgb(var(--av-paper))] text-[rgb(var(--av-forest))] xl:hidden"
     >
-      <div className="avs-container flex h-[var(--av-header-h)] shrink-0 items-center justify-between border-b border-white/10">
+      <div className="avs-container flex h-[var(--av-header-h)] shrink-0 items-center justify-between border-b border-[rgb(var(--av-line)/0.12)]">
         <Link href="/" onClick={onClose} aria-label="AgriVault Data — home">
-          <AgriVaultLockup tone="light" />
+          <AgriVaultLockup tone="dark" />
         </Link>
         <button
           type="button"
           data-autofocus
           onClick={onClose}
           aria-label="Close menu"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--av-radius-sm)] border border-[rgb(var(--av-line)/0.25)]"
         >
           <CloseIcon className="h-5 w-5" />
         </button>
@@ -308,12 +312,12 @@ function MobileNav({ onClose }: { onClose: () => void }) {
           {NAV.map((group) => {
             const isOpen = expanded === group.id;
             return (
-              <li key={group.id} className="border-b border-white/10">
+              <li key={group.id} className="border-b border-[rgb(var(--av-line)/0.12)]">
                 <button
                   type="button"
                   aria-expanded={isOpen}
                   onClick={() => setExpanded(isOpen ? null : group.id)}
-                  className="flex w-full items-center justify-between py-5 text-left text-[1.375rem] font-medium tracking-[-0.02em]"
+                  className="flex min-h-[56px] w-full items-center justify-between py-4 text-left text-[1.25rem] font-medium tracking-[-0.01em]"
                 >
                   {group.label}
                   <Chevron className={`h-5 w-5 opacity-70 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
@@ -321,21 +325,21 @@ function MobileNav({ onClose }: { onClose: () => void }) {
                 {isOpen ? (
                   <ul className="pb-5">
                     <li>
-                      <Link href={group.href} onClick={onClose} className="avs-arrow-link block py-2.5 text-[1rem]">
+                      <Link href={group.href} onClick={onClose} className="avs-arrow-link flex py-2.5 text-[1rem]">
                         {group.label} overview <ArrowRight className="h-4 w-4" />
                       </Link>
                     </li>
                     {group.columns.flatMap((c) => c.items).map((item) => (
                       <li key={item.label}>
-                        <Link href={item.href} onClick={onClose} className="block py-2.5 text-[1rem] text-white/80">
+                        <Link href={item.href} onClick={onClose} className="block py-2.5 text-[1rem] text-[rgb(var(--av-slate))]">
                           {item.label}
                         </Link>
                       </li>
                     ))}
                     {group.feature ? (
                       <li>
-                        <Link href={group.feature.href} onClick={onClose} className="block py-2.5 text-[1rem] text-white/80">
-                          <span className="avs-label mr-2 text-[0.6875rem] text-[rgb(var(--av-gold))]">{group.feature.eyebrow}</span>
+                        <Link href={group.feature.href} onClick={onClose} className="block py-2.5 text-[1rem] text-[rgb(var(--av-slate))]">
+                          <span className="avs-label mr-2 text-[0.6875rem] text-[rgb(var(--av-gold-ink))]">{group.feature.eyebrow}</span>
                           <span className="block">{group.feature.title}</span>
                         </Link>
                       </li>
@@ -347,7 +351,7 @@ function MobileNav({ onClose }: { onClose: () => void }) {
           })}
         </ul>
       </nav>
-      <div className="avs-container grid shrink-0 grid-cols-2 gap-3 border-t border-white/10 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+      <div className="avs-container grid shrink-0 grid-cols-2 gap-3 border-t border-[rgb(var(--av-line)/0.12)] py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
         <Link href="/login" onClick={onClose} className="avs-btn avs-btn-ghost">
           Sign in
         </Link>

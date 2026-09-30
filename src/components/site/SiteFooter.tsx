@@ -2,7 +2,6 @@ import Link from "next/link";
 
 import { AgriVaultLockup } from "@/components/site/AgriVaultMark";
 import { ArrowRight } from "@/components/site/icons";
-import { CONTACT_EMAIL } from "@/lib/site/content";
 
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -53,11 +52,12 @@ const linkClass =
 
 /**
  * Closing section of every public page: compact identity, sitemap, legal.
- * Inner pages already end on a CTA band, so the footer carries no second hero.
+ * Forest, so the homepage's closing CTA runs straight into it. Inner pages
+ * already end on a CTA band, so the footer carries no second hero.
  */
 export default function SiteFooter() {
   return (
-    <footer className="avs-surface-navy avs-on-dark relative isolate overflow-hidden">
+    <footer className="avs-surface-forest avs-on-dark relative isolate overflow-hidden border-t border-white/10">
       <FooterContours />
       <div className="avs-container pt-14 md:pt-16">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
@@ -69,10 +69,8 @@ export default function SiteFooter() {
               Agricultural systems, technology, advisory and implementation for governments, development partners and
               agricultural institutions.
             </p>
+            {/* The partnerships mailbox is shown again once delivery and monitoring are confirmed (R-08). */}
             <div className="mt-6 flex flex-col items-start gap-1">
-              <a href={`mailto:${CONTACT_EMAIL}`} className={`${linkClass} text-white/85`}>
-                {CONTACT_EMAIL}
-              </a>
               <Link href="/contact" className="avs-arrow-link inline-flex min-h-[44px] items-center text-[0.9375rem]">
                 Start a conversation <ArrowRight className="h-4 w-4" />
               </Link>
@@ -82,7 +80,7 @@ export default function SiteFooter() {
           <nav aria-label="Footer" className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-4 lg:col-span-8">
             {COLUMNS.map((col) => (
               <div key={col.title}>
-                <h2 className="avs-label text-white/50">{col.title}</h2>
+                <h2 className="avs-label text-white/65">{col.title}</h2>
                 <ul className="mt-4">
                   {col.links.map((l) => (
                     <li key={l.label}>
@@ -131,7 +129,7 @@ function FooterContours() {
           const rr = r + wob * Math.sin(a * 3 + i * 0.6) + wob * 0.5 * Math.cos(a * 5 - i);
           return `${s === 0 ? "M" : "L"}${(400 + rr * Math.cos(a) * 1.25).toFixed(1)} ${(400 + rr * Math.sin(a)).toFixed(1)}`;
         }).join("");
-        return <path key={i} d={`${pts}Z`} fill="none" stroke="#B7C3D1" strokeWidth={1} vectorEffect="non-scaling-stroke" />;
+        return <path key={i} d={`${pts}Z`} fill="none" stroke="#E4E9C9" strokeWidth={1} vectorEffect="non-scaling-stroke" />;
       })}
     </svg>
   );
